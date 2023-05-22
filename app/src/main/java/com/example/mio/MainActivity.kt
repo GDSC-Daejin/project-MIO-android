@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var mBinding : ActivityMainBinding
     private val CLIENT_WEB_ID_KEY = BuildConfig.client_web_id_key
     private val CLIENT_WEB_SECRET_KEY = BuildConfig.client_web_secret_key
-
+    private val test = "test"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

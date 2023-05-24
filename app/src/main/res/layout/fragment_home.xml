@@ -11,32 +11,19 @@
         android:id="@+id/category_tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        app:layout_constraintBottom_toTopOf="@+id/viewpager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <com.google.android.material.tabs.TabItem
-            android:id="@+id/taxi_category_tab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="택시"
-            />
-
-        <com.google.android.material.tabs.TabItem
-            android:id="@+id/carpool_category_tab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="카풀"
-            />
-
-    </com.google.android.material.tabs.TabLayout>
+        app:layout_constraintTop_toTopOf="parent"
+        app:tabIndicatorColor="@color/black"></com.google.android.material.tabs.TabLayout>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewpager"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/category_tabLayout" />
 </androidx.constraintlayout.widget.ConstraintLayout>

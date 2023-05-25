@@ -44,8 +44,9 @@ class TaxiTabFragment : Fragment() {
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     private var noticeBoardAdapter : NoticeBoardAdapter? = null
     //게시글 데이터
-    private var data : MutableList<PostData?> = mutableListOf()
-    var dataPosition = 0
+    private var taxiAllData : MutableList<PostData?> = mutableListOf()
+    //게시글 선택 시 위치를 잠시 저장하는 변수
+    private var dataPosition = 0
     //게시글 포지션
     private var position = 0
     //뒤로 가기 받아오기
@@ -73,7 +74,7 @@ class TaxiTabFragment : Fragment() {
         noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val temp = data[position]
+                    val temp = taxiAllData[position]
                     dataPosition = position
                     val intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
                         putExtra("type", "READ")
@@ -93,7 +94,7 @@ class TaxiTabFragment : Fragment() {
                 putExtra("type","ADD")
             }
             requestActivity.launch(intent)
-            //noticeBoardAdapter!!.notifyDataSetChanged()
+            noticeBoardAdapter!!.notifyDataSetChanged()
         }
 
 
@@ -102,7 +103,7 @@ class TaxiTabFragment : Fragment() {
 
     private fun initRecyclerView() {
         noticeBoardAdapter = NoticeBoardAdapter()
-        noticeBoardAdapter!!.postItemData = data
+        noticeBoardAdapter!!.postItemData = taxiAllData
         taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true
@@ -123,19 +124,20 @@ class TaxiTabFragment : Fragment() {
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {
             AppCompatActivity.RESULT_OK -> {
-                val post = it.data?.getSerializableExtra("post") as PostData
+                val post = it.data?.getSerializableExtra("postData") as PostData
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {
                         CoroutineScope(Dispatchers.IO).launch {
-                            data.add(post)
+                            taxiAllData.add(post)
+                            println(post)
                         }
                         noticeBoardAdapter!!.notifyItemInserted(post.postID)
                     }
                     //edit
                     1 -> {
                         CoroutineScope(Dispatchers.IO).launch {
-                            data[dataPosition] = post
+                            taxiAllData[dataPosition] = post
                         }
                         noticeBoardAdapter!!.notifyItemChanged(post.postID)
                     }

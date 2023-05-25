@@ -32,11 +32,14 @@
     </LinearLayout>
 
 
-    <ImageView
-        android:id="@+id/content_image"
+    <TextView
+        android:id="@+id/post_content_text"
         android:layout_width="match_parent"
         android:layout_height="250dp"
         android:layout_marginTop="50dp"
+        android:textSize="30sp"
+        android:maxLines="1"
+        android:ellipsize="end"
         android:scaleType="fitXY"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -49,7 +52,7 @@
         android:layout_marginTop="10dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@+id/content_image">
+        app:layout_constraintTop_toBottomOf="@+id/post_content_text">
         <ImageView
             android:id="@+id/sub_share_image"
             android:layout_width="50dp"

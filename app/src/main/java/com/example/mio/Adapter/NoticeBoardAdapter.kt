@@ -17,9 +17,12 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
         private var position : Int? = null
         var accountId = binding.accountId
         var accountProfile = binding.accountImage
+        var postContent = binding.postContentText
         fun bind(accountData: PostData, position : Int) {
             this.position = position
             accountId.text = accountData.accountID
+            postContent.text = accountData.postContent
+
             //accountProfile.setImageURI() = pillData.pillTakeTime
 
             binding.root.setOnClickListener {
@@ -35,7 +38,7 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
     }
 
     override fun onBindViewHolder(holder: NoticeBoardViewHolder, position: Int) {
-        holder.bind(postItemData[position]!!, position)
+        holder.bind(postItemData[holder.adapterPosition]!!, holder.adapterPosition)
         /*binding.homeRemoveIv.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)
             val ad : AlertDialog = builder.create()

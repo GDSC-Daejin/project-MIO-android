@@ -19,13 +19,13 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
         val type = intent.getStringExtra("type")
 
-        if (type.equals("ADD")) { //add
+        /*if (type.equals("ADD")) { //add
             //temp = intent.getSerializableExtra("postItem") as PostData?
-            /*mBinding.editAdd.text = temp!!.postContent
-            nbrBinding.readAccountId.text = temp!!.accountID*/
+            *//*mBinding.editAdd.text = temp!!.postContent
+            nbrBinding.readAccountId.text = temp!!.accountID*//*
         } else { //edit
 
-        }
+        }*/
 
         mBinding.editAdd.setOnClickListener {
             val contentPost = mBinding.editPostContent.text.toString()
@@ -35,6 +35,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 if (contentPost.isNotEmpty() && contentTitle.isNotEmpty()) {
                     //데이터 세팅 후 임시저장
                     val tempData = PostData("accoout", pos, contentTitle, contentPost)
+                    //pos는 현재 저장되지 않지만 나중에 짜피 백엔드에 데이터 넣을 거니 괜찮을듯
+                    //나중에 api연결할때 여기 바꾸기
 
                     val intent = Intent().apply {
                         putExtra("postData", tempData)

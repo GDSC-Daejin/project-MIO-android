@@ -5,7 +5,13 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.OvershootInterpolator
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mio.Adapter.NoticeBoardAdapter
+import com.example.mio.Model.PostData
 import com.example.mio.R
+import com.example.mio.databinding.FragmentCarpoolTabBinding
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -22,6 +28,16 @@ class CarpoolTabFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
 
+
+    private lateinit var carpoolBinding : FragmentCarpoolTabBinding
+    private var manager : LinearLayoutManager = LinearLayoutManager(activity)
+    private var noticeBoardAdapter : NoticeBoardAdapter? = null
+    //게시글 데이터
+    private var carpoolAllData : MutableList<PostData?> = mutableListOf()
+    //게시글 선택 시 위치를 잠시 저장하는 변수
+    private var dataPosition = 0
+    //게시글 포지션
+    private var position = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -35,7 +51,37 @@ class CarpoolTabFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_carpool_tab, container, false)
+        carpoolBinding = FragmentCarpoolTabBinding.inflate(inflater, container, false)
+
+        initRecyclerView()
+
+        carpoolBinding.addBtn.setOnClickListener {
+            carpoolAllData.add(PostData("2020202", 0, "test", "test"))
+            noticeBoardAdapter!!.notifyItemInserted(position)
+            position += 1
+        }
+
+        return carpoolBinding.root
+    }
+
+    private fun initRecyclerView() {
+        noticeBoardAdapter = NoticeBoardAdapter()
+        noticeBoardAdapter!!.postItemData = carpoolAllData
+        carpoolBinding.noticeBoardRV.adapter = noticeBoardAdapter
+        //레이아웃 뒤집기 안씀
+        //manager.reverseLayout = true
+        //manager.stackFromEnd = true
+        carpoolBinding.noticeBoardRV.setHasFixedSize(true)
+        carpoolBinding.noticeBoardRV.layoutManager = manager
+
+        carpoolBinding.noticeBoardRV.itemAnimator =  SlideInUpAnimator(OvershootInterpolator(1f))
+        carpoolBinding.noticeBoardRV.itemAnimator?.apply {
+            addDuration = 1000
+            removeDuration = 100
+            moveDuration = 1000
+            changeDuration = 100
+        }
+
     }
 
     companion object {

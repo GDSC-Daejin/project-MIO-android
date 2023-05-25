@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+client_secret.json
+client_secret_web.json

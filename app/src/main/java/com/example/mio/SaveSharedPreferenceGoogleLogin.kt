@@ -7,7 +7,7 @@ import androidx.preference.PreferenceManager
 
 public class SaveSharedPreferenceGoogleLogin {
     private val PREF_USER_EMAIL = "email"
-    public fun getSharedPreferences(ctx: Context?): SharedPreferences {
+    fun getSharedPreferences(ctx: Context?): SharedPreferences {
         return PreferenceManager.getDefaultSharedPreferences(ctx!!)
     }
 

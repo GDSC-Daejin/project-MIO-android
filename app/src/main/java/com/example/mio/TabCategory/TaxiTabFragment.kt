@@ -132,7 +132,7 @@ class TaxiTabFragment : Fragment() {
                             taxiAllData.add(post)
                             println(post)
                         }
-                        noticeBoardAdapter!!.notifyItemInserted(post.postID)
+                        noticeBoardAdapter!!.notifyDataSetChanged()
                     }
                     //edit
                     1 -> {

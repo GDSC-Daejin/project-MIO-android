@@ -39,7 +39,7 @@ class NoticeBoardActivity : AppCompatActivity() {
                     dataPosition = position
                     /*val intent = Intent(activity, HomeEditActivity::class.java).apply {
                         putExtra("type", "edit")
-                        putExtra("item", todo)
+
                         putExtra("categoryNameData", categoryTempData)
                     }
                     requestActivity.launch(intent)*/

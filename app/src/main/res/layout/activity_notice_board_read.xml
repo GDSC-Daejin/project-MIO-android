@@ -57,18 +57,23 @@
         app:layout_constraintTop_toBottomOf="@+id/read_content_text">
 
         <ImageView
-            android:id="@+id/read_sub_share_image"
+            android:id="@+id/favorite_btn"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="20dp"
-            android:src="@android:drawable/ic_menu_share" />
+            android:src="@drawable/baseline_favorite_border_24" />
 
-        <ImageView
-            android:id="@+id/sub_edit_image"
-            android:layout_width="50dp"
+        <Button
+            android:id="@+id/apply_btn"
+            android:layout_width="260dp"
             android:layout_height="50dp"
-            android:src="@android:drawable/ic_menu_edit" />
+            android:text="참여 신청하기"
+            android:textColor="#E8CDCD"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:background="@drawable/apply_button_background"
+            />
     </LinearLayout>
 
 

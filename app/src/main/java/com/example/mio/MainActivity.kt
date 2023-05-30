@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.example.mio.Navigation.AccountFragment
-import com.example.mio.Navigation.BlankFragment
+import com.example.mio.Navigation.NotificationFragment
 import com.example.mio.Navigation.HomeFragment
 import com.example.mio.Navigation.SearchFragment
 import com.example.mio.databinding.ActivityMainBinding
@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity() {
     private val TAG_HOME = "home_fragment"
     private val TAG_SEARCH = "search_fragment"
     private val TAG_ACCOUNT = "account_fragment"
-    private val TAG_CAMERA = "CAMERA_fragment"
+    private val TAG_NOTIFICATION = "notification_fragment"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,8 +37,8 @@ class MainActivity : AppCompatActivity() {
                     R.id.navigation_search ->
                         setFragment(TAG_SEARCH, SearchFragment())
 
-                    R.id.navigation_camera ->
-                        setFragment(TAG_CAMERA, BlankFragment())
+                    R.id.navigation_notification ->
+                        setFragment(TAG_NOTIFICATION, NotificationFragment())
 
                     R.id.navigation_account ->
                         setFragment(TAG_ACCOUNT, AccountFragment())
@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
 
         val home = manager.findFragmentByTag(TAG_HOME)
         val search = manager.findFragmentByTag(TAG_SEARCH)
-        val camera = manager.findFragmentByTag(TAG_CAMERA)
+        val camera = manager.findFragmentByTag(TAG_NOTIFICATION)
         val account = manager.findFragmentByTag(TAG_ACCOUNT)
 
 
@@ -92,7 +92,7 @@ class MainActivity : AppCompatActivity() {
                 bt.show(search)
             }
         }
-        else if (tag == TAG_CAMERA) {
+        else if (tag == TAG_NOTIFICATION) {
             if (camera != null) {
                 bt.show(camera)
             }

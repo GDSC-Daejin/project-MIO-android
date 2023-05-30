@@ -1,16 +1,26 @@
 package com.example.mio
 
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.ViewTreeObserver
+import android.view.animation.AnticipateInterpolator
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.animation.doOnEnd
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.mio.Model.LoginResponsesData
 import com.example.mio.Model.LoginGoogleResponse
+import com.example.mio.Model.TokenRequest
 import com.example.mio.NoticeBoard.NoticeBoardActivity
 import com.example.mio.databinding.ActivityLoginBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -22,9 +32,13 @@ import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import okhttp3.*
+import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONException
 import org.json.JSONObject
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 
 
@@ -34,11 +48,26 @@ class LoginActivity : AppCompatActivity() {
     lateinit var mBinding : ActivityLoginBinding
     private val CLIENT_WEB_ID_KEY = BuildConfig.client_web_id_key
     private val CLIENT_WEB_SECRET_KEY = BuildConfig.client_web_secret_key
+    private val SERVER_URL = BuildConfig.server_URL
     private var user_info : ArrayList<LoginGoogleResponse> = ArrayList<LoginGoogleResponse>()
+    private lateinit var currentUser : LoginGoogleResponse
     //받은 계정 정보
     private var userEmail = ""
+    //데이터 받아오기 준비
+    private var isReady = false
+
+    //init 벡엔드 연결
+    val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+    val service = retrofit.create(MioInterface::class.java)
+    val interceptor = HttpLoggingInterceptor()
+   /* interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+    val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
+*/
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        initSplashScreen()
         super.onCreate(savedInstanceState)
         mBinding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
@@ -61,11 +90,95 @@ class LoginActivity : AppCompatActivity() {
         mBinding.textView.setOnClickListener {
             val intent = Intent(this, NoticeBoardActivity::class.java).apply {
                 //putExtra("type", "")
+
             }
             startActivity(intent)
         }
 
     }
+
+    private fun initData() {
+        // 별도의 데이터 처리가 없기 때문에 3초의 딜레이를 줌.
+        // 선행되어야 하는 작업이 있는 경우, 이곳에서 처리 후 isReady를 변경.
+        CoroutineScope(Dispatchers.IO).launch {
+            delay(3000)
+        }
+        isReady = true
+    }
+    private fun initSplashScreen() {
+        initData()
+        val splashScreen = installSplashScreen()
+        val content: View = findViewById(android.R.id.content)
+        // SplashScreen이 생성되고 그려질 때 계속해서 호출된다.
+        content.viewTreeObserver.addOnPreDrawListener(
+            object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    // Check if the initial data is ready.
+                    return if (isReady) {
+                        // 3초 후 Splash Screen 제거
+                        content.viewTreeObserver.removeOnPreDrawListener(this)
+                        true
+                    } else {
+                        // The content is not ready
+                        false
+                    }
+                }
+            }
+        )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            splashScreen.setOnExitAnimationListener {splashScreenView ->
+                val animScaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 8f)
+                val animScaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 8f)
+                val animAlpha = PropertyValuesHolder.ofFloat(View.ALPHA, 1f, 0f)
+
+                ObjectAnimator.ofPropertyValuesHolder(
+                    splashScreenView.iconView,
+                    animAlpha,
+                    animScaleX,
+                    animScaleY
+                ).run {
+                    interpolator = AnticipateInterpolator()
+                    duration = 300L
+                    doOnEnd { splashScreenView.remove() }
+                    start()
+                }
+            }
+        }
+    }
+
+    private fun signInCheck(userInfoToken : TokenRequest) {
+        /*var interceptor = HttpLoggingInterceptor()
+        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+        val client = OkHttpClient.Builder().addInterceptor(interceptor).build()*/
+
+        /*val retrofit = Retrofit.Builder().baseUrl("url 주소")
+            .addConverterFactory(GsonConverterFactory.create())
+            //.client(client) 이걸 통해 통신 오류 log찍기 가능
+            .build()
+        val service = retrofit.create(MioInterface::class.java)*/
+
+        service.addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
+            override fun onResponse(
+                call: retrofit2.Call<LoginResponsesData>,
+                response: retrofit2.Response<LoginResponsesData?>
+            ) {
+                if (response.isSuccessful) {
+                    println("success")
+                    println(response.code())
+                } else {
+                    println("fail")
+                }
+            }
+            override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
+                println("실패" + t.message.toString())
+            }
+        })
+
+        /*val s = service.addUserInfoData(userInfoToken).execute().code()
+        println(s)*/
+    }
+
     private fun setResultSignUp() {
         resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -169,9 +282,11 @@ class LoginActivity : AppCompatActivity() {
                     }
 
                     user_info.add(LoginGoogleResponse(tempValue[0], tempValue[1].toInt(), tempValue[2], tempValue[3], tempValue[4]))
+                    currentUser = user_info[0]
                     println(message)
                     println(user_info[0].id_token)
                     createClipData(user_info[0].id_token)
+                    signInCheck(TokenRequest(currentUser.id_token))
                     tempKey.clear()
                     tempValue.clear()
                 } catch (e: JSONException) {

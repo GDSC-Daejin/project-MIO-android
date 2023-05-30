@@ -3,10 +3,14 @@ package com.example.mio.NoticeBoard
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.example.mio.MainActivity
+import com.example.mio.MioInterface
 import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class NoticeBoardEditActivity : AppCompatActivity() {
     private lateinit var mBinding : ActivityNoticeBoardEditBinding
@@ -15,6 +19,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     private var pos = 0
     //받은 계정 정보
     private var userEmail = ""
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +37,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
         }*/
 
+        //카테고리 생각하여 데이터 변경하기 Todo
         mBinding.editAdd.setOnClickListener {
             val contentPost = mBinding.editPostContent.text.toString()
             val contentTitle = mBinding.editPostTitle.text.toString()
@@ -44,6 +51,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     val tempData = PostData(userEmail, pos, contentTitle, contentPost)
                     //pos는 현재 저장되지 않지만 나중에 짜피 백엔드에 데이터 넣을 거니 괜찮을듯
                     //나중에 api연결할때 여기 바꾸기
+
 
                     val intent = Intent().apply {
                         putExtra("postData", tempData)
@@ -60,6 +68,12 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
                 }
             }
+        }
+
+        //이건 나중에 툴바를 고치든지 하자 Todo
+        mBinding.backArrow.setOnClickListener {
+            val intent = Intent(this@NoticeBoardEditActivity, MainActivity::class.java)
+            startActivity(intent)
         }
     }
 }

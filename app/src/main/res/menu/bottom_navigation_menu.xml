@@ -16,8 +16,8 @@
         app:showAsAction="always"
         />
     <item
-        android:id="@+id/navigation_camera"
-        android:icon="@android:drawable/ic_menu_camera"
+        android:id="@+id/navigation_notification"
+        android:icon="@drawable/baseline_notifications_24"
         android:title="Camera"
         android:enabled="true"
         app:showAsAction="always"

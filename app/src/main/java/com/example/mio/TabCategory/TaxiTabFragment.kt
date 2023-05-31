@@ -2,6 +2,7 @@ package com.example.mio.TabCategory
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -11,9 +12,12 @@ import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mio.Adapter.CalendarAdapter
 import com.example.mio.Adapter.NoticeBoardAdapter
+import com.example.mio.Model.DateData
 import com.example.mio.Model.PostData
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
@@ -24,6 +28,12 @@ import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.time.temporal.TemporalAdjusters
+import java.util.*
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -42,7 +52,12 @@ class TaxiTabFragment : Fragment() {
 
     private lateinit var taxiTabBinding: FragmentTaxiTabBinding
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
+    private var horizonManager : LinearLayoutManager = LinearLayoutManager(activity)
+
     private var noticeBoardAdapter : NoticeBoardAdapter? = null
+    //캘린더
+    private var calendarAdapter : CalendarAdapter? = null
+    private var calendarItemData : MutableList<DateData?> = mutableListOf()
     //게시글 데이터
     private var taxiAllData : MutableList<PostData?> = mutableListOf()
     //게시글 선택 시 위치를 잠시 저장하는 변수
@@ -61,6 +76,7 @@ class TaxiTabFragment : Fragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -68,7 +84,8 @@ class TaxiTabFragment : Fragment() {
         // Inflate the layout for this fragment
         taxiTabBinding = FragmentTaxiTabBinding.inflate(inflater, container, false)
 
-        initRecyclerView()
+        initNoticeBoardRecyclerView()
+        initCalendarRecyclerView()
 
         //recyclerview item클릭 시
         noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
@@ -90,6 +107,7 @@ class TaxiTabFragment : Fragment() {
             /*data.add(PostData("2020202", 0, "test", "test"))
             noticeBoardAdapter!!.notifyItemInserted(position)
             position += 1*/
+            setCalendarData()
             val intent = Intent(activity, NoticeBoardEditActivity::class.java).apply {
                 putExtra("type","ADD")
             }
@@ -101,7 +119,7 @@ class TaxiTabFragment : Fragment() {
         return taxiTabBinding.root
     }
 
-    private fun initRecyclerView() {
+    private fun initNoticeBoardRecyclerView() {
         noticeBoardAdapter = NoticeBoardAdapter()
         noticeBoardAdapter!!.postItemData = taxiAllData
         taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
@@ -118,6 +136,35 @@ class TaxiTabFragment : Fragment() {
             moveDuration = 1000
             changeDuration = 100
         }
+
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun setCalendarData() {
+        //현재 달의 마지막 날짜
+        val cal = Calendar.getInstance()
+        val lastDayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+        for (i in 1..lastDayOfMonth) {
+            val date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, i)
+            val dayOfWeek: DayOfWeek = date.dayOfWeek
+            dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.US)
+
+            calendarItemData.add(DateData(Calendar.DAY_OF_MONTH.toString(),dayOfWeek.toString().substring(0, 3), i.toString()))
+        }
+    }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun initCalendarRecyclerView() {
+        setCalendarData()
+        calendarAdapter = CalendarAdapter()
+        calendarAdapter!!.calendarItemData = calendarItemData
+        taxiTabBinding.calendarRV.adapter = calendarAdapter
+        //레이아웃 뒤집기 안씀
+        //manager.reverseLayout = true
+        //manager.stackFromEnd = true
+        taxiTabBinding.calendarRV.setHasFixedSize(true)
+
+        horizonManager.orientation = LinearLayoutManager.HORIZONTAL
+        taxiTabBinding.calendarRV.layoutManager = horizonManager
 
     }
 

@@ -57,11 +57,11 @@ class LoginActivity : AppCompatActivity() {
     private var isReady = false
 
     //init 벡엔드 연결
-    val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+    /*val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
     val service = retrofit.create(MioInterface::class.java)
-    val interceptor = HttpLoggingInterceptor()
+    val interceptor = HttpLoggingInterceptor()*/
    /* interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
     val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
 */
@@ -157,8 +157,8 @@ class LoginActivity : AppCompatActivity() {
             //.client(client) 이걸 통해 통신 오류 log찍기 가능
             .build()
         val service = retrofit.create(MioInterface::class.java)*/
-
-        service.addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
+        val call = RetrofitServerConnect.service
+        call.addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
             override fun onResponse(
                 call: retrofit2.Call<LoginResponsesData>,
                 response: retrofit2.Response<LoginResponsesData?>

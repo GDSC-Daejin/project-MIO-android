@@ -3,6 +3,7 @@ package com.example.mio.NoticeBoard
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
 import com.example.mio.MainActivity
 import com.example.mio.MioInterface
 import com.example.mio.Model.PostData
@@ -70,10 +71,20 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             }
         }
 
-        //이건 나중에 툴바를 고치든지 하자 Todo
+        //
         mBinding.backArrow.setOnClickListener {
-            val intent = Intent(this@NoticeBoardEditActivity, MainActivity::class.java)
-            startActivity(intent)
+            val intent = Intent(this@NoticeBoardEditActivity, MainActivity::class.java).apply {
+
+            }
+            setResult(8, intent)
+            finish()
         }
     }
+
+    /*override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+
+        }
+        return super.onOptionsItemSelected(item)
+    }*/
 }

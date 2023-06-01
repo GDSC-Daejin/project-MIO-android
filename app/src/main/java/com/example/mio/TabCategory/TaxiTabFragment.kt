@@ -3,6 +3,7 @@ package com.example.mio.TabCategory
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.Build.VERSION_CODES.P
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -14,11 +15,13 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.CalendarAdapter
 import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Model.DateData
 import com.example.mio.Model.PostData
+import com.example.mio.Model.SharedViewModel
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.R
@@ -30,10 +33,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.time.temporal.TemporalAdjusters
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -58,12 +64,24 @@ class TaxiTabFragment : Fragment() {
     //캘린더
     private var calendarAdapter : CalendarAdapter? = null
     private var calendarItemData : MutableList<DateData?> = mutableListOf()
-    //게시글 데이터
-    private var taxiAllData : MutableList<PostData?> = mutableListOf()
+
+    //게시글 전체 데이터 및 adapter와 공유하는 데이터
+    private var taxiAllData : kotlin.collections.ArrayList<PostData> = ArrayList()
     //게시글 선택 시 위치를 잠시 저장하는 변수
     private var dataPosition = 0
-    //게시글 포지션
+    //게시글 위치
     private var position = 0
+    //게시글과 targetDate를 받아 viewmodel에저장
+    private var sharedViewModel: SharedViewModel? = null
+    private var calendarTempData = ArrayList<String>()
+    private var calendarTaxiAllData : ArrayList<PostData> = ArrayList()
+    //잠깐 테스트용
+    private var tempArr = kotlin.collections.ArrayList<PostData>()
+    private var tempHm = HashMap<String, PostData>()
+    //edit에서 받은 값
+    private var selectCalendarData = HashMap<String, ArrayList<PostData>>()
+    private var testselectCalendarData = HashMap<String, ArrayList<PostData>>()
+
     //뒤로 가기 받아오기
     private lateinit var callback : OnBackPressedCallback
     var backPressedTime : Long = 0
@@ -102,12 +120,46 @@ class TaxiTabFragment : Fragment() {
             }
         })
 
+        //캘린더 날짜에 저장된 데이터들로 계속해서 바꿔줌 나중에 viewmodel로 변경예정(Todo)
+        calendarAdapter!!.setItemClickListener(object : CalendarAdapter.ItemClickListener {
+            //여기서 position = 0시작은 date가 되야함 itemId=1로 시작함
+            override fun onClick(view: View, position: Int, itemId: Int) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    if (calendarTaxiAllData.isNotEmpty()) {
+                        //라이브모델에 저장된 배열의 calendarTaxialldata에 position의 targetdate
+                        try {
+                            val selectTemp = testselectCalendarData[calendarTaxiAllData[position].postTargetDate]
+                            if (selectTemp != null) {
+                                println(testselectCalendarData[calendarTaxiAllData[position].postTargetDate])
+                                noticeBoardAdapter!!.postItemData = selectTemp
+                                println(taxiAllData)
+                            } else {
+                                taxiAllData.clear()
+                                println("null")
+                            }
+                        } catch (e : java.lang.IndexOutOfBoundsException) {
+                            println("tesetstes")
+                        }
+                    } else {
+                        println("null")
+                    }
+                }
+                noticeBoardAdapter!!.notifyDataSetChanged()
+                Toast.makeText(activity, calendarItemData[position]!!.day, Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        //월 클릭 시 월에 들어있는 모든 데이터
+        taxiTabBinding.monthTv.setOnClickListener {
+            noticeBoardAdapter!!.postItemData = taxiAllData
+            noticeBoardAdapter!!.notifyDataSetChanged()
+        }
+
         //여기서 edit으로 이동동
         taxiTabBinding.addBtn.setOnClickListener {
             /*data.add(PostData("2020202", 0, "test", "test"))
             noticeBoardAdapter!!.notifyItemInserted(position)
             position += 1*/
-            setCalendarData()
             val intent = Intent(activity, NoticeBoardEditActivity::class.java).apply {
                 putExtra("type","ADD")
             }
@@ -142,13 +194,15 @@ class TaxiTabFragment : Fragment() {
     private fun setCalendarData() {
         //현재 달의 마지막 날짜
         val cal = Calendar.getInstance()
+        //cal.set(2023, 5, 1)
         val lastDayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
-
         for (i in 1..lastDayOfMonth) {
             val date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, i)
             val dayOfWeek: DayOfWeek = date.dayOfWeek
-            dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.US)
-
+            dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREA)
+            /*println("날짜" + date)
+            println("dayofweek" + dayOfWeek)*/
+            //현재 월, 현재 요일, 날짜
             calendarItemData.add(DateData(Calendar.DAY_OF_MONTH.toString(),dayOfWeek.toString().substring(0, 3), i.toString()))
         }
     }
@@ -177,8 +231,16 @@ class TaxiTabFragment : Fragment() {
                     0 -> {
                         CoroutineScope(Dispatchers.IO).launch {
                             taxiAllData.add(post)
-                            println(post)
+                            calendarTaxiAllData.add(post) //데이터 전부 들어감
+
+                            //들어간 데이터를 key로 분류하여 저장하도록함
+                            selectCalendarData[post.postTargetDate] = arrayListOf()
+                            selectCalendarData[post.postTargetDate]!!.add(post)
+
+                            println(selectCalendarData)
                         }
+                        //livemodel을 통해 저장
+                        sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
                         noticeBoardAdapter!!.notifyDataSetChanged()
                     }
                     //edit
@@ -265,6 +327,26 @@ class TaxiTabFragment : Fragment() {
         }
         activity?.onBackPressedDispatcher!!.addCallback(this, callback)
         //mainActivity = context as MainActivity
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        //저장된 livemodel들을 가져옴
+
+        sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
+        //이건 나중에
+        val addObserver = androidx.lifecycle.Observer<kotlin.collections.ArrayList<String>> { textValue ->
+            calendarTempData = textValue
+        }
+        sharedViewModel!!.getLiveData().observe(viewLifecycleOwner, addObserver)
+
+
+        sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
+        //저장된 거 가져옴
+        val editObserver = androidx.lifecycle.Observer<kotlin.collections.HashMap<String, ArrayList<PostData>>> { textValue ->
+            testselectCalendarData = textValue
+        }
+        sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
     }
 
     companion object {

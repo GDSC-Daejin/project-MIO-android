@@ -10,8 +10,12 @@ import com.example.mio.databinding.PostItemBinding
 
 class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardViewHolder>(){
     private lateinit var binding : PostItemBinding
-    var postItemData = mutableListOf<PostData?>()
+    var postItemData = ArrayList<PostData>()
     private lateinit var context : Context
+
+    init {
+        setHasStableIds(true)
+    }
 
     inner class NoticeBoardViewHolder(private val binding : PostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
@@ -26,7 +30,7 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
             //accountProfile.setImageURI() = pillData.pillTakeTime
 
             binding.root.setOnClickListener {
-                itemClickListener.onClick(it, layoutPosition, postItemData[layoutPosition]!!.postID)
+                itemClickListener.onClick(it, layoutPosition, postItemData[layoutPosition].postID)
             }
         }
     }
@@ -38,7 +42,7 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
     }
 
     override fun onBindViewHolder(holder: NoticeBoardViewHolder, position: Int) {
-        holder.bind(postItemData[holder.adapterPosition]!!, holder.adapterPosition)
+        holder.bind(postItemData[holder.adapterPosition], holder.adapterPosition)
         /*binding.homeRemoveIv.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)
             val ad : AlertDialog = builder.create()
@@ -67,6 +71,10 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
 
     override fun getItemCount(): Int {
         return postItemData.size
+    }
+
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
     }
 
     //데이터 Handle 함수

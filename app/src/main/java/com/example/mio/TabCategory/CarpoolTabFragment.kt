@@ -41,7 +41,7 @@ class CarpoolTabFragment : Fragment() {
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     private var noticeBoardAdapter : NoticeBoardAdapter? = null
     //게시글 데이터
-    private var carpoolAllData : MutableList<PostData?> = mutableListOf()
+    private var carpoolAllData : ArrayList<PostData> = ArrayList()
     //게시글 선택 시 위치를 잠시 저장하는 변수
     private var dataPosition = 0
     //게시글 포지션

@@ -1,5 +1,9 @@
 package com.example.mio.NoticeBoard
 
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.DialogInterface
+import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.text.Editable
@@ -8,10 +12,12 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NoticeBoardReadAdapter
+import com.example.mio.ApplyNextActivity
 import com.example.mio.Model.CommentData
 import com.example.mio.Model.PostData
 import com.example.mio.R
@@ -37,6 +43,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     //버튼 클릭 체크
     private var isFavoriteBtn = false
     private var isApplyBtn = false
+    private var isApplyCancel = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,14 +109,48 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             if (isApplyBtn) {
                 CoroutineScope(Dispatchers.Main).launch {
                     nbrBinding.applyBtn.setBackgroundResource(R.drawable.apply_button_update_background)
-                    nbrBinding.applyBtn.text = "참여 신청하기"
-                }
-            } else {
-                CoroutineScope(Dispatchers.Main).launch {
-                    nbrBinding.applyBtn.setBackgroundResource(R.drawable.apply_button_background)
                     nbrBinding.applyBtn.text = "참여 신청 완료"
                 }
+                //참석 이후 동의화면으로 이동
+                val intent = Intent(this, ApplyNextActivity::class.java)
+                startActivity(intent)
+            } else { //참석 눌렀을 떼
+                val builder = AlertDialog.Builder(this)
+                val ad : AlertDialog = builder.create()
+                builder.setTitle("취소 알림")
+                builder.setIcon(R.drawable.baseline_info_24)
+                val dialogView = layoutInflater.inflate(R.layout.apply_alert_dialog, null)
+                builder.setView(dialogView)
+                // p0에 해당 AlertDialog가 들어온다. findViewById를 통해 view를 가져와서 사용
+                /*var listener = DialogInterface.OnClickListener { applyAnswer, p1 ->
+                    var alert = applyAnswer as AlertDialog
+
+                    //나중에 받고 싶은 값 받기
+                    *//*var edit1: EditText? = alert.findViewById<EditText>(R.id.editText)
+                    var edit2: EditText? = alert.findViewById<EditText>(R.id.editText2)
+
+                    tv1.text = "${edit1?.text}"
+                    tv1.append("${edit2?.text}")*//*
+                }*/
+                builder.setNegativeButton("예",
+                    DialogInterface.OnClickListener { dialog, which ->
+                        ad.dismiss()
+                        CoroutineScope(Dispatchers.Main).launch {
+                            nbrBinding.applyBtn.setBackgroundResource(R.drawable.apply_button_background)
+                            nbrBinding.applyBtn.text = "참여 신청 하기"
+                        }
+                    })
+
+                builder.setPositiveButton("아니오",
+                    DialogInterface.OnClickListener { dialog, which ->
+                        ad.dismiss()
+                    })
+
+
+                builder.show()
             }
+
+
         }
 
         /*isBtnClick = !isBtnClick

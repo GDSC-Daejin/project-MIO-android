@@ -1,5 +1,6 @@
 package com.example.mio.Adapter
 import android.content.Context
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,12 +15,16 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
     private lateinit var binding : CalendarCellBinding
     var calendarItemData = mutableListOf<DateData?>()
     private lateinit var context : Context
+    //리사이클러뷰 특정 아이템 선택
+    private var oldSelectedPostion = -1
+    private var selectedPostion = -1
+    var crDate = 0
 
     inner class CalendarViewHolder(private val binding : CalendarCellBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
         private var dateTV = binding.dateCell
         private var dayTV = binding.dayCell
-
+        var containerLL = binding.calendarLl
 
         fun bind(calendarData: DateData, position : Int) {
             this.position = position
@@ -41,6 +46,24 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
 
     override fun onBindViewHolder(holder: CalendarAdapter.CalendarViewHolder, position: Int) {
         holder.bind(calendarItemData[holder.adapterPosition]!!, holder.adapterPosition)
+        if (crDate != 0) {
+
+        }
+
+
+        if (selectedPostion == holder.adapterPosition) {
+            holder.containerLL.setBackgroundColor(Color.BLUE)
+        } else {
+            holder.containerLL.setBackgroundColor(Color.TRANSPARENT)
+        }
+        holder.containerLL.setOnClickListener {
+            oldSelectedPostion = selectedPostion
+            selectedPostion = holder.adapterPosition
+
+            notifyItemChanged(oldSelectedPostion)
+            notifyItemChanged(selectedPostion)
+        }
+
         /*binding.homeRemoveIv.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)
             val ad : AlertDialog = builder.create()

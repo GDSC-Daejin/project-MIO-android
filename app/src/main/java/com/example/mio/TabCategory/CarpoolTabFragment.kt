@@ -14,7 +14,6 @@ import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Model.PostData
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
-import com.example.mio.R
 import com.example.mio.databinding.FragmentCarpoolTabBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
@@ -57,7 +56,7 @@ class CarpoolTabFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         carpoolBinding = FragmentCarpoolTabBinding.inflate(inflater, container, false)
 

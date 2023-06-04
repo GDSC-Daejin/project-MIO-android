@@ -2,8 +2,8 @@ package com.example.mio.TabCategory
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
-import android.os.Build.VERSION_CODES.P
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -24,8 +24,6 @@ import com.example.mio.Model.PostData
 import com.example.mio.Model.SharedViewModel
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
-import com.example.mio.R
-import com.example.mio.databinding.FragmentHomeBinding
 import com.example.mio.databinding.FragmentTaxiTabBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
@@ -33,10 +31,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
-import java.time.temporal.TemporalAdjusters
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -66,7 +61,7 @@ class TaxiTabFragment : Fragment() {
     private var calendarItemData : MutableList<DateData?> = mutableListOf()
 
     //게시글 전체 데이터 및 adapter와 공유하는 데이터
-    private var taxiAllData : kotlin.collections.ArrayList<PostData> = ArrayList()
+    private var taxiAllData : ArrayList<PostData> = ArrayList()
     //게시글 선택 시 위치를 잠시 저장하는 변수
     private var dataPosition = 0
     //게시글 위치
@@ -75,9 +70,6 @@ class TaxiTabFragment : Fragment() {
     private var sharedViewModel: SharedViewModel? = null
     private var calendarTempData = ArrayList<String>()
     private var calendarTaxiAllData : ArrayList<PostData> = ArrayList()
-    //잠깐 테스트용
-    private var tempArr = kotlin.collections.ArrayList<PostData>()
-    private var tempHm = HashMap<String, PostData>()
     //edit에서 받은 값
     private var selectCalendarData = HashMap<String, ArrayList<PostData>>()
     private var testselectCalendarData = HashMap<String, ArrayList<PostData>>()
@@ -192,9 +184,15 @@ class TaxiTabFragment : Fragment() {
     }
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setCalendarData() {
-        //현재 달의 마지막 날짜
+
         val cal = Calendar.getInstance()
         //cal.set(2023, 5, 1)
+        //현재날짜
+        val currentDate = LocalDate.now().toString()
+        //val currentDateToInt = currentDate.substring(currentDate.length - 2 until currentDate.length - 1).toInt()
+        //calendarAdapter!!.crDate = currentDateToInt
+        println(currentDate)
+        //현재 달의 마지막 날짜
         val lastDayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
         for (i in 1..lastDayOfMonth) {
             val date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, i)
@@ -335,7 +333,7 @@ class TaxiTabFragment : Fragment() {
 
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         //이건 나중에
-        val addObserver = androidx.lifecycle.Observer<kotlin.collections.ArrayList<String>> { textValue ->
+        val addObserver = androidx.lifecycle.Observer<ArrayList<String>> { textValue ->
             calendarTempData = textValue
         }
         sharedViewModel!!.getLiveData().observe(viewLifecycleOwner, addObserver)
@@ -343,7 +341,7 @@ class TaxiTabFragment : Fragment() {
 
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         //저장된 거 가져옴
-        val editObserver = androidx.lifecycle.Observer<kotlin.collections.HashMap<String, ArrayList<PostData>>> { textValue ->
+        val editObserver = androidx.lifecycle.Observer<HashMap<String, ArrayList<PostData>>> { textValue ->
             testselectCalendarData = textValue
         }
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)

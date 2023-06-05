@@ -87,14 +87,6 @@ class LoginActivity : AppCompatActivity() {
             signIn()
         }
 
-        mBinding.textView.setOnClickListener {
-            val intent = Intent(this, NoticeBoardActivity::class.java).apply {
-                //putExtra("type", "")
-
-            }
-            startActivity(intent)
-        }
-
     }
 
     private fun initData() {
@@ -113,7 +105,6 @@ class LoginActivity : AppCompatActivity() {
         content.viewTreeObserver.addOnPreDrawListener(
             object : ViewTreeObserver.OnPreDrawListener {
                 override fun onPreDraw(): Boolean {
-                    // Check if the initial data is ready.
                     return if (isReady) {
                         // 3초 후 Splash Screen 제거
                         content.viewTreeObserver.removeOnPreDrawListener(this)

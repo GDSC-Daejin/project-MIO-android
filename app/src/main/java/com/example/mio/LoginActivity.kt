@@ -9,8 +9,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.view.ViewTreeObserver
+import android.view.*
 import android.view.animation.AnticipateInterpolator
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -21,7 +20,6 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.mio.Model.LoginResponsesData
 import com.example.mio.Model.LoginGoogleResponse
 import com.example.mio.Model.TokenRequest
-import com.example.mio.NoticeBoard.NoticeBoardActivity
 import com.example.mio.databinding.ActivityLoginBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -34,11 +32,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import okhttp3.*
-import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONException
 import org.json.JSONObject
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 
 
@@ -67,6 +62,17 @@ class LoginActivity : AppCompatActivity() {
 */
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        //상태바 지우기(이 activity만)
+        supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
+        //상태바 지우기 테스트
+        /*if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.hide(WindowInsets.Type.statusBars())
+        } else {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN ,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN
+            )
+        }*/
         initSplashScreen()
         super.onCreate(savedInstanceState)
         mBinding = ActivityLoginBinding.inflate(layoutInflater)
@@ -86,7 +92,6 @@ class LoginActivity : AppCompatActivity() {
         mBinding.signInButton.setOnClickListener {
             signIn()
         }
-
     }
 
     private fun initData() {

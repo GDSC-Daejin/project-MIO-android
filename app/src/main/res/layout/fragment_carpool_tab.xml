@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".TabCategory.CarpoolTabFragment">
 
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/noticeBoard_RV"
         android:layout_width="411dp"

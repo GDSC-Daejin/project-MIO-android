@@ -3,27 +3,31 @@ package com.example.mio.TabCategory
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.view.children
+import androidx.core.view.get
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.CalendarAdapter
 import com.example.mio.Adapter.NoticeBoardAdapter
+import com.example.mio.CalendarUtil
 import com.example.mio.Model.DateData
 import com.example.mio.Model.PostData
 import com.example.mio.Model.SharedViewModel
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
+import com.example.mio.R
 import com.example.mio.databinding.FragmentTaxiTabBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
@@ -77,6 +81,9 @@ class TaxiTabFragment : Fragment() {
     //뒤로 가기 받아오기
     private lateinit var callback : OnBackPressedCallback
     var backPressedTime : Long = 0
+    //캘린더 리사이클러뷰 클릭리스너
+    private var oldSelectedPostion = -1
+    private var selectedPostion = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,7 +123,16 @@ class TaxiTabFragment : Fragment() {
         calendarAdapter!!.setItemClickListener(object : CalendarAdapter.ItemClickListener {
             //여기서 position = 0시작은 date가 되야함 itemId=1로 시작함
             override fun onClick(view: View, position: Int, itemId: Int) {
+                if (selectedPostion == position) {
+                    view.setBackgroundColor(Color.BLUE)
+                } else {
+                    view.setBackgroundColor(Color.TRANSPARENT)
+                }
+                oldSelectedPostion = selectedPostion
+                selectedPostion = position
+
                 CoroutineScope(Dispatchers.IO).launch {
+
                     if (calendarTaxiAllData.isNotEmpty()) {
                         //라이브모델에 저장된 배열의 calendarTaxialldata에 position의 targetdate
                         try {
@@ -125,8 +141,10 @@ class TaxiTabFragment : Fragment() {
                                 println(testselectCalendarData[calendarTaxiAllData[position].postTargetDate])
                                 noticeBoardAdapter!!.postItemData = selectTemp
                                 println(taxiAllData)
+
                             } else {
                                 taxiAllData.clear()
+                                calendarAdapter!!.notifyDataSetChanged()
                                 println("null")
                             }
                         } catch (e : java.lang.IndexOutOfBoundsException) {
@@ -135,7 +153,13 @@ class TaxiTabFragment : Fragment() {
                     } else {
                         println("null")
                     }
+                    /*
+                    calendarAdapter!!.notifyItemChanged(oldSelectedPostion)
+                    calendarAdapter!!.notifyItemChanged(selectedPostion)
+                    */
                 }
+                calendarAdapter!!.notifyItemChanged(selectedPostion)
+                calendarAdapter!!.notifyItemChanged(oldSelectedPostion)
                 noticeBoardAdapter!!.notifyDataSetChanged()
                 Toast.makeText(activity, calendarItemData[position]!!.day, Toast.LENGTH_SHORT).show()
             }
@@ -143,6 +167,11 @@ class TaxiTabFragment : Fragment() {
 
         //월 클릭 시 월에 들어있는 모든 데이터
         taxiTabBinding.monthTv.setOnClickListener {
+            for ((key, value) in testselectCalendarData) {
+                println("전체 : ${key} : ${value}")
+            }
+
+
             noticeBoardAdapter!!.postItemData = taxiAllData
             noticeBoardAdapter!!.notifyDataSetChanged()
         }
@@ -164,6 +193,15 @@ class TaxiTabFragment : Fragment() {
     }
 
     private fun initNoticeBoardRecyclerView() {
+        sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
+        //저장된 거 가져옴
+        val editObserver = androidx.lifecycle.Observer<HashMap<String, ArrayList<PostData>>> { textValue ->
+            testselectCalendarData = textValue
+        }
+        sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
+
+
+
         noticeBoardAdapter = NoticeBoardAdapter()
         noticeBoardAdapter!!.postItemData = taxiAllData
         taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
@@ -188,10 +226,9 @@ class TaxiTabFragment : Fragment() {
         val cal = Calendar.getInstance()
         //cal.set(2023, 5, 1)
         //현재날짜
-        val currentDate = LocalDate.now().toString()
-        //val currentDateToInt = currentDate.substring(currentDate.length - 2 until currentDate.length - 1).toInt()
-        //calendarAdapter!!.crDate = currentDateToInt
-        println(currentDate)
+        val currentDate = LocalDate.now()
+
+
         //현재 달의 마지막 날짜
         val lastDayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
         for (i in 1..lastDayOfMonth) {
@@ -208,6 +245,7 @@ class TaxiTabFragment : Fragment() {
     private fun initCalendarRecyclerView() {
         setCalendarData()
         calendarAdapter = CalendarAdapter()
+        CalendarUtil.selectedDate = LocalDate.now()
         calendarAdapter!!.calendarItemData = calendarItemData
         taxiTabBinding.calendarRV.adapter = calendarAdapter
         //레이아웃 뒤집기 안씀
@@ -217,7 +255,6 @@ class TaxiTabFragment : Fragment() {
 
         horizonManager.orientation = LinearLayoutManager.HORIZONTAL
         taxiTabBinding.calendarRV.layoutManager = horizonManager
-
     }
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
@@ -238,7 +275,7 @@ class TaxiTabFragment : Fragment() {
                             println(selectCalendarData)
                         }
                         //livemodel을 통해 저장
-                        sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
+                        //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
                         noticeBoardAdapter!!.notifyDataSetChanged()
                     }
                     //edit
@@ -345,6 +382,7 @@ class TaxiTabFragment : Fragment() {
             testselectCalendarData = textValue
         }
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
+
     }
 
     companion object {

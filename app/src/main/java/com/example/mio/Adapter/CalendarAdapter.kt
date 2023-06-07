@@ -1,14 +1,18 @@
 package com.example.mio.Adapter
 import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mio.CalendarUtil
 import com.example.mio.Model.DateData
-import com.example.mio.Model.PostData
 import com.example.mio.databinding.CalendarCellBinding
-import com.example.mio.databinding.PostItemBinding
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>(){
@@ -18,7 +22,7 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
     //리사이클러뷰 특정 아이템 선택
     private var oldSelectedPostion = -1
     private var selectedPostion = -1
-    var crDate = 0
+    var crDate = ""
 
     inner class CalendarViewHolder(private val binding : CalendarCellBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
@@ -30,7 +34,6 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
             this.position = position
             dateTV.text = calendarData.date
             dayTV.text = calendarData.day
-
 
             binding.root.setOnClickListener {
                 itemClickListener.onClick(it, layoutPosition, calendarItemData[layoutPosition]!!.date.toInt())
@@ -44,51 +47,36 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
         return CalendarViewHolder(binding)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: CalendarAdapter.CalendarViewHolder, position: Int) {
         holder.bind(calendarItemData[holder.adapterPosition]!!, holder.adapterPosition)
-        if (crDate != 0) {
-
+        var day = calendarItemData[holder.adapterPosition]
+        val dateNow: Date = Calendar.getInstance().time
+        val format = SimpleDateFormat("d", Locale.getDefault())
+        format.format(dateNow)
+        if (day!!.day == format.format(dateNow)) {
+            holder.itemView.setBackgroundColor(Color.DKGRAY)
         }
 
 
-        if (selectedPostion == holder.adapterPosition) {
+        /*if (selectedPostion == holder.adapterPosition) {
             holder.containerLL.setBackgroundColor(Color.BLUE)
         } else {
             holder.containerLL.setBackgroundColor(Color.TRANSPARENT)
         }
-        holder.containerLL.setOnClickListener {
+
+        holder.itemView.setOnClickListener {
+            //itemClickListener.onClick(it, holder.adapterPosition, calendarItemData[holder.adapterPosition]!!.date.toInt())
             oldSelectedPostion = selectedPostion
             selectedPostion = holder.adapterPosition
-
+            println(CalendarUtil.selectedDate.toString())
+            println(format.format(dateNow))
             notifyItemChanged(oldSelectedPostion)
             notifyItemChanged(selectedPostion)
-        }
 
-        /*binding.homeRemoveIv.setOnClickListener {
-            val builder : AlertDialog.Builder = AlertDialog.Builder(context)
-            val ad : AlertDialog = builder.create()
-            var deleteData = pillItemData[holder.adapterPosition]!!.pillName
-            builder.setTitle(deleteData)
-            builder.setMessage("정말로 삭제하시겠습니까?")
-            builder.setNegativeButton("예",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                    //temp = listData[holder.adapterPosition]!!
-                    //extraditeData()
-                    //testData.add(temp)
-                    //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
-                    removeData(holder.adapterPosition)
-                    //removeServerData(deleteServerData!!)
-                    //println(deleteServerData)
-                })
-
-            builder.setPositiveButton("아니오",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                })
-            builder.show()
         }*/
     }
+
 
     override fun getItemCount(): Int {
         return calendarItemData.size
@@ -100,6 +88,7 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
         //temp = null
         notifyItemRemoved(position)
     }
+
 
     interface ItemClickListener {
         fun onClick(view: View, position: Int, itemId: Int)

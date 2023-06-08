@@ -9,17 +9,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Model.PostData
 import com.example.mio.Navigation.AccountFragment
-import com.example.mio.Navigation.WritingFragment
 import com.example.mio.Navigation.HomeFragment
+import com.example.mio.Navigation.NotificationFragment
 import com.example.mio.Navigation.SearchFragment
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -27,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private val TAG_HOME = "home_fragment"
     private val TAG_SEARCH = "search_fragment"
     private val TAG_ACCOUNT = "account_fragment"
+    private val TAG_NOTIFICATION = "notification_fragment"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -47,6 +44,7 @@ class MainActivity : AppCompatActivity() {
             R.id.action_notification -> {
                 //검색 버튼 눌렀을 때
                 Toast.makeText(applicationContext, "dkffka 이벤트 실행", Toast.LENGTH_LONG).show()
+                setFragment(TAG_NOTIFICATION, NotificationFragment())
                 super.onOptionsItemSelected(item)
             }
             R.id.action_setting -> {
@@ -178,6 +176,7 @@ class MainActivity : AppCompatActivity() {
         val home = manager.findFragmentByTag(TAG_HOME)
         val search = manager.findFragmentByTag(TAG_SEARCH)
         val account = manager.findFragmentByTag(TAG_ACCOUNT)
+        val notification = manager.findFragmentByTag(TAG_NOTIFICATION)
 
 
         if (home != null) {
@@ -188,6 +187,10 @@ class MainActivity : AppCompatActivity() {
         }
         if (account != null) {
             bt.hide(account)
+        }
+
+        if (notification != null) {
+            bt.hide(notification)
         }
 
         if (tag == TAG_HOME) {
@@ -203,6 +206,11 @@ class MainActivity : AppCompatActivity() {
         else if (tag == TAG_ACCOUNT) {
             if (account != null) {
                 bt.show(account)
+            }
+        }
+        else if (tag == TAG_NOTIFICATION) {
+            if (notification != null) {
+                bt.show(notification)
             }
         }
         bt.commitAllowingStateLoss()

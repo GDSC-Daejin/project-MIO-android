@@ -1,10 +1,13 @@
 package com.example.mio.NoticeBoard
 
-import android.app.AlertDialog
-import android.app.Dialog
+import android.app.*
+import android.app.PendingIntent.FLAG_CANCEL_CURRENT
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.Rect
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -14,18 +17,28 @@ import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NoticeBoardReadAdapter
 import com.example.mio.ApplyNextActivity
+import com.example.mio.Helper.AlertReceiver
+import com.example.mio.Helper.NotificationHelper
 import com.example.mio.Model.CommentData
 import com.example.mio.Model.PostData
 import com.example.mio.R
+import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.ActivityNoticeBoardReadBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.internal.notify
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class NoticeBoardReadActivity : AppCompatActivity() {
@@ -44,7 +57,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     private var isFavoriteBtn = false
     private var isApplyBtn = false
     private var isApplyCancel = false
+    //알람설정
+    private var setNotificationTime : Calendar? = null
+    private val channelID = "NOTIFICATION_CHANNEL"
+    private val channelName = "NOTIFICATION"
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nbrBinding = ActivityNoticeBoardReadBinding.inflate(layoutInflater)
@@ -86,6 +104,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         return super.dispatchTouchEvent(ev)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun btnViewChanger() {
         nbrBinding.favoriteBtn.setOnClickListener {
             isFavoriteBtn = !isFavoriteBtn
@@ -105,12 +124,17 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         nbrBinding.applyBtn.setOnClickListener {
             isApplyBtn = !isApplyBtn
+            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+            //현재 로그인된 유저 email 가져오기
+            val userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
 
             if (isApplyBtn) {
                 CoroutineScope(Dispatchers.Main).launch {
                     nbrBinding.applyBtn.setBackgroundResource(R.drawable.apply_button_update_background)
                     nbrBinding.applyBtn.text = "참여 신청 완료"
                 }
+                setNotification("${userEmail} 님이 참여 하셨습니다 즐거운 카풀되세요")
+
                 //참석 이후 동의화면으로 이동
                 val intent = Intent(this, ApplyNextActivity::class.java)
                 startActivity(intent)
@@ -227,5 +251,69 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 noticeBoardReadAdapter!!.notifyDataSetChanged()
             }
         }*/
+    }
+    private fun createChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            var channel = NotificationChannel(channelID, channelName,
+                NotificationManager.IMPORTANCE_DEFAULT)
+            //이 채널에 게시된 알림이 해당 기능을 지원하는 장치에서 알림 표시등을 표시할지 여부를 설정합니다.
+            channel.enableLights(true)
+            //이 채널에 게시된 알림이 해당 기능을 지원하는 장치에서 진동 등을 표시할지 여부를 설정합니다.
+            channel.enableVibration(true)
+            //이 채널에 게시된 알림에 대한 알림 표시등 색상을 설정
+            channel.lightColor = Color.GREEN
+            //이 채널에 게시된 알림이 전체 또는 수정된 형태로 잠금 화면에 표시되는지 여부를 설정
+            channel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
+
+            //채널생성
+            getManager().createNotificationChannel(channel)
+        }
+    }
+
+    fun getManager() : NotificationManager {
+        return getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun setNotification(content : String?) {
+        createChannel()
+        //var alarmManager : AlarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val notificationChannelID = 36
+        val value = SimpleDateFormat("yyyy년 MM월 dd일 EE요일 a hh시 mm분", Locale.getDefault()).format( Calendar.getInstance().timeInMillis )
+
+        var bundle = Bundle()
+        bundle.putString("time", value)
+        bundle.putString("content", content)
+
+        var intent = Intent(this, AlertReceiver::class.java).apply {
+            putExtra("bundle",bundle)
+        }
+
+        val tapResultIntent = Intent(this, NoticeBoardReadActivity::class.java).apply {
+            //이전에 실행된 액티비티들을 모두 없앤 후 새로운 액티비티 실행 플래그
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+
+        //intent를 당장 수행하지 않고 특정시점에 수행하도록 미룰 수 있는 intent
+        var pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            tapResultIntent,
+            //PendingIntent.FLAG_UPDATE_CURRENT,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val notificationCreate = NotificationCompat.Builder(this@NoticeBoardReadActivity, channelID)
+            .setContentTitle("알람")
+            .setContentText(content)
+            .setSmallIcon(R.drawable.top_icon_vector)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+
+
+        getManager().notify(notificationChannelID, notificationCreate)
+        //alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, setAlarmTime!!.timeInMillis, pendingIntent)
     }
 }

@@ -14,4 +14,10 @@
         app:mcv_selectionColor="#00F"
         />-->
 
+    <TextView
+        android:id="@+id/test"
+        android:text="tes"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
 </FrameLayout>

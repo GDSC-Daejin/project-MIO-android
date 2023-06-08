@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
-        android:id="@+id/action_notification"
-        android:title="알람"
-        android:icon="@drawable/top_menu_notification"
-        app:showAsAction="ifRoom" />
+        android:id="@+id/action_back"
+        android:title="뒤로가기"
+        android:icon="@drawable/baseline_arrow_back_24"
+        app:showAsAction="ifRoom"
+        />
 
     <item
         android:id="@+id/action_setting"

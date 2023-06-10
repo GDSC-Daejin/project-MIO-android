@@ -123,13 +123,13 @@ class TaxiTabFragment : Fragment() {
         calendarAdapter!!.setItemClickListener(object : CalendarAdapter.ItemClickListener {
             //여기서 position = 0시작은 date가 되야함 itemId=1로 시작함
             override fun onClick(view: View, position: Int, itemId: Int) {
-                if (selectedPostion == position) {
+                /*if (selectedPostion == position) {
                     view.setBackgroundColor(Color.BLUE)
                 } else {
                     view.setBackgroundColor(Color.TRANSPARENT)
                 }
                 oldSelectedPostion = selectedPostion
-                selectedPostion = position
+                selectedPostion = position*/
 
                 CoroutineScope(Dispatchers.IO).launch {
 
@@ -158,8 +158,8 @@ class TaxiTabFragment : Fragment() {
                     calendarAdapter!!.notifyItemChanged(selectedPostion)
                     */
                 }
-                calendarAdapter!!.notifyItemChanged(selectedPostion)
-                calendarAdapter!!.notifyItemChanged(oldSelectedPostion)
+               /* calendarAdapter!!.notifyItemChanged(selectedPostion)
+                calendarAdapter!!.notifyItemChanged(oldSelectedPostion)*/
                 noticeBoardAdapter!!.notifyDataSetChanged()
                 Toast.makeText(activity, calendarItemData[position]!!.day, Toast.LENGTH_SHORT).show()
             }
@@ -275,7 +275,7 @@ class TaxiTabFragment : Fragment() {
                             println(selectCalendarData)
                         }
                         //livemodel을 통해 저장
-                        //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
+                        sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
                         noticeBoardAdapter!!.notifyDataSetChanged()
                     }
                     //edit

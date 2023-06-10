@@ -154,22 +154,24 @@ class LoginActivity : AppCompatActivity() {
             .build()
         val service = retrofit.create(MioInterface::class.java)*/
         val call = RetrofitServerConnect.service
-        call.addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
-            override fun onResponse(
-                call: retrofit2.Call<LoginResponsesData>,
-                response: retrofit2.Response<LoginResponsesData?>
-            ) {
-                if (response.isSuccessful) {
-                    println("success")
-                    println(response.code())
-                } else {
-                    println("fail")
+        CoroutineScope(Dispatchers.IO).launch {
+            call.addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
+                override fun onResponse(
+                    call: retrofit2.Call<LoginResponsesData>,
+                    response: retrofit2.Response<LoginResponsesData?>
+                ) {
+                    if (response.isSuccessful) {
+                        println("success")
+                        println(response.code())
+                    } else {
+                        println("fail")
+                    }
                 }
-            }
-            override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
-                println("실패" + t.message.toString())
-            }
-        })
+                override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
+                    println("실패" + t.message.toString())
+                }
+            })
+        }
 
         /*val s = service.addUserInfoData(userInfoToken).execute().code()
         println(s)*/
@@ -249,48 +251,50 @@ class LoginActivity : AppCompatActivity() {
             .post(requestBody)
             .build()
 
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                print("Failed")
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                try {
-                    val jsonObject = JSONObject(response.body!!.string())
-                    val message = jsonObject.keys() //.toString(5)
-
-                    //json파일 키와 벨류를 잠시담는 변수
-                    val tempKey = ArrayList<String>()
-                    val tempValue = ArrayList<String>()
-                    //정리한번
-                    user_info.clear()
-
-                    while (message.hasNext()) {
-                        val s = message.next().toString()
-                        tempKey.add(s)
-
-                    }
-
-                    for (i in tempKey.indices) {
-                        //fruitValueList.add(fruitObject.getString(fruitKeyList.get(j)));
-                        tempValue.add(jsonObject.getString(tempKey[i]))
-                        println(tempKey[i] + "/" + jsonObject.getString(tempKey[i]))
-                    }
-
-                    user_info.add(LoginGoogleResponse(tempValue[0], tempValue[1].toInt(), tempValue[2], tempValue[3], tempValue[4]))
-                    currentUser = user_info[0]
-                    println(message)
-                    println(user_info[0].id_token)
-                    createClipData(user_info[0].id_token)
-                    signInCheck(TokenRequest(currentUser.id_token))
-                    tempKey.clear()
-                    tempValue.clear()
-                } catch (e: JSONException) {
-                    e.printStackTrace()
+        CoroutineScope(Dispatchers.IO).launch {
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    print("Failed")
                 }
-            }
 
-        })
+                override fun onResponse(call: Call, response: Response) {
+                    try {
+                        val jsonObject = JSONObject(response.body!!.string())
+                        val message = jsonObject.keys() //.toString(5)
+
+                        //json파일 키와 벨류를 잠시담는 변수
+                        val tempKey = ArrayList<String>()
+                        val tempValue = ArrayList<String>()
+                        //정리한번
+                        user_info.clear()
+
+                        while (message.hasNext()) {
+                            val s = message.next().toString()
+                            tempKey.add(s)
+
+                        }
+
+                        for (i in tempKey.indices) {
+                            //fruitValueList.add(fruitObject.getString(fruitKeyList.get(j)));
+                            tempValue.add(jsonObject.getString(tempKey[i]))
+                            println(tempKey[i] + "/" + jsonObject.getString(tempKey[i]))
+                        }
+
+                        user_info.add(LoginGoogleResponse(tempValue[0], tempValue[1].toInt(), tempValue[2], tempValue[3], tempValue[4]))
+                        currentUser = user_info[0]
+                        println(message)
+                        println(user_info[0].id_token)
+                        createClipData(user_info[0].id_token)
+                        signInCheck(TokenRequest(currentUser.id_token))
+                        tempKey.clear()
+                        tempValue.clear()
+                    } catch (e: JSONException) {
+                        e.printStackTrace()
+                    }
+                }
+
+            })
+        }
     }
     private fun signIn() {
         val signIntent = mGoogleSignInClient.signInIntent

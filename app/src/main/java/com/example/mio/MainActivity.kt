@@ -4,9 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.alpha
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.example.mio.Model.PostData
@@ -16,6 +19,9 @@ import com.example.mio.Navigation.NotificationFragment
 import com.example.mio.Navigation.SearchFragment
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.databinding.ActivityMainBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -24,14 +30,21 @@ class MainActivity : AppCompatActivity() {
     private val TAG_SEARCH = "search_fragment"
     private val TAG_ACCOUNT = "account_fragment"
     private val TAG_NOTIFICATION = "notification_fragment"
+    private var isClicked = false
+    //notification에서 뒤로가기 구현할 때 그 전에 어느 fragment에 있었는 지 알기위한 변수
+    private var oldFragment : Fragment? = null
+    private var oldTAG = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
-
-        setSupportActionBar(mBinding.toolBar)
-        supportActionBar?.setDisplayShowTitleEnabled(false)
+        oldFragment = HomeFragment()
+        oldTAG = TAG_HOME
+        //setToolbarView(TAG_HOME, oldTAG)
         setFragment(TAG_HOME, HomeFragment())
+        setToolbarView(isClicked)
+
+
         initNavigationBar()
     }
 
@@ -40,16 +53,29 @@ class MainActivity : AppCompatActivity() {
         return true
     }
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when(item?.itemId){
+        return when(item.itemId){
             R.id.action_notification -> {
                 //검색 버튼 눌렀을 때
                 Toast.makeText(applicationContext, "dkffka 이벤트 실행", Toast.LENGTH_LONG).show()
+                item.isVisible = false
+
                 setFragment(TAG_NOTIFICATION, NotificationFragment())
+                isClicked = true
+                setToolbarView(true)
+                println(isClicked)
                 super.onOptionsItemSelected(item)
             }
             R.id.action_setting -> {
                 //공유 버튼 눌렀을 때
                 Toast.makeText(applicationContext, "세팅 이벤트 실행", Toast.LENGTH_LONG).show()
+                super.onOptionsItemSelected(item)
+            }
+            android.R.id.home -> {
+                oldFragment?.let { setFragment(oldTAG, it) }
+                isClicked = false
+                //finish()
+                setToolbarView(false)
+                println("clclc")
                 super.onOptionsItemSelected(item)
             }
             else -> super.onOptionsItemSelected(item)
@@ -61,11 +87,21 @@ class MainActivity : AppCompatActivity() {
         mBinding.bottomNavigationView.
             setOnItemSelectedListener {item ->
                 when(item.itemId) {
-                    R.id.navigation_home ->
+                    R.id.navigation_home -> {
+                        oldFragment = HomeFragment()
+                        oldTAG = TAG_HOME
+                        //setToolbarView(TAG_HOME, oldTAG)
                         setFragment(TAG_HOME, HomeFragment())
 
-                    R.id.navigation_search ->
+                    }
+
+                    R.id.navigation_search -> {
+                        oldFragment = SearchFragment()
+                        oldTAG = TAG_SEARCH
+                        //setToolbarView(TAG_HOME, oldTAG)
                         setFragment(TAG_SEARCH, SearchFragment())
+
+                    }
 
                     R.id.navigation_writing -> {
                         val intent = Intent(this, NoticeBoardEditActivity::class.java).apply {
@@ -75,12 +111,21 @@ class MainActivity : AppCompatActivity() {
                     }
 
 
-                    R.id.navigation_account ->
+                    R.id.navigation_account -> {
+                        oldFragment = AccountFragment()
+                        oldTAG = TAG_ACCOUNT
+                        //setToolbarView(TAG_HOME, oldTAG)
                         setFragment(TAG_ACCOUNT, AccountFragment())
 
+                    }
 
-                    else ->
+
+                    else -> {
+                        oldFragment = HomeFragment()
+                        oldTAG = TAG_HOME
                         setFragment(TAG_HOME, HomeFragment())
+
+                    }
 
                 }
                 true
@@ -165,7 +210,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun setFragment(tag : String, fragment: Fragment) {
+    private fun setFragment(tag : String, fragment: Fragment) {
+
+        println(oldTAG)
         val manager : FragmentManager = supportFragmentManager
         val bt = manager.beginTransaction()
 
@@ -188,7 +235,6 @@ class MainActivity : AppCompatActivity() {
         if (account != null) {
             bt.hide(account)
         }
-
         if (notification != null) {
             bt.hide(notification)
         }
@@ -214,6 +260,18 @@ class MainActivity : AppCompatActivity() {
             }
         }
         bt.commitAllowingStateLoss()
+    }
+
+    fun setToolbarView(isClicked : Boolean) {
+        if (isClicked) {
+            setSupportActionBar(mBinding.toolBar)
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setDisplayShowTitleEnabled(false)
+        } else {
+            setSupportActionBar(mBinding.toolBar)
+            supportActionBar?.setDisplayHomeAsUpEnabled(false)
+            supportActionBar?.setDisplayShowTitleEnabled(false)
+        }
     }
 
     fun changeFragment(fragment : Fragment) {

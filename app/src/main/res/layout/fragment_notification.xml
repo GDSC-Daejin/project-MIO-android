@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".Navigation.NotificationFragment">
 
-    <androidx.appcompat.widget.Toolbar
+    <!--<androidx.appcompat.widget.Toolbar
         android:id="@+id/fragment_another_tool_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/fragment_another_top_menu">
 
-        <ImageView
+        <ImageButton
             android:id="@+id/another_back_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -31,7 +31,7 @@
             android:background="@color/white"
             android:src="@drawable/top_icon_vector" />
 
-    </androidx.appcompat.widget.Toolbar>
+    </androidx.appcompat.widget.Toolbar>-->
 
     <LinearLayout
         android:id="@+id/not_notification_ll"
@@ -40,10 +40,9 @@
         android:layout_gravity="center"
         android:orientation="vertical"
         android:visibility="visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/notification_RV"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/fragment_another_tool_bar">
+        app:layout_constraintTop_toTopOf="@+id/notification_RV">
 
         <ImageView
             android:id="@+id/not_notification_iv"
@@ -65,9 +64,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_another_tool_bar"
+        app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/notification_item" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

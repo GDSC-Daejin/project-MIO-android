@@ -2,6 +2,7 @@ package com.example.mio.Adapter
 import android.content.Context
 import android.graphics.Color
 import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +25,10 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
     private var selectedPostion = -1
     var crDate = ""
 
+
+
     inner class CalendarViewHolder(private val binding : CalendarCellBinding ) : RecyclerView.ViewHolder(binding.root) {
+
         private var position : Int? = null
         private var dateTV = binding.dateCell
         private var dayTV = binding.dayCell
@@ -35,9 +39,7 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
             dateTV.text = calendarData.date
             dayTV.text = calendarData.day
 
-            binding.root.setOnClickListener {
-                itemClickListener.onClick(it, layoutPosition, calendarItemData[layoutPosition]!!.date.toInt())
-            }
+
         }
     }
 
@@ -59,22 +61,20 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
         }
 
 
-        /*if (selectedPostion == holder.adapterPosition) {
+        if (selectedPostion == holder.adapterPosition) {
             holder.containerLL.setBackgroundColor(Color.BLUE)
         } else {
             holder.containerLL.setBackgroundColor(Color.TRANSPARENT)
         }
 
         holder.itemView.setOnClickListener {
-            //itemClickListener.onClick(it, holder.adapterPosition, calendarItemData[holder.adapterPosition]!!.date.toInt())
             oldSelectedPostion = selectedPostion
             selectedPostion = holder.adapterPosition
-            println(CalendarUtil.selectedDate.toString())
-            println(format.format(dateNow))
             notifyItemChanged(oldSelectedPostion)
             notifyItemChanged(selectedPostion)
 
-        }*/
+            itemClickListener.onClick(it, holder.adapterPosition, calendarItemData[holder.adapterPosition]!!.date.toInt())
+        }
     }
 
 

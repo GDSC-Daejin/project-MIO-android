@@ -21,13 +21,17 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NoticeBoardReadAdapter
 import com.example.mio.ApplyNextActivity
 import com.example.mio.Helper.AlertReceiver
 import com.example.mio.Helper.NotificationHelper
 import com.example.mio.Model.CommentData
+import com.example.mio.Model.NotificationData
 import com.example.mio.Model.PostData
+import com.example.mio.Model.SharedViewModel
+import com.example.mio.Navigation.NotificationFragment
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.ActivityNoticeBoardReadBinding
@@ -39,6 +43,7 @@ import okhttp3.internal.notify
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class NoticeBoardReadActivity : AppCompatActivity() {
@@ -56,19 +61,22 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     //버튼 클릭 체크
     private var isFavoriteBtn = false
     private var isApplyBtn = false
-    private var isApplyCancel = false
+    //private var isApplyCancel = false
     //알람설정
     private var setNotificationTime : Calendar? = null
     private val channelID = "NOTIFICATION_CHANNEL"
     private val channelName = "NOTIFICATION"
-
+    private var requestCode = 1
+    //알림 데이터 세팅을 위한 뷰모델 - 나중에 서버에서 불러올 예정(Todo)
+    private var sharedViewModel : SharedViewModel? = null
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nbrBinding = ActivityNoticeBoardReadBinding.inflate(layoutInflater)
 
+        sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
-
+        createChannel()
         sendComment()
         btnViewChanger()
 
@@ -79,6 +87,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             nbrBinding.readContentText.text = temp!!.postContent
             nbrBinding.readAccountId.text = temp!!.accountID
         }
+
 
         initRecyclerView()
 
@@ -133,9 +142,23 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     nbrBinding.applyBtn.setBackgroundResource(R.drawable.apply_button_update_background)
                     nbrBinding.applyBtn.text = "참여 신청 완료"
                 }
-                setNotification("${userEmail} 님이 참여 하셨습니다 즐거운 카풀되세요")
-
                 //참석 이후 동의화면으로 이동
+                setNotification("${userEmail} 님이 참여 하셨습니다 즐거운 카풀되세요", temp!!)
+                //시간
+                val value = SimpleDateFormat("yyyy년 MM월 dd일 EE요일 a hh시 mm분", Locale.getDefault()).format( Calendar.getInstance().timeInMillis )
+                //저장할 데이터
+                val notifyTempArr : ArrayList<NotificationData> = ArrayList()
+                /*notifyTempArr.add( NotificationData(0, userEmail, temp!!, isApplyBtn, value) )
+
+                sharedViewModel!!.setNotificationLiveData("add", notifyTempArr)
+                */
+                val tempNoti = NotificationData(0, userEmail, temp!!, isApplyBtn, value)
+                val bundle = Bundle()
+
+                val sendFragment = NotificationFragment()
+                bundle.putSerializable("notification", tempNoti)
+                sendFragment.arguments = bundle
+
                 val intent = Intent(this, ApplyNextActivity::class.java)
                 startActivity(intent)
             } else { //참석 눌렀을 떼
@@ -252,10 +275,16 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             }
         }*/
     }
+    private fun getManager() : NotificationManager {
+        return getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+    }
+
     private fun createChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            var channel = NotificationChannel(channelID, channelName,
-                NotificationManager.IMPORTANCE_DEFAULT)
+            val channel = NotificationChannel(channelID, channelName,
+                NotificationManager.IMPORTANCE_DEFAULT).apply {
+                    description = "참여 알림"
+            }
             //이 채널에 게시된 알림이 해당 기능을 지원하는 장치에서 알림 표시등을 표시할지 여부를 설정합니다.
             channel.enableLights(true)
             //이 채널에 게시된 알림이 해당 기능을 지원하는 장치에서 진동 등을 표시할지 여부를 설정합니다.
@@ -270,13 +299,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
     }
 
-    fun getManager() : NotificationManager {
-        return getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-    }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun setNotification(content : String?) {
-        createChannel()
+    private fun setNotification(content : String?, data : PostData) {
+
         //var alarmManager : AlarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val notificationChannelID = 36
         val value = SimpleDateFormat("yyyy년 MM월 dd일 EE요일 a hh시 mm분", Locale.getDefault()).format( Calendar.getInstance().timeInMillis )
@@ -290,17 +317,20 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
 
         val tapResultIntent = Intent(this, NoticeBoardReadActivity::class.java).apply {
+            putExtra("type", "READ")
+            putExtra("postItem", data)
             //이전에 실행된 액티비티들을 모두 없앤 후 새로운 액티비티 실행 플래그
             flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
 
         //intent를 당장 수행하지 않고 특정시점에 수행하도록 미룰 수 있는 intent
-        var pendingIntent = PendingIntent.getActivity(
+        val pendingIntent = PendingIntent.getActivity(
             this,
             0,
             tapResultIntent,
             //PendingIntent.FLAG_UPDATE_CURRENT,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+
         )
 
         val notificationCreate = NotificationCompat.Builder(this@NoticeBoardReadActivity, channelID)

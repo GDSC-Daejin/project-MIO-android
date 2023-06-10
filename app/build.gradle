@@ -77,7 +77,7 @@ dependencies {
     implementation 'androidx.core:core-splashscreen:1.0.0-alpha01'
 
     //calendar
-    implementation 'com.prolificinteractive:material-calendarview:1.4.3'
+    //implementation 'com.prolificinteractive:material-calendarview:1.4.3'
 
     ////
     testImplementation 'junit:junit:4.13.2'

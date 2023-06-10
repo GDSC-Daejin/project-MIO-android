@@ -2,17 +2,25 @@ package com.example.mio.Navigation
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.view.animation.OvershootInterpolator
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.NotificationAdapter
 import com.example.mio.MainActivity
 import com.example.mio.Model.NotificationData
+import com.example.mio.Model.PostData
+import com.example.mio.Model.SharedViewModel
 import com.example.mio.R
 import com.example.mio.databinding.FragmentNotificationBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -35,6 +43,7 @@ class NotificationFragment : Fragment() {
 
     //notification data
     private var notificationAllData : ArrayList<NotificationData> = ArrayList()
+    private var sharedViewModel: SharedViewModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,30 +62,19 @@ class NotificationFragment : Fragment() {
 
 
         setHasOptionsMenu(true)
-        initToolbarView()
         initNotificationRV()
+
+        nfBinding.notNotificationLl.setOnClickListener {
+            println(notificationAllData)
+        }
 
         return nfBinding.root
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.fragment_another_top_menu, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            nfBinding.anotherBackBtn.id -> {
-                requireActivity().supportFragmentManager.beginTransaction().remove(this).commit()
-                requireActivity().supportFragmentManager.popBackStack()
-                true
-            }
-            else -> {false}
-        }
-        return super.onOptionsItemSelected(item)
-    }
 
 
     private fun initNotificationRV() {
+
         nAdapter = NotificationAdapter()
         if (notificationAllData.isEmpty()) {
             nfBinding.notNotificationLl.visibility = View.VISIBLE
@@ -92,23 +90,37 @@ class NotificationFragment : Fragment() {
         nfBinding.notificationRV.setHasFixedSize(true)
         nfBinding.notificationRV.layoutManager = manager
     }
+    /*override fun onActivityCreated(savedInstanceState: Bundle?) {
 
-    private fun initToolbarView() {
-        nfBinding.fragmentAnotherToolBar.inflateMenu(R.menu.fragment_another_top_menu)
+        val data = arguments?.getSerializable("notification") as NotificationData
+        Log.d("data" , "$data")
+        super.onActivityCreated(savedInstanceState)
+    }*/
 
-        nfBinding.fragmentAnotherToolBar.setOnMenuItemClickListener {
-            when(it.itemId) {
-                R.id.action_back -> {
+    /*private fun setData() {
+        val sentData = this.arguments?.getSerializable("notification") as NotificationData
 
-                    true
-                }
-
-                else -> {
-                    false
-                }
-            }
+        CoroutineScope(Dispatchers.IO).launch {
+            notificationAllData.add(sentData)
         }
+        nAdapter!!.notifyDataSetChanged()
+    }*/
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        //저장된 livemodel들을 가져옴
+
+        sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
+        //이건 나중에
+        val addObserver = androidx.lifecycle.Observer<ArrayList<NotificationData>> { textValue ->
+            notificationAllData = textValue
+        }
+        sharedViewModel!!.getNotificationLiveData().observe(viewLifecycleOwner, addObserver)
+
+       /* val data = arguments?.getSerializable("notification") as NotificationData
+        Log.d("data" , "$data")*/
     }
+
 
     companion object {
         /**

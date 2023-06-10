@@ -25,7 +25,7 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
         var notificationDateText = binding.notificationItemDateTv
         fun bind(notification : NotificationData, position : Int) {
             this.position = position
-            notificationContentText.text = notification.notificationContentText
+            notificationContentText.text = notification.notificationContentText.postContent
             notificationDateText.text = notification.applyDate
 
             //accountProfile.setImageURI() = pillData.pillTakeTime

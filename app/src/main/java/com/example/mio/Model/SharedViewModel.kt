@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 class SharedViewModel : ViewModel() {
     //추가된 targetDate data 받기
     private val liveData = MutableLiveData<ArrayList<String>>()
+    val notificationLiveData = MutableLiveData<ArrayList<NotificationData>>()
     /*private val _users: MutableLiveData<List<User>> by lazy {
         MutableLiveData<List<User>>().also {
             loadUsers()
@@ -45,6 +46,16 @@ class SharedViewModel : ViewModel() {
     fun setCalendarLiveData(key : String, arr: HashMap<String, ArrayList<PostData>>) {
         if (key == "add") {
             calendarLiveData.value = arr
+        }
+    }
+
+    fun getNotificationLiveData(): LiveData<ArrayList<NotificationData>> {
+        return notificationLiveData
+    }
+
+    fun setNotificationLiveData(key : String, arr: ArrayList<NotificationData>) {
+        if (key == "add") {
+            notificationLiveData.value = arr
         }
     }
 

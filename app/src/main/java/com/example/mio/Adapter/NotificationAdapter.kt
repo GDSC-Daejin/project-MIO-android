@@ -1,9 +1,12 @@
 package com.example.mio.Adapter
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.NotificationData
 import com.example.mio.Model.PostData
 import com.example.mio.databinding.NotificationItemBinding
@@ -14,6 +17,8 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
     private lateinit var binding : NotificationItemBinding
     var notificationItemData = ArrayList<NotificationData>()
     private lateinit var context : Context
+    var sharedPref : SharedPref? = null
+    private var setKey = "setting_history"
 
     init {
         setHasStableIds(true)
@@ -25,7 +30,7 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
         var notificationDateText = binding.notificationItemDateTv
         fun bind(notification : NotificationData, position : Int) {
             this.position = position
-            notificationContentText.text = notification.notificationContentText.postContent
+            notificationContentText.text = notification.notificationContentText.accountID
             notificationDateText.text = notification.applyDate
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
@@ -38,16 +43,17 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationViewHolder {
         context = parent.context
+        sharedPref = this.context?.let { SharedPref(it) }
         binding = NotificationItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return NotificationViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
         holder.bind(notificationItemData[holder.adapterPosition], holder.adapterPosition)
-        /*binding.homeRemoveIv.setOnClickListener {
+        binding.deleteNotify.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)
             val ad : AlertDialog = builder.create()
-            var deleteData = pillItemData[holder.adapterPosition]!!.pillName
+            var deleteData = notificationItemData[holder.adapterPosition]!!.applyDate
             builder.setTitle(deleteData)
             builder.setMessage("정말로 삭제하시겠습니까?")
             builder.setNegativeButton("예",
@@ -67,7 +73,7 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
                     ad.dismiss()
                 })
             builder.show()
-        }*/
+        }
     }
 
     override fun getItemCount(): Int {
@@ -81,7 +87,7 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
     //데이터 Handle 함수
     fun removeData(position: Int) {
         notificationItemData.removeAt(position)
-        //temp = null
+        sharedPref!!.setNotify(context, setKey, notificationItemData)
         notifyItemRemoved(position)
     }
 

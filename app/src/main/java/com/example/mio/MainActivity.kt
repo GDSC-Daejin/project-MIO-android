@@ -60,6 +60,9 @@ class MainActivity : AppCompatActivity() {
                 item.isVisible = false
 
                 setFragment(TAG_NOTIFICATION, NotificationFragment())
+
+                //changeFragment(NotificationFragment())
+
                 isClicked = true
                 setToolbarView(true)
                 println(isClicked)
@@ -73,7 +76,6 @@ class MainActivity : AppCompatActivity() {
             android.R.id.home -> {
                 oldFragment?.let { setFragment(oldTAG, it) }
                 isClicked = false
-                //finish()
                 setToolbarView(false)
                 println("clclc")
                 super.onOptionsItemSelected(item)
@@ -211,8 +213,6 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun setFragment(tag : String, fragment: Fragment) {
-
-        println(oldTAG)
         val manager : FragmentManager = supportFragmentManager
         val bt = manager.beginTransaction()
 
@@ -278,7 +278,7 @@ class MainActivity : AppCompatActivity() {
         //프래그먼트를 교체 하는 작업을 수행할 수 있게 해줍니다.
         supportFragmentManager
             .beginTransaction()
-            .add(R.id.fragment_content, fragment)
+            .replace(R.id.fragment_content, fragment)
             .commit()
     }
 }

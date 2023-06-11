@@ -25,7 +25,7 @@ class HomeFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
 
-    private lateinit var homeBinding: FragmentHomeBinding
+    private var homeBinding: FragmentHomeBinding? = null
     private val tabTextList = listOf("Taxi", "Carpool")
     private val tabIconList = listOf(R.drawable.baseline_local_taxi_24, R.drawable.baseline_directions_car_24)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -42,14 +42,19 @@ class HomeFragment : Fragment() {
     ): View? {
         homeBinding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        homeBinding.viewpager.adapter = CategoryTabAdapter(requireActivity())
+        homeBinding!!.viewpager.adapter = CategoryTabAdapter(requireActivity())
 
-        TabLayoutMediator(homeBinding.categoryTabLayout, homeBinding.viewpager) { tab, pos ->
+        TabLayoutMediator(homeBinding!!.categoryTabLayout, homeBinding!!.viewpager) { tab, pos ->
             tab.text = tabTextList[pos]
             tab.setIcon(tabIconList[pos])
         }.attach()
 
-        return homeBinding.root
+        return homeBinding!!.root
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        homeBinding = null
     }
 
     companion object {

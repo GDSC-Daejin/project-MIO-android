@@ -2,6 +2,7 @@ package com.example.mio.Helper
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.mio.Model.NotificationData
 import org.json.JSONArray
 import org.json.JSONException
 
@@ -12,6 +13,40 @@ class SharedPref(context: Context) {
     init {
         mySharedPref = context.getSharedPreferences("filename", Context.MODE_PRIVATE)
         storeSharedPref = context.getSharedPreferences("store_data", Context.MODE_PRIVATE)
+    }
+
+    fun setNotify(context: Context, key: String, values: ArrayList<NotificationData>) {
+        //val prefs: SharedPreferences = storeSharedPref
+        val editor = storeSharedPref.edit()
+        val data : JSONArray = JSONArray()
+
+        for (i in 0 until values.size) {
+            data.put(values[i]!!.applyDate)
+        }
+        if (values.isNotEmpty()) {
+            editor.putString(key, data.toString())
+        } else {
+            editor.putString(key, null)
+        }
+        editor.apply()
+    }
+
+    fun getNotify(context: Context, key: String) : MutableList<String> {
+        //val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        val json = storeSharedPref.getString(key, null)
+        val historyArr : ArrayList<String> = ArrayList()
+        if (json != null) {
+            try {
+                val data : JSONArray = JSONArray(json)
+                for (i in 0 until data.length()) {
+                    val s = data.optString(i)
+                    historyArr.add(s)
+                }
+            } catch (e : JSONException) {
+                e.printStackTrace()
+            }
+        }
+        return historyArr
     }
 
     fun setNightModeState(state: Boolean?) {

@@ -1,8 +1,6 @@
 package com.example.mio.NoticeBoard
 
 import android.app.*
-import android.app.PendingIntent.FLAG_CANCEL_CURRENT
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
@@ -15,23 +13,20 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NoticeBoardReadAdapter
 import com.example.mio.ApplyNextActivity
 import com.example.mio.Helper.AlertReceiver
-import com.example.mio.Helper.NotificationHelper
+import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.CommentData
 import com.example.mio.Model.NotificationData
 import com.example.mio.Model.PostData
 import com.example.mio.Model.SharedViewModel
-import com.example.mio.Navigation.NotificationFragment
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.ActivityNoticeBoardReadBinding
@@ -39,8 +34,6 @@ import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.internal.notify
-import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -57,7 +50,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
     //클릭한 포스트(게시글)의 데이터 임시저장
     private var temp : PostData? = null
-
+    private var tempArr : kotlin.collections.ArrayList<NotificationData> = ArrayList()
     //버튼 클릭 체크
     private var isFavoriteBtn = false
     private var isApplyBtn = false
@@ -69,11 +62,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     private var requestCode = 1
     //알림 데이터 세팅을 위한 뷰모델 - 나중에 서버에서 불러올 예정(Todo)
     private var sharedViewModel : SharedViewModel? = null
+    var sharedPref : SharedPref? = null
+    private var setKey = "setting_history"
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nbrBinding = ActivityNoticeBoardReadBinding.inflate(layoutInflater)
-
+        sharedPref = SharedPref(this)
         sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
         createChannel()
@@ -148,16 +143,22 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 val value = SimpleDateFormat("yyyy년 MM월 dd일 EE요일 a hh시 mm분", Locale.getDefault()).format( Calendar.getInstance().timeInMillis )
                 //저장할 데이터
                 val notifyTempArr : ArrayList<NotificationData> = ArrayList()
-                /*notifyTempArr.add( NotificationData(0, userEmail, temp!!, isApplyBtn, value) )
+                notifyTempArr.add( NotificationData(0, userEmail, temp!!, isApplyBtn, value) )
+
+                tempArr.add(NotificationData(0, userEmail, temp!!, isApplyBtn, value))
 
                 sharedViewModel!!.setNotificationLiveData("add", notifyTempArr)
-                */
-                val tempNoti = NotificationData(0, userEmail, temp!!, isApplyBtn, value)
-                val bundle = Bundle()
+                println(tempArr)
+                sharedPref!!.setNotify(this@NoticeBoardReadActivity, setKey, tempArr)
+
+                //val tempNoti = NotificationData(0, userEmail, temp!!, isApplyBtn, value)
+
+               /* val bundle = Bundle()
+                bundle.putString("title", "test")
 
                 val sendFragment = NotificationFragment()
-                bundle.putSerializable("notification", tempNoti)
-                sendFragment.arguments = bundle
+                sendFragment.arguments = bundle*/
+
 
                 val intent = Intent(this, ApplyNextActivity::class.java)
                 startActivity(intent)

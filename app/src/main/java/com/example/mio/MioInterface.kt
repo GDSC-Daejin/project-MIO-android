@@ -6,12 +6,8 @@ import retrofit2.http.*
 
 interface MioInterface {
 
-    //현재 등록된 회원정보 가져오기
-    @GET("user/{userId}")
-    fun getUserData() : Call<MyResponse>
-
     //여긴 나중에 게시글 정보 가져오기로 바꾸기기
-    @GET("post/{}")
+    @GET("category/{categoryId}")
     fun getDataByPage(@Query("page") page : Int,
                       @Query("size") size : Int?) : Call<MyResponse>
 
@@ -21,7 +17,6 @@ interface MioInterface {
     //회원가입
     @POST("/auth/google")
     fun addUserInfoData(@Body token: TokenRequest) : Call<LoginResponsesData>
-
 
     //회원가입 수정
     @PUT("todo/{id}")

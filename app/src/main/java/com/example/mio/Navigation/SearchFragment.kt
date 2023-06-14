@@ -41,10 +41,7 @@ class SearchFragment : Fragment() {
     ): View? {
         sBinding = FragmentSearchBinding.inflate(inflater, container, false)
 
-        val value = SimpleDateFormat("yyyy년 MM월 dd일 EE요일 a hh시 mm분", Locale.KOREA).format( Calendar.getInstance(
-            TimeZone.getTimeZone("Asia/Seoul")).timeInMillis )
 
-        sBinding.test.text = "${value}"
 
         return sBinding.root
     }

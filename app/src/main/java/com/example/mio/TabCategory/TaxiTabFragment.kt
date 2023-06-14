@@ -2,32 +2,27 @@ package com.example.mio.TabCategory
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.*
-import androidx.fragment.app.Fragment
 import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.core.view.children
-import androidx.core.view.get
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.CalendarAdapter
 import com.example.mio.Adapter.NoticeBoardAdapter
+import com.example.mio.BottomSheetFragment
 import com.example.mio.CalendarUtil
 import com.example.mio.Model.DateData
 import com.example.mio.Model.PostData
 import com.example.mio.Model.SharedViewModel
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
-import com.example.mio.R
 import com.example.mio.databinding.FragmentTaxiTabBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
@@ -39,6 +34,14 @@ import java.time.format.TextStyle
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.collections.MutableList
+import kotlin.collections.arrayListOf
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.isNotEmpty
+import kotlin.collections.iterator
+import kotlin.collections.mutableListOf
+import kotlin.collections.set
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -136,7 +139,8 @@ class TaxiTabFragment : Fragment() {
                     if (calendarTaxiAllData.isNotEmpty()) {
                         //라이브모델에 저장된 배열의 calendarTaxialldata에 position의 targetdate
                         try {
-                            val selectTemp = testselectCalendarData[calendarTaxiAllData[position].postTargetDate]
+                            val selectTemp =
+                                testselectCalendarData[calendarTaxiAllData[position].postTargetDate]
                             if (selectTemp != null) {
                                 println(testselectCalendarData[calendarTaxiAllData[position].postTargetDate])
                                 noticeBoardAdapter!!.postItemData = selectTemp
@@ -147,7 +151,7 @@ class TaxiTabFragment : Fragment() {
                                 calendarAdapter!!.notifyDataSetChanged()
                                 println("null")
                             }
-                        } catch (e : java.lang.IndexOutOfBoundsException) {
+                        } catch (e: java.lang.IndexOutOfBoundsException) {
                             println("tesetstes")
                         }
                     } else {
@@ -158,10 +162,11 @@ class TaxiTabFragment : Fragment() {
                     calendarAdapter!!.notifyItemChanged(selectedPostion)
                     */
                 }
-               /* calendarAdapter!!.notifyItemChanged(selectedPostion)
+                /* calendarAdapter!!.notifyItemChanged(selectedPostion)
                 calendarAdapter!!.notifyItemChanged(oldSelectedPostion)*/
                 noticeBoardAdapter!!.notifyDataSetChanged()
-                Toast.makeText(activity, calendarItemData[position]!!.day, Toast.LENGTH_SHORT).show()
+                Toast.makeText(activity, calendarItemData[position]!!.day, Toast.LENGTH_SHORT)
+                    .show()
             }
         })
 
@@ -182,10 +187,34 @@ class TaxiTabFragment : Fragment() {
             noticeBoardAdapter!!.notifyItemInserted(position)
             position += 1*/
             val intent = Intent(activity, NoticeBoardEditActivity::class.java).apply {
-                putExtra("type","ADD")
+                putExtra("type", "ADD")
             }
             requestActivity.launch(intent)
             noticeBoardAdapter!!.notifyDataSetChanged()
+        }
+
+        taxiTabBinding.filterBtn.setOnClickListener {
+            /*val bottomSheetDialog = BottomSheetDialog(
+                requireActivity(), R.style.BottomSheetDialogTheme
+            ).apply {
+                behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                behavior.isDraggable = true
+            }
+
+            val bottomView = LayoutInflater.from(requireActivity()).inflate(
+                R.layout.bottom_sheet_dialog, null
+            )
+
+
+            //bottomSheetDialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
+            // bottomSheetDialog 뷰 생성
+            bottomSheetDialog.setContentView(bottomView)
+
+            // bottomSheetDialog 호출
+            bottomSheetDialog.show()*/
+
+            val bottomSheet = BottomSheetFragment()
+            bottomSheet.show(requireActivity().supportFragmentManager, bottomSheet.tag)
         }
 
 
@@ -218,17 +247,15 @@ class TaxiTabFragment : Fragment() {
             moveDuration = 1000
             changeDuration = 100
         }
-
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun setCalendarData() {
 
         val cal = Calendar.getInstance()
         //cal.set(2023, 5, 1)
-        //현재날짜
-        val currentDate = LocalDate.now()
-
-
+        //현재 날짜
+        //val currentDate = LocalDate.now()
         //현재 달의 마지막 날짜
         val lastDayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
         for (i in 1..lastDayOfMonth) {
@@ -241,6 +268,7 @@ class TaxiTabFragment : Fragment() {
             calendarItemData.add(DateData(Calendar.DAY_OF_MONTH.toString(),dayOfWeek.toString().substring(0, 3), i.toString()))
         }
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     private fun initCalendarRecyclerView() {
         setCalendarData()

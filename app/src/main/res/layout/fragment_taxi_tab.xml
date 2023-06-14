@@ -36,8 +36,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/month_linearlayout"
-        tools:listitem="@layout/calendar_cell"
-        />
+        tools:listitem="@layout/calendar_cell" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/noticeBoard_RV"
@@ -58,6 +57,17 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/noticeBoard_RV" />
+
+    <Button
+        android:id="@+id/filter_btn"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="45dp"
+        android:gravity="center"
+        android:background="@drawable/filter_icon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/addBtn"
         app:layout_constraintTop_toBottomOf="@+id/noticeBoard_RV" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

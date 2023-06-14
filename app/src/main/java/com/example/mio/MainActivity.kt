@@ -12,7 +12,9 @@ import androidx.core.graphics.alpha
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProvider
 import com.example.mio.Model.PostData
+import com.example.mio.Model.SharedViewModel
 import com.example.mio.Navigation.AccountFragment
 import com.example.mio.Navigation.HomeFragment
 import com.example.mio.Navigation.NotificationFragment
@@ -30,14 +32,20 @@ class MainActivity : AppCompatActivity() {
     private val TAG_SEARCH = "search_fragment"
     private val TAG_ACCOUNT = "account_fragment"
     private val TAG_NOTIFICATION = "notification_fragment"
-    private var isClicked = false
+    private var isClicked = true
     //notification에서 뒤로가기 구현할 때 그 전에 어느 fragment에 있었는 지 알기위한 변수
     private var oldFragment : Fragment? = null
     private var oldTAG = ""
+    //
+    private var sharedViewModel: SharedViewModel? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
+        /*sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
+        sharedViewModel!!.getCalendarLiveData().observe(this)
+        */
         oldFragment = HomeFragment()
         oldTAG = TAG_HOME
         //setToolbarView(TAG_HOME, oldTAG)
@@ -50,20 +58,26 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.top_menu, menu)
+
+        val actionNotification = menu!!.findItem(R.id.action_notification)
+
+        actionNotification.isVisible = isClicked
+
         return true
     }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when(item.itemId){
             R.id.action_notification -> {
+                isClicked = false
                 //검색 버튼 눌렀을 때
                 Toast.makeText(applicationContext, "dkffka 이벤트 실행", Toast.LENGTH_LONG).show()
-                item.isVisible = false
 
                 setFragment(TAG_NOTIFICATION, NotificationFragment())
 
                 //changeFragment(NotificationFragment())
 
-                isClicked = true
+
                 setToolbarView(true)
                 println(isClicked)
                 super.onOptionsItemSelected(item)
@@ -75,7 +89,7 @@ class MainActivity : AppCompatActivity() {
             }
             android.R.id.home -> {
                 oldFragment?.let { setFragment(oldTAG, it) }
-                isClicked = false
+                isClicked = true
                 setToolbarView(false)
                 println("clclc")
                 super.onOptionsItemSelected(item)

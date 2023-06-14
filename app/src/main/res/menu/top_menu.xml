@@ -4,6 +4,7 @@
     <item
         android:id="@+id/action_notification"
         android:title="알람"
+        android:visible="true"
         android:icon="@drawable/top_menu_notification"
         app:showAsAction="ifRoom" />
 

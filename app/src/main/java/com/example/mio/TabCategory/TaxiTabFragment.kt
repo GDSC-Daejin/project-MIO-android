@@ -1,9 +1,11 @@
 package com.example.mio.TabCategory
 
+import android.app.ProgressDialog.show
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.view.animation.OvershootInterpolator
 import android.widget.Toast
@@ -215,6 +217,14 @@ class TaxiTabFragment : Fragment() {
 
             val bottomSheet = BottomSheetFragment()
             bottomSheet.show(requireActivity().supportFragmentManager, bottomSheet.tag)
+            bottomSheet.apply {
+                setCallback(object : BottomSheetFragment.OnSendFromBottomSheetDialog{
+                    override fun sendValue(value: String) {
+                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
+                    }
+                })
+            }
+
         }
 
 

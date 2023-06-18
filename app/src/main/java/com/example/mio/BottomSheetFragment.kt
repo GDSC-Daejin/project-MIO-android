@@ -1,16 +1,20 @@
 package com.example.mio
 
+import android.app.DatePickerDialog
 import android.app.Dialog
+import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
 import com.example.mio.databinding.FragmentBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import java.util.*
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -23,6 +27,9 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     private var param2: String? = null
 
     private lateinit var bsBinding : FragmentBottomSheetBinding
+    private var selectTargetDate = ""
+    private var listener: OnSendFromBottomSheetDialog? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -37,6 +44,30 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     ): View? {
         bsBinding = FragmentBottomSheetBinding.inflate(inflater, container, false)
 
+        bsBinding.filterCalendar.setOnClickListener {
+            val cal = Calendar.getInstance()
+            val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
+                selectTargetDate = "${year}년/${month+1}월/${day}일"
+                bsBinding.selectDateTv.text = selectTargetDate
+                bsBinding.selectDateTv.setTextColor(Color.BLACK)
+            }
+            DatePickerDialog(requireActivity(), data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(
+                Calendar.DAY_OF_MONTH)).show()
+
+        }
+
+        bsBinding.filterResetTvBtn.setOnClickListener {
+
+        }
+
+        bsBinding.bottomSheetDismissIv.setOnClickListener {
+            dismiss()
+        }
+
+        bsBinding.filterSearchBtn.setOnClickListener {
+            if (listener == null) return@setOnClickListener
+            listener?.sendValue("BottomSheetDialog에서 검색 버튼 클릭함!")
+        }
 
         return bsBinding.root
     }
@@ -72,24 +103,13 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         bottomSheet.layoutParams = layoutParams
     }
 
-
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment BottomSheetDialogFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            BottomSheetFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    interface OnSendFromBottomSheetDialog {
+        fun sendValue(value: String)
     }
+
+    fun setCallback(listener: OnSendFromBottomSheetDialog) {
+        this.listener = listener
+    }
+
+
 }

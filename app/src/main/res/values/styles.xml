@@ -83,6 +83,7 @@
 
     <style name="BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
         <item name="background">@android:color/transparent</item>
+        <item name="android:textColor">@color/mio_gray_10</item>
     </style>
 
 </resources>

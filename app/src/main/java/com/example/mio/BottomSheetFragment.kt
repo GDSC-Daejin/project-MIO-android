@@ -4,16 +4,21 @@ import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build.VERSION_CODES.P
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import com.example.mio.databinding.FragmentBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 
 // TODO: Rename parameter arguments, choose names that match
@@ -29,6 +34,16 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     private lateinit var bsBinding : FragmentBottomSheetBinding
     private var selectTargetDate = ""
     private var listener: OnSendFromBottomSheetDialog? = null
+
+    //버튼 체크 변수들
+    //체크리스트 펴기 체크
+    private var isCheckListClicked = false
+    //등하교 버튼 체크
+    private var isCheckSchool = false
+    //흡연여부 체크
+    private var isCheckSmoke = false
+    //성별 체크
+    private var isCheckGender = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,9 +66,59 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 bsBinding.selectDateTv.text = selectTargetDate
                 bsBinding.selectDateTv.setTextColor(Color.BLACK)
             }
-            DatePickerDialog(requireActivity(), data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(
+            DatePickerDialog(requireActivity(), R.style.MySpinnerDatePickerStyle, data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(
                 Calendar.DAY_OF_MONTH)).show()
+        }
 
+        bsBinding.filterChecklistIv.setOnClickListener {
+            isCheckListClicked = !isCheckListClicked
+            if (isCheckListClicked) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_update_icon)
+                    bsBinding.checklistLl.visibility = View.VISIBLE
+                }
+            } else {
+                CoroutineScope(Dispatchers.Main).launch {
+                    bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_icon)
+                    bsBinding.checklistLl.visibility = View.GONE
+                }
+            }
+        }
+
+        bsBinding.filterPlus.setOnClickListener {
+            println("plis")
+        }
+
+        bsBinding.gtschoolBtn.setOnClickListener {
+            isCheckSchool = true //등교
+            println("sdag")
+            bsBinding.gtschoolBtn.setBackgroundColor(
+                ContextCompat.getColor(requireActivity(),
+                R.color.mio_blue_4))
+
+            bsBinding.aschoolBtn.setBackgroundColor(
+                ContextCompat.getColor(requireActivity(),
+                    R.color.mio_gray_1))
+        }
+
+        bsBinding.aschoolBtn.setOnClickListener {
+            isCheckSchool = false //하교
+            println("gl")
+            bsBinding.gtschoolBtn.setBackgroundColor(
+                ContextCompat.getColor(requireActivity(),
+                    R.color.mio_gray_1))
+
+            bsBinding.aschoolBtn.setBackgroundColor(
+                ContextCompat.getColor(requireActivity(),
+                    R.color.mio_blue_4))
+        }
+
+        bsBinding.manBtn.setOnClickListener {
+            println("ma")
+        }
+
+        bsBinding.womanBtn.setOnClickListener {
+            println("wo")
         }
 
         bsBinding.filterResetTvBtn.setOnClickListener {
@@ -67,6 +132,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         bsBinding.filterSearchBtn.setOnClickListener {
             if (listener == null) return@setOnClickListener
             listener?.sendValue("BottomSheetDialog에서 검색 버튼 클릭함!")
+            dismiss()
         }
 
         return bsBinding.root

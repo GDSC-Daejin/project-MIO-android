@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
     private val TAG_SEARCH = "search_fragment"
     private val TAG_ACCOUNT = "account_fragment"
     private val TAG_NOTIFICATION = "notification_fragment"
-    private var isClicked = true
+    private var isClicked = false
     //notification에서 뒤로가기 구현할 때 그 전에 어느 fragment에 있었는 지 알기위한 변수
     private var oldFragment : Fragment? = null
     private var oldTAG = ""
@@ -48,11 +48,8 @@ class MainActivity : AppCompatActivity() {
         */
         oldFragment = HomeFragment()
         oldTAG = TAG_HOME
-        //setToolbarView(TAG_HOME, oldTAG)
         setFragment(TAG_HOME, HomeFragment())
         setToolbarView(isClicked)
-
-
         initNavigationBar()
     }
 
@@ -61,7 +58,11 @@ class MainActivity : AppCompatActivity() {
 
         val actionNotification = menu!!.findItem(R.id.action_notification)
 
-        actionNotification.isVisible = isClicked
+        if (isClicked) {
+            actionNotification.isVisible = !isClicked
+        } else {
+            actionNotification.isVisible = !isClicked
+        }
 
         return true
     }
@@ -69,16 +70,16 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when(item.itemId){
             R.id.action_notification -> {
-                isClicked = false
+                isClicked = true
                 //검색 버튼 눌렀을 때
-                Toast.makeText(applicationContext, "dkffka 이벤트 실행", Toast.LENGTH_LONG).show()
+                //Toast.makeText(applicationContext, "dkffka 이벤트 실행", Toast.LENGTH_LONG).show()
 
                 setFragment(TAG_NOTIFICATION, NotificationFragment())
 
                 //changeFragment(NotificationFragment())
 
 
-                setToolbarView(true)
+                setToolbarView(isClicked)
                 println(isClicked)
                 super.onOptionsItemSelected(item)
             }
@@ -89,8 +90,8 @@ class MainActivity : AppCompatActivity() {
             }
             android.R.id.home -> {
                 oldFragment?.let { setFragment(oldTAG, it) }
-                isClicked = true
-                setToolbarView(false)
+                isClicked = false
+                setToolbarView(isClicked)
                 println("clclc")
                 super.onOptionsItemSelected(item)
             }
@@ -276,7 +277,7 @@ class MainActivity : AppCompatActivity() {
         bt.commitAllowingStateLoss()
     }
 
-    fun setToolbarView(isClicked : Boolean) {
+    private fun setToolbarView(isClicked : Boolean) {
         if (isClicked) {
             setSupportActionBar(mBinding.toolBar)
             supportActionBar?.setDisplayHomeAsUpEnabled(true)

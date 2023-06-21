@@ -40,7 +40,9 @@ import java.io.IOException
 class LoginActivity : AppCompatActivity() {
     lateinit var mGoogleSignInClient: GoogleSignInClient
     lateinit var resultLauncher: ActivityResultLauncher<Intent>
-    lateinit var mBinding : ActivityLoginBinding
+    private val mBinding by lazy {
+        ActivityLoginBinding.inflate(layoutInflater)
+    }
     private val CLIENT_WEB_ID_KEY = BuildConfig.client_web_id_key
     private val CLIENT_WEB_SECRET_KEY = BuildConfig.client_web_secret_key
     private val SERVER_URL = BuildConfig.server_URL
@@ -75,7 +77,7 @@ class LoginActivity : AppCompatActivity() {
         }*/
         initSplashScreen()
         super.onCreate(savedInstanceState)
-        mBinding = ActivityLoginBinding.inflate(layoutInflater)
+
         setContentView(mBinding.root)
 
         setResultSignUp()

@@ -27,7 +27,10 @@ import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var mBinding : ActivityMainBinding
+    private val mBinding  by lazy {
+        ActivityMainBinding.inflate(layoutInflater)
+    }
+
     private val TAG_HOME = "home_fragment"
     private val TAG_SEARCH = "search_fragment"
     private val TAG_ACCOUNT = "account_fragment"
@@ -41,7 +44,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mBinding = ActivityMainBinding.inflate(layoutInflater)
+
         setContentView(mBinding.root)
         /*sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
         sharedViewModel!!.getCalendarLiveData().observe(this)

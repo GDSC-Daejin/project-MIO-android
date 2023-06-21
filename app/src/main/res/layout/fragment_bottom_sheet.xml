@@ -163,7 +163,6 @@
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
                 android:text="1"
-
                 />
 
             <ImageView
@@ -237,7 +236,7 @@
 
                     <Button
                         android:id="@+id/gtschool_btn"
-                        android:layout_width="170dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/round_btn_layout"
                         android:text="등교"
@@ -250,7 +249,7 @@
 
                     <Button
                         android:id="@+id/aschool_btn"
-                        android:layout_width="170dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:background="@drawable/round_btn_layout"
                         android:text="하교"
@@ -308,7 +307,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <ImageView
+                    <Button
                         android:id="@+id/smoker_btn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -321,7 +320,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp" />
 
-                    <ImageView
+                    <Button
                         android:id="@+id/nsmoker_btn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

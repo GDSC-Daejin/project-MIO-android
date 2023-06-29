@@ -203,7 +203,7 @@ class LoginActivity : AppCompatActivity() {
 
             //회원가입과 함께 새로운 계정 정보 저장
             if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity)!!.isEmpty()) {
-                //나중에 재개편 필요함 -> navigation graph를 정리할 필요성이 있음
+                //나중에 재개편 필요함 -> navigation graph를 정리할 필요성이 있음 Todo
                 // call Login Activity
                 //val intent = Intent(this@MainActivity, LoginActivity::class.java)
                 intent.putExtra("email", saveSharedPreferenceGoogleLogin.setUserEMAIL(this, email).toString())

@@ -1,17 +1,17 @@
 package com.example.mio.TabCategory
 
-import android.app.ProgressDialog.show
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -22,27 +22,26 @@ import com.example.mio.BottomSheetFragment
 import com.example.mio.CalendarUtil
 import com.example.mio.Model.DateData
 import com.example.mio.Model.PostData
+import com.example.mio.Model.PostReadAllResponse
 import com.example.mio.Model.SharedViewModel
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
+import com.example.mio.RetrofitServerConnect
 import com.example.mio.databinding.FragmentTaxiTabBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.collections.MutableList
-import kotlin.collections.arrayListOf
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.isNotEmpty
-import kotlin.collections.iterator
-import kotlin.collections.mutableListOf
 import kotlin.collections.set
 
 // TODO: Rename parameter arguments, choose names that match
@@ -98,7 +97,6 @@ class TaxiTabFragment : Fragment() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -108,6 +106,7 @@ class TaxiTabFragment : Fragment() {
 
         initNoticeBoardRecyclerView()
         initCalendarRecyclerView()
+
 
         //recyclerview item클릭 시
         noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
@@ -177,6 +176,10 @@ class TaxiTabFragment : Fragment() {
             for ((key, value) in testselectCalendarData) {
                 println("전체 : ${key} : ${value}")
             }
+
+            setData()
+
+
 
 
             noticeBoardAdapter!!.postItemData = taxiAllData
@@ -259,7 +262,6 @@ class TaxiTabFragment : Fragment() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun setCalendarData() {
 
         val cal = Calendar.getInstance()
@@ -279,7 +281,6 @@ class TaxiTabFragment : Fragment() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun initCalendarRecyclerView() {
         setCalendarData()
         calendarAdapter = CalendarAdapter()
@@ -293,6 +294,33 @@ class TaxiTabFragment : Fragment() {
 
         horizonManager.orientation = LinearLayoutManager.HORIZONTAL
         taxiTabBinding.calendarRV.layoutManager = horizonManager
+    }
+
+    private fun setData() {
+        val call = RetrofitServerConnect.service
+        CoroutineScope(Dispatchers.IO).launch {
+            call.getServerPostData().enqueue(object : Callback<PostReadAllResponse> {
+                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                    if (response.isSuccessful) {
+                        println(response.body()!!.content)
+                        /*val start = SystemClock.elapsedRealtime()
+
+                        // 텍스트뷰에 현재시간 출력
+                        val date = Date(start)
+                        val mFormat = SimpleDateFormat("HH:mm:ss")
+                        val time = mFormat.format(date)
+                        println(start)
+                        println(time)*/
+                    } else {
+                        Log.d("f", response.code().toString())
+                    }
+                }
+
+                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
+        }
     }
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->

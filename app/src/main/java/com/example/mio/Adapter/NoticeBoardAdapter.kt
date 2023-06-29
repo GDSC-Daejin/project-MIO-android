@@ -19,13 +19,13 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
 
     inner class NoticeBoardViewHolder(private val binding : PostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
-        var accountId = binding.accountId
-        var accountProfile = binding.accountImage
-        var postContent = binding.postContentText
+        //var accountId = binding.accountId
+        //var accountProfile = binding.accountImage
+        var postTitle = binding.postTitle
         fun bind(accountData: PostData, position : Int) {
             this.position = position
-            accountId.text = accountData.accountID
-            postContent.text = accountData.postContent
+            //accountId.text = accountData.accountID
+            postTitle.text = accountData.postTitle
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
 

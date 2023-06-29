@@ -3,6 +3,7 @@ package com.example.mio.Helper
 import android.content.Context
 import android.content.SharedPreferences
 import com.example.mio.Model.NotificationData
+import com.example.mio.Model.SearchWordData
 import org.json.JSONArray
 import org.json.JSONException
 
@@ -49,6 +50,16 @@ class SharedPref(context: Context) {
         return historyArr
     }
 
+    fun setSearchData(searchText : String) {
+        val editor = mySharedPref.edit()
+        editor.putString("search", searchText)
+        editor.apply()
+    }
+
+    fun getSearchData() : String {
+        return mySharedPref.getString("search", "").toString()
+    }
+////////////////////////
     fun setNightModeState(state: Boolean?) {
         val editor = mySharedPref.edit()
         editor.putBoolean("NightMode", state!!)
@@ -89,7 +100,7 @@ class SharedPref(context: Context) {
         return mySharedPref.getBoolean("LargeMode", false)
     }
 
-    /*fun setSearchHistory(context: Context, key: String, values: MutableList<SearchWordData?>) {
+    fun setSearchHistory(context: Context, key: String, values: ArrayList<SearchWordData>) {
         //val prefs: SharedPreferences = storeSharedPref
         val editor = storeSharedPref.edit()
         val data : JSONArray = JSONArray()
@@ -103,9 +114,9 @@ class SharedPref(context: Context) {
             editor.putString(key, null)
         }
         editor.apply()
-    }*/
+    }
 
-    fun getSearchHistory(context: Context, key: String) : MutableList<String> {
+    fun getSearchHistory(context: Context, key: String) : ArrayList<String> {
         //val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
         val json = storeSharedPref.getString(key, null)
         val historyArr : ArrayList<String> = ArrayList()

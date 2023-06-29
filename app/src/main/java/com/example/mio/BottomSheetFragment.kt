@@ -2,15 +2,14 @@ package com.example.mio
 
 import android.app.DatePickerDialog
 import android.app.Dialog
-import android.content.Intent
+import android.app.TimePickerDialog
+import android.app.TimePickerDialog.OnTimeSetListener
 import android.graphics.Color
-import android.os.Build.VERSION_CODES.P
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.mio.databinding.FragmentBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -20,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -32,7 +32,12 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     private var param2: String? = null
 
     private lateinit var bsBinding : FragmentBottomSheetBinding
+    //선택한 날짜
     private var selectTargetDate = ""
+    //선택한 시간
+    private var selectTime = ""
+
+    //필터로 선택한 데이터들을 외부로 전송하기 위한 리스너
     private var listener: OnSendFromBottomSheetDialog? = null
 
     //버튼 체크 변수들
@@ -72,17 +77,49 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 Calendar.DAY_OF_MONTH)).show()
         }
 
+        bsBinding.filterTime.setOnClickListener {
+            showHourPicker()
+        /*val time = TimePickerDialog.OnTimeSetListener { _, i, i2 ->
+                selectTime = "${i} 시 ${i2} 분?"
+
+                bsBinding.selectTime.text = selectTime
+                bsBinding.selectDateTv.setTextColor(Color.BLACK)
+            }
+
+            val timePickerDialog = TimePickerDialog(
+                activity,
+                android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
+                time,
+                hour,
+                minute,
+                true
+            )
+
+            TimePickerDialog(requireActivity(), time, 15, 24, false)
+            timePickerDialog.setTitle("Choose hour:")
+            timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+            timePickerDialog.show()*/
+        }
+
         bsBinding.filterChecklistIv.setOnClickListener {
             isCheckListClicked = !isCheckListClicked
             if (isCheckListClicked) {
+                bsBinding.filterChecklistIv.animate().apply {
+                    duration = 300
+                    rotation(180f)
+                }
                 CoroutineScope(Dispatchers.Main).launch {
-                    bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_update_icon)
-                    bsBinding.checklistLl.visibility = View.VISIBLE
+                    //bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_update_icon)
+                    bsBinding.checklistDetailView.visibility = View.VISIBLE
                 }
             } else {
+                bsBinding.filterChecklistIv.animate().apply {
+                    duration = 300
+                    rotation(0f)
+                }
                 CoroutineScope(Dispatchers.Main).launch {
-                    bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_icon)
-                    bsBinding.checklistLl.visibility = View.GONE
+                    //bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_icon)
+                    bsBinding.checklistDetailView.visibility = View.GONE
                 }
             }
         }
@@ -242,6 +279,41 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         return bsBinding.root
+    }
+
+    private fun showHourPicker() {
+        val myCalender = Calendar.getInstance()
+        val hour = myCalender[Calendar.HOUR_OF_DAY]
+        val minute = myCalender[Calendar.MINUTE]
+        val myTimeListener =
+            OnTimeSetListener { view, hourOfDay, minute ->
+                if (view.isShown) {
+                    myCalender[Calendar.HOUR_OF_DAY] = hourOfDay
+                    myCalender[Calendar.MINUTE] = minute
+                    selectTime = if (hourOfDay > 12) {
+                        val pm = hourOfDay - 12;
+                        "오후 " + pm + "시 " + minute + "분 선택"
+                    } else {
+                        "오전 " + hour + "시 " + minute + "분 선택"
+                    }
+                    //selectTime = "${hourOfDay} 시 ${minute} 분"
+
+                    bsBinding.selectTime.text = selectTime
+                    bsBinding.selectDateTv.setTextColor(Color.BLACK)
+                }
+            }
+        val timePickerDialog = TimePickerDialog(
+            activity,
+            //여기서 테마 설정해서 커스텀하기
+            android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
+            myTimeListener,
+            hour,
+            minute,
+            true
+        )
+        timePickerDialog.setTitle("시간 선택 :")
+        timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        timePickerDialog.show()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

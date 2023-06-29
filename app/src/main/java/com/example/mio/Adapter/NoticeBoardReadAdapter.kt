@@ -17,11 +17,11 @@ class NoticeBoardReadAdapter : RecyclerView.Adapter<NoticeBoardReadAdapter.Notic
         private var position : Int? = null
         var commentAccountId = binding.userEmail
         //var accountProfile = binding.accountImage
-        var commenetContent = binding.postItemContentText
+        var commentContent = binding.postItemContentText
         fun bind(comment : CommentData, position : Int) {
             this.position = position
             commentAccountId.text = comment.commentAccountID
-            commenetContent.text = comment.commentContent
+            commentContent.text = comment.commentContent
             //accountProfile.setImageURI() = pillData.pillTakeTime
 
             binding.root.setOnClickListener {

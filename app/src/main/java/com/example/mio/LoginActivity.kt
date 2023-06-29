@@ -40,7 +40,9 @@ import java.io.IOException
 class LoginActivity : AppCompatActivity() {
     lateinit var mGoogleSignInClient: GoogleSignInClient
     lateinit var resultLauncher: ActivityResultLauncher<Intent>
-    lateinit var mBinding : ActivityLoginBinding
+    private val mBinding by lazy {
+        ActivityLoginBinding.inflate(layoutInflater)
+    }
     private val CLIENT_WEB_ID_KEY = BuildConfig.client_web_id_key
     private val CLIENT_WEB_SECRET_KEY = BuildConfig.client_web_secret_key
     private val SERVER_URL = BuildConfig.server_URL
@@ -75,7 +77,7 @@ class LoginActivity : AppCompatActivity() {
         }*/
         initSplashScreen()
         super.onCreate(savedInstanceState)
-        mBinding = ActivityLoginBinding.inflate(layoutInflater)
+
         setContentView(mBinding.root)
 
         setResultSignUp()
@@ -201,7 +203,7 @@ class LoginActivity : AppCompatActivity() {
 
             //회원가입과 함께 새로운 계정 정보 저장
             if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity)!!.isEmpty()) {
-                //나중에 재개편 필요함 -> navigation graph를 정리할 필요성이 있음
+                //나중에 재개편 필요함 -> navigation graph를 정리할 필요성이 있음 Todo
                 // call Login Activity
                 //val intent = Intent(this@MainActivity, LoginActivity::class.java)
                 intent.putExtra("email", saveSharedPreferenceGoogleLogin.setUserEMAIL(this, email).toString())

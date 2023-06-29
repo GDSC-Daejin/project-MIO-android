@@ -2,15 +2,14 @@ package com.example.mio
 
 import android.app.DatePickerDialog
 import android.app.Dialog
-import android.content.Intent
+import android.app.TimePickerDialog
+import android.app.TimePickerDialog.OnTimeSetListener
 import android.graphics.Color
-import android.os.Build.VERSION_CODES.P
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.mio.databinding.FragmentBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -20,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -32,18 +32,25 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     private var param2: String? = null
 
     private lateinit var bsBinding : FragmentBottomSheetBinding
+    //선택한 날짜
     private var selectTargetDate = ""
+    //선택한 시간
+    private var selectTime = ""
+
+    //필터로 선택한 데이터들을 외부로 전송하기 위한 리스너
     private var listener: OnSendFromBottomSheetDialog? = null
 
     //버튼 체크 변수들
     //체크리스트 펴기 체크
     private var isCheckListClicked = false
     //등하교 버튼 체크
-    private var isCheckSchool = false
+    private var isCheckSchool = ""
     //흡연여부 체크
-    private var isCheckSmoke = false
+    private var isCheckSmoke = ""
     //성별 체크
-    private var isCheckGender = false
+    private var isCheckGender = ""
+    //참여 인원 수
+    private var participateNumberOfPeople = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,59 +77,195 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 Calendar.DAY_OF_MONTH)).show()
         }
 
+        bsBinding.filterTime.setOnClickListener {
+            showHourPicker()
+        /*val time = TimePickerDialog.OnTimeSetListener { _, i, i2 ->
+                selectTime = "${i} 시 ${i2} 분?"
+
+                bsBinding.selectTime.text = selectTime
+                bsBinding.selectDateTv.setTextColor(Color.BLACK)
+            }
+
+            val timePickerDialog = TimePickerDialog(
+                activity,
+                android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
+                time,
+                hour,
+                minute,
+                true
+            )
+
+            TimePickerDialog(requireActivity(), time, 15, 24, false)
+            timePickerDialog.setTitle("Choose hour:")
+            timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+            timePickerDialog.show()*/
+        }
+
         bsBinding.filterChecklistIv.setOnClickListener {
             isCheckListClicked = !isCheckListClicked
             if (isCheckListClicked) {
+                bsBinding.filterChecklistIv.animate().apply {
+                    duration = 300
+                    rotation(180f)
+                }
                 CoroutineScope(Dispatchers.Main).launch {
-                    bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_update_icon)
-                    bsBinding.checklistLl.visibility = View.VISIBLE
+                    //bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_update_icon)
+                    bsBinding.checklistDetailView.visibility = View.VISIBLE
                 }
             } else {
+                bsBinding.filterChecklistIv.animate().apply {
+                    duration = 300
+                    rotation(0f)
+                }
                 CoroutineScope(Dispatchers.Main).launch {
-                    bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_icon)
-                    bsBinding.checklistLl.visibility = View.GONE
+                    //bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_icon)
+                    bsBinding.checklistDetailView.visibility = View.GONE
                 }
             }
         }
 
+        bsBinding.filterMinus.setOnClickListener {
+            participateNumberOfPeople -= 1
+            if (participateNumberOfPeople > 0) {
+                bsBinding.filterParticipateTv.text = participateNumberOfPeople.toString()
+            } else {
+                bsBinding.filterParticipateTv.text = "1"
+                participateNumberOfPeople = 1
+            }
+        }
+
         bsBinding.filterPlus.setOnClickListener {
-            println("plis")
+            participateNumberOfPeople += 1
+            if (participateNumberOfPeople < 11) {
+                bsBinding.filterParticipateTv.text = participateNumberOfPeople.toString()
+            } else {
+                bsBinding.filterParticipateTv.text = "1"
+                participateNumberOfPeople = 1
+            }
         }
 
         bsBinding.gtschoolBtn.setOnClickListener {
-            isCheckSchool = true //등교
-            println("sdag")
-            bsBinding.gtschoolBtn.setBackgroundColor(
-                ContextCompat.getColor(requireActivity(),
-                R.color.mio_blue_4))
+            isCheckSchool = "등교" //등교
 
-            bsBinding.aschoolBtn.setBackgroundColor(
-                ContextCompat.getColor(requireActivity(),
-                    R.color.mio_gray_1))
+            bsBinding.gtschoolBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_update_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+            }
+
+            bsBinding.aschoolBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+            }
         }
 
         bsBinding.aschoolBtn.setOnClickListener {
-            isCheckSchool = false //하교
-            println("gl")
-            bsBinding.gtschoolBtn.setBackgroundColor(
-                ContextCompat.getColor(requireActivity(),
-                    R.color.mio_gray_1))
+            isCheckSchool = "하교" //하교
 
-            bsBinding.aschoolBtn.setBackgroundColor(
-                ContextCompat.getColor(requireActivity(),
-                    R.color.mio_blue_4))
+            bsBinding.aschoolBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_update_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+            }
+            bsBinding.gtschoolBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+            }
         }
 
         bsBinding.manBtn.setOnClickListener {
-            println("ma")
+            isCheckGender = "남성" //남성
+
+            bsBinding.manBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_update_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+            }
+            bsBinding.womanBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+            }
         }
 
         bsBinding.womanBtn.setOnClickListener {
-            println("wo")
+            isCheckGender = "여성" //여성
+
+            bsBinding.womanBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_update_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+            }
+            bsBinding.manBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+            }
+        }
+
+        bsBinding.smokerBtn.setOnClickListener {
+            isCheckSmoke = "흡연 O" //흡연 O
+
+            bsBinding.smokerBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_update_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+            }
+            bsBinding.nsmokerBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+            }
+        }
+
+        bsBinding.nsmokerBtn.setOnClickListener {
+            isCheckSmoke = "흡연 x" //흡연 X
+
+            bsBinding.nsmokerBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_update_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+            }
+            bsBinding.smokerBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+            }
         }
 
         bsBinding.filterResetTvBtn.setOnClickListener {
+            //뷰 초기화
+            CoroutineScope(Dispatchers.Main).launch {
+                bsBinding.gtschoolBtn.apply {
+                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                }
+                bsBinding.aschoolBtn.apply {
+                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                }
+                bsBinding.manBtn.apply {
+                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                }
+                bsBinding.womanBtn.apply {
+                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                }
+                bsBinding.smokerBtn.apply {
+                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                }
+                bsBinding.nsmokerBtn.apply {
+                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                }
+            }
 
+            /*값 초기화*/
+
+            //등하교 버튼 체크
+            isCheckSchool = ""
+            //흡연여부 체크
+            isCheckSmoke = ""
+            //성별 체크
+            isCheckGender = ""
+            //참여 인원 수
+            participateNumberOfPeople = 1
+            bsBinding.filterParticipateTv.text = "1"
+
+            bsBinding.selectDateTv.text = "yyyy/mm/dd"
+            bsBinding.selectDateTv.setTextColor(Color.LTGRAY)
         }
 
         bsBinding.bottomSheetDismissIv.setOnClickListener {
@@ -131,11 +274,46 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.filterSearchBtn.setOnClickListener {
             if (listener == null) return@setOnClickListener
-            listener?.sendValue("BottomSheetDialog에서 검색 버튼 클릭함!")
+            listener?.sendValue("$selectTargetDate, ${participateNumberOfPeople}, $isCheckSmoke, $isCheckGender, $isCheckSchool")
             dismiss()
         }
 
         return bsBinding.root
+    }
+
+    private fun showHourPicker() {
+        val myCalender = Calendar.getInstance()
+        val hour = myCalender[Calendar.HOUR_OF_DAY]
+        val minute = myCalender[Calendar.MINUTE]
+        val myTimeListener =
+            OnTimeSetListener { view, hourOfDay, minute ->
+                if (view.isShown) {
+                    myCalender[Calendar.HOUR_OF_DAY] = hourOfDay
+                    myCalender[Calendar.MINUTE] = minute
+                    selectTime = if (hourOfDay > 12) {
+                        val pm = hourOfDay - 12;
+                        "오후 " + pm + "시 " + minute + "분 선택"
+                    } else {
+                        "오전 " + hour + "시 " + minute + "분 선택"
+                    }
+                    //selectTime = "${hourOfDay} 시 ${minute} 분"
+
+                    bsBinding.selectTime.text = selectTime
+                    bsBinding.selectDateTv.setTextColor(Color.BLACK)
+                }
+            }
+        val timePickerDialog = TimePickerDialog(
+            activity,
+            //여기서 테마 설정해서 커스텀하기
+            android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
+            myTimeListener,
+            hour,
+            minute,
+            true
+        )
+        timePickerDialog.setTitle("시간 선택 :")
+        timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        timePickerDialog.show()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

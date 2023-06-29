@@ -11,8 +11,8 @@ interface MioInterface {
     fun getDataByPage(@Query("page") page : Int,
                       @Query("size") size : Int?) : Call<MyResponse>
 
-    @POST("post/{categoryId}")
-    fun addPostData(@Body postListData: PostData) : Call<MyResponse>
+    @GET("/readAll")
+    fun getServerPostData() : Call<PostReadAllResponse>
 
     //회원가입
     @POST("/auth/google")

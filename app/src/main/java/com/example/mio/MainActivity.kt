@@ -28,6 +28,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private lateinit var mBinding : ActivityMainBinding
+
     private val TAG_HOME = "home_fragment"
     private val TAG_SEARCH = "search_fragment"
     private val TAG_ACCOUNT = "account_fragment"

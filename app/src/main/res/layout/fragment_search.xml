@@ -10,27 +10,47 @@
         android:id="@+id/search_et"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
         android:background="@drawable/searchview_custom_background"
-        android:imeOptions="actionSearch"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        app:queryHint="검색"
-        app:queryBackground="@drawable/searchview_custom_background"
+        android:imeOptions="actionSearch"
         app:closeIcon="@drawable/baseline_cancel_24"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:queryBackground="@drawable/searchview_custom_background"
+        app:queryHint="검색" />
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/search_tab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:background="@color/white"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_et"
+        app:tabIndicatorColor="@color/black" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/search_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_tab_layout" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_RV"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/search_et"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        tools:listitem="@layout/post_item"/>
-
-
+        tools:listitem="@layout/search_word_layout" />
 </androidx.constraintlayout.widget.ConstraintLayout>

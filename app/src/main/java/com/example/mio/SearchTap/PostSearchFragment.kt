@@ -79,10 +79,10 @@ class PostSearchFragment : Fragment() {
     }
 
     private fun testData() {
-        searchAllData.add(PostData("2020", 2, "aaaa", "aaaa", "22", "22"))
-        searchAllData.add(PostData("2020", 2, "bbb", "bbb", "22", "22"))
-        searchAllData.add(PostData("2020", 2, "cc", "cc", "22", "22"))
-        searchAllData.add(PostData("2020", 2, "csa", "csa", "22", "22"))
+        searchAllData.add(PostData("2020", 2, "aaaa", "aaaa", "22", "22", "test", "test",1, 4))
+        searchAllData.add(PostData("2020", 2, "bbb", "bbb", "22", "22","test", "test",1, 4))
+        searchAllData.add(PostData("2020", 2, "cc", "cc", "22", "22","test", "test",1, 4))
+        searchAllData.add(PostData("2020", 2, "csa", "csa", "22", "22","test", "test",1, 4))
     }
 
     private fun initSearchRecyclerView() {

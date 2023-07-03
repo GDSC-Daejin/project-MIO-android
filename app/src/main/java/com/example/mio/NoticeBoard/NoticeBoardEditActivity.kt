@@ -3,7 +3,9 @@ package com.example.mio.NoticeBoard
 import android.R.attr.y
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -11,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.mio.MainActivity
 import com.example.mio.Model.PostData
 import com.example.mio.Model.SharedViewModel
+import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.TabCategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
@@ -29,34 +32,28 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     private var isCheckData = false
     private var categorySelect = ""
 
-    //뷰모델
-    private var sharedViewModel: SharedViewModel? = null
-    //받아오는 데이터
-    private var selectCalendarDataNoticeBoard : HashMap<String, ArrayList<PostData>> = HashMap()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityNoticeBoardEditBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
 
-        sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
-        //저장된 거 가져옴
-        val editObserver = androidx.lifecycle.Observer<HashMap<String, ArrayList<PostData>>> { textValue ->
-            selectCalendarDataNoticeBoard = textValue
-        }
-        sharedViewModel!!.getCalendarLiveData().observe(this, editObserver)
 
 
         val type = intent.getStringExtra("type")
 
         /*if (type.equals("ADD")) { //add
-            //temp = intent.getSerializableExtra("postItem") as PostData?
-            *//*mBinding.editAdd.text = temp!!.postContent
-            nbrBinding.readAccountId.text = temp!!.accountID*//*
+            temp = intent.getSerializableExtra("postItem") as PostData?
+            mBinding.editAdd.text = temp!!.postContent
+
         } else { //edit
 
         }*/
-        mBinding.datePickerBtn.setOnClickListener {
+
+
+
+        //여기가 사용할것들
+        ////////////////////////////
+       /* mBinding.datePickerBtn.setOnClickListener {
             val cal = Calendar.getInstance()
             val data = DatePickerDialog.OnDateSetListener { view, year, month, day ->
                selectTargetDate = "${year}년/${month+1}월/${day}일"
@@ -66,11 +63,11 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
         mBinding.categorySelectBtn.setOnClickListener {
             categorySelect = "taxi"
-        }
-
-
-        //카테고리 생각하여 데이터 변경하기 Todo
-        mBinding.editAdd.setOnClickListener {
+        }*/
+//여기가 사용할것들
+///////////////////////////////////
+         //카테고리 생각하여 데이터 변경하기 Todo
+         /*mBinding.editAdd.setOnClickListener {
             val contentPost = mBinding.editPostContent.text.toString()
             val contentTitle = mBinding.editPostTitle.text.toString()
 
@@ -80,7 +77,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     //현재 로그인된 유저 email 가져오기
                     userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
                     //데이터 세팅 후 임시저장
-                    temp = PostData(userEmail, pos, contentTitle, contentPost, selectTargetDate, categorySelect)
+                    temp = PostData(userEmail, pos, contentTitle, contentPost, selectTargetDate, categorySelect, "location", "targetTime" ,1, 4)
                     selectCalendarDataNoticeBoard[selectTargetDate] = arrayListOf()
                     selectCalendarDataNoticeBoard[selectTargetDate]!!.add(temp!!)
                     //pos는 현재 저장되지 않지만 나중에 짜피 백엔드에 데이터 넣을 거니 괜찮을듯
@@ -91,10 +88,10 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                         putExtra("postData", temp)
                         putExtra("flag", 0)
                     }
-                   /*val intent = Intent(this, TaxiTabFragment::class.java).apply {
+                   *//*val intent = Intent(this, TaxiTabFragment::class.java).apply {
                         putExtra("postData", temp)
                         putExtra("flag", 0)
-                    }*/
+                    }*//*
                     pos += 1
                     setResult(RESULT_OK, intent)
                     finish()
@@ -114,7 +111,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
                 }
             }
-        }
+        }*/
 
         //뒤로가기
         mBinding.backArrow.setOnClickListener {
@@ -126,15 +123,28 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         }
 
 
+    }
 
+    private fun firstVF() {
+        val title = mBinding.editTitle.text.toString()
 
+        mBinding.editCalendar.setOnClickListener {
+            val cal = Calendar.getInstance()
+            val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
+                selectTargetDate = "${year}년/${month+1}월/${day}일"
+                mBinding.editSelectDateTv.text = selectTargetDate
+                mBinding.editSelectDateTv.setTextColor(Color.BLACK)
+            }
+            DatePickerDialog(this, R.style.MySpinnerDatePickerStyle, data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(
+                Calendar.DAY_OF_MONTH)).show()
+        }
     }
 
 
-    /*override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when(item.itemId) {
 
         }
         return super.onOptionsItemSelected(item)
-    }*/
+    }
 }

@@ -14,6 +14,7 @@ import com.example.mio.Model.DateData
 import com.example.mio.databinding.CalendarCellBinding
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 
 class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>(){
@@ -49,7 +50,6 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
         return CalendarViewHolder(binding)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: CalendarAdapter.CalendarViewHolder, position: Int) {
         holder.bind(calendarItemData[holder.adapterPosition]!!, holder.adapterPosition)
         var day = calendarItemData[holder.adapterPosition]
@@ -73,7 +73,7 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
             notifyItemChanged(oldSelectedPostion)
             notifyItemChanged(selectedPostion)
 
-            itemClickListener.onClick(it, holder.adapterPosition, calendarItemData[holder.adapterPosition]!!.date.toInt())
+            itemClickListener.onClick(it, holder.adapterPosition, "${calendarItemData[holder.adapterPosition]!!.year}-${calendarItemData[holder.adapterPosition]!!.month}-${calendarItemData[holder.adapterPosition]!!.date}")
         }
     }
 
@@ -91,7 +91,7 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
 
 
     interface ItemClickListener {
-        fun onClick(view: View, position: Int, itemId: Int)
+        fun onClick(view: View, position: Int, itemId: String)
     }
 
     private lateinit var itemClickListener: ItemClickListener

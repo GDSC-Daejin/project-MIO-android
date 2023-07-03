@@ -20,10 +20,7 @@ import com.example.mio.Adapter.CalendarAdapter
 import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.BottomSheetFragment
 import com.example.mio.CalendarUtil
-import com.example.mio.Model.DateData
-import com.example.mio.Model.PostData
-import com.example.mio.Model.PostReadAllResponse
-import com.example.mio.Model.SharedViewModel
+import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.RetrofitServerConnect
@@ -31,6 +28,7 @@ import com.example.mio.databinding.FragmentTaxiTabBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -38,8 +36,10 @@ import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -107,6 +107,7 @@ class TaxiTabFragment : Fragment() {
         initNoticeBoardRecyclerView()
         initCalendarRecyclerView()
 
+        setData()
 
         //recyclerview item클릭 시
         noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
@@ -126,7 +127,7 @@ class TaxiTabFragment : Fragment() {
         //캘린더 날짜에 저장된 데이터들로 계속해서 바꿔줌 나중에 viewmodel로 변경예정(Todo)
         calendarAdapter!!.setItemClickListener(object : CalendarAdapter.ItemClickListener {
             //여기서 position = 0시작은 date가 되야함 itemId=1로 시작함
-            override fun onClick(view: View, position: Int, itemId: Int) {
+            override fun onClick(view: View, position: Int, itemId: String) {
                 /*if (selectedPostion == position) {
                     view.setBackgroundColor(Color.BLUE)
                 } else {
@@ -136,22 +137,10 @@ class TaxiTabFragment : Fragment() {
                 selectedPostion = position*/
 
                 CoroutineScope(Dispatchers.IO).launch {
-
                     if (calendarTaxiAllData.isNotEmpty()) {
-                        //라이브모델에 저장된 배열의 calendarTaxialldata에 position의 targetdate
                         try {
-                            val selectTemp =
-                                testselectCalendarData[calendarTaxiAllData[position].postTargetDate]
-                            if (selectTemp != null) {
-                                println(testselectCalendarData[calendarTaxiAllData[position].postTargetDate])
-                                noticeBoardAdapter!!.postItemData = selectTemp
-                                println(taxiAllData)
-
-                            } else {
-                                taxiAllData.clear()
-                                calendarAdapter!!.notifyDataSetChanged()
-                                println("null")
-                            }
+                            //val selectDateData = calendarTaxiAllData.filter { it.postTargetDate }
+                            println(itemId)
                         } catch (e: java.lang.IndexOutOfBoundsException) {
                             println("tesetstes")
                         }
@@ -176,11 +165,6 @@ class TaxiTabFragment : Fragment() {
             for ((key, value) in testselectCalendarData) {
                 println("전체 : ${key} : ${value}")
             }
-
-            setData()
-
-
-
 
             noticeBoardAdapter!!.postItemData = taxiAllData
             noticeBoardAdapter!!.notifyDataSetChanged()
@@ -266,10 +250,27 @@ class TaxiTabFragment : Fragment() {
 
         val cal = Calendar.getInstance()
         //cal.set(2023, 5, 1)
+        /*cal.add(Calendar.YEAR, LocalDate.now().year)
+        cal.add(Calendar.MONTH, LocalDate.now().monthValue)
+        cal.add(Calendar.DAY_OF_MONTH, LocalDate.now().dayOfMonth)
+
+         */
+
+        //현재 달의 마지막 날짜
+        val localDate = LocalDate.now()
+        val yearMonth = YearMonth.from(localDate)
+        val lastDayOfMonth = yearMonth.lengthOfMonth()
+
+        //월 설정
+        taxiTabBinding.monthTv.text = LocalDate.now().month.toString()
+
+
+        //val localDate = LocalDate.parse("${LocalDate.now().year}-${LocalDate.now().monthValue}-${LocalDate.now().dayOfMonth}")
         //현재 날짜
         //val currentDate = LocalDate.now()
         //현재 달의 마지막 날짜
-        val lastDayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+        //val lastDayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+        //val lastDayOfMonth = localDate.withDayOfMonth(localDate.lengthOfMonth())
         for (i in 1..lastDayOfMonth) {
             val date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, i)
             val dayOfWeek: DayOfWeek = date.dayOfWeek
@@ -277,7 +278,8 @@ class TaxiTabFragment : Fragment() {
             /*println("날짜" + date)
             println("dayofweek" + dayOfWeek)*/
             //현재 월, 현재 요일, 날짜
-            calendarItemData.add(DateData(Calendar.DAY_OF_MONTH.toString(),dayOfWeek.toString().substring(0, 3), i.toString()))
+            //println(DateData(LocalDate.now().year.toString(), LocalDate.now().month.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
+            calendarItemData.add(DateData(LocalDate.now().year.toString(), Calendar.DAY_OF_MONTH.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
         }
     }
 
@@ -299,18 +301,57 @@ class TaxiTabFragment : Fragment() {
     private fun setData() {
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
+            delay(1000L)
             call.getServerPostData().enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
-                        println(response.body()!!.content)
+                        //println(response.body()!!.content)
                         /*val start = SystemClock.elapsedRealtime()
 
-                        // 텍스트뷰에 현재시간 출력
+                        // 함수 실행시간
                         val date = Date(start)
                         val mFormat = SimpleDateFormat("HH:mm:ss")
                         val time = mFormat.format(date)
                         println(start)
                         println(time)*/
+                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
+                        s.add(PostReadAllResponse())*/
+
+
+                        for (i in response.body()!!.content.indices) {
+                            //탑승자 null체크
+                            var part = 0
+                            if (response.isSuccessful) {
+                                part = try {
+                                    response.body()!!.content[i].participants.isEmpty()
+                                    response.body()!!.content[i].participants.size
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    0
+                                }
+                            }
+
+                            //println(response!!.body()!!.content[i].user.studentId)
+                            taxiAllData.add(PostData(
+                                response.body()!!.content[i].user.studentId,
+                                response.body()!!.content[i].postId,
+                                response.body()!!.content[i].title,
+                                response.body()!!.content[i].content,
+                                response.body()!!.content[i].targetDate,
+                                response.body()!!.content[i].targetTime,
+                                response.body()!!.content[i].category.categoryName,
+                                "노원역 6번 출구",
+                                //participantscount가 현재 참여하는 인원들
+                                part,
+                                //numberOfPassengers은 총 탑승자 수
+                                response.body()!!.content[i].numberOfPassengers
+                            ))
+                            noticeBoardAdapter!!.notifyDataSetChanged()
+                        }
+
+                        calendarTaxiAllData = taxiAllData
+                        calendarAdapter!!.notifyDataSetChanged()
+
                     } else {
                         Log.d("f", response.code().toString())
                     }

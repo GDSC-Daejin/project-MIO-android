@@ -6,7 +6,12 @@ data class PostData(
     var postTitle : String,
     var postContent : String,
     var postTargetDate : String,
-    var postCategory : String
+    var postTargetTime : String,
+    var postCategory : String,
+    var postLocation : String,
+    var postParticipation : Int,
+    var postParticipationTotal : Int,
+
 ) : java.io.Serializable {
 
 }

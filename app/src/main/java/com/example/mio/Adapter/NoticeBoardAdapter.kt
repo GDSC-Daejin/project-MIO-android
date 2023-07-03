@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.PostData
+import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
 
 
@@ -22,10 +23,20 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
         //var accountId = binding.accountId
         //var accountProfile = binding.accountImage
         var postTitle = binding.postTitle
+        var postDate = binding.postDate
+        var postLocation = binding.postLocation
+        var postParticipation = binding.postParticipation
+        var postParticipantTotal = binding.postParticipationTotal
+
         fun bind(accountData: PostData, position : Int) {
             this.position = position
             //accountId.text = accountData.accountID
+            val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
             postTitle.text = accountData.postTitle
+            postDate.text = s
+            postLocation.text = accountData.postLocation
+            postParticipation.text = accountData.postParticipation.toString()
+            postParticipantTotal.text = accountData.postParticipationTotal.toString()
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
 

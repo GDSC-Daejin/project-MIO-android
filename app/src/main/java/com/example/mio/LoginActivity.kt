@@ -35,6 +35,7 @@ import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 
 class LoginActivity : AppCompatActivity() {
@@ -156,6 +157,8 @@ class LoginActivity : AppCompatActivity() {
             .build()
         val service = retrofit.create(MioInterface::class.java)*/
         val call = RetrofitServerConnect.service
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+
         CoroutineScope(Dispatchers.IO).launch {
             call.addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
                 override fun onResponse(
@@ -163,6 +166,14 @@ class LoginActivity : AppCompatActivity() {
                     response: retrofit2.Response<LoginResponsesData?>
                 ) {
                     if (response.isSuccessful) {
+                        val builder =  OkHttpClient.Builder()
+                            .connectTimeout(1, TimeUnit.SECONDS)
+                            .readTimeout(30, TimeUnit.SECONDS)
+                            .writeTimeout(15, TimeUnit.SECONDS)
+                            .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
+                        intent.putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
+
+                        builder.build()
                         println("success")
                         println(response.code())
                     } else {
@@ -177,6 +188,18 @@ class LoginActivity : AppCompatActivity() {
 
         /*val s = service.addUserInfoData(userInfoToken).execute().code()
         println(s)*/
+    }
+
+    class HeaderInterceptor constructor(private val token: String) : Interceptor {
+
+        @Throws(IOException::class)
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val token = "Bearer $token"
+            val newRequest = chain.request().newBuilder()
+                .addHeader("Authorization", token)
+                .build()
+            return chain.proceed(newRequest)
+        }
     }
 
     private fun setResultSignUp() {
@@ -206,7 +229,10 @@ class LoginActivity : AppCompatActivity() {
                 //나중에 재개편 필요함 -> navigation graph를 정리할 필요성이 있음 Todo
                 // call Login Activity
                 //val intent = Intent(this@MainActivity, LoginActivity::class.java)
-                intent.putExtra("email", saveSharedPreferenceGoogleLogin.setUserEMAIL(this, email).toString())
+                intent.apply {
+                    putExtra("email", saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email).toString())
+                }
+
                 startActivity(intent)
                 finish()
 

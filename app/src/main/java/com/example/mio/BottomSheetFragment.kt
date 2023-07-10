@@ -265,7 +265,10 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             bsBinding.filterParticipateTv.text = "1"
 
             bsBinding.selectDateTv.text = "yyyy/mm/dd"
-            bsBinding.selectDateTv.setTextColor(Color.LTGRAY)
+            bsBinding.selectDateTv.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
+
+            bsBinding.selectTime.text = "오전 00:00"
+            bsBinding.selectTime.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
         }
 
         bsBinding.bottomSheetDismissIv.setOnClickListener {

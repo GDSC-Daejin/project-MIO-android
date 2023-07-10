@@ -8,5 +8,5 @@ object RetrofitServerConnect {
     private val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
-    val service = retrofit.create(MioInterface::class.java)
+    val service: MioInterface = retrofit.create(MioInterface::class.java)
 }

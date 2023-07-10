@@ -8,6 +8,24 @@ import androidx.lifecycle.ViewModel
 
 
 class SharedViewModel : ViewModel() {
+    private val _checkCurrentPage : MutableLiveData<Int> = MutableLiveData()
+    val checkCurrentPage : LiveData<Int> = _checkCurrentPage
+    fun postCheckPage(page : Int) {
+        _checkCurrentPage.value = page
+    }
+
+    private val _checkComplete : MutableLiveData<Boolean> = MutableLiveData()
+    val checkComplete : LiveData<Boolean> = _checkComplete
+    fun postCheckComplete(complete : Boolean) {
+        _checkComplete.value = complete
+    }
+
+
+    private val _allCheck : MutableLiveData<RequirementData> = MutableLiveData()
+    val allCheck : LiveData<RequirementData> = _allCheck
+    fun postCheckValue(check : RequirementData) {
+        _allCheck.value = check
+    }
     //추가된 targetDate data 받기
     private val liveData = MutableLiveData<ArrayList<String>>()
     var notificationLiveData = MutableLiveData<ArrayList<NotificationData>>()

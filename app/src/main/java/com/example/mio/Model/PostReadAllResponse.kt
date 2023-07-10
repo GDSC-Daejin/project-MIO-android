@@ -62,8 +62,10 @@ data class Content(
     var bookMarkCount : Int,
     @SerializedName("participantsCount")
     var participantsCount : Int,
-
-
+    @SerializedName("location")
+    var location : String,
+    @SerializedName("cost")
+    var cost : Int
 )
 
 data class Category(

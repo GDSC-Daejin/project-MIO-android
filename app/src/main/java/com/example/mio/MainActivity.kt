@@ -13,6 +13,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
+import com.example.mio.Model.AddPostData
 import com.example.mio.Model.PostData
 import com.example.mio.Model.SharedViewModel
 import com.example.mio.Navigation.AccountFragment
@@ -157,11 +158,13 @@ class MainActivity : AppCompatActivity() {
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {
             AppCompatActivity.RESULT_OK -> {
-                val post = it.data?.getSerializableExtra("postData") as PostData
+                val post = it.data?.getSerializableExtra("postData") as AddPostData
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {
-
+                        val transaction = supportFragmentManager.beginTransaction()
+                            .replace(R.id.fragment_content, HomeFragment())
+                        transaction.commit()
                     }
                     //edit
 

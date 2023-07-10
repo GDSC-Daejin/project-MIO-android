@@ -7,6 +7,7 @@ import androidx.preference.PreferenceManager
 
 public class SaveSharedPreferenceGoogleLogin {
     private val PREF_USER_EMAIL = "email"
+    private val acctoken = "token"
     fun getSharedPreferences(ctx: Context?): SharedPreferences {
         return PreferenceManager.getDefaultSharedPreferences(ctx!!)
     }
@@ -17,10 +18,19 @@ public class SaveSharedPreferenceGoogleLogin {
         editor.putString(PREF_USER_EMAIL, userName)
         editor.apply()
     }
+    fun setToken(ctx: Context?, token: String?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putString(acctoken, token)
+        editor.apply()
+    }
 
     // 저장된 정보 가져오기
     fun getUserEMAIL(ctx: Context?): String? {
         return getSharedPreferences(ctx).getString(PREF_USER_EMAIL, "")
+    }
+
+    fun getToken(ctx: Context?): String? {
+        return getSharedPreferences(ctx).getString(acctoken, "")
     }
 
     // 로그아웃

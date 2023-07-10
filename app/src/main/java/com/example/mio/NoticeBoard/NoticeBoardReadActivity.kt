@@ -72,19 +72,19 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
         createChannel()
-        sendComment()
-        btnViewChanger()
+        //sendComment()
+        //btnViewChanger()
 
         val type = intent.getStringExtra("type")
 
-        if (type.equals("READ")) {
+        /*if (type.equals("READ")) {
             temp = intent.getSerializableExtra("postItem") as PostData?
             nbrBinding.readContentText.text = temp!!.postContent
             nbrBinding.readAccountId.text = temp!!.accountID
-        }
+        }*/
 
 
-        initRecyclerView()
+        //initRecyclerView()
 
 
         setContentView(nbrBinding.root)
@@ -109,7 +109,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun btnViewChanger() {
+    /*private fun btnViewChanger() {
         nbrBinding.favoriteBtn.setOnClickListener {
             isFavoriteBtn = !isFavoriteBtn
 
@@ -153,11 +153,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
                 //val tempNoti = NotificationData(0, userEmail, temp!!, isApplyBtn, value)
 
-               /* val bundle = Bundle()
+               *//* val bundle = Bundle()
                 bundle.putString("title", "test")
 
                 val sendFragment = NotificationFragment()
-                sendFragment.arguments = bundle*/
+                sendFragment.arguments = bundle*//*
 
 
                 val intent = Intent(this, ApplyNextActivity::class.java)
@@ -170,16 +170,16 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 val dialogView = layoutInflater.inflate(R.layout.apply_alert_dialog, null)
                 builder.setView(dialogView)
                 // p0에 해당 AlertDialog가 들어온다. findViewById를 통해 view를 가져와서 사용
-                /*var listener = DialogInterface.OnClickListener { applyAnswer, p1 ->
+                *//*var listener = DialogInterface.OnClickListener { applyAnswer, p1 ->
                     var alert = applyAnswer as AlertDialog
 
                     //나중에 받고 싶은 값 받기
-                    *//*var edit1: EditText? = alert.findViewById<EditText>(R.id.editText)
+                    *//**//*var edit1: EditText? = alert.findViewById<EditText>(R.id.editText)
                     var edit2: EditText? = alert.findViewById<EditText>(R.id.editText2)
 
                     tv1.text = "${edit1?.text}"
-                    tv1.append("${edit2?.text}")*//*
-                }*/
+                    tv1.append("${edit2?.text}")*//**//*
+                }*//*
                 builder.setNegativeButton("예",
                     DialogInterface.OnClickListener { dialog, which ->
                         ad.dismiss()
@@ -201,7 +201,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         }
 
-        /*isBtnClick = !isBtnClick
+        *//*isBtnClick = !isBtnClick
 
         if (isBtnClick) {
             CoroutineScope(Dispatchers.Main).launch {
@@ -215,7 +215,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 mBinding.button.setBackgroundColor(color)
                 mBinding.button.text = "위치 확인 종료"
             }
-        }*/
+        }*//*
     }
 
     private fun initRecyclerView() {
@@ -266,7 +266,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             //커서 깜빡이 없앰
             nbrBinding.messageET.isCursorVisible = false
         }
-        /*nbrBinding.messageSendIV.setOnClickListener {
+        *//*nbrBinding.messageSendIV.setOnClickListener {
             if (et.isEmpty()) {
                 Toast.makeText(this, "내용을 입력하세요.", Toast.LENGTH_SHORT).show()
             } else {
@@ -274,8 +274,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 commentAllData.add(CommentData("2020202", et, 0))
                 noticeBoardReadAdapter!!.notifyDataSetChanged()
             }
-        }*/
-    }
+        }*//*
+    }*/
     private fun getManager() : NotificationManager {
         return getSystemService(NOTIFICATION_SERVICE) as NotificationManager
     }

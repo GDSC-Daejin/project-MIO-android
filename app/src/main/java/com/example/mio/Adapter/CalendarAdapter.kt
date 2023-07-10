@@ -73,7 +73,17 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
             notifyItemChanged(oldSelectedPostion)
             notifyItemChanged(selectedPostion)
 
-            itemClickListener.onClick(it, holder.adapterPosition, "${calendarItemData[holder.adapterPosition]!!.year}-${calendarItemData[holder.adapterPosition]!!.month}-${calendarItemData[holder.adapterPosition]!!.date}")
+            itemClickListener.onClick(it, holder.adapterPosition, "${calendarItemData[holder.adapterPosition]!!.year}-"+
+                    if (calendarItemData[holder.adapterPosition]!!.month.toInt() < 10) {
+                        "0${calendarItemData[holder.adapterPosition]!!.month}-"
+                    } else {
+                        calendarItemData[holder.adapterPosition]!!.month+"-"
+                    } +
+                    if (calendarItemData[holder.adapterPosition]!!.date.toInt() < 10) {
+                        "0${calendarItemData[holder.adapterPosition]!!.date}"
+                    } else {
+                        calendarItemData[holder.adapterPosition]!!.date
+                    })
         }
     }
 

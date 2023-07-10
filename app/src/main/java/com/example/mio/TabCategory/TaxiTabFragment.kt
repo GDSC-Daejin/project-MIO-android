@@ -139,8 +139,9 @@ class TaxiTabFragment : Fragment() {
                 CoroutineScope(Dispatchers.IO).launch {
                     if (calendarTaxiAllData.isNotEmpty()) {
                         try {
-                            //val selectDateData = calendarTaxiAllData.filter { it.postTargetDate }
-                            println(itemId)
+                            val selectDateData = calendarTaxiAllData.filter { it.postTargetDate == itemId }
+                            //선택한 날짜에 데이터가 변경되도록 Todo
+                            println(selectDateData)
                         } catch (e: java.lang.IndexOutOfBoundsException) {
                             println("tesetstes")
                         }
@@ -279,7 +280,9 @@ class TaxiTabFragment : Fragment() {
             println("dayofweek" + dayOfWeek)*/
             //현재 월, 현재 요일, 날짜
             //println(DateData(LocalDate.now().year.toString(), LocalDate.now().month.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
-            calendarItemData.add(DateData(LocalDate.now().year.toString(), Calendar.DAY_OF_MONTH.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
+
+            calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
+
         }
     }
 
@@ -305,6 +308,7 @@ class TaxiTabFragment : Fragment() {
             call.getServerPostData().enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
+
                         //println(response.body()!!.content)
                         /*val start = SystemClock.elapsedRealtime()
 
@@ -321,7 +325,15 @@ class TaxiTabFragment : Fragment() {
                         for (i in response.body()!!.content.indices) {
                             //탑승자 null체크
                             var part = 0
+                            var location = ""
+                            var title = ""
+                            var content = ""
+                            var targetDate = ""
+                            var targetTime = ""
+                            var categoryName = ""
                             if (response.isSuccessful) {
+
+
                                 part = try {
                                     response.body()!!.content[i].participants.isEmpty()
                                     response.body()!!.content[i].participants.size
@@ -329,18 +341,60 @@ class TaxiTabFragment : Fragment() {
                                     Log.d("null", e.toString())
                                     0
                                 }
+                                location = try {
+                                    response.body()!!.content[i].location.isEmpty()
+                                    response.body()!!.content[i].location
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "수락산역 3번 출구"
+                                }
+                                title = try {
+                                    response.body()!!.content[i].title.isEmpty()
+                                    response.body()!!.content[i].title
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                content = try {
+                                    response.body()!!.content[i].content.isEmpty()
+                                    response.body()!!.content[i].content
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                targetDate = try {
+                                    response.body()!!.content[i].targetDate.isEmpty()
+                                    response.body()!!.content[i].targetDate
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                targetTime = try {
+                                    response.body()!!.content[i].targetTime.isEmpty()
+                                    response.body()!!.content[i].targetTime
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                categoryName = try {
+                                    response.body()!!.content[i].category.categoryName.isEmpty()
+                                    response.body()!!.content[i].category.categoryName
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
                             }
 
                             //println(response!!.body()!!.content[i].user.studentId)
                             taxiAllData.add(PostData(
                                 response.body()!!.content[i].user.studentId,
                                 response.body()!!.content[i].postId,
-                                response.body()!!.content[i].title,
-                                response.body()!!.content[i].content,
-                                response.body()!!.content[i].targetDate,
-                                response.body()!!.content[i].targetTime,
-                                response.body()!!.content[i].category.categoryName,
-                                "노원역 6번 출구",
+                                title,
+                                content,
+                                targetDate,
+                                targetTime,
+                                categoryName,
+                                location,
                                 //participantscount가 현재 참여하는 인원들
                                 part,
                                 //numberOfPassengers은 총 탑승자 수
@@ -372,17 +426,18 @@ class TaxiTabFragment : Fragment() {
                     //add
                     0 -> {
                         CoroutineScope(Dispatchers.IO).launch {
-                            taxiAllData.add(post)
+                            /*taxiAllData.add(post)
                             calendarTaxiAllData.add(post) //데이터 전부 들어감
 
                             //들어간 데이터를 key로 분류하여 저장하도록함
                             selectCalendarData[post.postTargetDate] = arrayListOf()
                             selectCalendarData[post.postTargetDate]!!.add(post)
 
-                            println(selectCalendarData)
+                            println(selectCalendarData)*/
+                            setData()
                         }
                         //livemodel을 통해 저장
-                        sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
+                        //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
                         noticeBoardAdapter!!.notifyDataSetChanged()
                     }
                     //edit

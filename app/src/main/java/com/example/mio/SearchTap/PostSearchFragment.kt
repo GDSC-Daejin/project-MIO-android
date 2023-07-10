@@ -14,14 +14,20 @@ import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.SearchAdapter
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.PostData
+import com.example.mio.Model.PostReadAllResponse
 import com.example.mio.Model.SharedViewModel
 import com.example.mio.R
+import com.example.mio.RetrofitServerConnect
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentPostSearchBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -78,15 +84,77 @@ class PostSearchFragment : Fragment() {
         return psBinding!!.root
     }
 
-    private fun testData() {
-        searchAllData.add(PostData("2020", 2, "aaaa", "aaaa", "22", "22", "test", "test",1, 4))
-        searchAllData.add(PostData("2020", 2, "bbb", "bbb", "22", "22","test", "test",1, 4))
-        searchAllData.add(PostData("2020", 2, "cc", "cc", "22", "22","test", "test",1, 4))
-        searchAllData.add(PostData("2020", 2, "csa", "csa", "22", "22","test", "test",1, 4))
+    private fun setSearchData() {
+        val call = RetrofitServerConnect.service
+        CoroutineScope(Dispatchers.IO).launch {
+            call.getServerPostData().enqueue(object : Callback<PostReadAllResponse> {
+                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                    if (response.isSuccessful) {
+                        //println(response.body()!!.content)
+                        /*val start = SystemClock.elapsedRealtime()
+
+                        // 함수 실행시간
+                        val date = Date(start)
+                        val mFormat = SimpleDateFormat("HH:mm:ss")
+                        val time = mFormat.format(date)
+                        println(start)
+                        println(time)*/
+                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
+                        s.add(PostReadAllResponse())*/
+
+
+                        for (i in response.body()!!.content.indices) {
+                            //탑승자 null체크
+                            var part = 0
+                            var location = ""
+                            if (response.isSuccessful) {
+                                part = try {
+                                    response.body()!!.content[i].participants.isEmpty()
+                                    response.body()!!.content[i].participants.size
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    0
+                                }
+                                location = try {
+                                    response.body()!!.content[i].location.isEmpty()
+                                    response.body()!!.content[i].location
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "수락산역 3번 출구"
+                                }
+                            }
+
+                            //println(response!!.body()!!.content[i].user.studentId)
+                            searchAllData.add(PostData(
+                                response.body()!!.content[i].user.studentId,
+                                response.body()!!.content[i].postId,
+                                response.body()!!.content[i].title,
+                                response.body()!!.content[i].content,
+                                response.body()!!.content[i].targetDate,
+                                response.body()!!.content[i].targetTime,
+                                response.body()!!.content[i].category.categoryName,
+                                location,
+                                //participantscount가 현재 참여하는 인원들
+                                part,
+                                //numberOfPassengers은 총 탑승자 수
+                                response.body()!!.content[i].numberOfPassengers
+                            ))
+                            sAdapter!!.notifyDataSetChanged()
+                        }
+                    } else {
+                        Log.d("f", response.code().toString())
+                    }
+                }
+
+                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
+        }
     }
 
     private fun initSearchRecyclerView() {
-        testData()
+        setSearchData()
         sAdapter = SearchAdapter()
 
         psBinding!!.postSearchRv.adapter = sAdapter

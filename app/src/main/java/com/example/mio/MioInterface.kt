@@ -1,6 +1,8 @@
 package com.example.mio
 
 import com.example.mio.Model.*
+import com.google.gson.JsonObject
+import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -16,8 +18,9 @@ interface MioInterface {
     //게시글 생성
     //@Headers("Accept: application/json")
     //@Headers("Authorization : ")
-    @POST("post/{categoryId}")
-    fun addPostData(/*@Header("Content-Type") content_type : String,*/ @Body postData : AddPostData, @Path("categoryId") categoryId : Int) : Call<AddPostResponse>
+    //@Multipart
+    @POST("/post/{categoryId}")
+    fun addPostData(/*@Header("Content-Type") content_type : String,*/ /*@PartMap postData : Map<String, RequestBody>*/@Body postData : AddPostData, @Path("categoryId") categoryId : Int) : Call<AddPostResponse>
 
     @POST("/post/1")
     fun addCarpoolPostData(@Body postData : AddPostData) : Call<AddPostResponse>

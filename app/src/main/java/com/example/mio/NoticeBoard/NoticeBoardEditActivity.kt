@@ -19,18 +19,23 @@ import com.example.mio.*
 import com.example.mio.Model.*
 import com.example.mio.TabCategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
+import com.google.gson.JsonObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 
@@ -59,10 +64,16 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     /*첫 번째 vf*/
     //선택한 날짜
     private var selectTargetDate = ""
+    private var selectFormattedDate = ""
     //설정한 제목
     private var editTitle = ""
     //선택한 시간
     private var selectTime = ""
+    private var selectFormattedTime = ""
+    private var hour1 = 0
+    private var minute1 = 0
+    private var second1 = 0
+    private var nano1 = 0
     //선택한 탑승인원
     private var participateNumberOfPeople = 1
     /*세 번째 vf*/
@@ -321,7 +332,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             val cal = Calendar.getInstance()
             val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
                 selectTargetDate = "${year}년/${month+1}월/${day}일"
-                mBinding.editSelectDateTv.text = selectTargetDate
+                selectFormattedDate = LocalDate.parse(selectTargetDate, DateTimeFormatter.ofPattern("yyyy년/M월/d일")).format(DateTimeFormatter.ISO_DATE)
+                mBinding.editSelectDateTv.text = "${year}년/${month+1}월/${day}일"
                 mBinding.editSelectDateTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_gray_11))
                 //isCalendar = true
                 isAllCheck.isFirstVF.isCalendar = true
@@ -528,12 +540,29 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
     private fun fifthVF() {
         mBinding.completeBtn.setOnClickListener {
+            //저장된 값
             val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
             val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+            /*var interceptor = HttpLoggingInterceptor()
+        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+        val client = OkHttpClient.Builder().addInterceptor(interceptor).build()*/
 
+            /*val retrofit = Retrofit.Builder().baseUrl("url 주소")
+                .addConverterFactory(GsonConverterFactory.create())
+                //.client(client) 이걸 통해 통신 오류 log찍기 가능
+                .build()
+            val service = retrofit.create(MioInterface::class.java)*/
+            //통신로그
+
+            /*val loggingInterceptor = HttpLoggingInterceptor()
+            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+            val clientBuilder = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()*/
+            //통신
             val SERVER_URL = BuildConfig.server_URL
             val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
                 .addConverterFactory(GsonConverterFactory.create())
+                //.client(clientBuilder)
+            //Authorization jwt토큰 로그인
             val interceptor = Interceptor { chain ->
 
                 var newRequest: Request
@@ -543,6 +572,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
                     val expireDate: Long = 1688911317761
                     if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                        //refresh 들어갈 곳
                         newRequest =
                             chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
                         return@Interceptor chain.proceed(newRequest)
@@ -571,24 +601,64 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     if (isAllCheck.isThirdVF.isMGender) {
                         gender = true
                     }
+                    /*val t : RequestBody = editTitle.toRequestBody("text/plain".toMediaTypeOrNull())
+                    val c : RequestBody = detailContent.toRequestBody("text/plain".toMediaTypeOrNull())
+                    val std : RequestBody = selectTargetDate.toRequestBody("text/plain".toMediaTypeOrNull())
+                    val stt : RequestBody = selectTime.toRequestBody("text/plain".toMediaTypeOrNull())
+                    val s : RequestBody = school.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+                    val pnp : RequestBody = participateNumberOfPeople.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+                    val lt : RequestBody = "0.0".toRequestBody("text/plain".toMediaTypeOrNull())
+                    val lot : RequestBody = "0.0".toRequestBody("text/plain".toMediaTypeOrNull())
+                    val location : RequestBody = "수락산역 3번 출구".toRequestBody("text/plain".toMediaTypeOrNull())
+                    val vr : RequestBody = "false".toRequestBody("text/plain".toMediaTypeOrNull())
+                    val cos : RequestBody = selectCost.toRequestBody("text/plain".toMediaTypeOrNull())
+                    val vc : RequestBody = "0".toRequestBody("text/plain".toMediaTypeOrNull())
 
-                    temp = AddPostData(editTitle, detailContent, selectTargetDate, selectTime, school, participateNumberOfPeople, 0, false, 0.0, 0.0, "수락산역 3번 출구", selectCost.toInt())
+                    val requestMap: HashMap<String, RequestBody> = HashMap()
+                    requestMap.put("title", t)
+                    requestMap.put("content", c)
+                    requestMap.put("targetDate", std)
+                    requestMap.put("targetTime", stt)
+                    requestMap.put("verifyGoReturn", s)
+                    requestMap.put("numberOfPassengers", pnp)
+                    requestMap.put("viewCount", vc)
+                    requestMap.put("verifyFinish", vr)
+                    requestMap.put("latitude", lt)
+                    requestMap.put("longitude", lot)
+                    requestMap.put("location", location)
+                    requestMap.put("cost", cos)
+
+                    val obj = JsonObject()
+                    obj.addProperty("title", editTitle)
+                    obj.addProperty("content", detailContent)
+                    obj.addProperty("targetDate", selectTargetDate)
+                    obj.addProperty("verifyGoReturn", school)
+                    obj.addProperty("numberOfPassengers", participateNumberOfPeople)
+                    obj.addProperty("viewCount", 0)
+                    obj.addProperty("verifyFinish", false)
+                    obj.addProperty("latitude", 0.0)
+                    obj.addProperty("longitude", 0.0)
+                    obj.addProperty("location", "수락산역 3번 출구")
+                    obj.addProperty("cost", selectCost)*/
+
+
+                    temp = AddPostData(editTitle, detailContent, selectFormattedDate, selectFormattedTime, school, participateNumberOfPeople, 0, false, 0.0, 0.0, "수락산역 3번 출구", selectCost.toInt())
                     println(temp)
                     CoroutineScope(Dispatchers.IO).launch {
-                        /*"application/json",*/
+                        /*"application/json; charset=UTF-8",*/
                         api.addPostData(temp!!, 1).enqueue(object : Callback<AddPostResponse> {
                             override fun onResponse(
                                 call: Call<AddPostResponse>,
                                 response: Response<AddPostResponse>
                             ) {
+
                                 if (response.isSuccessful) {
                                     println("succcc")
                                 } else {
                                     println("faafa")
                                     Log.d("add", response.errorBody()?.string()!!)
-                                    Log.d("message", response.message().toString())
+                                    Log.d("message", call.request().toString())
                                     println(response.code())
-
                                 }
                             }
 
@@ -725,11 +795,16 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 if (view.isShown) {
                     myCalender[Calendar.HOUR_OF_DAY] = hourOfDay
                     myCalender[Calendar.MINUTE] = minute
+                    val tempS = hourOfDay.toString() + "시 " + minute + "분"
+                    selectFormattedTime = LocalTime.parse(tempS, DateTimeFormatter.ofPattern("H시 m분")).format(DateTimeFormatter.ofPattern("HH:mm"))
+
                     selectTime = if (hourOfDay > 12) {
                         val pm = hourOfDay - 12;
-                        "오후 " + pm + "시 " + minute + "분 선택"
+                        "오후 " + pm + "시 " + minute + "분"
                     } else {
-                        "오전 " + hour + "시 " + minute + "분 선택"
+                        hour1 = hourOfDay
+                        minute1 = minute
+                        "오전 " + hour + "시 " + minute + "분"
                     }
                     //selectTime = "${hourOfDay} 시 ${minute} 분"
 

@@ -8,9 +8,9 @@ data class AddPostData(
     @SerializedName("content")
     var content: String,
     @SerializedName("targetDate")
-    var targetData: String,
+    var targetDate: String,
     @SerializedName("targetTime")
-    var targetTime: Any,
+    var targetTime: String,
     @SerializedName("verifyGoReturn")
     var verifyGoReturn: Boolean,
     @SerializedName("numberOfPassengers")
@@ -30,3 +30,17 @@ data class AddPostData(
 ) : java.io.Serializable {
 
 }
+
+data class AddLocalTime(
+    @SerializedName("hour")
+    var hour : Int,
+    @SerializedName("minute")
+    var minute : Int,
+    @SerializedName("second")
+    var second : Int,
+    @SerializedName("nano")
+    var nano : Int
+): java.io.Serializable {
+
+}
+

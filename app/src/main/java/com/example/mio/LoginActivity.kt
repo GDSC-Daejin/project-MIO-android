@@ -312,7 +312,7 @@ class LoginActivity : AppCompatActivity() {
                         currentUser = user_info[0]
                         println(message)
                         println(user_info[0].id_token)
-                        createClipData(user_info[0].id_token)
+                        //createClipData(user_info[0].id_token)
                         signInCheck(TokenRequest(currentUser.id_token))
                         tempKey.clear()
                         tempValue.clear()
@@ -329,7 +329,8 @@ class LoginActivity : AppCompatActivity() {
         resultLauncher.launch(signIntent)
     }
 
-    private fun createClipData(message : String) {
+    //클립보드에 복사하기
+    /*private fun createClipData(message : String) {
         val clipManager = applicationContext.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
 
         val clipData = ClipData.newPlainText("message", message)
@@ -337,7 +338,7 @@ class LoginActivity : AppCompatActivity() {
         clipManager.setPrimaryClip(clipData)
 
         //Toast.makeText(this, "복사되었습니다.", Toast.LENGTH_SHORT).show()
-    }
+    }*/
 
 
 }

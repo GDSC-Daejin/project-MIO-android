@@ -168,7 +168,7 @@ class NotificationFragment : Fragment() {
             //notificationAllData.clear()
             //searchWordList.addAll(historyData)
             for (i in historyData.indices) {
-                notificationAllData.add(NotificationData(i,"test", PostData("20201530@daejin.ac.kr", 0, "test", "test", "test", "test", "a","10" ,1, 4), true, historyData[i]))
+                notificationAllData.add(NotificationData(i,"test", PostData("20201530@daejin.ac.kr", 0, "test", "test", "test", "test", "a","10" ,1, 4, 3000), true, historyData[i]))
                 println(historyData[i])
                 println(notificationAllData)
             }

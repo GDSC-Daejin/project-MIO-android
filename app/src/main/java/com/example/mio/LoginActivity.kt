@@ -171,7 +171,11 @@ class LoginActivity : AppCompatActivity() {
                             .readTimeout(30, TimeUnit.SECONDS)
                             .writeTimeout(15, TimeUnit.SECONDS)
                             .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
-                        intent.putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
+                        intent.apply {
+                            putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
+                            putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
+                        }
+
 
                         builder.build()
                         println("success")

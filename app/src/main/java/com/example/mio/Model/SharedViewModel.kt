@@ -8,6 +8,12 @@ import androidx.lifecycle.ViewModel
 
 
 class SharedViewModel : ViewModel() {
+    private val _checkSearchFilter : MutableLiveData<String> = MutableLiveData()
+    val checkSearchFilter : LiveData<String> = _checkSearchFilter
+    fun postCheckSearchFilter(searchWord : String) {
+        _checkSearchFilter.value = searchWord
+    }
+
     private val _checkCurrentPage : MutableLiveData<Int> = MutableLiveData()
     val checkCurrentPage : LiveData<Int> = _checkCurrentPage
     fun postCheckPage(page : Int) {
@@ -20,12 +26,22 @@ class SharedViewModel : ViewModel() {
         _checkComplete.value = complete
     }
 
-
     private val _allCheck : MutableLiveData<RequirementData> = MutableLiveData()
     val allCheck : LiveData<RequirementData> = _allCheck
     fun postCheckValue(check : RequirementData) {
         _allCheck.value = check
     }
+
+
+
+
+
+
+
+
+
+
+
     //추가된 targetDate data 받기
     private val liveData = MutableLiveData<ArrayList<String>>()
     var notificationLiveData = MutableLiveData<ArrayList<NotificationData>>()

@@ -543,6 +543,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             //저장된 값
             val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
             val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
             /*var interceptor = HttpLoggingInterceptor()
         interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         val client = OkHttpClient.Builder().addInterceptor(interceptor).build()*/
@@ -570,7 +571,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     // Authorization 헤더에 토큰 추가
                     newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                    val expireDate: Long = 1688911317761
+                    val expireDate: Long = getExpireDate.toLong()
                     if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                         //refresh 들어갈 곳
                         newRequest =
@@ -651,7 +652,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                                 call: Call<AddPostResponse>,
                                 response: Response<AddPostResponse>
                             ) {
-
                                 if (response.isSuccessful) {
                                     println("succcc")
                                 } else {
@@ -735,26 +735,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     }
 
     private fun bottomBtnEvent() {
-
-        /*if (isAllCheck.isFirstVF.isTitle && isAllCheck.isFirstVF.isTime && isAllCheck.isFirstVF.isCalendar && isAllCheck.isFirstVF.isParticipants
-            || (isAllCheck.isThirdVF.isSmoke || isAllCheck.isThirdVF.isNSmoke)
-            && (isAllCheck.isThirdVF.isGSchool || isAllCheck.isThirdVF.isASchool)
-            && (isAllCheck.isThirdVF.isSmoke || isAllCheck.isThirdVF.isNSmoke)
-            && (isAllCheck.isThirdVF.isMGender || isAllCheck.isThirdVF.isWGender)
-            && isAllCheck.isThirdVF.isAmount ) {
-            CoroutineScope(Dispatchers.Main).launch {
-                mBinding.editNext.apply {
-                    setBackgroundResource(R.drawable.round_btn_update_layout)
-                    setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
-                }
-            }
-            mBinding.editNext.setOnClickListener {
-                mBinding.editViewflipper.showNext()
-            }
-
-        } else {
-            Toast.makeText(this, "빈 칸이 존재합니다. 빈 칸을 채워주세요", Toast.LENGTH_SHORT).show()
-        }*/
         if (isFirst) {
             CoroutineScope(Dispatchers.Main).launch {
                 mBinding.editNext.apply {

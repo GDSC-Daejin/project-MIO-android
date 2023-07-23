@@ -8,17 +8,7 @@ import retrofit2.http.*
 
 interface MioInterface {
 
-    //여긴 나중에 게시글 정보 가져오기로 바꾸기기
-    @GET("category/{categoryId}")
-    fun getDataByPage(@Query("page") page : Int,
-                      @Query("size") size : Int?) : Call<MyResponse>
-
-
-
     //게시글 생성
-    //@Headers("Accept: application/json")
-    //@Headers("Authorization : ")
-    //@Multipart
     @POST("/post/{categoryId}")
     fun addPostData(/*@Header("Content-Type") content_type : String,*/ /*@PartMap postData : Map<String, RequestBody>*/@Body postData : AddPostData, @Path("categoryId") categoryId : Int) : Call<AddPostResponse>
 
@@ -29,11 +19,19 @@ interface MioInterface {
     @GET("/readAll")
     fun getServerPostData() : Call<PostReadAllResponse>
 
+    //게시글 마감날짜순
+    @GET("/readAll/targetDate")
+    fun getServerDateData() : Call<PostReadAllResponse>
+    @GET("/readAll/cost")
+    fun getServerCostData() : Call<PostReadAllResponse>
+
+
+    /////////////////////////////////
+
+
     //회원가입
     @POST("/auth/google")
     fun addUserInfoData(@Body token: TokenRequest) : Call<LoginResponsesData>
-
-
 
     //회원가입 수정
     @PUT("todo/{id}")
@@ -46,4 +44,23 @@ interface MioInterface {
     fun getTrashDataByPage(@Query("page") page : Int,
                            @Query("size") size : Int?) : Call<MyResponse>
     */
+
+    ////////////////////////////////////
+    //댓글
+
+    //부모댓글 조회
+    @GET("/comments/parent/{postId}")
+    fun getCommentData(@Path("postId") postId : Int) : Call<List<CommentResponseData>>
+    //부모댓글작성
+    @POST("/comments/parent/{postId}")
+    fun addCommentData(@Body commentData: SendCommentData, @Path("postId") postId : Int) : Call<CommentData>
+    @POST("/comments/child/{parentId}")
+    fun addChildCommentData(@Body commentData: SendCommentData, @Path("parentId") parentId : Int) : Call<CommentData>
+
+
+
+    //여긴 나중에 게시글 정보 가져오기로 바꾸기기
+    @GET("category/{categoryId}")
+    fun getDataByPage(@Query("page") page : Int,
+                      @Query("size") size : Int?) : Call<MyResponse>
 }

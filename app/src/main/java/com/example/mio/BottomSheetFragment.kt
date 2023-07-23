@@ -26,6 +26,8 @@ import java.util.*
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
+
+//이 바텀시트는 필터 검색 시 필요한 바텀시트
 class BottomSheetFragment : BottomSheetDialogFragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null

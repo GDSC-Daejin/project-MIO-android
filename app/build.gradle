@@ -44,6 +44,11 @@ android {
         dataBinding true
     }
 }
+allprojects {
+    repositories {
+        maven {url 'https://jitpack.io'}
+    }
+}
 
 dependencies {
 
@@ -78,6 +83,9 @@ dependencies {
 
     //calendar
     //implementation 'com.prolificinteractive:material-calendarview:1.4.3'
+
+    //sticky
+    implementation 'com.github.amarjain07:StickyScrollView:1.0.3'
 
     ////
     testImplementation 'junit:junit:4.13.2'

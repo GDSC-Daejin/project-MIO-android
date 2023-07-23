@@ -1,21 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
-    <!--권한 요청-->
+    <!-- 권한 요청 -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
-
-<!--android:hardwareAccelerated="true" 이거 살짝 문제있는 듯 저레벨에서 부드러운 애니메이션지향하는 건데 이상함-->
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
-
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:networkSecurityConfig="@xml/network_security_config"
@@ -24,10 +20,18 @@
         android:usesCleartextTraffic="true"
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="33">
+        <activity
+            android:name=".TabCategory.MoreCarpoolTabActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TabCategory.MoreTaxiTabActivity"
+            android:exported="false" />
+
         <receiver
             android:name=".Helper.AlertReceiver"
             android:enabled="true"
             android:exported="false" />
+
         <activity
             android:name=".ApplyNextActivity"
             android:exported="false" />

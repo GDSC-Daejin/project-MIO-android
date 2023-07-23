@@ -162,9 +162,11 @@ class MainActivity : AppCompatActivity() {
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {
-                        val transaction = supportFragmentManager.beginTransaction()
-                            .replace(R.id.fragment_content, HomeFragment())
-                        transaction.commit()
+                        CoroutineScope(Dispatchers.Main).launch {
+                            supportFragmentManager.beginTransaction()
+                                .replace(R.id.fragment_content, HomeFragment())
+                                .commit()
+                        }
                     }
                     //edit
 

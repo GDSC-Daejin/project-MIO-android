@@ -6,43 +6,44 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.CommentData
 import com.example.mio.databinding.CommentItemLayoutBinding
+import com.example.mio.databinding.ReplyCommentsItemLayoutBinding
 
 
-class NoticeBoardReadAdapter : RecyclerView.Adapter<NoticeBoardReadAdapter.NoticeBoardReadViewHolder>(){
-    private lateinit var binding : CommentItemLayoutBinding
-    var commentItemData = mutableListOf<CommentData?>()
+class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommentViewHolder>(){
+    private lateinit var binding : ReplyCommentsItemLayoutBinding
+    var replyCommentItemData = mutableListOf<CommentData?>()
     private lateinit var context : Context
 
-    inner class NoticeBoardReadViewHolder(private val binding : CommentItemLayoutBinding ) : RecyclerView.ViewHolder(binding.root) {
+    inner class ReplyCommentViewHolder(private val binding : ReplyCommentsItemLayoutBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
-        var commentContent = binding.commentContent
-        var commentRealTimeCheck = binding.commentRealtimeCheck
-        var commentDetail = binding.commentDetailIv
-        var commentUserId = binding.commentUserId
+        private var reCommentContent = binding.reCommentContent
+        private var reCommentRealTimeCheck = binding.reCommentRealtimeCheck
+        private var reCommentDetail = binding.reCommentDetailIv
+        private var reCommentUserId = binding.reCommentUserId
 
         fun bind(comment : CommentData, position : Int) {
             this.position = position
-            commentUserId.text = comment.user.id.toString()
-            commentContent.text = comment.content
-            commentDetail
-            commentRealTimeCheck.text = comment.createDate
+            reCommentUserId.text = comment.user.id.toString()
+            reCommentContent.text = comment.content
+            reCommentDetail
+            reCommentRealTimeCheck.text = comment.createDate
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
 
             binding.root.setOnClickListener {
-                itemClickListener.onClick(it, layoutPosition, commentItemData[layoutPosition]!!.commentId)
+                itemClickListener.onClick(it, layoutPosition, replyCommentItemData[layoutPosition]!!.commentId)
             }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoticeBoardReadAdapter.NoticeBoardReadViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReplyCommentAdapter.ReplyCommentViewHolder {
         context = parent.context
-        binding = CommentItemLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return NoticeBoardReadViewHolder(binding)
+        binding = ReplyCommentsItemLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ReplyCommentViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: NoticeBoardReadAdapter.NoticeBoardReadViewHolder, position: Int) {
-        holder.bind(commentItemData[position]!!, position)
+    override fun onBindViewHolder(holder: ReplyCommentAdapter.ReplyCommentViewHolder, position: Int) {
+        holder.bind(replyCommentItemData[position]!!, position)
         /*binding.homeRemoveIv.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)
             val ad : AlertDialog = builder.create()
@@ -70,12 +71,12 @@ class NoticeBoardReadAdapter : RecyclerView.Adapter<NoticeBoardReadAdapter.Notic
     }
 
     override fun getItemCount(): Int {
-        return commentItemData.size
+        return replyCommentItemData.size
     }
 
     //데이터 Handle 함수
     fun removeData(position: Int) {
-        commentItemData.removeAt(position)
+        replyCommentItemData.removeAt(position)
         //temp = null
         notifyItemRemoved(position)
     }

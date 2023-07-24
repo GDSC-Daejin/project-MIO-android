@@ -137,6 +137,7 @@
                 </LinearLayout>
 
                 <TextView
+                    android:id="@+id/read_time_check"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/pretendard_medium"

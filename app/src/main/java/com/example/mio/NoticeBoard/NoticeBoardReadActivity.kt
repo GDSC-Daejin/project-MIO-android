@@ -9,17 +9,23 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
+import com.example.mio.Adapter.CalendarAdapter
+import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.NoticeBoardReadAdapter
+import com.example.mio.Adapter.ReplyCommentAdapter
 import com.example.mio.Helper.AlertReceiver
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.*
@@ -51,9 +57,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     private var manager : LinearLayoutManager = LinearLayoutManager(this)
     //private var noticeBoardAdapter : NoticeBoardAdapter? = null
     private var noticeBoardReadAdapter : NoticeBoardReadAdapter? = null
+    //private var replyCommentAdapter : ReplyCommentAdapter? = null
 
     //댓글 저장 전체 데이터
     private var commentAllData = mutableListOf<CommentData?>()
+    private var replyCommentAllData = kotlin.collections.ArrayList<CommentData?>()
     private var commentEditText = ""
 
     //클릭한 포스트(게시글)의 데이터 임시저장
@@ -94,11 +102,54 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             nbrBinding.readNumberOfPassengers.text = temp!!.postParticipation.toString()
             nbrBinding.readDetailLocation.text = temp!!.postLocation.toString()
             nbrBinding.readDateTime.text = this.getString(R.string.setText, temp!!.postTargetDate, temp!!.postTargetTime)
+            val now = System.currentTimeMillis()
+            val date = Date(now)
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+            val currentDate = sdf.format(date)
+
+
+            val postDateTime = this.getString(R.string.setText, temp!!.postTargetDate, temp!!.postTargetTime)
+
+            val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(currentDate)
+            val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(postDateTime)
+            val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time!!)
+            val diffSeconds = diffMilliseconds?.div(1000)
+            val diffMinutes = diffMilliseconds?.div((60 * 1000))
+            val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
+            val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
+            if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
+                println(diffSeconds)
+                println(diffMinutes)
+                println(diffHours)
+                println(diffDays)
+
+                if(diffSeconds > -1){
+                    nbrBinding.readTimeCheck.text = "방금전"
+                }
+                if (diffSeconds > 0) {
+                    nbrBinding.readTimeCheck.text = "${diffSeconds.toString()}초전"
+                }
+                if (diffMinutes > 0) {
+                    nbrBinding.readTimeCheck.text = "${diffMinutes.toString()}분전"
+                }
+                if (diffHours > 0) {
+                    nbrBinding.readTimeCheck.text = "${diffHours.toString()}시간전"
+                }
+                if (diffDays > 0) {
+                    nbrBinding.readTimeCheck.text = "${diffDays.toString()}일전"
+                }
+
+            }
         }
         setCommentData()
-        initRecyclerView()
+        initCommentRecyclerView()
 
 
+        noticeBoardReadAdapter!!.setItemClickListener(object : NoticeBoardReadAdapter.ItemClickListener {
+            override fun onClick(view: View, position: Int, itemId: Int) {
+
+            }
+        })
 
 
 
@@ -132,6 +183,26 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
         return super.dispatchTouchEvent(ev)
     }
+
+    /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.comment_option_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.comment_menu_write -> {
+                Toast.makeText(this, "대댓글쓰기", Toast.LENGTH_SHORT).show()
+            }
+            R.id.comment_menu_edit -> {
+                Toast.makeText(this, "수정", Toast.LENGTH_SHORT).show()
+            }
+            R.id.comment_menu_delete -> {
+                Toast.makeText(this, "삭제", Toast.LENGTH_SHORT).show()
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }*/
 
     private fun commentSetting() {
         nbrBinding.readCommentEt.addTextChangedListener(object : TextWatcher {
@@ -206,13 +277,20 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 api.addCommentData(commentTemp, temp!!.postID).enqueue(object : Callback<CommentData> {
                     override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
                         if (response.isSuccessful) {
+                            val commentNullCheck  = try {
+                                response.body()!!.childComments.isEmpty()
+                                response.body()!!.childComments
+                            } catch (e : java.lang.NullPointerException) {
+                                Log.d("null", e.toString())
+                                arrayListOf("null")
+                            }
                             commentAllData.add(CommentData(
                                 response.body()!!.commentId,
                                 response.body()!!.content,
                                 response.body()!!.createDate,
                                 response.body()!!.postId,
                                 response.body()!!.user,
-                                response.body()!!.childComments,
+                                commentNullCheck,
                             ))
                             println("scucuc")
                             noticeBoardReadAdapter!!.notifyDataSetChanged()
@@ -230,6 +308,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     }
                 })
             }
+            nbrBinding.readCommentTotal.text = commentAllData.size.toString()
         }
     }
 
@@ -240,20 +319,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 override fun onResponse(call: Call<List<CommentResponseData>>, response: Response<List<CommentResponseData>>) {
                     if (response.isSuccessful) {
                         println("scssucsucsucs")
-
-
+                        commentAllData.clear()
                         for (i in response.body()!!.indices) {
-                            //val te = CommentData(1,"2","3",4,)
-                            //탑승자 null체크
-                            /*var part = 0
-                            var location = ""
-                            var title = ""
-                            var content = ""
-                            var targetDate = ""
-                            var targetTime = ""
-                            var categoryName = ""*/
-                            if (response.isSuccessful) {
-                                commentAllData.add(CommentData(
+                            commentAllData.add(
+                                CommentData(
                                     response.body()!![i].commentId,
                                     response.body()!![i].content,
                                     response.body()!![i].createDate,
@@ -261,7 +330,15 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     response.body()!![i].user,
                                     response.body()!![i].childComments
                                 ))
-                            }
+                            replyCommentAllData.add(
+                                CommentData(
+                                    response.body()!![i].commentId,
+                                    response.body()!![i].content,
+                                    response.body()!![i].createDate,
+                                    response.body()!![i].postId,
+                                    response.body()!![i].user,
+                                    response.body()!![i].childComments
+                            ))
                             noticeBoardReadAdapter!!.notifyDataSetChanged()
                         }
                     } else {
@@ -289,10 +366,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
     }
 
-    private fun initRecyclerView() {
+    private fun initCommentRecyclerView() {
         setCommentData()
         noticeBoardReadAdapter = NoticeBoardReadAdapter()
         noticeBoardReadAdapter!!.commentItemData = commentAllData
+        noticeBoardReadAdapter!!.replyCommentItemData = replyCommentAllData
         nbrBinding.commentRV.adapter = noticeBoardReadAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true
@@ -353,11 +431,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
                 //val tempNoti = NotificationData(0, userEmail, temp!!, isApplyBtn, value)
 
-               *//* val bundle = Bundle()
-                bundle.putString("title", "test")
 
-                val sendFragment = NotificationFragment()
-                sendFragment.arguments = bundle*//*
 
 
                 val intent = Intent(this, ApplyNextActivity::class.java)

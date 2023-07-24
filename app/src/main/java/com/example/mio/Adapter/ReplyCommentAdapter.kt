@@ -11,7 +11,7 @@ import com.example.mio.databinding.ReplyCommentsItemLayoutBinding
 
 class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommentViewHolder>(){
     private lateinit var binding : ReplyCommentsItemLayoutBinding
-    var replyCommentItemData = mutableListOf<CommentData?>()
+    var replyCommentItemData = ArrayList<CommentData?>()
     private lateinit var context : Context
 
     inner class ReplyCommentViewHolder(private val binding : ReplyCommentsItemLayoutBinding ) : RecyclerView.ViewHolder(binding.root) {

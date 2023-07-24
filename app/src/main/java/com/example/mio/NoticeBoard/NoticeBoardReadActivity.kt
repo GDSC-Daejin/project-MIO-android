@@ -1,7 +1,6 @@
 package com.example.mio.NoticeBoard
 
 import android.app.*
-import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Rect
@@ -9,6 +8,9 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.OvershootInterpolator
@@ -19,24 +21,35 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mio.*
+import com.example.mio.Adapter.CalendarAdapter
+import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.NoticeBoardReadAdapter
-import com.example.mio.ApplyNextActivity
+import com.example.mio.Adapter.ReplyCommentAdapter
 import com.example.mio.Helper.AlertReceiver
 import com.example.mio.Helper.SharedPref
-import com.example.mio.Model.CommentData
-import com.example.mio.Model.NotificationData
-import com.example.mio.Model.PostData
-import com.example.mio.Model.SharedViewModel
-import com.example.mio.R
-import com.example.mio.SaveSharedPreferenceGoogleLogin
+import com.example.mio.Model.*
 import com.example.mio.databinding.ActivityNoticeBoardReadBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.List
 
 
 class NoticeBoardReadActivity : AppCompatActivity() {
@@ -44,17 +57,16 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     private var manager : LinearLayoutManager = LinearLayoutManager(this)
     //private var noticeBoardAdapter : NoticeBoardAdapter? = null
     private var noticeBoardReadAdapter : NoticeBoardReadAdapter? = null
+    //private var replyCommentAdapter : ReplyCommentAdapter? = null
 
     //댓글 저장 전체 데이터
     private var commentAllData = mutableListOf<CommentData?>()
+    private var replyCommentAllData = kotlin.collections.ArrayList<CommentData?>()
+    private var commentEditText = ""
 
     //클릭한 포스트(게시글)의 데이터 임시저장
     private var temp : PostData? = null
-    private var tempArr : kotlin.collections.ArrayList<NotificationData> = ArrayList()
-    //버튼 클릭 체크
-    private var isFavoriteBtn = false
-    private var isApplyBtn = false
-    //private var isApplyCancel = false
+
     //알람설정
     private var setNotificationTime : Calendar? = null
     private val channelID = "NOTIFICATION_CHANNEL"
@@ -64,29 +76,93 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     private var sharedViewModel : SharedViewModel? = null
     var sharedPref : SharedPref? = null
     private var setKey = "setting_history"
-    @RequiresApi(Build.VERSION_CODES.O)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nbrBinding = ActivityNoticeBoardReadBinding.inflate(layoutInflater)
         sharedPref = SharedPref(this)
         sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
+
         createChannel()
         //sendComment()
         //btnViewChanger()
 
+        commentSetting()
+
         val type = intent.getStringExtra("type")
 
-        /*if (type.equals("READ")) {
+        if (type.equals("READ")) {
             temp = intent.getSerializableExtra("postItem") as PostData?
-            nbrBinding.readContentText.text = temp!!.postContent
-            nbrBinding.readAccountId.text = temp!!.accountID
-        }*/
+            nbrBinding.readContent.text = temp!!.postContent
+            nbrBinding.readUserId.text = temp!!.accountID
+            nbrBinding.readCost.text = temp!!.postCost.toString()
+            nbrBinding.readTitle.text = temp!!.postTitle.toString()
+            nbrBinding.readNumberOfPassengersTotal.text = temp!!.postParticipationTotal.toString()
+            nbrBinding.readNumberOfPassengers.text = temp!!.postParticipation.toString()
+            nbrBinding.readDetailLocation.text = temp!!.postLocation.toString()
+            nbrBinding.readDateTime.text = this.getString(R.string.setText, temp!!.postTargetDate, temp!!.postTargetTime)
+            val now = System.currentTimeMillis()
+            val date = Date(now)
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+            val currentDate = sdf.format(date)
 
 
-        //initRecyclerView()
+            val postDateTime = this.getString(R.string.setText, temp!!.postTargetDate, temp!!.postTargetTime)
+
+            val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(currentDate)
+            val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(postDateTime)
+            val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time!!)
+            val diffSeconds = diffMilliseconds?.div(1000)
+            val diffMinutes = diffMilliseconds?.div((60 * 1000))
+            val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
+            val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
+            if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
+                println(diffSeconds)
+                println(diffMinutes)
+                println(diffHours)
+                println(diffDays)
+
+                if(diffSeconds > -1){
+                    nbrBinding.readTimeCheck.text = "방금전"
+                }
+                if (diffSeconds > 0) {
+                    nbrBinding.readTimeCheck.text = "${diffSeconds.toString()}초전"
+                }
+                if (diffMinutes > 0) {
+                    nbrBinding.readTimeCheck.text = "${diffMinutes.toString()}분전"
+                }
+                if (diffHours > 0) {
+                    nbrBinding.readTimeCheck.text = "${diffHours.toString()}시간전"
+                }
+                if (diffDays > 0) {
+                    nbrBinding.readTimeCheck.text = "${diffDays.toString()}일전"
+                }
+
+            }
+        }
+        setCommentData()
+        initCommentRecyclerView()
 
 
+        noticeBoardReadAdapter!!.setItemClickListener(object : NoticeBoardReadAdapter.ItemClickListener {
+            override fun onClick(view: View, position: Int, itemId: Int) {
+
+            }
+        })
+
+
+
+
+
+        //뒤로가기
+        nbrBinding.backArrow.setOnClickListener {
+            val intent = Intent(this@NoticeBoardReadActivity, MainActivity::class.java).apply {
+
+            }
+            setResult(8, intent)
+            finish()
+        }
         setContentView(nbrBinding.root)
     }
 
@@ -108,7 +184,209 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         return super.dispatchTouchEvent(ev)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.comment_option_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.comment_menu_write -> {
+                Toast.makeText(this, "대댓글쓰기", Toast.LENGTH_SHORT).show()
+            }
+            R.id.comment_menu_edit -> {
+                Toast.makeText(this, "수정", Toast.LENGTH_SHORT).show()
+            }
+            R.id.comment_menu_delete -> {
+                Toast.makeText(this, "삭제", Toast.LENGTH_SHORT).show()
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }*/
+
+    private fun commentSetting() {
+        nbrBinding.readCommentEt.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+                nbrBinding.readSendComment.visibility = View.GONE
+            }
+            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+
+            }
+            override fun afterTextChanged(editable: Editable) {
+                commentEditText = editable.toString()
+                if (editable.isEmpty()) {
+                    nbrBinding.readSendComment.visibility = View.GONE
+                } else {
+                    nbrBinding.readSendComment.visibility = View.VISIBLE
+                }
+            }
+        })
+
+        nbrBinding.readSendComment.setOnClickListener {
+            //서버에서 원하는 형식으로 날짜 설정
+            val now = System.currentTimeMillis()
+            val date = Date(now)
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+            val currentDate = sdf.format(date)
+            val formatter = DateTimeFormatter
+                .ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault())
+            val result: Instant = Instant.from(formatter.parse(currentDate))
+
+
+
+
+
+            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+            val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+
+            /////////interceptor
+            val SERVER_URL = BuildConfig.server_URL
+            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+            //Authorization jwt토큰 로그인
+            val interceptor = Interceptor { chain ->
+                var newRequest: Request
+                if (token != null && token != "") { // 토큰이 없는 경우
+                    // Authorization 헤더에 토큰 추가
+                    newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    val expireDate: Long = getExpireDate.toLong()
+                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                        //refresh 들어갈 곳
+                        newRequest =
+                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                        return@Interceptor chain.proceed(newRequest)
+                    }
+                } else newRequest = chain.request()
+                chain.proceed(newRequest)
+            }
+            val builder = OkHttpClient.Builder()
+            builder.interceptors().add(interceptor)
+            val client: OkHttpClient = builder.build()
+            retrofit.client(client)
+            val retrofit2: Retrofit = retrofit.build()
+            val api = retrofit2.create(MioInterface::class.java)
+            /////////
+
+            //댓글 잠시 저장
+            val commentTemp = SendCommentData(commentEditText, result.toString() , temp!!.postID)
+            println("ct $commentTemp")
+            CoroutineScope(Dispatchers.IO).launch {
+                api.addCommentData(commentTemp, temp!!.postID).enqueue(object : Callback<CommentData> {
+                    override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
+                        if (response.isSuccessful) {
+                            val commentNullCheck  = try {
+                                response.body()!!.childComments.isEmpty()
+                                response.body()!!.childComments
+                            } catch (e : java.lang.NullPointerException) {
+                                Log.d("null", e.toString())
+                                arrayListOf("null")
+                            }
+                            commentAllData.add(CommentData(
+                                response.body()!!.commentId,
+                                response.body()!!.content,
+                                response.body()!!.createDate,
+                                response.body()!!.postId,
+                                response.body()!!.user,
+                                commentNullCheck,
+                            ))
+                            println("scucuc")
+                            noticeBoardReadAdapter!!.notifyDataSetChanged()
+                        } else {
+                            //interceptor만 해줌 될듯? 500error발생해서
+                            println("faafa")
+                            Log.d("comment", response.errorBody()?.string()!!)
+                            Log.d("message", call.request().toString())
+                            println(response.code())
+                        }
+                    }
+
+                    override fun onFailure(call: Call<CommentData>, t: Throwable) {
+                        Log.d("error", t.toString())
+                    }
+                })
+            }
+            nbrBinding.readCommentTotal.text = commentAllData.size.toString()
+        }
+    }
+
+    private fun setCommentData() {
+        val call = RetrofitServerConnect.service
+        CoroutineScope(Dispatchers.IO).launch {
+            call.getCommentData(temp!!.postID).enqueue(object : Callback<List<CommentResponseData>> {
+                override fun onResponse(call: Call<List<CommentResponseData>>, response: Response<List<CommentResponseData>>) {
+                    if (response.isSuccessful) {
+                        println("scssucsucsucs")
+                        commentAllData.clear()
+                        for (i in response.body()!!.indices) {
+                            commentAllData.add(
+                                CommentData(
+                                    response.body()!![i].commentId,
+                                    response.body()!![i].content,
+                                    response.body()!![i].createDate,
+                                    response.body()!![i].postId,
+                                    response.body()!![i].user,
+                                    response.body()!![i].childComments
+                                ))
+                            replyCommentAllData.add(
+                                CommentData(
+                                    response.body()!![i].commentId,
+                                    response.body()!![i].content,
+                                    response.body()!![i].createDate,
+                                    response.body()!![i].postId,
+                                    response.body()!![i].user,
+                                    response.body()!![i].childComments
+                            ))
+                            noticeBoardReadAdapter!!.notifyDataSetChanged()
+                        }
+                    } else {
+                        println("faafa")
+                        Log.d("comment", response.errorBody()?.string()!!)
+                        Log.d("message", call.request().toString())
+                        println(response.code())
+                    }
+
+                    nbrBinding.readCommentTotal.text = commentAllData.size.toString()
+
+                    if (commentAllData.size == 0) {
+                        nbrBinding.commentRV.visibility = View.GONE
+                        nbrBinding.notCommentTv.visibility = View.VISIBLE
+                    } else {
+                        nbrBinding.commentRV.visibility = View.VISIBLE
+                        nbrBinding.notCommentTv.visibility = View.GONE
+                    }
+                }
+
+                override fun onFailure(call: Call<List<CommentResponseData>>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
+        }
+    }
+
+    private fun initCommentRecyclerView() {
+        setCommentData()
+        noticeBoardReadAdapter = NoticeBoardReadAdapter()
+        noticeBoardReadAdapter!!.commentItemData = commentAllData
+        noticeBoardReadAdapter!!.replyCommentItemData = replyCommentAllData
+        nbrBinding.commentRV.adapter = noticeBoardReadAdapter
+        //레이아웃 뒤집기 안씀
+        //manager.reverseLayout = true
+        //manager.stackFromEnd = true
+        nbrBinding.commentRV.setHasFixedSize(true)
+        nbrBinding.commentRV.layoutManager = manager
+
+        nbrBinding.commentRV.itemAnimator =  SlideInUpAnimator(OvershootInterpolator(1f))
+        nbrBinding.commentRV.itemAnimator?.apply {
+            addDuration = 1000
+            removeDuration = 100
+            moveDuration = 1000
+            changeDuration = 100
+        }
+    }
+
     /*private fun btnViewChanger() {
         nbrBinding.favoriteBtn.setOnClickListener {
             isFavoriteBtn = !isFavoriteBtn
@@ -153,11 +431,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
                 //val tempNoti = NotificationData(0, userEmail, temp!!, isApplyBtn, value)
 
-               *//* val bundle = Bundle()
-                bundle.putString("title", "test")
 
-                val sendFragment = NotificationFragment()
-                sendFragment.arguments = bundle*//*
 
 
                 val intent = Intent(this, ApplyNextActivity::class.java)
@@ -218,24 +492,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }*//*
     }
 
-    private fun initRecyclerView() {
-        noticeBoardReadAdapter = NoticeBoardReadAdapter()
-        noticeBoardReadAdapter!!.commentItemData = commentAllData
-        nbrBinding.commentRV.adapter = noticeBoardReadAdapter
-        //레이아웃 뒤집기 안씀
-        //manager.reverseLayout = true
-        //manager.stackFromEnd = true
-        nbrBinding.commentRV.setHasFixedSize(true)
-        nbrBinding.commentRV.layoutManager = manager
 
-        nbrBinding.commentRV.itemAnimator =  SlideInUpAnimator(OvershootInterpolator(1f))
-        nbrBinding.commentRV.itemAnimator?.apply {
-            addDuration = 1000
-            removeDuration = 100
-            moveDuration = 1000
-            changeDuration = 100
-        }
-    }
 
     private fun sendComment() {
         var et = ""

@@ -11,6 +11,7 @@ data class PostData(
     var postLocation : String,
     var postParticipation : Int,
     var postParticipationTotal : Int,
+    var postCost : Int,
 
 ) : java.io.Serializable {
 

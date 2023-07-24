@@ -1,14 +1,16 @@
 package com.example.mio.Navigation
 
+import android.R
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.graphics.TypefaceCompat
+import androidx.fragment.app.Fragment
 import com.example.mio.Adapter.CategoryTabAdapter
-import com.example.mio.R
 import com.example.mio.databinding.FragmentHomeBinding
 import com.google.android.material.tabs.TabLayoutMediator
+
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -26,8 +28,8 @@ class HomeFragment : Fragment() {
     private var param2: String? = null
 
     private var homeBinding: FragmentHomeBinding? = null
-    private val tabTextList = listOf("Taxi", "Carpool")
-    private val tabIconList = listOf(R.drawable.baseline_local_taxi_24, R.drawable.baseline_directions_car_24)
+    private val tabTextList = listOf("택시", "카풀")
+    //private val tabIconList = listOf(R.drawable.baseline_local_taxi_24, R.drawable.baseline_directions_car_24)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -46,7 +48,8 @@ class HomeFragment : Fragment() {
 
         TabLayoutMediator(homeBinding!!.categoryTabLayout, homeBinding!!.viewpager) { tab, pos ->
             tab.text = tabTextList[pos]
-            tab.setIcon(tabIconList[pos])
+            //val typeface = resources.getFont(com.example.mio.R.font.pretendard_medium)
+            //tab.setIcon(tabIconList[pos])
         }.attach()
 
         return homeBinding!!.root

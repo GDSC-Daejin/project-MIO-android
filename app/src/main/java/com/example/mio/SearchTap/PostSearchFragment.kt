@@ -107,6 +107,12 @@ class PostSearchFragment : Fragment() {
                             //탑승자 null체크
                             var part = 0
                             var location = ""
+                            var title = ""
+                            var content = ""
+                            var targetDate = ""
+                            var targetTime = ""
+                            var categoryName = ""
+                            var cost = 0
                             if (response.isSuccessful) {
                                 part = try {
                                     response.body()!!.content[i].participants.isEmpty()
@@ -122,22 +128,65 @@ class PostSearchFragment : Fragment() {
                                     Log.d("null", e.toString())
                                     "수락산역 3번 출구"
                                 }
+                                title = try {
+                                    response.body()!!.content[i].title.isEmpty()
+                                    response.body()!!.content[i].title
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                content = try {
+                                    response.body()!!.content[i].content.isEmpty()
+                                    response.body()!!.content[i].content
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                targetDate = try {
+                                    response.body()!!.content[i].targetDate.isEmpty()
+                                    response.body()!!.content[i].targetDate
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                targetTime = try {
+                                    response.body()!!.content[i].targetTime.isEmpty()
+                                    response.body()!!.content[i].targetTime
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                categoryName = try {
+                                    response.body()!!.content[i].category.categoryName.isEmpty()
+                                    response.body()!!.content[i].category.categoryName
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                cost = try {
+                                    response.body()!!.content[i].cost
+                                    response.body()!!.content[i].cost
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    0
+                                }
                             }
 
                             //println(response!!.body()!!.content[i].user.studentId)
                             searchAllData.add(PostData(
                                 response.body()!!.content[i].user.studentId,
                                 response.body()!!.content[i].postId,
-                                response.body()!!.content[i].title,
-                                response.body()!!.content[i].content,
-                                response.body()!!.content[i].targetDate,
-                                response.body()!!.content[i].targetTime,
-                                response.body()!!.content[i].category.categoryName,
+                                title,
+                                content,
+                                targetDate,
+                                targetTime,
+                                categoryName,
                                 location,
                                 //participantscount가 현재 참여하는 인원들
                                 part,
                                 //numberOfPassengers은 총 탑승자 수
-                                response.body()!!.content[i].numberOfPassengers
+                                response.body()!!.content[i].numberOfPassengers,
+                                cost
                             ))
                             sAdapter!!.notifyDataSetChanged()
                         }

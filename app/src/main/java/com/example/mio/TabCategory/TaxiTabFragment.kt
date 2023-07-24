@@ -3,7 +3,6 @@ package com.example.mio.TabCategory
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.SystemClock
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -28,12 +27,10 @@ import com.example.mio.databinding.FragmentTaxiTabBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -42,7 +39,6 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.set
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -85,9 +81,7 @@ class TaxiTabFragment : Fragment() {
     //뒤로 가기 받아오기
     private lateinit var callback : OnBackPressedCallback
     var backPressedTime : Long = 0
-    //캘린더 리사이클러뷰 클릭리스너
-    private var oldSelectedPostion = -1
-    private var selectedPostion = -1
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -172,19 +166,25 @@ class TaxiTabFragment : Fragment() {
         }
 
         //여기서 edit으로 이동동
-        taxiTabBinding.addBtn.setOnClickListener {
+        taxiTabBinding.moreBtn.setOnClickListener {
             /*data.add(PostData("2020202", 0, "test", "test"))
             noticeBoardAdapter!!.notifyItemInserted(position)
             position += 1*/
-            val intent = Intent(activity, NoticeBoardEditActivity::class.java).apply {
+            /*val intent = Intent(activity, NoticeBoardEditActivity::class.java).apply {
                 putExtra("type", "ADD")
             }
             requestActivity.launch(intent)
-            noticeBoardAdapter!!.notifyDataSetChanged()
+            noticeBoardAdapter!!.notifyDataSetChanged()*/
+
+            val intent = Intent(activity, MoreTaxiTabActivity::class.java).apply {
+                //putExtra("type", "MoreADD")
+            }
+            requestActivity.launch(intent)
+
         }
 
-        taxiTabBinding.filterBtn.setOnClickListener {
-            /*val bottomSheetDialog = BottomSheetDialog(
+        /*taxiTabBinding.filterBtn.setOnClickListener {
+            *//*val bottomSheetDialog = BottomSheetDialog(
                 requireActivity(), R.style.BottomSheetDialogTheme
             ).apply {
                 behavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -201,7 +201,7 @@ class TaxiTabFragment : Fragment() {
             bottomSheetDialog.setContentView(bottomView)
 
             // bottomSheetDialog 호출
-            bottomSheetDialog.show()*/
+            bottomSheetDialog.show()*//*
 
             val bottomSheet = BottomSheetFragment()
             bottomSheet.show(requireActivity().supportFragmentManager, bottomSheet.tag)
@@ -213,7 +213,7 @@ class TaxiTabFragment : Fragment() {
                 })
             }
 
-        }
+        }*/
 
 
         return taxiTabBinding.root
@@ -304,7 +304,6 @@ class TaxiTabFragment : Fragment() {
     private fun setData() {
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            delay(1000L)
             call.getServerPostData().enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
@@ -331,9 +330,8 @@ class TaxiTabFragment : Fragment() {
                             var targetDate = ""
                             var targetTime = ""
                             var categoryName = ""
+                            var cost = 0
                             if (response.isSuccessful) {
-
-
                                 part = try {
                                     response.body()!!.content[i].participants.isEmpty()
                                     response.body()!!.content[i].participants.size
@@ -383,6 +381,13 @@ class TaxiTabFragment : Fragment() {
                                     Log.d("null", e.toString())
                                     "null"
                                 }
+                                cost = try {
+                                    response.body()!!.content[i].cost
+                                    response.body()!!.content[i].cost
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    0
+                                }
                             }
 
                             //println(response!!.body()!!.content[i].user.studentId)
@@ -398,7 +403,8 @@ class TaxiTabFragment : Fragment() {
                                 //participantscount가 현재 참여하는 인원들
                                 part,
                                 //numberOfPassengers은 총 탑승자 수
-                                response.body()!!.content[i].numberOfPassengers
+                                response.body()!!.content[i].numberOfPassengers,
+                                cost
                             ))
                             noticeBoardAdapter!!.notifyDataSetChanged()
                         }

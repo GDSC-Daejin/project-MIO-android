@@ -421,7 +421,6 @@ class TaxiTabFragment : Fragment() {
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {
             AppCompatActivity.RESULT_OK -> {
-                val post = it.data?.getSerializableExtra("postData") as PostData
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {
@@ -442,10 +441,7 @@ class TaxiTabFragment : Fragment() {
                     }
                     //edit
                     1 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            taxiAllData[dataPosition] = post
-                        }
-                        noticeBoardAdapter!!.notifyItemChanged(post.postID)
+
                     }
 
                 }

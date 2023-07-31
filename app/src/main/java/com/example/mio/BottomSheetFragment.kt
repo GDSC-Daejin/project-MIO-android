@@ -279,7 +279,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.filterSearchBtn.setOnClickListener {
             if (listener == null) return@setOnClickListener
-            listener?.sendValue("$selectTargetDate, ${participateNumberOfPeople}, $isCheckSmoke, $isCheckGender, $isCheckSchool")
+            listener?.sendValue("$selectTargetDate $participateNumberOfPeople $isCheckSmoke $isCheckGender $isCheckSchool")
             dismiss()
         }
 

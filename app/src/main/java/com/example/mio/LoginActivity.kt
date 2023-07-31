@@ -6,14 +6,18 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.os.Build
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.view.*
 import android.view.animation.AnticipateInterpolator
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -35,6 +39,7 @@ import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 
 
@@ -64,6 +69,7 @@ class LoginActivity : AppCompatActivity() {
     val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
 */
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         //상태바 지우기(이 activity만)
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -95,6 +101,19 @@ class LoginActivity : AppCompatActivity() {
         mBinding.signInButton.setOnClickListener {
             signIn()
         }
+        /*try {
+            val information = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+            val signatures = information.signingInfo.apkContentsSigners
+            for (signature in signatures) {
+                val md = MessageDigest.getInstance("SHA").apply {
+                    update(signature.toByteArray())
+                }
+                val HASH_CODE = String(Base64.encode(md.digest(), 0))
+                Log.d("TAG", "HASH_CODE -> $HASH_CODE")
+            }
+        } catch (e: Exception) {
+            Log.d("TAG", "Exception -> $e")
+        }*/
     }
 
     private fun initData() {

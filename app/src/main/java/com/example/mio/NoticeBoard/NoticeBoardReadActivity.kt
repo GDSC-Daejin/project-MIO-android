@@ -4,13 +4,13 @@ import android.app.*
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.OvershootInterpolator
@@ -21,11 +21,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
 import com.example.mio.*
-import com.example.mio.Adapter.CalendarAdapter
-import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.NoticeBoardReadAdapter
-import com.example.mio.Adapter.ReplyCommentAdapter
 import com.example.mio.Helper.AlertReceiver
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.*
@@ -42,6 +43,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -66,6 +68,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
     //클릭한 포스트(게시글)의 데이터 임시저장
     private var temp : PostData? = null
+    //받아온 proflie
+    private var tempProfile : String? = null
+
+
 
     //알람설정
     private var setNotificationTime : Calendar? = null
@@ -94,6 +100,42 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         if (type.equals("READ")) {
             temp = intent.getSerializableExtra("postItem") as PostData?
+            tempProfile = intent.getSerializableExtra("uri") as String
+
+            val imageUrl = Uri.parse(tempProfile)
+            CoroutineScope(Dispatchers.Main).launch {
+                GlideApp.with(this@NoticeBoardReadActivity)
+                    .load(imageUrl)
+                    .error(R.drawable.top_icon_vector)
+                    .centerCrop()
+                    .override(40,40)
+                    .listener(object : RequestListener<Drawable> {
+                        override fun onLoadFailed(
+                            e: GlideException?,
+                            model: Any?,
+                            target: com.bumptech.glide.request.target.Target<Drawable>?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            Log.d("Glide", "Image load failed: ${e?.message}")
+                            println(e?.message.toString())
+                            return false
+                        }
+
+                        override fun onResourceReady(
+                            resource: Drawable?,
+                            model: Any?,
+                            target: com.bumptech.glide.request.target.Target<Drawable>?,
+                            dataSource: DataSource?,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            println("glide")
+                            return false
+                        }
+                    })
+                    .into(nbrBinding.readUserProfile)
+            }
+
+
             nbrBinding.readContent.text = temp!!.postContent
             nbrBinding.readUserId.text = temp!!.accountID
             nbrBinding.readCost.text = temp!!.postCost.toString()
@@ -102,6 +144,9 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             nbrBinding.readNumberOfPassengers.text = temp!!.postParticipation.toString()
             nbrBinding.readDetailLocation.text = temp!!.postLocation.toString()
             nbrBinding.readDateTime.text = this.getString(R.string.setText, temp!!.postTargetDate, temp!!.postTargetTime)
+
+
+
             val now = System.currentTimeMillis()
             val date = Date(now)
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
@@ -118,10 +163,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
             val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
             if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
-                println(diffSeconds)
-                println(diffMinutes)
-                println(diffHours)
-                println(diffDays)
 
                 if(diffSeconds > -1){
                     nbrBinding.readTimeCheck.text = "방금전"
@@ -145,6 +186,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         initCommentRecyclerView()
 
 
+        //대댓글 달기 또는 다른 기능 추가 예정
         noticeBoardReadAdapter!!.setItemClickListener(object : NoticeBoardReadAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int) {
 

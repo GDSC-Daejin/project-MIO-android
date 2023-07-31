@@ -25,7 +25,9 @@ class PostReadAllResponse(
     var first : Boolean,
     @SerializedName("empty")
     var empty : Boolean,
-)
+): java.io.Serializable {
+
+}
 
 data class Content(
     @SerializedName("postId")
@@ -55,9 +57,9 @@ data class Content(
     @SerializedName("participants")
     var participants : ArrayList<Participants>,
     @SerializedName("latitude")
-    var latitude : Int,
+    var latitude : Double,
     @SerializedName("longitude")
-    var longitude : Int,
+    var longitude : Double,
     @SerializedName("bookMarkCount")
     var bookMarkCount : Int,
     @SerializedName("participantsCount")
@@ -66,14 +68,18 @@ data class Content(
     var location : String,
     @SerializedName("cost")
     var cost : Int
-)
+): java.io.Serializable {
+
+}
 
 data class Category(
     @SerializedName("categoryId")
     var categoryId : Int,
     @SerializedName("categoryName")
     var categoryName : String,
-)
+): java.io.Serializable {
+
+}
 
 data class User(
     @SerializedName("id")
@@ -100,7 +106,9 @@ data class User(
     var mannerCount : Int,
     @SerializedName("grade")
     var grade : String,
-)
+) : java.io.Serializable {
+
+}
 
 data class Participants(
     @SerializedName("id")
@@ -127,7 +135,9 @@ data class Participants(
     var mannerCount : Int,
     @SerializedName("grade")
     var grade : String,
-)
+): java.io.Serializable {
+
+}
 
 data class Sort(
     @SerializedName("empty")
@@ -136,7 +146,9 @@ data class Sort(
     var sorted : Boolean,
     @SerializedName("unsorted")
     var unsorted : Boolean,
-)
+): java.io.Serializable {
+
+}
 
 data class Pageable(
     @SerializedName("offset")
@@ -151,4 +163,6 @@ data class Pageable(
     var paged : Boolean,
     @SerializedName("unpaged")
     var unpaged : Boolean,
-)
+): java.io.Serializable {
+
+}

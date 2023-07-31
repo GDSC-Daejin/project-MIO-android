@@ -1,11 +1,12 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
 
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
-
+def kakao_Sdk_Appkey = properties.getProperty('kakao.sdk.appkey')
 android {
     namespace 'com.example.mio'
     compileSdk 33
@@ -23,6 +24,8 @@ android {
         buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
         buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
         buildConfigField "String", "server_URL", properties['server_URL']
+        buildConfigField "String", "map_api_key", properties['map_api_key']
+        manifestPlaceholders = [kakaoSdkAppkey: kakao_Sdk_Appkey]
     }
 
     buildTypes {
@@ -86,6 +89,11 @@ dependencies {
 
     //sticky
     implementation 'com.github.amarjain07:StickyScrollView:1.0.3'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+
+    //glide
+    implementation("com.github.bumptech.glide:glide:4.14.2")
+    kapt("com.github.bumptech.glide:compiler:4.14.2")
 
     ////
     testImplementation 'junit:junit:4.13.2'

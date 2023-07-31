@@ -8,19 +8,20 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
+import kotlinx.coroutines.NonDisposableHandle.parent
 import java.lang.ref.WeakReference
 
 
-class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardViewHolder>(){
+class MyAccountPostAdapter : RecyclerView.Adapter<MyAccountPostAdapter.AccountViewHolder>(){
     private lateinit var binding : PostItemBinding
-    var postItemData = ArrayList<PostData>()
+    var myPostItemData = ArrayList<PostData>()
     private lateinit var context : Context
 
     init {
         setHasStableIds(true)
     }
 
-    inner class NoticeBoardViewHolder(private val binding : PostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
+    inner class AccountViewHolder(private val binding : PostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
         //var accountId = binding.accountId
         //var accountProfile = binding.accountImage
@@ -47,17 +48,17 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoticeBoardViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountViewHolder {
         context = parent.context
         binding = PostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return NoticeBoardViewHolder(binding)
+        return AccountViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: NoticeBoardViewHolder, position: Int) {
-        holder.bind(postItemData[holder.adapterPosition], position)
+    override fun onBindViewHolder(holder: AccountViewHolder, position: Int) {
+        holder.bind(myPostItemData[holder.adapterPosition], position)
 
         holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, postItemData[holder.adapterPosition].postID)
+            itemClickListener.onClick(it, holder.adapterPosition, myPostItemData[holder.adapterPosition].postID)
         }
 
     /*binding.homeRemoveIv.setOnClickListener {
@@ -87,7 +88,7 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
     }
 
     override fun getItemCount(): Int {
-        return postItemData.size
+        return myPostItemData.size
     }
 
     override fun getItemId(position: Int): Long {
@@ -96,7 +97,7 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
 
     //데이터 Handle 함수
     fun removeData(position: Int) {
-        postItemData.removeAt(position)
+        myPostItemData.removeAt(position)
         //temp = null
         notifyItemRemoved(position)
     }
@@ -107,9 +108,9 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
 
     //약한 참조로 참조하는 객체가 사용되지 않을 경우 가비지 콜렉션에 의해 자동해제
     //private var itemClickListener: WeakReference<ItemClickListener>? = null
-    private lateinit var itemClickListener: NoticeBoardAdapter.ItemClickListener
+    private lateinit var itemClickListener: MyAccountPostAdapter.ItemClickListener
 
-    fun setItemClickListener(itemClickListener: NoticeBoardAdapter.ItemClickListener) {
+    fun setItemClickListener(itemClickListener: MyAccountPostAdapter.ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
 

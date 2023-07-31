@@ -563,6 +563,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 //.client(clientBuilder)
+
             //Authorization jwt토큰 로그인
             val interceptor = Interceptor { chain ->
 

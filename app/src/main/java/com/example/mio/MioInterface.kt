@@ -17,7 +17,9 @@ interface MioInterface {
 
     //게시글 생성 순으로 조회
     @GET("/readAll")
-    fun getServerPostData() : Call<PostReadAllResponse>
+    fun getServerPostData(@Query("sort") sort : String,
+                          @Query("page") page : Int,
+                          @Query("size") size : Int) : Call<PostReadAllResponse>
 
     //게시글 마감날짜순
     @GET("/readAll/targetDate")
@@ -56,6 +58,16 @@ interface MioInterface {
     fun addCommentData(@Body commentData: SendCommentData, @Path("postId") postId : Int) : Call<CommentData>
     @POST("/comments/child/{parentId}")
     fun addChildCommentData(@Body commentData: SendCommentData, @Path("parentId") parentId : Int) : Call<CommentData>
+
+
+    //자기가 쓴 글 가져오기
+    @GET("/memberPost/{userId}")
+    fun getMyPostData(@Path("userId") userId : Int,
+                      @Query("sort") sort : String,
+                      @Query("page") page : Int,
+                      @Query("size") size : Int) : Call<PostReadAllResponse>
+
+
 
 
 

@@ -5,22 +5,33 @@ import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.PostData
 import com.example.mio.Model.SearchWordData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
+import com.example.mio.databinding.RvLoadingBinding
 import com.example.mio.databinding.SearchWordLayoutBinding
 
-class MoreTaxiTabAdapter : RecyclerView.Adapter<MoreTaxiTabAdapter.MoreTaxiViewHolder>(){
+class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
+
+
+    companion object {
+        //item을 표시할 때
+        private const val TAG_ITEM = 0
+        //loading을 표시할 때
+        private const val TAG_LOADING = 1
+    }
 
     private lateinit var binding : PostItemBinding
     //var searchWordData = ArrayList<SearchWordData>()
-    var moreTaxiData = ArrayList<PostData>()
+    var moreTaxiData = ArrayList<PostData?>()
     var sharedPref : SharedPref? = null
     private lateinit var context : Context
-    private var setKey = "setting_search_history"
+    var isRemove = false //삭제 체크용
+
     init {
         setHasStableIds(true)
     }
@@ -31,6 +42,7 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<MoreTaxiTabAdapter.MoreTaxiViewH
         var postLocation = binding.postLocation
         var postParticipation = binding.postParticipation
         var postParticipantTotal = binding.postParticipationTotal
+        var postCost = binding.postCost
 
         fun bind(moreData: PostData, position : Int) {
             this.position = position
@@ -40,6 +52,7 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<MoreTaxiTabAdapter.MoreTaxiViewH
             postLocation.text = moreData.postLocation
             postParticipation.text = moreData.postParticipation.toString()
             postParticipantTotal.text = moreData.postParticipationTotal.toString()
+            postCost.text = context.getString(R.string.setCost, moreData.postCost.toString())
 
 
 
@@ -64,25 +77,40 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<MoreTaxiTabAdapter.MoreTaxiViewH
             }*/
         }
     }
+    inner class LoadingViewHolder(var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
+        val processBar : ProgressBar = loadingBinding.loadingPb
+    }
 
 
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MoreTaxiTabAdapter.MoreTaxiViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         context = parent.context
         sharedPref = SharedPref(context)
         binding = PostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
 
-        return MoreTaxiViewHolder(binding)
+        return if (viewType == TAG_ITEM) {
+            MoreTaxiViewHolder(binding)
+        } else {
+            val binding2 = RvLoadingBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            LoadingViewHolder(binding2)
+        }
     }
 
-    override fun onBindViewHolder(holder: MoreTaxiViewHolder, position: Int) {
-        holder.bind(moreTaxiData[holder.adapterPosition], position)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder , position: Int) {
 
-        holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, moreTaxiData[holder.adapterPosition].postID)
+        if (holder is MoreTaxiViewHolder) {
+            holder.bind(moreTaxiData[holder.adapterPosition]!!, position)
+
+            holder.itemView.setOnClickListener {
+                itemClickListener.onClick(it, holder.adapterPosition, moreTaxiData[holder.adapterPosition]!!.postID)
+            }
+            val content : PostData = moreTaxiData[position]!!
+            //holder.searchWord_tv.text = content.searchWordText
+        } else {
+
         }
-        val content : PostData = moreTaxiData[position]
-        //holder.searchWord_tv.text = content.searchWordText
+
+
     }
 
     override fun getItemCount(): Int {
@@ -94,6 +122,14 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<MoreTaxiTabAdapter.MoreTaxiViewH
         return position.toLong()
     }
 
+    override fun getItemViewType(position: Int): Int {
+        return if (moreTaxiData[position] != null) {
+            TAG_ITEM
+        } else {
+            TAG_LOADING
+        }
+    }
+
     //데이터 Handle 함수
     fun removeData(position: Int) {
         moreTaxiData.removeAt(position)
@@ -103,9 +139,9 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<MoreTaxiTabAdapter.MoreTaxiViewH
     interface ItemClickListener {
         fun onClick(view: View, position: Int, itemId: Int)
     }
-    private lateinit var itemClickListener: SearchWordAdapter.ItemClickListener
+    private lateinit var itemClickListener: ItemClickListener
 
-    fun setItemClickListener(itemClickListener: SearchWordAdapter.ItemClickListener) {
+    fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
 }

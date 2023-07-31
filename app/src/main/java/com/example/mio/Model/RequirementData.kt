@@ -2,6 +2,7 @@ package com.example.mio.Model
 
 class RequirementData(
      var isFirstVF: FirstVF,
+     var isSecondVF: SecondVF,
      var isThirdVF: ThirdVF,
      var isFourthVF : FourthVF
 )
@@ -12,6 +13,12 @@ data class FirstVF(
     var isTime : Boolean,
     var isParticipants : Boolean,
     var isFirst : Boolean,
+)
+
+data class SecondVF(
+    var isPlaceName : Boolean,
+    var isPlaceRode : Boolean,
+    var isSecond : Boolean,
 )
 
 data class ThirdVF(

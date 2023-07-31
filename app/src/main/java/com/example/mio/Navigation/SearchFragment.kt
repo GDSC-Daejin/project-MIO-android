@@ -1,25 +1,37 @@
 package com.example.mio.Navigation
 
 import android.content.Context
+import android.content.Intent
+import android.graphics.Color
+import android.location.Geocoder
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.SearchTabAdapter
 import com.example.mio.Adapter.SearchWordAdapter
+import com.example.mio.BuildConfig
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.SearchWordData
+import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentSearchBinding
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import net.daum.mf.map.api.MapPOIItem
+import net.daum.mf.map.api.MapPoint
+import net.daum.mf.map.api.MapView
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -34,31 +46,31 @@ private const val ARG_PARAM2 = "param2"
  * Use the [SearchFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class SearchFragment : Fragment() {
+
+class SearchFragment : Fragment(), MapView.MapViewEventListener {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
 
     private var sBinding : FragmentSearchBinding? = null
-    private val tabTextList = listOf("게시물", "위치")
-    private var sharedPref : SharedPref? = null
-    private var swAdapter : SearchWordAdapter? = null
-    private var manager : LinearLayoutManager = LinearLayoutManager(activity)
 
-    //context를 따로 저장하기 위함
-    private var sContext : Context? = null
+    private lateinit var geocoder: Geocoder
+    private lateinit var mapView: MapView
+
+ /*
 
     //검색어 저장용 키
     private var setKey = "setting_search_history"
 
     //검색어 저장 데이터
     private var searchWordList : ArrayList<SearchWordData> = ArrayList()
-    private var searchPos = 0
+    private var searchPos = 0*/
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
+
         }
     }
 
@@ -67,64 +79,71 @@ class SearchFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         sBinding = FragmentSearchBinding.inflate(inflater, container, false)
-        sharedPref = this.context?.let { SharedPref(it) }
-        sContext = this.context
 
-        initRecentSearchRecyclerview()
+        mapView = sBinding!!.searchMapView
+        mapView.setMapViewEventListener(this)
+        //geocoder = Geocoder(this)
+        firstVF()
+        secondVF()
 
-        getHistory()
-
-
-        val searchViewTextListener: SearchView.OnQueryTextListener =
-            object : SearchView.OnQueryTextListener {
-                //검색버튼 입력시 호출, 검색버튼이 없으므로 사용하지 않음
-                override fun onQueryTextSubmit(s: String): Boolean {
-                    if (s.isEmpty()) {
-                        //최근 검색어 뷰 보여주기 또는 검색어가 비었다고 알려주기기
-                        Toast.makeText(requireActivity(), "검색어를 입력해주세요.", Toast.LENGTH_SHORT).show()
-                   } else {
-                        sBinding!!.searchRV.visibility = View.GONE
-                        sBinding!!.searchViewpager.visibility = View.VISIBLE
-                        sBinding!!.searchTabLayout.visibility = View.VISIBLE
-
-                        searchWordList.add(SearchWordData(searchPos, s))
-                        searchPos += 1
-                        //검색어 저장해서 다른 fragment에 넘길 준비
-                        sharedPref!!.setSearchData(s)
-                        //최근 검색어 배열 저장
-                        sContext?.let { sharedPref!!.setSearchHistory(it, setKey, searchWordList) }
-
-                        //뷰페이저 생성
-                        sBinding!!.searchViewpager.adapter = SearchTabAdapter(requireActivity())
-                        TabLayoutMediator(sBinding!!.searchTabLayout, sBinding!!.searchViewpager) { tab, pos ->
-                            tab.text = tabTextList[pos]
-                        }.attach()
-                    }
-                    Log.d("this", "SearchVies Text is changed : $s")
-                    return false
-                }
-
-                //텍스트 입력/수정시에 호출
-                override fun onQueryTextChange(s: String): Boolean {
-                    if (s.isEmpty()) {
-                        sBinding!!.searchRV.visibility = View.VISIBLE
-                        sBinding!!.searchViewpager.visibility = View.GONE
-                        sBinding!!.searchTabLayout.visibility = View.GONE
-                    }
-                    return false
-                }
-            }
-        sBinding!!.searchEt.setOnQueryTextListener(searchViewTextListener)
 
         return sBinding!!.root
     }
-    private fun initRecentSearchRecyclerview() {
+
+    private fun firstVF() {
+        val resources = context?.resources
+        val resourceId = resources?.getIdentifier("navigation_bar_height", "dimen", "android")
+        if (resourceId != null && resourceId > 0) {
+            val navigationBarHeight = resources.getDimensionPixelSize(resourceId)
+
+            // 아래쪽 네비게이션 뷰에 마진 추가
+            val activity = activity as AppCompatActivity
+            val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
+            val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
+            layoutParams.bottomMargin += navigationBarHeight
+            bottomNavigationView.layoutParams = layoutParams
+        }
+        (activity as? AppCompatActivity)?.supportActionBar?.hide()
+        activity?.window?.apply {
+            clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                statusBarColor = Color.TRANSPARENT
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                activity?.window?.setFlags(
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                )
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            }
+
+        }
+
+
+
+        sBinding?.etSearchField?.setOnClickListener {
+            sBinding?.searchViewflipper?.showNext()
+        }
+    }
+
+    private fun secondVF() {
+    }
+
+
+
+/*    private fun initRecentSearchRecyclerview() {
         swAdapter = SearchWordAdapter()
         swAdapter!!.searchWordData = searchWordList
         sBinding!!.searchRV.adapter = swAdapter
         sBinding!!.searchRV.layoutManager = LinearLayoutManager(sContext)
         sBinding!!.searchRV.setHasFixedSize(true)
-    }
+    }*/
 
     override fun onDestroyView() {
         super.onDestroyView()
@@ -132,7 +151,7 @@ class SearchFragment : Fragment() {
     }
 
 
-    private fun getHistory() {
+/*    private fun getHistory() {
         val historyData = sContext?.let { sharedPref!!.getSearchHistory(it, setKey) }
         if (historyData!!.isNotEmpty()) {
             searchWordList.clear()
@@ -144,9 +163,11 @@ class SearchFragment : Fragment() {
                 swAdapter!!.notifyDataSetChanged()
             }
         }
-    }
+    }*/
 
     companion object {
+        const val BASE_URL = "https://dapi.kakao.com/"
+        private const val API_KEY = BuildConfig.map_api_key
         /**
          * Use this factory method to create a new instance of
          * this fragment using the provided parameters.
@@ -164,5 +185,69 @@ class SearchFragment : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+
+    override fun onMapViewInitialized(p0: MapView?) {
+
+    }
+
+    override fun onMapViewCenterPointMoved(p0: MapView?, p1: MapPoint?) {
+
+    }
+
+    override fun onMapViewZoomLevelChanged(p0: MapView?, p1: Int) {
+
+    }
+    override fun onMapViewSingleTapped(mapView: MapView?, mapPoint: MapPoint?) {
+/*        latitude = mapPoint?.mapPointGeoCoord?.latitude ?: return
+        longitude = mapPoint.mapPointGeoCoord.longitude
+
+        isAllCheck.isSecondVF.isPlaceName = true
+        isAllCheck.isSecondVF.isPlaceRode = true
+        myViewModel.postCheckValue(isAllCheck)
+
+
+        if (marker != null) {
+            mapView?.removePOIItem(marker)
+            marker!!.markerType = MapPOIItem.MarkerType.BluePin
+        }
+        marker = MapPOIItem().apply {
+            itemName = "선택 위치"
+            this.mapPoint = mapPoint //MapPoint.mapPointWithGeoCoord(tlatitude, tlongitude)
+            markerType = MapPOIItem.MarkerType.CustomImage
+            customImageResourceId = R.drawable.map_poi_icon
+            isCustomImageAutoscale = false
+            isDraggable = true
+            setCustomImageAnchor(0.5f, 1.0f)
+        }
+        mapView?.addPOIItem(marker)
+
+        val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+        if (addresses != null) {
+            if (addresses.isNotEmpty()) {
+                val address = addresses[0].getAddressLine(0)
+                mBinding.placeRoad.text = "$address"
+            }
+        }*/
+    }
+
+    override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {
+
+    }
+
+    override fun onMapViewLongPressed(p0: MapView?, p1: MapPoint?) {
+
+    }
+
+    override fun onMapViewDragStarted(p0: MapView?, p1: MapPoint?) {
+
+    }
+
+    override fun onMapViewDragEnded(p0: MapView?, p1: MapPoint?) {
+
+    }
+
+    override fun onMapViewMoveFinished(p0: MapView?, p1: MapPoint?) {
+
     }
 }

@@ -1,0 +1,8 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 진행 상태가 100%일 때 색상 -->
+    <item android:color="@color/mio_blue_6" android:state_enabled="true" android:state_activated="true" />
+    <!-- 진행 상태가 0% 미만일 때 색상 -->
+    <item android:color="@color/mio_blue_1" android:state_enabled="true" android:state_activated="false" />
+    <!-- 비활성화된 상태일 때 색상 -->
+    <item android:color="@color/mio_blue_3" android:state_enabled="false" />
+</selector>

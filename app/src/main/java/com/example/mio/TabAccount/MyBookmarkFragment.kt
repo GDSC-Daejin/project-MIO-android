@@ -1,16 +1,11 @@
-package com.example.mio.Navigation
+package com.example.mio.TabAccount
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.mio.Adapter.AccountTabAdapter
-import com.example.mio.Adapter.CategoryTabAdapter
 import com.example.mio.R
-import com.example.mio.SaveSharedPreferenceGoogleLogin
-import com.example.mio.databinding.FragmentAccountBinding
-import com.google.android.material.tabs.TabLayoutMediator
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -19,16 +14,13 @@ private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [AccountFragment.newInstance] factory method to
+ * Use the [MyBookmarkFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class AccountFragment : Fragment() {
+class MyBookmarkFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
-
-    private lateinit var aBinding : FragmentAccountBinding
-    private val tabTextList = listOf("게시글", "예약", "스크랩")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,32 +33,9 @@ class AccountFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        aBinding = FragmentAccountBinding.inflate(inflater, container, false)
-
-        initSetAccountData()
-
-        aBinding.accountSettingIv.setOnClickListener {
-            //여기서 설정으로 이동 Todo
-        }
-
-        aBinding.accountViewpager.adapter = AccountTabAdapter(requireActivity())
-
-        TabLayoutMediator(aBinding.accountCategoryTabLayout, aBinding.accountViewpager) { tab, pos ->
-            tab.text = tabTextList[pos]
-        }.attach()
-
-
-        return aBinding.root
-    }
-
-    private fun initSetAccountData() {
-        //여기서 기본설정들 다 넣기
-
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!
-
-        aBinding.accountUserId.text = email
+    ): View? {
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_my_bookmark, container, false)
     }
 
     companion object {
@@ -76,12 +45,12 @@ class AccountFragment : Fragment() {
          *
          * @param param1 Parameter 1.
          * @param param2 Parameter 2.
-         * @return A new instance of fragment AccountFragment.
+         * @return A new instance of fragment MyBookmarkFragment.
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            AccountFragment().apply {
+            MyBookmarkFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)

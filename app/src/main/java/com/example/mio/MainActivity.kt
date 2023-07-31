@@ -158,7 +158,6 @@ class MainActivity : AppCompatActivity() {
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {
             AppCompatActivity.RESULT_OK -> {
-                val post = it.data?.getSerializableExtra("postData") as AddPostData
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {
@@ -169,7 +168,6 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     //edit
-
                 }
                 //getSerializableExtra = intent의 값을 보내고 받을때사용
                 //타입 변경을 해주지 않으면 Serializable객체로 만들어지니 as로 캐스팅해주자

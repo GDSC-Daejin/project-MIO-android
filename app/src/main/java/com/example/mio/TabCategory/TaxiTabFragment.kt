@@ -3,10 +3,13 @@ package com.example.mio.TabCategory
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -31,6 +34,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.lang.ref.WeakReference
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -60,6 +64,7 @@ class TaxiTabFragment : Fragment() {
     private var horizonManager : LinearLayoutManager = LinearLayoutManager(activity)
 
     private var noticeBoardAdapter : NoticeBoardAdapter? = null
+
     //캘린더
     private var calendarAdapter : CalendarAdapter? = null
     private var calendarItemData : MutableList<DateData?> = mutableListOf()
@@ -100,12 +105,14 @@ class TaxiTabFragment : Fragment() {
 
         initNoticeBoardRecyclerView()
         initCalendarRecyclerView()
+        initSwipeRefresh()
 
         setData()
 
         //recyclerview item클릭 시
         noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int) {
+                println("clcickc")
                 CoroutineScope(Dispatchers.IO).launch {
                     val temp = taxiAllData[position]
                     dataPosition = position
@@ -118,24 +125,26 @@ class TaxiTabFragment : Fragment() {
             }
         })
 
-        //캘린더 날짜에 저장된 데이터들로 계속해서 바꿔줌 나중에 viewmodel로 변경예정(Todo)
         calendarAdapter!!.setItemClickListener(object : CalendarAdapter.ItemClickListener {
             //여기서 position = 0시작은 date가 되야함 itemId=1로 시작함
             override fun onClick(view: View, position: Int, itemId: String) {
-                /*if (selectedPostion == position) {
-                    view.setBackgroundColor(Color.BLUE)
-                } else {
-                    view.setBackgroundColor(Color.TRANSPARENT)
-                }
-                oldSelectedPostion = selectedPostion
-                selectedPostion = position*/
-
                 CoroutineScope(Dispatchers.IO).launch {
                     if (calendarTaxiAllData.isNotEmpty()) {
                         try {
+                            println(itemId)
                             val selectDateData = calendarTaxiAllData.filter { it.postTargetDate == itemId }
                             //선택한 날짜에 데이터가 변경되도록 Todo
                             println(selectDateData)
+
+                            if (selectDateData.isNotEmpty()) {
+                                calendarTaxiAllData.clear()
+
+                                for (i in selectDateData.indices) {
+                                    calendarTaxiAllData.add(selectDateData[i])
+                                }
+                            } else {
+                                //없음 데이터 띄우기?
+                            }
                         } catch (e: java.lang.IndexOutOfBoundsException) {
                             println("tesetstes")
                         }
@@ -149,9 +158,9 @@ class TaxiTabFragment : Fragment() {
                 }
                 /* calendarAdapter!!.notifyItemChanged(selectedPostion)
                 calendarAdapter!!.notifyItemChanged(oldSelectedPostion)*/
+
                 noticeBoardAdapter!!.notifyDataSetChanged()
-                Toast.makeText(activity, calendarItemData[position]!!.day, Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(activity, calendarItemData[position]!!.day, Toast.LENGTH_SHORT).show()
             }
         })
 
@@ -165,7 +174,7 @@ class TaxiTabFragment : Fragment() {
             noticeBoardAdapter!!.notifyDataSetChanged()
         }
 
-        //여기서 edit으로 이동동
+
         taxiTabBinding.moreBtn.setOnClickListener {
             /*data.add(PostData("2020202", 0, "test", "test"))
             noticeBoardAdapter!!.notifyItemInserted(position)
@@ -301,10 +310,28 @@ class TaxiTabFragment : Fragment() {
         taxiTabBinding.calendarRV.layoutManager = horizonManager
     }
 
+    private fun initSwipeRefresh() {
+        taxiTabBinding.refreshSwipeLayout.setOnRefreshListener {
+            //새로고침 시 터치불가능하도록
+            requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) // 화면 터치 못하게 하기
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                setData()
+                noticeBoardAdapter!!.postItemData = taxiAllData
+                //noticeBoardAdapter.recyclerView.startLayoutAnimation()
+                taxiTabBinding.refreshSwipeLayout.isRefreshing = false
+                noticeBoardAdapter!!.notifyDataSetChanged()
+                requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            }, 1000)
+            //터치불가능 해제ss
+            //activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        }
+    }
+
     private fun setData() {
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getServerPostData().enqueue(object : Callback<PostReadAllResponse> {
+            call.getServerPostData("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
 
@@ -320,6 +347,8 @@ class TaxiTabFragment : Fragment() {
                         /*val s : ArrayList<PostReadAllResponse> = ArrayList()
                         s.add(PostReadAllResponse())*/
 
+                        //데이터 청소
+                        taxiAllData.clear()
 
                         for (i in response.body()!!.content.indices) {
                             //탑승자 null체크
@@ -331,6 +360,7 @@ class TaxiTabFragment : Fragment() {
                             var targetTime = ""
                             var categoryName = ""
                             var cost = 0
+                            var verifyGoReturn = false
                             if (response.isSuccessful) {
                                 part = try {
                                     response.body()!!.content[i].participants.isEmpty()
@@ -388,6 +418,12 @@ class TaxiTabFragment : Fragment() {
                                     Log.d("null", e.toString())
                                     0
                                 }
+                                verifyGoReturn = try {
+                                    response.body()!!.content[i].verifyGoReturn
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    false
+                                }
                             }
 
                             //println(response!!.body()!!.content[i].user.studentId)
@@ -404,7 +440,9 @@ class TaxiTabFragment : Fragment() {
                                 part,
                                 //numberOfPassengers은 총 탑승자 수
                                 response.body()!!.content[i].numberOfPassengers,
-                                cost
+                                cost,
+                                verifyGoReturn,
+                                response.body()!!.content[i].user
                             ))
                             noticeBoardAdapter!!.notifyDataSetChanged()
                         }
@@ -550,7 +588,6 @@ class TaxiTabFragment : Fragment() {
             testselectCalendarData = textValue
         }
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
-
     }
 
     companion object {

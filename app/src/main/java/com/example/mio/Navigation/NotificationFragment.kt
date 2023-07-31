@@ -17,6 +17,7 @@ import com.example.mio.MainActivity
 import com.example.mio.Model.NotificationData
 import com.example.mio.Model.PostData
 import com.example.mio.Model.SharedViewModel
+import com.example.mio.Model.User
 import com.example.mio.R
 import com.example.mio.databinding.FragmentNotificationBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
@@ -168,7 +169,7 @@ class NotificationFragment : Fragment() {
             //notificationAllData.clear()
             //searchWordList.addAll(historyData)
             for (i in historyData.indices) {
-                notificationAllData.add(NotificationData(i,"test", PostData("20201530@daejin.ac.kr", 0, "test", "test", "test", "test", "a","10" ,1, 4, 3000), true, historyData[i]))
+                //notificationAllData.add(NotificationData(i,"test", PostData("20201530@daejin.ac.kr", 0, "test", "test", "test", "test", "a","10" ,1, 4, 3000, true, User), true, historyData[i]))
                 println(historyData[i])
                 println(notificationAllData)
             }

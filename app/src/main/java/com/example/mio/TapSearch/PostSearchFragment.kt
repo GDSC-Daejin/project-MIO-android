@@ -1,4 +1,4 @@
-package com.example.mio.SearchTap
+package com.example.mio.TapSearch
 
 import android.os.Bundle
 import android.util.Log
@@ -6,24 +6,15 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.OvershootInterpolator
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mio.Adapter.CalendarAdapter
-import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.SearchAdapter
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.PostData
 import com.example.mio.Model.PostReadAllResponse
-import com.example.mio.Model.SharedViewModel
-import com.example.mio.R
 import com.example.mio.RetrofitServerConnect
-import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentPostSearchBinding
-import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
@@ -87,7 +78,7 @@ class PostSearchFragment : Fragment() {
     private fun setSearchData() {
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getServerPostData().enqueue(object : Callback<PostReadAllResponse> {
+            call.getServerPostData("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
                         //println(response.body()!!.content)
@@ -186,7 +177,9 @@ class PostSearchFragment : Fragment() {
                                 part,
                                 //numberOfPassengers은 총 탑승자 수
                                 response.body()!!.content[i].numberOfPassengers,
-                                cost
+                                cost,
+                                response.body()!!.content[i].verifyGoReturn,
+                                response.body()!!.content[i].user
                             ))
                             sAdapter!!.notifyDataSetChanged()
                         }

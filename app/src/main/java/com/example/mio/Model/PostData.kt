@@ -12,6 +12,8 @@ data class PostData(
     var postParticipation : Int,
     var postParticipationTotal : Int,
     var postCost : Int,
+    var postVerifyGoReturn: Boolean, //등/하교 -> true 등, false 하
+    var user : User
 
 ) : java.io.Serializable {
 

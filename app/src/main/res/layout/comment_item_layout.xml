@@ -67,7 +67,7 @@
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="2dp"
+            android:layout_height="1.5dp"
             android:background="@color/mio_gray_6"
             android:backgroundTint="@color/mio_gray_6" />
     </LinearLayout>

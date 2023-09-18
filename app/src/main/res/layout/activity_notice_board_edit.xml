@@ -242,6 +242,56 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:layout_marginTop="20dp"
+                android:background="@color/mio_gray_4" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="27dp"
+                android:layout_marginEnd="27dp"
+                android:orientation="vertical"
+                android:visibility="visible">
+                <!--카테고리 설정-->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="카풀 / 택시"
+                    android:textColor="@color/mio_gray_11" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/edit_category_carpool_btn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/edit_check_btn"
+                        android:text="카풀"
+                        android:textColor="@color/mio_gray_7" />
+
+                    <Space
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp" />
+
+                    <Button
+                        android:id="@+id/edit_category_taxi_btn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/edit_check_btn"
+                        android:text="택시"
+                        android:textColor="@color/mio_gray_7" />
+                </LinearLayout>
+            </LinearLayout>
+
             <!--탑승인원-->
             <LinearLayout
                 android:layout_width="match_parent"

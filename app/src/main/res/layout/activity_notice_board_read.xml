@@ -127,6 +127,7 @@
 
                 <!--필터 같은 거 동적으로 추가할 ll-->
                 <LinearLayout
+                    android:id="@+id/read_set_filter_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
 
@@ -154,6 +155,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:orientation="vertical"
+                android:background="@color/mio_gray_1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
@@ -357,10 +359,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                app:layout_constraintBottom_toBottomOf="@+id/read_fix_bottom"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/read_fix_detail_content">
+                >
 
                 <!--댓글-->
                 <LinearLayout
@@ -429,6 +428,16 @@
                         android:layout_weight="1"
                         android:src="@drawable/baseline_send_24"
                         android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/read_edit_send_comment"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="end"
+                        android:layout_marginEnd="15dp"
+                        android:layout_weight="1"
+                        android:src="@drawable/baseline_send_24"
+                        android:visibility="gone"/>
                 </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -480,6 +489,7 @@
                     android:background="@drawable/read_apply_btn_layout"
                     android:backgroundTint="@color/mio_blue_5"
                     android:text="신청하기"
+                    android:textSize="15sp"
                     android:textColor="@color/mio_gray_3" />
             </LinearLayout>
         </LinearLayout>

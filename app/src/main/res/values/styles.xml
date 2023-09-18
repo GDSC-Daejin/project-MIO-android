@@ -101,4 +101,36 @@
         <item name="android:textColor">@color/mio_blue_5</item>
     </style>
 
+
+    <style name="CustomAlertDialog">
+
+        <!-- 꽉 채운 화면에 배경 없이 (custom view 영역만 보일 것이다.) -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
+
+        <!-- Dim 처리 -->
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:colorBackground">?attr/colorBackgroundFloating</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+
+        <!-- Dialog가 센터에 나오도록 -->
+        <item name="android:windowIsFloating">true</item>
+    </style>
+
+    <style name="FullScreenDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <style name="SwitchTheme">
+        <item name="android:thumbTint">@color/mio_gray_11</item>
+        <item name="android:trackTint">@color/mio_blue_4</item>
+    </style>
+
 </resources>

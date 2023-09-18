@@ -41,8 +41,11 @@ import java.util.*
 
 class NoticeBoardEditActivity : AppCompatActivity() {
     private lateinit var mBinding : ActivityNoticeBoardEditBinding
-    //클릭한 포스트(게시글)의 데이터 임시저장 edit용
+    //클릭한 포스트(게시글)의 데이터 임시저장
     private var temp : AddPostData? = null
+    //edit용 임시저장 데이터
+    private var eTemp : PostData? = null
+
     private var pos = 0
     //받은 계정 정보
     private var userEmail = ""
@@ -65,6 +68,9 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     //선택한 날짜
     private var selectTargetDate = ""
     private var selectFormattedDate = ""
+    private var isCategory = false //true : 카풀, false : 택시
+    private var selectCategory = ""
+    private var selectCategoryId = 0
     //설정한 제목
     private var editTitle = ""
     //선택한 시간
@@ -109,7 +115,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         )
 
     )
-    private val liveData = MutableLiveData("default")
     private lateinit var myViewModel : SharedViewModel
     val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
 
@@ -123,19 +128,24 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         type = intent.getStringExtra("type")
 
 
-        bottomBtnEvent()
-        //vf 생성
-        firstVF()
-        thirdVF()
-        fourthVF()
-        fifthVF()
-        /*if (type.equals("ADD")) { //add
-            temp = intent.getSerializableExtra("postItem") as PostData?
-            mBinding.editAdd.text = temp!!.postContent
 
-        } else { //edit
 
-        }*/
+        if (type.equals("ADD")) { //add
+            bottomBtnEvent()
+            //vf 생성
+            firstVF()
+            thirdVF()
+            fourthVF()
+            fifthVF()
+        } else if (type.equals("EDIT")){ //edit
+            eTemp = intent.getSerializableExtra("editPostData") as PostData
+            bottomBtnEvent()
+            //vf 생성
+            firstVF()
+            thirdVF()
+            fourthVF()
+            fifthVF()
+        }
 
 
 
@@ -154,7 +164,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         }*/
         //여기가 사용할것들
         ///////////////////////////////////
-         //카테고리 생각하여 데이터 변경하기 Todo
+         //카테고리 생각하여 데이터 변경하기
          /*mBinding.editAdd.setOnClickListener {
             val contentPost = mBinding.editPostContent.text.toString()
             val contentTitle = mBinding.editPostTitle.text.toString()
@@ -204,10 +214,11 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
         //뒤로가기
         mBinding.backArrow.setOnClickListener {
-            val intent = Intent(this@NoticeBoardEditActivity, MainActivity::class.java).apply {
+            /*val intent = Intent(this@NoticeBoardEditActivity, MainActivity::class.java).apply {
 
             }
             setResult(8, intent)
+            finish()*/
             finish()
         }
 
@@ -304,10 +315,15 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     }
 
     private fun firstVF() {
-
+        if (type == "EDIT") {
+            mBinding.editTitle.setText(eTemp!!.postTitle)
+        }
         mBinding.editTitle.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-
+                if (type == "EDIT") {
+                    mBinding.editTitle.setText(eTemp!!.postTitle)
+                    editTitle = eTemp!!.postTitle
+                }
             }
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 
@@ -328,6 +344,11 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             }
         })
 
+
+        if (type == "EDIT") {
+            mBinding.editSelectDateTv.text = eTemp!!.postTargetDate
+            selectFormattedDate = eTemp!!.postTargetDate
+        }
         mBinding.editCalendar.setOnClickListener {
             val cal = Calendar.getInstance()
             val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
@@ -343,10 +364,55 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 Calendar.DAY_OF_MONTH)).show()
         }
 
+
+        if (type == "EDIT") {
+            mBinding.editSelectTime.text = eTemp!!.postTargetTime
+            selectFormattedTime = eTemp!!.postTargetTime
+        }
         mBinding.editTime.setOnClickListener {
             showHourPicker()
         }
 
+        //카테고리 관리
+        if (type == "EDIT") {
+            selectCategory = eTemp!!.postCategory
+            if (selectCategory == "carpool") {
+                selectCategoryId = 1
+                mBinding.editCategoryCarpoolBtn.apply {
+                    setBackgroundResource(R.drawable.round_btn_update_layout)
+                    setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+                }
+            } else {
+                selectCategoryId = 0
+                mBinding.editCategoryCarpoolBtn.apply {
+                    setBackgroundResource(R.drawable.round_btn_update_layout)
+                    setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+                }
+            }
+        }
+        mBinding.editCategoryCarpoolBtn.setOnClickListener {
+            selectCategory = "carpool"
+            selectCategoryId = 1
+            mBinding.editCategoryCarpoolBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_update_layout)
+                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+            }
+        }
+        mBinding.editCategoryTaxiBtn.setOnClickListener {
+            selectCategory = "taxi"
+            selectCategoryId = 0
+            mBinding.editCategoryTaxiBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_update_layout)
+                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+            }
+        }
+
+
+
+        if (type == "EDIT") {
+            mBinding.editParticipateTv.text = eTemp!!.postParticipationTotal.toString()
+            participateNumberOfPeople = eTemp!!.postParticipation
+        }
         mBinding.editMinus.setOnClickListener {
             participateNumberOfPeople -= 1
             if (participateNumberOfPeople > 0) {
@@ -396,9 +462,15 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             selectCost = mBinding.editSelectAmount.text.toString()
             isAllCheck.isThirdVF.isAmount = true
         }*/
+        if (type == "EDIT") {
+            mBinding.editSelectAmount.setText(eTemp!!.postCost.toString())
+            selectCost = eTemp!!.postCost.toString()
+        }
         mBinding.editSelectAmount.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-
+                if (type == "EDIT") {
+                    mBinding.editSelectAmount.setText(eTemp!!.postCost)
+                }
             }
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
                 //타이틀 체크
@@ -505,9 +577,15 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     }
 
     private fun fourthVF() {
+        if (type == "EDIT") {
+            mBinding.editDetailContent.setText(eTemp!!.postContent)
+            detailContent = eTemp!!.postContent
+        }
         mBinding.editDetailContent.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-
+                if (type == "EDIT") {
+                    mBinding.editDetailContent.setText(eTemp!!.postContent)
+                }
             }
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 
@@ -648,7 +726,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     println(temp)
                     CoroutineScope(Dispatchers.IO).launch {
                         /*"application/json; charset=UTF-8",*/
-                        api.addPostData(temp!!, 1).enqueue(object : Callback<AddPostResponse> {
+                        api.addPostData(temp!!, selectCategoryId).enqueue(object : Callback<AddPostResponse> {
                             override fun onResponse(
                                 call: Call<AddPostResponse>,
                                 response: Response<AddPostResponse>
@@ -676,6 +754,57 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 val intent = Intent(this, TaxiTabFragment::class.java).apply {
                     putExtra("postData", temp)
                     putExtra("flag", 0)
+                }
+                setResult(RESULT_OK, intent)
+                finish()
+
+            } else if (type.equals("EDIT")) {
+                if (isFirst) {
+                    var school = false
+                    var smoke = false
+                    var gender = false
+                    if (isAllCheck.isThirdVF.isGSchool) {
+                        school = true
+                    }
+                    if (isAllCheck.isThirdVF.isSmoke) {
+                        smoke = true
+                    }
+                    if (isAllCheck.isThirdVF.isMGender) {
+                        gender = true
+                    }
+
+                    temp = AddPostData(editTitle, detailContent, selectFormattedDate, selectFormattedTime, school, participateNumberOfPeople, 0, false, 0.0, 0.0, "수락산역 3번 출구", selectCost.toInt())
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        /*"application/json; charset=UTF-8",*/
+                        api.editPostData(temp!!, eTemp!!.postID).enqueue(object : Callback<AddPostResponse> {
+                            override fun onResponse(
+                                call: Call<AddPostResponse>,
+                                response: Response<AddPostResponse>
+                            ) {
+                                if (response.isSuccessful) {
+                                    println("succcckkkk")
+                                } else {
+                                    println("faafa")
+                                    Log.d("edit", response.errorBody()?.string()!!)
+                                    Log.d("message", call.request().toString())
+                                    println(response.code())
+                                }
+                            }
+
+                            override fun onFailure(call: Call<AddPostResponse>, t: Throwable) {
+                                Log.d("error", t.toString())
+                            }
+
+                        })
+                    }
+                } else {
+                    Toast.makeText(this, "빈 칸이 존재합니다. 빈 칸을 채워주세요!", Toast.LENGTH_SHORT).show()
+                }
+
+                val intent = Intent(this, TaxiTabFragment::class.java).apply {
+                    putExtra("postData", temp)
+                    putExtra("flag", 1)
                 }
                 setResult(RESULT_OK, intent)
                 finish()
@@ -736,11 +865,11 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     }
 
     private fun bottomBtnEvent() {
-        if (isFirst) {
+        if (isFirst || type == "EDIT") {
             CoroutineScope(Dispatchers.Main).launch {
                 mBinding.editNext.apply {
                     setBackgroundResource(R.drawable.round_btn_update_layout)
-                    setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
+                    setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
                 }
             }
             mBinding.editNext.setOnClickListener {

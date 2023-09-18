@@ -10,6 +10,47 @@ public class SaveSharedPreferenceGoogleLogin {
     private val PREF_USER_EMAIL = "email"
     private val acctoken = "token"
     private val expireDate = "expireDate"
+    private val privateUserId = "userId"
+
+    private val privateProfileUserId = "profileUserId"
+
+    private val isGender = "geneder"
+    private val isSchool = "school"
+    private val isSmoke = "smoke"
+
+    fun getSharedGender(ctx: Context?): String? {
+        return getSharedPreferences(ctx).getString(isGender, "")
+    }
+
+    // 필터정보저장
+    fun setGender(ctx: Context?, gender: String?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putString(isGender, gender)
+        editor.apply()
+    }
+
+    fun getSharedSchool(ctx: Context?): String? {
+        return getSharedPreferences(ctx).getString(isSchool, "")
+    }
+
+    // 계정 정보 저장
+    fun setSchool(ctx: Context?, school: String?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putString(isSchool, school)
+        editor.apply()
+    }
+    fun getSharedSmoke(ctx: Context?): String? {
+        return getSharedPreferences(ctx).getString(isSmoke, "")
+    }
+
+    // 계정 정보 저장
+    fun setSmoke(ctx: Context?, smoke: String?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putString(isSmoke, smoke)
+        editor.apply()
+    }
+
+
     fun getSharedPreferences(ctx: Context?): SharedPreferences {
         return PreferenceManager.getDefaultSharedPreferences(ctx!!)
     }
@@ -42,6 +83,24 @@ public class SaveSharedPreferenceGoogleLogin {
     }
     fun getExpireDate(ctx: Context?): String? {
         return getSharedPreferences(ctx).getString(expireDate, "")
+    }
+
+    fun setUserId(ctx: Context?, userId: Int?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putInt(privateUserId, userId!!)
+        editor.apply()
+    }
+    fun getUserId(ctx: Context?): Int? {
+        return getSharedPreferences(ctx).getInt(privateUserId, 0)
+    }
+
+    fun setProfileUserId(ctx: Context?, userId: Int?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putInt(privateProfileUserId, userId!!)
+        editor.apply()
+    }
+    fun getProfileUserId(ctx: Context?): Int? {
+        return getSharedPreferences(ctx).getInt(privateProfileUserId, 0)
     }
 
     // 로그아웃

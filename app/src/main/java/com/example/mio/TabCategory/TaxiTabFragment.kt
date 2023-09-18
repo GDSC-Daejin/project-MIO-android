@@ -2,6 +2,8 @@ package com.example.mio.TabCategory
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -18,14 +20,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mio.*
 import com.example.mio.Adapter.CalendarAdapter
+import com.example.mio.Adapter.CurrentNoticeBoardAdapter
 import com.example.mio.Adapter.NoticeBoardAdapter
-import com.example.mio.BottomSheetFragment
-import com.example.mio.CalendarUtil
+import com.example.mio.Adapter.NoticeBoardMyAreaAdapter
 import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
-import com.example.mio.RetrofitServerConnect
 import com.example.mio.databinding.FragmentTaxiTabBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
@@ -35,9 +37,11 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.lang.ref.WeakReference
+import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
 import kotlin.collections.ArrayList
@@ -61,9 +65,16 @@ class TaxiTabFragment : Fragment() {
 
     private lateinit var taxiTabBinding: FragmentTaxiTabBinding
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
+    private var areaManager : LinearLayoutManager = LinearLayoutManager(activity)
     private var horizonManager : LinearLayoutManager = LinearLayoutManager(activity)
 
     private var noticeBoardAdapter : NoticeBoardAdapter? = null
+    private var currentNoticeBoardAdapter : CurrentNoticeBoardAdapter? = null
+    private var noticeBoardMyAreaAdapter : NoticeBoardMyAreaAdapter? = null
+
+    //나의 활동 지역
+    private var myAreaItemData : kotlin.collections.ArrayList<PostData> = ArrayList()
+
 
     //캘린더
     private var calendarAdapter : CalendarAdapter? = null
@@ -71,6 +82,7 @@ class TaxiTabFragment : Fragment() {
 
     //게시글 전체 데이터 및 adapter와 공유하는 데이터
     private var taxiAllData : ArrayList<PostData> = ArrayList()
+    private var currentTaxiAllData : ArrayList<PostData> = ArrayList()
     //게시글 선택 시 위치를 잠시 저장하는 변수
     private var dataPosition = 0
     //게시글 위치
@@ -86,6 +98,9 @@ class TaxiTabFragment : Fragment() {
     //뒤로 가기 받아오기
     private lateinit var callback : OnBackPressedCallback
     var backPressedTime : Long = 0
+
+    //로딩창
+    private lateinit var loadingDialog : LoadingProgressDialog
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -104,26 +119,44 @@ class TaxiTabFragment : Fragment() {
         taxiTabBinding = FragmentTaxiTabBinding.inflate(inflater, container, false)
 
         initNoticeBoardRecyclerView()
+        initCurrentNoticeBoardRecyclerView()
         initCalendarRecyclerView()
         initSwipeRefresh()
+        initMyAreaRecyclerView()
 
-        setData()
+
 
         //recyclerview item클릭 시
         noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int) {
-                println("clcickc")
                 CoroutineScope(Dispatchers.IO).launch {
                     val temp = taxiAllData[position]
                     dataPosition = position
                     val intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
                         putExtra("type", "READ")
                         putExtra("postItem", temp)
+                        putExtra("uri", temp.user.profileImageUrl)
                     }
                     requestActivity.launch(intent)
                 }
             }
         })
+
+        currentNoticeBoardAdapter!!.setItemClickListener(object : CurrentNoticeBoardAdapter.ItemClickListener {
+            override fun onClick(view: View, position: Int, itemId: Int) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val temp = taxiAllData[position]
+                    dataPosition = position
+                    val intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
+                        putExtra("type", "READ")
+                        putExtra("postItem", temp)
+                        putExtra("uri", temp.user.profileImageUrl)
+                    }
+                    requestActivity.launch(intent)
+                }
+            }
+        })
+
 
         calendarAdapter!!.setItemClickListener(object : CalendarAdapter.ItemClickListener {
             //여기서 position = 0시작은 date가 되야함 itemId=1로 시작함
@@ -133,7 +166,7 @@ class TaxiTabFragment : Fragment() {
                         try {
                             println(itemId)
                             val selectDateData = calendarTaxiAllData.filter { it.postTargetDate == itemId }
-                            //선택한 날짜에 데이터가 변경되도록 Todo
+
                             println(selectDateData)
 
                             if (selectDateData.isNotEmpty()) {
@@ -164,7 +197,7 @@ class TaxiTabFragment : Fragment() {
             }
         })
 
-        //월 클릭 시 월에 들어있는 모든 데이터
+        /*//월 클릭 시 월에 들어있는 모든 데이터
         taxiTabBinding.monthTv.setOnClickListener {
             for ((key, value) in testselectCalendarData) {
                 println("전체 : ${key} : ${value}")
@@ -172,7 +205,7 @@ class TaxiTabFragment : Fragment() {
 
             noticeBoardAdapter!!.postItemData = taxiAllData
             noticeBoardAdapter!!.notifyDataSetChanged()
-        }
+        }*/
 
 
         taxiTabBinding.moreBtn.setOnClickListener {
@@ -187,9 +220,18 @@ class TaxiTabFragment : Fragment() {
 
             val intent = Intent(activity, MoreTaxiTabActivity::class.java).apply {
                 //putExtra("type", "MoreADD")
+                putExtra("type", "DATE")
+                putExtra("date", LocalDate.now().monthValue.toString())
             }
             requestActivity.launch(intent)
 
+        }
+
+        taxiTabBinding.carpoolBannerIv.setOnClickListener {
+            val intent = Intent(requireActivity(), NoticeBoardEditActivity::class.java).apply {
+                putExtra("type","ADD")
+            }
+            requestActivity.launch(intent)
         }
 
         /*taxiTabBinding.filterBtn.setOnClickListener {
@@ -235,7 +277,21 @@ class TaxiTabFragment : Fragment() {
             testselectCalendarData = textValue
         }
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
+        //로딩창 실행
+        loadingDialog = LoadingProgressDialog(activity)
+        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        //로딩창
+        loadingDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        loadingDialog.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
 
+
+        loadingDialog.window!!.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        loadingDialog.show()
+
+        setData()
 
 
         noticeBoardAdapter = NoticeBoardAdapter()
@@ -256,43 +312,44 @@ class TaxiTabFragment : Fragment() {
         }
     }
 
-    private fun setCalendarData() {
+    private fun initMyAreaRecyclerView() {
+        setMyAreaData()
 
-        val cal = Calendar.getInstance()
-        //cal.set(2023, 5, 1)
-        /*cal.add(Calendar.YEAR, LocalDate.now().year)
-        cal.add(Calendar.MONTH, LocalDate.now().monthValue)
-        cal.add(Calendar.DAY_OF_MONTH, LocalDate.now().dayOfMonth)
+        noticeBoardMyAreaAdapter = NoticeBoardMyAreaAdapter()
+        noticeBoardMyAreaAdapter!!.postAreaItemData = myAreaItemData
+        taxiTabBinding.myAreaOfActivityRV.adapter = noticeBoardMyAreaAdapter
+        //레이아웃 뒤집기 안씀
+        //manager.reverseLayout = true
+        //manager.stackFromEnd = true
+        taxiTabBinding.myAreaOfActivityRV.setHasFixedSize(true)
+        taxiTabBinding.myAreaOfActivityRV.layoutManager = areaManager
 
-         */
+        /*taxiTabBinding.noticeBoardRV.itemAnimator =  SlideInUpAnimator(OvershootInterpolator(1f))
+        taxiTabBinding.noticeBoardRV.itemAnimator?.apply {
+            addDuration = 1000
+            removeDuration = 100
+            moveDuration = 1000
+            changeDuration = 100
+        }*/
+    }
 
-        //현재 달의 마지막 날짜
-        val localDate = LocalDate.now()
-        val yearMonth = YearMonth.from(localDate)
-        val lastDayOfMonth = yearMonth.lengthOfMonth()
+    private fun initCurrentNoticeBoardRecyclerView() {
+        //로딩창 실행
+        /*loadingDialog = LoadingProgressDialog(activity)
+        loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        loadingDialog.show()*/
 
-        //월 설정
-        taxiTabBinding.monthTv.text = LocalDate.now().month.toString()
+        setCurrentTaxiData()
 
 
-        //val localDate = LocalDate.parse("${LocalDate.now().year}-${LocalDate.now().monthValue}-${LocalDate.now().dayOfMonth}")
-        //현재 날짜
-        //val currentDate = LocalDate.now()
-        //현재 달의 마지막 날짜
-        //val lastDayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
-        //val lastDayOfMonth = localDate.withDayOfMonth(localDate.lengthOfMonth())
-        for (i in 1..lastDayOfMonth) {
-            val date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, i)
-            val dayOfWeek: DayOfWeek = date.dayOfWeek
-            dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREA)
-            /*println("날짜" + date)
-            println("dayofweek" + dayOfWeek)*/
-            //현재 월, 현재 요일, 날짜
-            //println(DateData(LocalDate.now().year.toString(), LocalDate.now().month.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
-
-            calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
-
-        }
+        currentNoticeBoardAdapter = CurrentNoticeBoardAdapter()
+        currentNoticeBoardAdapter!!.currentPostItemData = currentTaxiAllData
+        taxiTabBinding.currentRv.adapter = currentNoticeBoardAdapter
+        //레이아웃 뒤집기 안씀
+        //manager.reverseLayout = true
+        //manager.stackFromEnd = true
+        taxiTabBinding.currentRv.setHasFixedSize(true)
+        //taxiTabBinding.currentRv.layoutManager = manager
     }
 
     private fun initCalendarRecyclerView() {
@@ -313,7 +370,7 @@ class TaxiTabFragment : Fragment() {
     private fun initSwipeRefresh() {
         taxiTabBinding.refreshSwipeLayout.setOnRefreshListener {
             //새로고침 시 터치불가능하도록
-            requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) // 화면 터치 못하게 하기
+            activity?.window!!.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) // 화면 터치 못하게 하기
             val handler = Handler(Looper.getMainLooper())
             handler.postDelayed({
                 setData()
@@ -321,12 +378,54 @@ class TaxiTabFragment : Fragment() {
                 //noticeBoardAdapter.recyclerView.startLayoutAnimation()
                 taxiTabBinding.refreshSwipeLayout.isRefreshing = false
                 noticeBoardAdapter!!.notifyDataSetChanged()
-                requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
             }, 1000)
             //터치불가능 해제ss
             //activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
         }
     }
+
+    private fun setCalendarData() {
+
+        val cal = Calendar.getInstance()
+        //cal.set(2023, 5, 1)
+        /*cal.add(Calendar.YEAR, LocalDate.now().year)
+        cal.add(Calendar.MONTH, LocalDate.now().monthValue)
+        cal.add(Calendar.DAY_OF_MONTH, LocalDate.now().dayOfMonth)
+
+         */
+
+        //현재 달의 마지막 날짜
+        val localDate = LocalDate.now()
+        val yearMonth = YearMonth.from(localDate)
+        val lastDayOfMonth = yearMonth.lengthOfMonth()
+
+        //월 설정
+        //taxiTabBinding.monthTv.text = LocalDate.now().month.toString()
+
+
+        //val localDate = LocalDate.parse("${LocalDate.now().year}-${LocalDate.now().monthValue}-${LocalDate.now().dayOfMonth}")
+        //현재 날짜
+        //val currentDate = LocalDate.now()
+        //현재 달의 마지막 날짜
+        //val lastDayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+        //val lastDayOfMonth = localDate.withDayOfMonth(localDate.lengthOfMonth())
+        for (i in 1..lastDayOfMonth) {
+            val date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, i)
+            val dayOfWeek: DayOfWeek = date.dayOfWeek
+            val tempDayOfWeek = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
+            //println("dadad" + tempDayOfWeek.toString().substring(0, 3))
+            /*println("날짜" + date)
+            println("dayofweek" + dayOfWeek)*/
+            //현재 월, 현재 요일, 날짜
+            //println(DateData(LocalDate.now().year.toString(), LocalDate.now().month.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
+
+            calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), tempDayOfWeek.toString().substring(0, 1), i.toString()))
+
+        }
+    }
+
 
     private fun setData() {
         val call = RetrofitServerConnect.service
@@ -450,6 +549,281 @@ class TaxiTabFragment : Fragment() {
                         calendarTaxiAllData = taxiAllData
                         calendarAdapter!!.notifyDataSetChanged()
 
+                        loadingDialog.dismiss()
+
+                    } else {
+                        Log.d("f", response.code().toString())
+                    }
+                }
+
+                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
+        }
+    }
+
+    private fun setMyAreaData() { //나중에 여기 위치 받아오면 데이터 변경하기 TODO
+        val call = RetrofitServerConnect.service
+        CoroutineScope(Dispatchers.IO).launch {
+            call.getServerPostData("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                    if (response.isSuccessful) {
+
+                        //println(response.body()!!.content)
+                        /*val start = SystemClock.elapsedRealtime()
+
+                        // 함수 실행시간
+                        val date = Date(start)
+                        val mFormat = SimpleDateFormat("HH:mm:ss")
+                        val time = mFormat.format(date)
+                        println(start)
+                        println(time)*/
+                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
+                        s.add(PostReadAllResponse())*/
+
+                        //데이터 청소
+                        myAreaItemData.clear()
+
+                        for (i in response.body()!!.content.indices) {
+                            //탑승자 null체크
+                            var part = 0
+                            var location = ""
+                            var title = ""
+                            var content = ""
+                            var targetDate = ""
+                            var targetTime = ""
+                            var categoryName = ""
+                            var cost = 0
+                            var verifyGoReturn = false
+                            if (response.isSuccessful) {
+                                part = try {
+                                    response.body()!!.content[i].participants.isEmpty()
+                                    response.body()!!.content[i].participants.size
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    0
+                                }
+                                location = try {
+                                    response.body()!!.content[i].location.isEmpty()
+                                    response.body()!!.content[i].location
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "수락산역 3번 출구"
+                                }
+                                title = try {
+                                    response.body()!!.content[i].title.isEmpty()
+                                    response.body()!!.content[i].title
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                content = try {
+                                    response.body()!!.content[i].content.isEmpty()
+                                    response.body()!!.content[i].content
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                targetDate = try {
+                                    response.body()!!.content[i].targetDate.isEmpty()
+                                    response.body()!!.content[i].targetDate
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                targetTime = try {
+                                    response.body()!!.content[i].targetTime.isEmpty()
+                                    response.body()!!.content[i].targetTime
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                categoryName = try {
+                                    response.body()!!.content[i].category.categoryName.isEmpty()
+                                    response.body()!!.content[i].category.categoryName
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                cost = try {
+                                    response.body()!!.content[i].cost
+                                    response.body()!!.content[i].cost
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    0
+                                }
+                                verifyGoReturn = try {
+                                    response.body()!!.content[i].verifyGoReturn
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    false
+                                }
+                            }
+
+                            //println(response!!.body()!!.content[i].user.studentId)
+                            myAreaItemData.add(PostData(
+                                response.body()!!.content[i].user.studentId,
+                                response.body()!!.content[i].postId,
+                                title,
+                                content,
+                                targetDate,
+                                targetTime,
+                                categoryName,
+                                location,
+                                //participantscount가 현재 참여하는 인원들
+                                part,
+                                //numberOfPassengers은 총 탑승자 수
+                                response.body()!!.content[i].numberOfPassengers,
+                                cost,
+                                verifyGoReturn,
+                                response.body()!!.content[i].user
+                            ))
+                            noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
+                        }
+                        loadingDialog.dismiss()
+
+                    } else {
+                        Log.d("f", response.code().toString())
+                    }
+                }
+
+                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
+        }
+    }
+
+    private fun setCurrentTaxiData() {
+        val call = RetrofitServerConnect.service
+        CoroutineScope(Dispatchers.IO).launch {
+            call.getCurrentServerPostData("createDate,desc").enqueue(object : Callback<PostReadAllResponse> {
+                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                    if (response.isSuccessful) {
+                        val temp = kotlin.collections.ArrayList<PostData>()
+                        //데이터 청소
+                        currentTaxiAllData.clear()
+
+                        for (i in response.body()!!.content.indices) {
+                            //탑승자 null체크
+                            var part = 0
+                            var location = ""
+                            var title = ""
+                            var content = ""
+                            var targetDate = ""
+                            var targetTime = ""
+                            var categoryName = ""
+                            var cost = 0
+                            var verifyGoReturn = false
+                            if (response.isSuccessful) {
+                                part = try {
+                                    response.body()!!.content[i].participants.isEmpty()
+                                    response.body()!!.content[i].participants.size
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    0
+                                }
+                                location = try {
+                                    response.body()!!.content[i].location.isEmpty()
+                                    response.body()!!.content[i].location
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "수락산역 3번 출구"
+                                }
+                                title = try {
+                                    response.body()!!.content[i].title.isEmpty()
+                                    response.body()!!.content[i].title
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                content = try {
+                                    response.body()!!.content[i].content.isEmpty()
+                                    response.body()!!.content[i].content
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                targetDate = try {
+                                    response.body()!!.content[i].targetDate.isEmpty()
+                                    response.body()!!.content[i].targetDate
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                targetTime = try {
+                                    response.body()!!.content[i].targetTime.isEmpty()
+                                    response.body()!!.content[i].targetTime
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                categoryName = try {
+                                    response.body()!!.content[i].category.categoryName.isEmpty()
+                                    response.body()!!.content[i].category.categoryName
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                cost = try {
+                                    response.body()!!.content[i].cost
+                                    response.body()!!.content[i].cost
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    0
+                                }
+                                verifyGoReturn = try {
+                                    response.body()!!.content[i].verifyGoReturn
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    false
+                                }
+                            }
+
+                            //println(response!!.body()!!.content[i].user.studentId)
+                            temp.add(PostData(
+                                response.body()!!.content[i].user.studentId,
+                                response.body()!!.content[i].postId,
+                                title,
+                                content,
+                                targetDate,
+                                targetTime,
+                                categoryName,
+                                location,
+                                //participantscount가 현재 참여하는 인원들
+                                part,
+                                //numberOfPassengers은 총 탑승자 수
+                                response.body()!!.content[i].numberOfPassengers,
+                                cost,
+                                verifyGoReturn,
+                                response.body()!!.content[i].user
+                            ))
+                        }
+                        val now = System.currentTimeMillis()
+                        val date = Date(now)
+                        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA)
+                        val currentDate = sdf.format(date)
+                        val selectFormattedDate = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).format(
+                            DateTimeFormatter.ISO_DATE)
+                        val currentTempData = temp.filter { it.postTargetDate == selectFormattedDate}
+                        for (j in currentTempData.indices) {
+                            currentTaxiAllData.add(currentTempData[j])
+                        }
+                        currentNoticeBoardAdapter!!.notifyDataSetChanged()
+
+
+                        if (currentTaxiAllData.isEmpty()) {
+                            taxiTabBinding.currentRv.visibility = View.GONE
+                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+                        } else {
+                            taxiTabBinding.currentRv.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
+                            taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
+                        }
+
+                        loadingDialog.dismiss()
                     } else {
                         Log.d("f", response.code().toString())
                     }
@@ -554,7 +928,7 @@ class TaxiTabFragment : Fragment() {
         }
     }
 
-    override fun onAttach(context: Context) {
+    /*override fun onAttach(context: Context) {
         super.onAttach(context)
         callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -568,7 +942,7 @@ class TaxiTabFragment : Fragment() {
         }
         activity?.onBackPressedDispatcher!!.addCallback(this, callback)
         //mainActivity = context as MainActivity
-    }
+    }*/
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

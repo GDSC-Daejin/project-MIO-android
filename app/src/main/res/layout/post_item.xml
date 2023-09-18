@@ -10,6 +10,7 @@
         android:id="@+id/post_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
         android:background="@drawable/round_layout"
@@ -34,13 +35,13 @@
             android:layout_height="match_parent"
             android:layout_marginStart="15dp"
             android:layout_marginEnd="15dp"
+            android:layout_marginTop="10dp"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/post_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
                 android:layout_weight="1"
                 android:fontFamily="@font/pretendard_medium"
                 android:text="택시 N빵 할 머진인 구해요"

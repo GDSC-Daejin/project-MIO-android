@@ -5,7 +5,7 @@
     android:viewportWidth="170"
     android:viewportHeight="50">
     <path
-        android:fillColor="#FFFFFFFF"
+        android:fillColor="@color/mio_gray_1"
         android:strokeColor="@color/mio_gray_6"
         android:strokeWidth="1"
         android:pathData="M0.5 10c0-5.25 4.25-9.5 9.5-9.5h150c5.25 0 9.5 4.25 9.5 9.5v30c0 5.25-4.25 9.5-9.5 9.5h-150c-5.25 0-9.5-4.25-9.5-9.5z"/>

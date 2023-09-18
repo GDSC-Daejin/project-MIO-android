@@ -11,45 +11,77 @@
     <LinearLayout
         android:id="@+id/notification_item_ll"
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-
-        <ImageView
-            android:id="@+id/notification_item_iv"
-            android:layout_width="38dp"
-            android:layout_height="match_parent"
-            android:src="@drawable/top_menu_notification" />
-
         <LinearLayout
-            android:layout_width="350dp"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/notification_item_content_tv"
+                android:id="@+id/notification_item_title_tv"
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
-                android:gravity="center"
-                android:text="알람이 도착했습니다" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="30dp"
+                android:text="알람이 도착했습니다"
+                android:textSize="16sp"
+                android:fontFamily="@font/pretendard_medium"
+                android:textColor="@color/mio_gray_10"
+                />
 
-            <TextView
-                android:id="@+id/notification_item_date_tv"
+
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="2023-06-08 / 12:20" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="15dp"
+                android:layout_marginBottom="12dp"
+                >
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="32dp"
+                    android:src="@drawable/notification_icon"
+                    />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginStart="10dp"
+                    >
+
+                    <TextView
+                        android:id="@+id/notification_content_tv"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="20202020님이 후기를 기다리고 있어요"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:textSize="14sp"
+                        android:textColor="@color/mio_gray_8"
+                        />
+
+                    <TextView
+                        android:id="@+id/notification_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="10분전"
+                        android:fontFamily="@font/pretendard_regular"
+                        android:textSize="12sp"
+                        android:textColor="@color/mio_gray_6"
+                        />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
         </LinearLayout>
-
-        <ImageView
-            android:id="@+id/delete_notify"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:src="@drawable/baseline_cancel_24" />
 
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -93,14 +93,16 @@
 
         <ProgressBar
             android:id="@+id/account_grade_pb"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="wrap_content"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:layout_weight="10"
+            android:max="120"
+            android:progress="20"
             android:progressTint="@drawable/account_progressbar_gradient"
-            android:progressBackgroundTint="@color/mio_blue_2"
+            android:progressBackgroundTint="@color/mio_gray_7"
             />
 
         <LinearLayout

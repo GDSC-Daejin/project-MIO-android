@@ -1,18 +1,26 @@
 package com.example.mio.TabAccount
 
+import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.view.animation.OvershootInterpolator
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
+import com.example.mio.Adapter.MoreTaxiTabAdapter
 import com.example.mio.Adapter.MyAccountPostAdapter
 import com.example.mio.Adapter.NoticeBoardReadAdapter
 import com.example.mio.Model.PostData
 import com.example.mio.Model.PostReadAllResponse
+import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentMyPostBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
@@ -47,6 +55,7 @@ class MyPostFragment : Fragment() {
     private var myAccountPostAllData = ArrayList<PostData>()
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
 
+    private var dataPosition = 0
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,22 +69,57 @@ class MyPostFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         pBinding = FragmentMyPostBinding.inflate(inflater, container, false)
 
         initMyRecyclerView()
+        initSwipeRefresh()
 
-        //myAdapter!!.setItemClickListener()
-
+        myAdapter!!.setItemClickListener(object : MyAccountPostAdapter.ItemClickListener {
+            override fun onClick(view: View, position: Int, itemId: Int) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val temp = myAccountPostAllData[position]
+                    dataPosition = position
+                    val intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
+                        putExtra("type", "READ")
+                        putExtra("postItem", temp)
+                        putExtra("uri", temp!!.user.profileImageUrl)
+                    }
+                    requestActivity.launch(intent)
+                }
+            }
+        })
 
         return pBinding.root
     }
+
+    private fun initSwipeRefresh() {
+        pBinding.accountSwipe.setOnRefreshListener {
+            //새로고침 시 터치불가능하도록
+            activity?.window!!.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) // 화면 터치 못하게 하기
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                setMyPostData()
+                myAdapter!!.myPostItemData = myAccountPostAllData
+                //noticeBoardAdapter.recyclerView.startLayoutAnimation()
+                pBinding.accountSwipe.isRefreshing = false
+                myAdapter!!.notifyDataSetChanged()
+                activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            }, 1000)
+            //터치불가능 해제ss
+            //activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+        }
+    }
+
 
     private fun setMyPostData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
         val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
+
         val interceptor = Interceptor { chain ->
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
@@ -102,10 +146,10 @@ class MyPostFragment : Fragment() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
 
-        println(email)
+        //println(userId)
 
         CoroutineScope(Dispatchers.IO).launch {
-            api.getMyPostData(email.toInt(),"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            api.getMyPostData(userId,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
 
@@ -208,6 +252,15 @@ class MyPostFragment : Fragment() {
                             ))
                             myAdapter!!.notifyDataSetChanged()
                         }
+                        if (myAccountPostAllData.size > 0) {
+                            pBinding.accountPostNotDataLl.visibility = View.GONE
+                            pBinding.accountSwipe.visibility = View.VISIBLE
+                            pBinding.myAccountPostRv.visibility = View.VISIBLE
+                        } else {
+                            pBinding.accountPostNotDataLl.visibility = View.VISIBLE
+                            pBinding.accountSwipe.visibility = View.GONE
+                            pBinding.myAccountPostRv.visibility = View.GONE
+                        }
 
                     } else {
                         Log.d("f", response.code().toString())
@@ -232,6 +285,38 @@ class MyPostFragment : Fragment() {
         pBinding.myAccountPostRv.setHasFixedSize(true)
         pBinding.myAccountPostRv.layoutManager = manager
 
+    }
+
+
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+        when (it.resultCode) {
+            AppCompatActivity.RESULT_OK -> {
+                val post = it.data?.getSerializableExtra("postData") as PostData
+                when(it.data?.getIntExtra("flag", -1)) {
+                    //add
+                    0 -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            /*taxiAllData.add(post)
+                            calendarTaxiAllData.add(post) //데이터 전부 들어감
+
+                            //들어간 데이터를 key로 분류하여 저장하도록함
+                            selectCalendarData[post.postTargetDate] = arrayListOf()
+                            selectCalendarData[post.postTargetDate]!!.add(post)
+
+                            println(selectCalendarData)*/
+                            //setData()
+                        }
+                        //livemodel을 통해 저장
+                        //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
+                        //noticeBoardAdapter!!.notifyDataSetChanged()
+                    }
+                    //edit
+                    1 -> {
+                    }
+
+                }
+            }
+        }
     }
 
     companion object {

@@ -6,10 +6,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.Toast
-import androidx.core.content.ContentProviderCompat.requireContext
-import com.example.mio.databinding.FragmentAnotherBottomSheetBinding
+import com.example.mio.databinding.FragmentReadSettingBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -21,18 +19,16 @@ private const val ARG_PARAM2 = "param2"
 
 /**
  * A simple [Fragment] subclass.
- * Use the [AnotherBottomSheetFragment.newInstance] factory method to
+ * Use the [ReadSettingBottomSheetFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class AnotherBottomSheetFragment : BottomSheetDialogFragment() {
+class ReadSettingBottomSheetFragment : BottomSheetDialogFragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
 
-
-    private lateinit var abBinding : FragmentAnotherBottomSheetBinding
-    //필터로 선택한 데이터들을 외부로 전송하기 위한 리스너
-    private var listener: OnSendFromBottomSheetDialog? = null
+    private lateinit var rsBinding : FragmentReadSettingBottomSheetBinding
+    private var listener : OnSendFromBottomSheetDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,50 +42,23 @@ class AnotherBottomSheetFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        abBinding = FragmentAnotherBottomSheetBinding.inflate(inflater, container, false)
+        rsBinding = FragmentReadSettingBottomSheetBinding.inflate(inflater, container, false)
 
-        abBinding.filterNewest.setOnClickListener {
-            Toast.makeText(requireActivity(), "최신 순", Toast.LENGTH_SHORT).show()
+        rsBinding.readSettingEdit.setOnClickListener {
+            //Toast.makeText(requireActivity(), "최신 순", Toast.LENGTH_SHORT).show()
             if (listener == null) return@setOnClickListener
-            listener?.sendValue("최신 순")
+            listener?.sendValue("수정")
             dismiss()
         }
 
-        /*abBinding.filterCloseDistance.setOnClickListener {
-            Toast.makeText(requireActivity(), "가까운 순", Toast.LENGTH_SHORT).show()
+        rsBinding.readSettingDelete.setOnClickListener {
+            //Toast.makeText(requireActivity(), "최신 순", Toast.LENGTH_SHORT).show()
             if (listener == null) return@setOnClickListener
-            listener?.sendValue("가까운 순")
-            dismiss()
-        }*/
-
-        abBinding.filterLowestPrice.setOnClickListener {
-            Toast.makeText(requireActivity(), "낮은 가격 순", Toast.LENGTH_SHORT).show()
-            if (listener == null) return@setOnClickListener
-            listener?.sendValue("낮은 가격 순")
+            listener?.sendValue("삭제")
             dismiss()
         }
 
-        abBinding.filterNearingEnd.setOnClickListener {
-            Toast.makeText(requireActivity(), "마감 임박 순", Toast.LENGTH_SHORT).show()
-            if (listener == null) return@setOnClickListener
-            listener?.sendValue("마감 임박 순")
-            dismiss()
-        }
-
-        /*
-        * if (listener == null) return@setOnClickListener
-            listener?.sendValue("$selectTargetDate, ${participateNumberOfPeople}, $isCheckSmoke, $isCheckGender, $isCheckSchool")
-            dismiss()
-            * */
-
-        return abBinding.root
-    }
-
-
-    private fun setupFullHeight(bottomSheet: View) {
-        val layoutParams = bottomSheet.layoutParams
-        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
-        bottomSheet.layoutParams = layoutParams
+        return rsBinding.root
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -97,7 +66,7 @@ class AnotherBottomSheetFragment : BottomSheetDialogFragment() {
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
             behavior.isDraggable = false
         }*/
-        val dialog = BottomSheetDialog(requireContext(),  R.style.BottomSheetDialogTheme)
+        val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
         dialog.setOnShowListener {
 
             val bottomSheetDialog = it as BottomSheetDialog
@@ -128,12 +97,12 @@ class AnotherBottomSheetFragment : BottomSheetDialogFragment() {
          *
          * @param param1 Parameter 1.
          * @param param2 Parameter 2.
-         * @return A new instance of fragment AnotherBottomSheetFragment.
+         * @return A new instance of fragment ReadSettingBottomSheetFragment.
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
-            AnotherBottomSheetFragment().apply {
+            ReadSettingBottomSheetFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)

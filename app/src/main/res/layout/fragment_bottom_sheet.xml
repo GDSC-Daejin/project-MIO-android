@@ -148,8 +148,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="27dp"
-            android:layout_marginEnd="27dp"
+            android:layout_marginStart="25dp"
+            android:layout_marginEnd="20dp"
             android:layout_marginTop="50dp"
             android:orientation="horizontal">
 
@@ -162,9 +162,9 @@
                 android:textStyle="bold" />
 
             <Space
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="200dp"
+                android:layout_weight="1"
                 />
 
             <ImageView
@@ -189,6 +189,7 @@
                 android:id="@+id/filter_plus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
                 android:src="@drawable/filter_participate_plus_icon"
                 />
         </LinearLayout>
@@ -197,8 +198,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="27dp"
-            android:layout_marginEnd="27dp"
+            android:layout_marginStart="25dp"
+            android:layout_marginEnd="20dp"
             android:layout_marginTop="50dp"
             android:orientation="horizontal">
 
@@ -212,15 +213,16 @@
                 android:textStyle="bold"/>
 
             <Space
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="270dp"
+                android:layout_weight="1"
                 />
 
             <ImageView
                 android:id="@+id/filter_checklist_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginEnd="15dp"
                 android:src="@drawable/filter_checklist_icon"
                 />
         </LinearLayout>

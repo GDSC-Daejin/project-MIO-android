@@ -15,7 +15,7 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -49,9 +49,14 @@
             android:exported="false" />
 
         <receiver
-            android:name=".Helper.AlertReceiver"
+            android:name=".Helper.AlarmReceiver"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="false">
+            <!--디바이스 부팅 시 바로 실행되게 설정 -->
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <activity
             android:name=".ApplyNextActivity"
@@ -83,6 +88,20 @@
         <meta-data
             android:name="com.kakao.sdk.Appkey"
             android:value="${kakaoSdkAppkey}" />
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove"
+            />
+        <service
+            android:name=".Helper.MyWorker"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE">
+            <intent-filter>
+                <action android:name="androidx.work.impl.background.systemjob.SystemJobService" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

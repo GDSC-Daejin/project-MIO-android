@@ -1,10 +1,13 @@
 package com.example.mio.Adapter
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.BuildConfig
 import com.example.mio.MioInterface
@@ -33,24 +36,13 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
     var participationItemData = ArrayList<ParticipationData>()
     private lateinit var context : Context
 
+    //클릭된 아이템의 위치를 저장할 변수
+    private var selectedItem = -1
     init {
         setHasStableIds(true)
     }
 
     inner class ParticipationViewHolder(private val binding : ParticipationItemLayoutBinding ) : RecyclerView.ViewHolder(binding.root) {
-        /*init {
-            // 아이템 클릭 이벤트 처리
-            itemView.setOnClickListener {
-                val position = adapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    val item = participationItemData[position]
-
-                    // 아이템 정보를 사용하여 서버 요청 보내기
-                    fetchItemDetails(item.userId)
-                }
-            }
-        }*/
-
         private var position : Int? = null
         //var accountId = binding.accountId
         //var accountProfile = binding.accountImage
@@ -70,8 +62,13 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ParticipationAdapter.ParticipationViewHolder {
         context = parent.context
-        binding = ParticipationItemLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        /*val view = LayoutInflater.from(parent.context).inflate(
+            if (viewType == selectedItem) R.layout.participation_item_update_layout else R.layout.participation_item_layout,
+            parent, false
+        )*/
+        binding = ParticipationItemLayoutBinding.inflate(LayoutInflater.from(parent.context),parent, false)
         return ParticipationViewHolder(binding)
+
     }
 
     override fun onBindViewHolder(holder: ParticipationAdapter.ParticipationViewHolder, position: Int) {
@@ -81,21 +78,45 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             itemClickListener.onClick(it, holder.adapterPosition, participationItemData[holder.adapterPosition].postId)
         }*/
 
+
         binding.participationApproval.setOnClickListener {
             println("clclclclclclclclclclclclclclclappp")
             val approvalPosition = holder.adapterPosition
             val item = participationItemData[approvalPosition]
-
             // 아이템 정보를 사용하여 서버 요청 보내기
             fetchItemDetails(item.userId)
-        }
 
+            selectedItem = approvalPosition
+            notifyDataSetChanged()
+        }
 
         binding.participationRefuse.setOnClickListener {
             removeData(holder.adapterPosition)
 
         }
 
+        if (position == selectedItem) {
+            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) // 원하는 색상으로 변경
+
+            // 배경색 변경
+            binding.participationCsl.backgroundTintList = colorStateList
+            binding.participationItemLl.backgroundTintList = colorStateList
+
+            binding.participationCancel.visibility = View.VISIBLE
+            binding.participationRefuse.visibility = View.GONE
+            binding.participationApproval.visibility = View.GONE
+
+        } else {
+            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) // 원하는 색상으로 변경
+
+            // 배경색 변경
+            binding.participationCsl.backgroundTintList = colorStateList
+            binding.participationItemLl.backgroundTintList = colorStateList
+
+            binding.participationCancel.visibility = View.GONE
+            binding.participationRefuse.visibility = View.VISIBLE
+            binding.participationApproval.visibility = View.VISIBLE
+        }
 
     /*binding.homeRemoveIv.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)
@@ -129,6 +150,9 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
     override fun getItemId(position: Int): Long {
         return position.toLong()
+    }
+    override fun getItemViewType(position: Int): Int {
+        return if (position == selectedItem) R.layout.participation_item_update_layout else R.layout.participation_item_layout
     }
 
     //데이터 Handle 함수

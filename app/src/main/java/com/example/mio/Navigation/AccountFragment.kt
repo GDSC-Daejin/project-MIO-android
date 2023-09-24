@@ -15,6 +15,7 @@ import com.example.mio.Model.User
 import com.example.mio.R
 import com.example.mio.RetrofitServerConnect
 import com.example.mio.SaveSharedPreferenceGoogleLogin
+import com.example.mio.TabAccount.AccountReviewActivity
 import com.example.mio.TabAccount.AccountSettingActivity
 import com.example.mio.databinding.FragmentAccountBinding
 import com.google.android.material.tabs.TabLayoutMediator
@@ -68,6 +69,14 @@ class AccountFragment : Fragment() {
             val intent = Intent(activity, AccountSettingActivity::class.java).apply {
                 putExtra("type", "ACCOUNT")
                 putExtra("accountData", email.substring(0 until 8)) //20201530 숫자만
+            }
+            startActivity(intent)
+        }
+
+        aBinding.accountReviewBtn.setOnClickListener {
+            val intent = Intent(activity, AccountReviewActivity::class.java).apply {
+                putExtra("type", "REVIEW")
+                putExtra("userId", myAccountData!!.id) //4 숫자만
             }
             startActivity(intent)
         }

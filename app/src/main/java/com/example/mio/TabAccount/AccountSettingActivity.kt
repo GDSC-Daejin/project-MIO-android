@@ -4,17 +4,25 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.mio.MainActivity
+import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.TabCategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityAccountSettingBinding
 
 class AccountSettingActivity : AppCompatActivity() {
     private var aBinding : ActivityAccountSettingBinding? = null
-
+    private var type : String? = null
+    private var email = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         aBinding = ActivityAccountSettingBinding.inflate(layoutInflater)
+        type = intent.getStringExtra("type")
+
+        if (type.equals("ACCOUNT")) {
+            email = intent.getStringExtra("accountData").toString()
+
+        }
 
         aBinding!!.asAccountLl.setOnClickListener {
             //dialog로 수정 Todo

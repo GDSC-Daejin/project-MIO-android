@@ -16,6 +16,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -29,6 +30,9 @@
         android:usesCleartextTraffic="true"
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="33">
+        <activity
+            android:name=".TabAccount.AccountReviewActivity"
+            android:exported="false" />
         <activity
             android:name=".TabAccount.ProfileActivity"
             android:exported="false" />
@@ -52,7 +56,8 @@
             android:name=".Helper.AlarmReceiver"
             android:enabled="true"
             android:exported="false">
-            <!--디바이스 부팅 시 바로 실행되게 설정 -->
+
+            <!-- 디바이스 부팅 시 바로 실행되게 설정 -->
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
@@ -92,8 +97,8 @@
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
-            tools:node="remove"
-            />
+            tools:node="remove" />
+
         <service
             android:name=".Helper.MyWorker"
             android:exported="false"

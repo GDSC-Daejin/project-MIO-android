@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     private var oldFragment : Fragment? = null
     private var oldTAG = ""
     // private lateinit var loadingDialog : LoadingProgressDialog
+    private var backPressedTime = 0L
 
     private var sharedViewModel: SharedViewModel? = null
 
@@ -411,21 +412,29 @@ class MainActivity : AppCompatActivity() {
             oldTAG = ""
 
             val fragmentManager = supportFragmentManager
-            if (fragmentManager.backStackEntryCount > 0) {
-                fragmentManager.popBackStack()
 
-            } else {
+            if (System.currentTimeMillis() > backPressedTime + 2000) {
+                backPressedTime = System.currentTimeMillis()
+                Toast.makeText(this@MainActivity, "뒤로 버튼을 한 번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            if (System.currentTimeMillis() <= backPressedTime + 2000) {
+                if (fragmentManager.backStackEntryCount > 0) {
+                    fragmentManager.popBackStack()
+
+                } else {
+                    this@MainActivity.finishAffinity()
+                }
+
+                if (currentFragment != null) {
+                    transaction.remove(currentFragment)
+
+                    transaction.commit()
+                }
+
                 this@MainActivity.finishAffinity()
             }
-
-            if (currentFragment != null) {
-                transaction.remove(currentFragment)
-
-                transaction.commit()
-            }
-
-
-            this@MainActivity.finishAffinity()
         }
     }
 }

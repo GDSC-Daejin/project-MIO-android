@@ -3,15 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/participation_csl"
     android:background="@drawable/participation_ll"
+    android:backgroundTint="@color/mio_gray_4"
     >
 
     <LinearLayout
-        android:id="@+id/participation_item_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:background="@color/mio_gray_4"
         android:layout_marginTop="20dp"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
@@ -69,32 +69,6 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/participation_refuse"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/round_btn2_layout"
-                android:backgroundTint="@color/mio_gray_4"
-                android:text="거절"
-                android:fontFamily="@font/pretendard_medium"
-                android:textColor="@color/mio_gray_10"
-                android:layout_marginEnd="10dp"
-                style="?android:attr/buttonBarButtonStyle" />
-
-            <Button
-                android:id="@+id/participation_approval"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/round_btn2_layout"
-                android:backgroundTint="@color/mio_blue_4"
-                android:text="승인"
-                android:fontFamily="@font/pretendard_medium"
-                android:textColor="@color/mio_gray_2"
-                android:layout_marginStart="10dp"
-                style="?android:attr/buttonBarButtonStyle" />
-
-            <Button
                 android:id="@+id/participation_cancel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -103,8 +77,8 @@
                 android:textColor="@color/mio_gray_9"
                 android:fontFamily="@font/pretendard_medium"
                 android:textSize="14sp"
-                android:visibility="gone"
                 />
+
         </LinearLayout>
 
     </LinearLayout>

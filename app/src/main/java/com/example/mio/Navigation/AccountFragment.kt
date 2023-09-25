@@ -15,6 +15,7 @@ import com.example.mio.Model.User
 import com.example.mio.R
 import com.example.mio.RetrofitServerConnect
 import com.example.mio.SaveSharedPreferenceGoogleLogin
+import com.example.mio.TabAccount.AccountReviewActivity
 import com.example.mio.TabAccount.AccountSettingActivity
 import com.example.mio.databinding.FragmentAccountBinding
 import com.google.android.material.tabs.TabLayoutMediator
@@ -72,6 +73,14 @@ class AccountFragment : Fragment() {
             startActivity(intent)
         }
 
+        aBinding.accountReviewBtn.setOnClickListener {
+            val intent = Intent(activity, AccountReviewActivity::class.java).apply {
+                putExtra("type", "REVIEW")
+                putExtra("userId", myAccountData!!.id) //4 숫자만
+            }
+            startActivity(intent)
+        }
+
         aBinding.accountViewpager.adapter = AccountTabAdapter(requireActivity())
 
         TabLayoutMediator(aBinding.accountCategoryTabLayout, aBinding.accountViewpager) { tab, pos ->
@@ -88,7 +97,7 @@ class AccountFragment : Fragment() {
         saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.toString()
 
-        aBinding.accountUserId.text = email
+        aBinding.accountUserId.text = email.substring(0..7)
 
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
@@ -114,7 +123,7 @@ class AccountFragment : Fragment() {
                         } else {
                             println("mmc")
                             CoroutineScope(Dispatchers.Main).launch {
-                                val animator = ObjectAnimator.ofInt(aBinding.accountGradePb, "progress", 0, response.body()!!.mannerCount)
+                                val animator = ObjectAnimator.ofInt(aBinding.accountGradePb, "progress", 0, 20)
 
                                 // 애니메이션 지속 시간 설정 (예: 2초)
                                 animator.duration = 2000

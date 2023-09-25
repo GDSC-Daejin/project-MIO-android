@@ -33,9 +33,14 @@ import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
@@ -82,7 +87,7 @@ class TaxiTabFragment : Fragment() {
 
     //게시글 전체 데이터 및 adapter와 공유하는 데이터
     private var taxiAllData : ArrayList<PostData> = ArrayList()
-    private var currentTaxiAllData : ArrayList<PostData> = ArrayList()
+    private var currentTaxiAllData = ArrayList<PostData>()
     //게시글 선택 시 위치를 잠시 저장하는 변수
     private var dataPosition = 0
     //게시글 위치
@@ -145,7 +150,7 @@ class TaxiTabFragment : Fragment() {
         currentNoticeBoardAdapter!!.setItemClickListener(object : CurrentNoticeBoardAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val temp = taxiAllData[position]
+                    val temp = currentTaxiAllData[position]
                     dataPosition = position
                     val intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
                         putExtra("type", "READ")
@@ -696,7 +701,96 @@ class TaxiTabFragment : Fragment() {
     }
 
     private fun setCurrentTaxiData() {
-        val call = RetrofitServerConnect.service
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
+        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
+
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+
+        //println(userId)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            api.getMyParticipantsData(0, 20).enqueue(object : Callback<List<Content>> {
+                override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
+                    if (response.isSuccessful) {
+                        println("예약 정보")
+                        //데이터 청소
+                        currentTaxiAllData.clear()
+
+                        for (i in response.body()!!.indices) {
+                            //println(response!!.body()!!.content[i].user.studentId)
+                            currentTaxiAllData.add(PostData(
+                                response.body()!![i].user.studentId,
+                                response.body()!![i].postId,
+                                response.body()!![i].title,
+                                response.body()!![i].content,
+                                response.body()!![i].targetDate,
+                                response.body()!![i].targetTime,
+                                response.body()!![i].category.categoryName,
+                                response.body()!![i].location,
+                                //participantscount가 현재 참여하는 인원들
+                                response.body()!![i].participantsCount,
+                                //numberOfPassengers은 총 탑승자 수
+                                response.body()!![i].numberOfPassengers,
+                                response.body()!![i].cost,
+                                response.body()!![i].verifyGoReturn,
+                                response.body()!![i].user
+                            ))
+                            currentNoticeBoardAdapter!!.notifyDataSetChanged()
+                        }
+
+                        if (currentTaxiAllData.isEmpty()) {
+                            taxiTabBinding.currentRv.visibility = View.GONE
+                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+                        } else {
+                            taxiTabBinding.currentRv.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
+                            taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
+                        }
+
+                        loadingDialog.dismiss()
+
+                    } else {
+                        println(response.errorBody().toString())
+                        println(response.message().toString())
+                        println("실패")
+                        Log.d("f", response.code().toString())
+                    }
+                }
+
+                override fun onFailure(call: Call<List<Content>>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
+        }
+        /*val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
             call.getCurrentServerPostData("createDate,desc").enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
@@ -833,7 +927,7 @@ class TaxiTabFragment : Fragment() {
                     Log.d("error", t.toString())
                 }
             })
-        }
+        }*/
     }
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->

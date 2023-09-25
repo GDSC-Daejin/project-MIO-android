@@ -25,7 +25,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/pretendard_bold"
-                android:text="오늘의 카풀예약"
+                android:text="나의 카풀 예약"
                 android:textSize="18sp"
                 android:textColor="@color/mio_gray_11"
                 android:layout_marginStart="20dp"
@@ -49,7 +49,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/pretendard_bold"
-                android:text="오늘 예약된 카풀이 없습니다."
+                android:text="오늘 예약된 카풀이 없습니다"
                 android:textColor="@color/mio_gray_7"
                 android:visibility="gone" />
 
@@ -59,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:fontFamily="@font/pretendard_medium"
-                android:text="미오에서 카풀을 구해보세요."
+                android:text="미오에서 카풀을 구해보세요!"
                 android:textColor="@color/mio_gray_6"
                 android:visibility="gone" />
 

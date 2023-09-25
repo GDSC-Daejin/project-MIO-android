@@ -8,5 +8,5 @@
         android:topLeftRadius="12dp"
         android:topRightRadius="12dp"/>
     <stroke android:width="2dp"
-        android:color="#111111"/>
+        android:color="@color/mio_gray_2"/>
 </shape>

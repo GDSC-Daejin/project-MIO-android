@@ -145,6 +145,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout9">
 
+        <TextView
+            android:id="@+id/account_grade_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="5dp"
+            android:text="20202020님의 현재 등급은 A- 입니다"
+            android:textColor="@color/mio_gray_8"
+            android:fontFamily="@font/pretendard_medium"
+            />
+
+
         <Space
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -9,7 +9,7 @@ import com.example.mio.TabCategory.TaxiTabFragment
 //여기 페이지 변경하기
 class ReviewTabAdapter(fragmentActivity: FragmentActivity): FragmentStateAdapter(fragmentActivity) {
 
-    override fun getItemCount(): Int = 2
+    override fun getItemCount(): Int = 3
 
     override fun createFragment(position: Int): Fragment {
         return when(position) {

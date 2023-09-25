@@ -18,7 +18,7 @@
             android:layout_gravity="center"
             android:fontFamily="@font/pretendard_bold"
             android:gravity="center"
-            android:text="받은 후기가 없습니다"
+            android:text="작성한 후기가 없습니다"
             android:textColor="@color/mio_gray_11"
             android:textSize="18sp" />
     </LinearLayout>

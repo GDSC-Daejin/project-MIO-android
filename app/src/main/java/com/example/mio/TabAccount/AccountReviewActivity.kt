@@ -29,6 +29,10 @@ class AccountReviewActivity : AppCompatActivity() {
             userId = intent.getIntExtra("userId", -1)
         }
 
+        arBinding.backArrow.setOnClickListener {
+            this@AccountReviewActivity.finish()
+        }
+
         arBinding.accountReviewViewpager.adapter = ReviewTabAdapter(this)
 
         TabLayoutMediator(arBinding.accountReviewTabLayout, arBinding.accountReviewViewpager) { tab, pos ->

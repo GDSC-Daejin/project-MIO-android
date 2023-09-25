@@ -10,6 +10,9 @@ import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
 import kotlinx.coroutines.NonDisposableHandle.parent
 import java.lang.ref.WeakReference
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MyAccountParticipationAdapter : RecyclerView.Adapter<MyAccountParticipationAdapter.AccountViewHolder>(){
@@ -45,6 +48,58 @@ class MyAccountParticipationAdapter : RecyclerView.Adapter<MyAccountParticipatio
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
             //val listener = itemClickListener?.get()
+
+            val now = System.currentTimeMillis()
+            val date = Date(now)
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+            val currentDate = sdf.format(date)
+
+            val postDateTime = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
+            println(postDateTime)
+            val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
+            val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)
+            val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time!!)
+            val diffSeconds = diffMilliseconds?.div(1000)
+            val diffMinutes = diffMilliseconds?.div((60 * 1000))
+            val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
+            val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
+            if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
+
+                if(diffSeconds > -1){
+
+                }
+
+                if (diffSeconds > 0) {
+
+                }
+
+                if (diffMinutes > 0) {
+
+                }
+
+                if (diffHours > 0) {
+
+                }
+
+                //여기 잘 생각해서 다시 수정하기 TODO
+                if (diffDays > 0) {
+                    println("진입완료")
+                    if (accountData.postVerifyGoReturn) {
+                        binding.postStatus.setImageResource(R.drawable.reservation_carpool_complete)
+                        binding.postStatus.visibility = View.VISIBLE
+                    } else {
+                        binding.postStatus.setImageResource(R.drawable.reservation_complete)
+                        binding.postStatus.visibility = View.VISIBLE
+                    }
+                } else {
+                    println("???????")
+                    binding.postStatus.visibility = View.VISIBLE
+                }
+
+                if (diffDays < 0) {
+
+                }
+            }
         }
     }
 

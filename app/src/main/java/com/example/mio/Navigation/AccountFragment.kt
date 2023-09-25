@@ -97,7 +97,7 @@ class AccountFragment : Fragment() {
         saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.toString()
 
-        aBinding.accountUserId.text = email
+        aBinding.accountUserId.text = email.substring(0..7)
 
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
@@ -123,7 +123,7 @@ class AccountFragment : Fragment() {
                         } else {
                             println("mmc")
                             CoroutineScope(Dispatchers.Main).launch {
-                                val animator = ObjectAnimator.ofInt(aBinding.accountGradePb, "progress", 0, response.body()!!.mannerCount)
+                                val animator = ObjectAnimator.ofInt(aBinding.accountGradePb, "progress", 0, 20)
 
                                 // 애니메이션 지속 시간 설정 (예: 2초)
                                 animator.duration = 2000

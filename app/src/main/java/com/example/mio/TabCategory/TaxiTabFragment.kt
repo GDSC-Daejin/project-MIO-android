@@ -779,6 +779,7 @@ class TaxiTabFragment : Fragment() {
 
                     } else {
                         println(response.errorBody().toString())
+                        println(response.message().toString())
                         println("실패")
                         Log.d("f", response.code().toString())
                     }

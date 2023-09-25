@@ -40,49 +40,44 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
             val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
             cPostDate.text = s
             cPostLocation.text = accountData.postLocation
-
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!.substring(0..7)
-
-            if (identification == accountData.user.studentId) {
-                val now = System.currentTimeMillis()
-                val date = Date(now)
-                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-                val currentDate = sdf.format(date)
+            val now = System.currentTimeMillis()
+            val date = Date(now)
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+            val currentDate = sdf.format(date)
 
 
-                val postDateTime = context.getString(R.string.setText, accountData!!.postTargetDate.substring(0 .. 9), accountData!!.postTargetDate.substring(11 .. 18))
+            val postDateTime = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
+            println(postDateTime)
 
-                val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
-                val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)
-                val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time!!)
-                val diffSeconds = diffMilliseconds?.div(1000)
-                val diffMinutes = diffMilliseconds?.div((60 * 1000))
-                val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
-                val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
-                if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
+            val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
+            val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)
+            val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time!!)
+            val diffSeconds = diffMilliseconds?.div(1000)
+            val diffMinutes = diffMilliseconds?.div((60 * 1000))
+            val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
+            val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
+            if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
 
-                    if(diffSeconds > -1){
+                if(diffSeconds > -1){
 
-                    }
-                    if (diffSeconds > 0) {
-                        binding.currentCompleteFl.visibility = View.VISIBLE
-                        binding.currentCompleteTv.text = "카풀 완료"
-                    }
-                    /*if (diffMinutes > 0) {
-                        binding.commentRealtimeCheck.text = "${diffMinutes.toString()}분전"
-                    }
-                    if (diffHours > 0) {
-                        binding.commentRealtimeCheck.text = "${diffHours.toString()}시간전"
-                    }
-                    if (diffDays > 0) {
-                        binding.commentRealtimeCheck.text = "${diffDays.toString()}일전"
-                    }*/
                 }
-            } else {
-                binding.currentCompleteFl.visibility = View.GONE
+                if (diffSeconds > 0) {
+                    println("curreenttnetnente")
+                    binding.currentCompleteFl.visibility = View.VISIBLE
+                    binding.currentCompleteTv.text = "카풀 완료"
+                } else {
+                    binding.currentCompleteFl.visibility = View.GONE
+                }
+                /*if (diffMinutes > 0) {
+                    binding.commentRealtimeCheck.text = "${diffMinutes.toString()}분전"
+                }
+                if (diffHours > 0) {
+                    binding.commentRealtimeCheck.text = "${diffHours.toString()}시간전"
+                }
+                if (diffDays > 0) {
+                    binding.commentRealtimeCheck.text = "${diffDays.toString()}일전"
+                }*/
             }
-
         } //bind
     }
 
@@ -94,6 +89,13 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
 
     override fun onBindViewHolder(holder:CurrentNoticeBoardViewHolder, position: Int) {
         holder.bind(currentPostItemData[holder.adapterPosition], position)
+
+
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
+
+        if (identification == currentPostItemData[holder.adapterPosition].user.email) {
+        }
 
         holder.itemView.setOnClickListener {
             itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID)

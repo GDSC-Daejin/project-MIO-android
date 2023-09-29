@@ -23,6 +23,7 @@ import kotlinx.coroutines.launch
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -38,6 +39,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
     //클릭된 아이템의 위치를 저장할 변수
     private var selectedItem = -1
+    private var cancelItem = -2
     init {
         setHasStableIds(true)
     }
@@ -57,6 +59,15 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             itemContent.text = partData.content
             //accountProfile.setImageURI() = pillData.pillTakeTime
             //val listener = itemClickListener?.get()
+            if (partData.approvalOrReject == "approval") {
+                cancelItem = -1
+                selectedItem = position
+                notifyDataSetChanged()
+            } else {
+                selectedItem = -1
+                cancelItem = position
+                notifyDataSetChanged()
+            }
         }
     }
 
@@ -85,18 +96,28 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             val item = participationItemData[approvalPosition]
             // 아이템 정보를 사용하여 서버 요청 보내기
             fetchItemDetails(item.userId)
-
+            cancelItem = -1
             selectedItem = approvalPosition
             notifyDataSetChanged()
         }
 
         binding.participationRefuse.setOnClickListener {
             removeData(holder.adapterPosition)
+        }
 
+        binding.participationCancel.setOnClickListener {
+            println("cancleellelelelelelelelee")
+            val cancelPosition = holder.adapterPosition
+            selectedItem = -1
+            val item = participationItemData[cancelPosition]
+            // 아이템 정보를 사용하여 서버 요청 보내기
+            //fetchItemDetails(item.userId)
+            cancelItem = cancelPosition
+            notifyDataSetChanged()
         }
 
         if (position == selectedItem) {
-            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) // 원하는 색상으로 변경
+            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) //승인
 
             // 배경색 변경
             binding.participationCsl.backgroundTintList = colorStateList
@@ -106,8 +127,18 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             binding.participationRefuse.visibility = View.GONE
             binding.participationApproval.visibility = View.GONE
 
+        } else if (position == cancelItem){
+            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
+
+            // 배경색 변경
+            binding.participationCsl.backgroundTintList = colorStateList
+            binding.participationItemLl.backgroundTintList = colorStateList
+
+            binding.participationCancel.visibility = View.GONE
+            binding.participationRefuse.visibility = View.VISIBLE
+            binding.participationApproval.visibility = View.VISIBLE
         } else {
-            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) // 원하는 색상으로 변경
+            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
 
             // 배경색 변경
             binding.participationCsl.backgroundTintList = colorStateList
@@ -157,6 +188,57 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
     //데이터 Handle 함수
     fun removeData(position: Int) {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
+
+        /////////interceptor
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        //Authorization jwt토큰 로그인
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        /////////
+        val deleteParticipantsId = participationItemData[position].userId
+
+        //삭제 테스트해보기 TODO
+        CoroutineScope(Dispatchers.IO).launch {
+            api.deleteParticipants(deleteParticipantsId).enqueue(object : Callback<Void> {
+                override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    if (response.isSuccessful) {
+                        println(response.code())
+                    } else {
+                        println("error" + response.errorBody())
+                        println(response.code())
+                    }
+                }
+
+                override fun onFailure(call: Call<Void>, t: Throwable) {
+                    Log.d("ERROR", t.toString())
+                }
+            })
+        }
         participationItemData.removeAt(position)
         //temp = null
         notifyItemRemoved(position)
@@ -251,7 +333,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                     if (response.isSuccessful) {
                         println(response.code())
                     } else {
-                        println("error" + response.errorBody())
+                        var stringToJson = JSONObject(response.errorBody()?.string()!!)
+                        Log.e("YMC", "stringToJson: $stringToJson")
                         println(response.code())
                     }
                 }

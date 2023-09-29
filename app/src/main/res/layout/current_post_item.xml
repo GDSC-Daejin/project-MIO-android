@@ -98,7 +98,7 @@
     <FrameLayout
         android:id="@+id/current_complete_fl"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="horizontal"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"

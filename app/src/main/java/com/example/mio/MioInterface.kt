@@ -25,12 +25,19 @@ interface MioInterface {
     fun editPostData(@Body postData : AddPostData, @Path("id") postId : Int) : Call<AddPostResponse>
 
 
-
     //게시글 생성 순으로 조회
     @GET("/readAll")
     fun getServerPostData(@Query("sort") sort : String,
                           @Query("page") page : Int,
                           @Query("size") size : Int) : Call<PostReadAllResponse>
+
+    //카테고리에 따른 게시글 생성 순 조회 1=카풀, 2=택시
+    @GET("/categoryPost/{categoryId}")
+    fun getCategoryPostData(@Body categoryId: Int,
+                            @Query("sort") sort : String,
+                            @Query("page") page : Int,
+                            @Query("size") size : Int) : Call<PostReadAllResponse>
+
 
     @GET("/readAll")
     fun getCurrentServerPostData(@Query("sort") sort : String) : Call<PostReadAllResponse>
@@ -40,6 +47,10 @@ interface MioInterface {
     fun getServerDateData() : Call<PostReadAllResponse>
     @GET("/readAll/cost")
     fun getServerCostData() : Call<PostReadAllResponse>
+
+    @PATCH("/post/verfiyFinish/{id}")
+    fun patchVerifyFinish(@Body verifyFinish : Boolean, @Path("id") id : Int) : Call<AddPostResponse>
+
 
 
     /////////////////////////////////
@@ -139,6 +150,9 @@ interface MioInterface {
     @PATCH("/{participantId}/participate") //void는 response의 값이 없음을 나타내기 위해 Void를 사용, 성공 코드만 call받기위함
     fun patchParticipantsApproval(@Path("participantId") participantId : Int) : Call<Void>
     //suspend fun fetchData(@Path("participantId") participantId : Int) : Response<ParticipateData>
+
+    @DELETE("/{participantId}/reject")
+    fun deleteParticipants(@Path("participantId") participantId : Int) : Call<Void>
 
     ////////////////////////////////
     //알람

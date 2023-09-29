@@ -62,7 +62,6 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
 
                 }
                 if (diffSeconds > 0) {
-                    println("curreenttnetnente")
                     binding.currentCompleteFl.visibility = View.VISIBLE
                     binding.currentCompleteTv.text = "카풀 완료"
                 } else {

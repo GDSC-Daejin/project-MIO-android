@@ -87,7 +87,8 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                             ParticipationData(
                                 response.body()!![i].postId,
                                 response.body()!![i].userId,
-                                response.body()!![i].content
+                                response.body()!![i].content,
+                                response.body()!![i].approvalOrReject
                             )
                         )
                     }

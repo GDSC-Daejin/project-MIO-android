@@ -9,7 +9,9 @@ data class ParticipationData(
     @SerializedName("userId")
     var userId : Int,
     @SerializedName("content")
-    var content : String
+    var content : String,
+    @SerializedName("approvalOrReject")
+    var approvalOrReject : String
 ) : java.io.Serializable {
 
 }

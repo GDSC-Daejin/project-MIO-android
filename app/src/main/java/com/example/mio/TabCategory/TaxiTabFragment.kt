@@ -781,6 +781,9 @@ class TaxiTabFragment : Fragment() {
                         println(response.errorBody().toString())
                         println(response.message().toString())
                         println("실패")
+                        println("faafa")
+                        Log.d("add", response.errorBody()?.string()!!)
+                        Log.d("message", call.request().toString())
                         Log.d("f", response.code().toString())
                     }
                 }

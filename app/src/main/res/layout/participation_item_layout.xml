@@ -70,41 +70,42 @@
 
             <Button
                 android:id="@+id/participation_refuse"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
                 android:layout_weight="1"
                 android:background="@drawable/round_btn2_layout"
                 android:backgroundTint="@color/mio_gray_4"
-                android:text="거절"
                 android:fontFamily="@font/pretendard_medium"
+                android:text="거절"
                 android:textColor="@color/mio_gray_10"
-                android:layout_marginEnd="10dp"
-                style="?android:attr/buttonBarButtonStyle" />
+                android:visibility="visible" />
 
             <Button
                 android:id="@+id/participation_approval"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
                 android:layout_weight="1"
                 android:background="@drawable/round_btn2_layout"
                 android:backgroundTint="@color/mio_blue_4"
-                android:text="승인"
                 android:fontFamily="@font/pretendard_medium"
+                android:text="승인"
                 android:textColor="@color/mio_gray_2"
-                android:layout_marginStart="10dp"
-                style="?android:attr/buttonBarButtonStyle" />
+                android:visibility="visible" />
 
             <Button
                 android:id="@+id/participation_cancel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/round_btn_layout_participation"
+                android:fontFamily="@font/pretendard_medium"
                 android:text="취소"
                 android:textColor="@color/mio_gray_9"
-                android:fontFamily="@font/pretendard_medium"
                 android:textSize="14sp"
-                android:visibility="gone"
-                />
+                android:visibility="gone" />
         </LinearLayout>
 
     </LinearLayout>

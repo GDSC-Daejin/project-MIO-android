@@ -135,8 +135,15 @@ interface MioInterface {
 
     ///////////////////////////////
     //참여
+
+    //유저가 게시글에 참여신청
     @POST("/{postId}/participate")
     fun addParticipate(@Path("postId") postId: Int, @Body content: ParticipateData) : Call<String?>
+
+    //유저가 게시글에 참여를 취소
+    @DELETE("/{postId}/participate")
+    fun deleteParticipate(@Path("postId") postId: Int) : Call<Void>
+
 
     //같은 날 신청하려고 하는 등/하교가 있는지 (수정 해야함)
     @GET("/{postId}/check")
@@ -151,6 +158,8 @@ interface MioInterface {
     fun patchParticipantsApproval(@Path("participantId") participantId : Int) : Call<Void>
     //suspend fun fetchData(@Path("participantId") participantId : Int) : Response<ParticipateData>
 
+
+    //작성자가 참여한 사람 거절
     @DELETE("/{participantId}/reject")
     fun deleteParticipants(@Path("participantId") participantId : Int) : Call<Void>
 

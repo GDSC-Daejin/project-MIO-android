@@ -77,6 +77,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     //모든 댓글
     private var realCommentAllData = kotlin.collections.ArrayList<CommentData?>()
 
+    //자신이 참여한 모든 게시글
+    private var participationTempData = ArrayList<PostData>()
+    //자기가 참여한 게시글에 들어와있는지 체크
+    private var isParticipation = false
+
     //클릭한 포스트(게시글)의 데이터 임시저장
     private var temp : PostData? = null
     //받아온 proflie
@@ -170,7 +175,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     .into(nbrBinding.readUserProfile)
             }
 
-
+            initParticipationCheck()
             nbrBinding.readContent.text = temp!!.postContent
             nbrBinding.readUserId.text = temp!!.accountID
             nbrBinding.readCost.text = temp!!.postCost.toString()
@@ -236,7 +241,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     }
                     startActivity(intent)
                 }
-            } else {
+            } else if (!isParticipation) {
                 nbrBinding.readApplyBtn.setOnClickListener {
                     val now = System.currentTimeMillis()
                     val date = Date(now)
@@ -362,6 +367,66 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             }
                         })
                     }
+                }
+            } else {
+                val now = System.currentTimeMillis()
+                val date = Date(now)
+                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+                val currentDate = sdf.format(date)
+                val formatter = DateTimeFormatter
+                    .ofPattern("yyyy-MM-dd HH:mm:ss")
+                    .withZone(ZoneId.systemDefault())
+                val result: Instant = Instant.from(formatter.parse(currentDate))
+
+                val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+                val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+
+                /////////interceptor
+                val SERVER_URL = BuildConfig.server_URL
+                val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                //Authorization jwt토큰 로그인
+                val interceptor = Interceptor { chain ->
+                    var newRequest: Request
+                    if (token != null && token != "") { // 토큰이 없는 경우
+                        // Authorization 헤더에 토큰 추가
+                        newRequest =
+                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                        val expireDate: Long = getExpireDate.toLong()
+                        if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                            //refresh 들어갈 곳
+                            newRequest =
+                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                            return@Interceptor chain.proceed(newRequest)
+                        }
+                    } else newRequest = chain.request()
+                    chain.proceed(newRequest)
+                }
+                val builder = OkHttpClient.Builder()
+                builder.interceptors().add(interceptor)
+                val client: OkHttpClient = builder.build()
+                retrofit.client(client)
+                val retrofit2: Retrofit = retrofit.build()
+                val api = retrofit2.create(MioInterface::class.java)
+                /////////
+                CoroutineScope(Dispatchers.IO).launch {
+                    api.deleteParticipate(postId = temp!!.postID).enqueue(object : Callback<Void> {
+                        override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                            if (response.isSuccessful) {
+                                Log.d("check", response.code().toString())
+                            } else {
+                                println("faafa")
+                                Log.d("comment", response.errorBody()?.string()!!)
+                                Log.d("message", call.request().toString())
+                                println(response.code())
+                            }
+                        }
+
+                        override fun onFailure(call: Call<Void>, t: Throwable) {
+                            Log.d("error", t.toString())
+                        }
+                    })
                 }
             }
         }
@@ -1204,7 +1269,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             api.deletePostData(temp!!.postID).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
-                        println("scssucsucsucs")
+                        println("scssucsucsucsdelte")
                         this@NoticeBoardReadActivity.finish()
                     } else {
                         println("faafa")
@@ -1238,6 +1303,108 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             removeDuration = 100
             moveDuration = 1000
             changeDuration = 100
+        }
+    }
+
+    private fun initParticipationCheck() {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.substring(0 until 8)
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
+
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+
+        //println(userId)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            api.getMyParticipantsData(0, 20).enqueue(object : Callback<List<Content>> {
+                override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
+                    if (response.isSuccessful) {
+                        println("예약 정보")
+                        //데이터 청소
+                        participationTempData.clear()
+
+                        for (i in response.body()!!.indices) {
+                            //println(response!!.body()!!.content[i].user.studentId)
+                            participationTempData.add(PostData(
+                                response.body()!![i].user.studentId,
+                                response.body()!![i].postId,
+                                response.body()!![i].title,
+                                response.body()!![i].content,
+                                response.body()!![i].targetDate,
+                                response.body()!![i].targetTime,
+                                response.body()!![i].category.categoryName,
+                                response.body()!![i].location,
+                                //participantscount가 현재 참여하는 인원들
+                                response.body()!![i].participantsCount,
+                                //numberOfPassengers은 총 탑승자 수
+                                response.body()!![i].numberOfPassengers,
+                                response.body()!![i].cost,
+                                response.body()!![i].verifyGoReturn,
+                                response.body()!![i].user
+                            ))
+                        }
+
+                        if (participationTempData.isNotEmpty()) {
+                            val temp = participationTempData.filter { it.postID == temp!!.postID }
+                            if (temp.isNotEmpty()) {
+                                isParticipation = true
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    nbrBinding.readApplyBtn.visibility = View.GONE
+                                    nbrBinding.readCancelBtn.visibility = View.VISIBLE
+                                }
+                            } else {
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    nbrBinding.readApplyBtn.visibility = View.VISIBLE
+                                    nbrBinding.readCancelBtn.visibility = View.GONE
+                                }
+                            }
+                        } else {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                nbrBinding.readApplyBtn.visibility = View.VISIBLE
+                                nbrBinding.readCancelBtn.visibility = View.GONE
+                            }
+                        }
+                    } else {
+                        println(response.errorBody().toString())
+                        println(response.message().toString())
+                        println("실패")
+                        println("faafa")
+                        Log.d("add", response.errorBody()?.string()!!)
+                        Log.d("message", call.request().toString())
+                        Log.d("f", response.code().toString())
+                    }
+                }
+
+                override fun onFailure(call: Call<List<Content>>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
         }
     }
 

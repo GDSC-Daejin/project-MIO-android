@@ -100,7 +100,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                         pBinding.participationRv.visibility = View.GONE
                         pBinding.nonParticipation.visibility = View.VISIBLE
                     }
-
+                    println(participationItemAllData)
                     participationAdapter.notifyDataSetChanged()
 
                     loadingDialog.dismiss()

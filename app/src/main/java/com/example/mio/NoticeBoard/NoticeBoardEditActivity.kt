@@ -320,10 +320,10 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         }
         mBinding.editTitle.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-                if (type == "EDIT") {
+                /*if (type == "EDIT") {
                     mBinding.editTitle.setText(eTemp!!.postTitle)
                     editTitle = eTemp!!.postTitle
-                }
+                }*/
             }
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 
@@ -468,9 +468,9 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         }
         mBinding.editSelectAmount.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-                if (type == "EDIT") {
+                /*if (type == "EDIT") {
                     mBinding.editSelectAmount.setText(eTemp!!.postCost)
-                }
+                }*/
             }
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
                 //타이틀 체크
@@ -583,9 +583,9 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         }
         mBinding.editDetailContent.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-                if (type == "EDIT") {
+               /* if (type == "EDIT") {
                     mBinding.editDetailContent.setText(eTemp!!.postContent)
-                }
+                }*/
             }
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 

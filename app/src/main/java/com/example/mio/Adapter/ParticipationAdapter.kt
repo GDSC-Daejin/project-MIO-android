@@ -1,8 +1,8 @@
 package com.example.mio.Adapter
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Color
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -12,13 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.BuildConfig
 import com.example.mio.MioInterface
 import com.example.mio.Model.ParticipationData
-import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.ParticipationItemLayoutBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonDisposableHandle.parent
 import kotlinx.coroutines.launch
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -29,7 +27,6 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.ref.WeakReference
 
 
 class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.ParticipationViewHolder>(){
@@ -59,14 +56,28 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             itemContent.text = partData.content
             //accountProfile.setImageURI() = pillData.pillTakeTime
             //val listener = itemClickListener?.get()
-            if (partData.approvalOrReject == "approval") {
-                cancelItem = -1
-                selectedItem = position
-                notifyDataSetChanged()
+
+            if (partData.approvalOrReject == "APPROVAL") {
+                val handler = Handler(Looper.getMainLooper())
+
+                val r = Runnable {
+                    cancelItem = -1
+                    selectedItem = position
+                    notifyDataSetChanged()
+                }
+
+                handler.post(r)
+
             } else {
-                selectedItem = -1
-                cancelItem = position
-                notifyDataSetChanged()
+                val handler = Handler(Looper.getMainLooper())
+
+                val r = Runnable {
+                    selectedItem = -1
+                    cancelItem = position
+                    notifyDataSetChanged()
+                }
+
+                handler.post(r)
             }
         }
     }
@@ -84,10 +95,11 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
     override fun onBindViewHolder(holder: ParticipationAdapter.ParticipationViewHolder, position: Int) {
         holder.bind(participationItemData[holder.adapterPosition], position)
-
         /*holder.itemView.setOnClickListener {
             itemClickListener.onClick(it, holder.adapterPosition, participationItemData[holder.adapterPosition].postId)
+            println(participationItemData[holder.adapterPosition].approvalOrReject)
         }*/
+
 
 
         binding.participationApproval.setOnClickListener {
@@ -102,7 +114,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         }
 
         binding.participationRefuse.setOnClickListener {
-            removeData(holder.adapterPosition)
+            //removeData(holder.adapterPosition)
+            println(participationItemData[holder.adapterPosition].approvalOrReject)
         }
 
         binding.participationCancel.setOnClickListener {
@@ -110,10 +123,10 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             val cancelPosition = holder.adapterPosition
             selectedItem = -1
             val item = participationItemData[cancelPosition]
-            // 아이템 정보를 사용하여 서버 요청 보내기
-            //fetchItemDetails(item.userId)
             cancelItem = cancelPosition
             notifyDataSetChanged()
+
+            //removeData(holder.adapterPosition)
         }
 
         if (position == selectedItem) {

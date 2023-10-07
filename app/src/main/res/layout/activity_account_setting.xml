@@ -50,38 +50,116 @@
                 android:padding="8dp"
                 android:src="@drawable/read_setting_icon" />-->
 
+            <TextView
+                android:id="@+id/as_profile_userid_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_toStartOf="@+id/complete_tv"
+                android:layout_toEndOf="@+id/back_arrow"
+                android:fontFamily="@font/pretendard_bold"
+                android:gravity="center"
+                android:text="20201530"
+                android:textColor="@color/mio_gray_10" />
         </RelativeLayout>
     </androidx.appcompat.widget.Toolbar>
-
+    <!--<TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pretendard_medium"
+        android:gravity="center"
+        android:padding="8dp"
+        android:text="받은 신청"
+        android:textColor="@color/mio_gray_12"
+        app:layout_constraintBottom_toBottomOf="@+id/toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />-->
     <LinearLayout
-        android:id="@+id/as_profile_ll"
+        android:id="@+id/as_gender_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/mio_gray_1"
+        android:background="@color/mio_gray_3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/toolbar"
-        android:elevation="10dp"
-        android:gravity="center"
-        android:orientation="vertical">
-
-        <ImageView
-            android:id="@+id/as_profile_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/account_user_proflie_img"/>
-
+        android:orientation="vertical"
+        >
         <TextView
-            android:id="@+id/as_profile_tv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:fontFamily="@font/pretendard_medium"
+            android:text="성별"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="20dp"
+            android:textColor="@color/mio_gray_9"
+            />
+        <TextView
+            android:id="@+id/as_gender_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="20dp"
             android:layout_marginBottom="20dp"
-            android:fontFamily="@font/pretendard_bold"
-            android:text="20201530"
-            android:textColor="@color/mio_gray_10"
+            android:fontFamily="@font/pretendard_medium"
+            android:text="남성"
+            android:textColor="@color/mio_gray_7"
             />
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/as_space1_ll"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:orientation="vertical"
+        android:background="@color/mio_gray_5"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/as_gender_ll"/>
+
+
+    <LinearLayout
+        android:id="@+id/as_smoke_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/mio_gray_3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/as_space1_ll"
+        android:orientation="vertical"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/pretendard_medium"
+            android:text="흡연여부"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="20dp"
+            android:textColor="@color/mio_gray_9"
+            />
+        <TextView
+            android:id="@+id/as_smoke_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginBottom="20dp"
+            android:fontFamily="@font/pretendard_medium"
+            android:text="x"
+            android:textColor="@color/mio_gray_7"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/as_space2_ll"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:orientation="vertical"
+        android:background="@color/mio_gray_5"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/as_smoke_ll"/>
 
     <LinearLayout
         android:id="@+id/as_location_ll"
@@ -90,33 +168,53 @@
         android:background="@color/mio_gray_3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/as_profile_ll"
-        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@+id/as_space2_ll"
+        android:orientation="horizontal"
         >
-        <TextView
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/pretendard_medium"
-            android:text="활동 지역"
-            android:layout_marginTop="20dp"
-            android:layout_marginStart="20dp"
-            android:textColor="@color/mio_gray_9"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="활동 지역"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="20dp"
+                android:textColor="@color/mio_gray_9"
+                />
+            <TextView
+                android:id="@+id/as_location_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginBottom="20dp"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="서울특별시 노원구 공릉동"
+                android:textColor="@color/mio_gray_7"
+                />
+        </LinearLayout>
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             />
-        <TextView
-            android:id="@+id/as_location_tv"
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/account_activityLocation_btn"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginBottom="20dp"
-            android:fontFamily="@font/pretendard_medium"
-            android:text="서울특별시 노원구 공릉동"
-            android:textColor="@color/mio_gray_7"
+            android:layout_marginEnd="20dp"
+            android:layout_gravity="center"
+            android:src="@drawable/account_movement_btn_layout"
             />
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/as_space_ll"
+        android:id="@+id/as_space3_ll"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:orientation="vertical"
@@ -132,27 +230,47 @@
         android:background="@color/mio_gray_3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/as_space_ll"
-        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@+id/as_space3_ll"
+        android:orientation="horizontal"
         >
-        <TextView
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/pretendard_medium"
-            android:text="계좌"
-            android:layout_marginTop="20dp"
-            android:layout_marginStart="20dp"
-            android:textColor="@color/mio_gray_9"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="계좌"
+                android:layout_marginTop="20dp"
+                android:layout_marginStart="20dp"
+                android:textColor="@color/mio_gray_9"
+                />
+            <TextView
+                android:id="@+id/as_account_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="20dp"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="12345767585 토스뱅크"
+                android:textColor="@color/mio_gray_7"
+                />
+        </LinearLayout>
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             />
-        <TextView
-            android:id="@+id/as_account_tv"
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/account_accountNumber_btn"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="20dp"
-            android:fontFamily="@font/pretendard_medium"
-            android:text="12345767585 토스뱅크"
-            android:textColor="@color/mio_gray_7"
+            android:layout_marginEnd="20dp"
+            android:layout_gravity="center"
+            android:src="@drawable/account_movement_btn_layout"
             />
     </LinearLayout>
 

@@ -102,7 +102,7 @@ class MyReviewWriteableFragment : Fragment() {
 
         //여기 나중에 데이터 바뀌면 체크 TODO
         CoroutineScope(Dispatchers.IO).launch {
-            api.getMyMannersReview(userId).enqueue(object :
+            api.getMyMannersReceiveReview(userId).enqueue(object :
                 Callback<List<MyAccountReviewData>> {
                 override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
                     if (response.isSuccessful) {

@@ -181,9 +181,11 @@ interface MioInterface {
     //평가 (후기)
 
     //유저마다의 후기
-    @GET("/manners/{userId}")
-    fun getMyMannersReview(@Query("userId") userId: Int) : Call<List<MyAccountReviewData>>
+    @GET("/manners/get/{userId}")
+    fun getMyMannersReceiveReview(@Query("userId") userId: Int) : Call<List<MyAccountReviewData>>
 
+    @GET("/manners/post/{userId}")
+    fun getMyMannersSendReview(@Query("userId") userId: Int) : Call<List<MyAccountReviewData>>
 
     //탑승자 평가
     @POST("/post/{userId}/evaluation/passenger")

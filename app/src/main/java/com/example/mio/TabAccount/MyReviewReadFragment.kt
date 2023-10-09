@@ -99,7 +99,7 @@ class MyReviewReadFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
         /////////////////////////////////////////////////////
         CoroutineScope(Dispatchers.IO).launch {
-            api.getMyMannersReview(userId).enqueue(object :
+            api.getMyMannersReceiveReview(userId).enqueue(object :
                 Callback<List<MyAccountReviewData>> {
                 override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
                     if (response.isSuccessful) {

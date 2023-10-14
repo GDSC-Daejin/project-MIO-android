@@ -28,7 +28,7 @@ class HomeFragment : Fragment() {
     private var param2: String? = null
 
     private var homeBinding: FragmentHomeBinding? = null
-    private val tabTextList = listOf("택시", "카풀")
+    private val tabTextList = listOf("카풀", "택시")
     //private val tabIconList = listOf(R.drawable.baseline_local_taxi_24, R.drawable.baseline_directions_car_24)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

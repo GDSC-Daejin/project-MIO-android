@@ -435,7 +435,7 @@ class TaxiTabFragment : Fragment() {
     private fun setData() {
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getServerPostData("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            call.getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
 
@@ -551,6 +551,14 @@ class TaxiTabFragment : Fragment() {
                             noticeBoardAdapter!!.notifyDataSetChanged()
                         }
 
+                        if (taxiAllData.isEmpty()) {
+                            taxiTabBinding.nonTaxiData.visibility = View.VISIBLE
+                            taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                        } else {
+                            taxiTabBinding.nonTaxiData.visibility = View.GONE
+                            taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                        }
+
                         calendarTaxiAllData = taxiAllData
                         calendarAdapter!!.notifyDataSetChanged()
 
@@ -571,7 +579,7 @@ class TaxiTabFragment : Fragment() {
     private fun setMyAreaData() { //나중에 여기 위치 받아오면 데이터 변경하기 TODO
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getServerPostData("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            call.getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
 

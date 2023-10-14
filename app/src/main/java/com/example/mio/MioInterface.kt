@@ -33,7 +33,7 @@ interface MioInterface {
 
     //카테고리에 따른 게시글 생성 순 조회 1=카풀, 2=택시
     @GET("/categoryPost/{categoryId}")
-    fun getCategoryPostData(@Body categoryId: Int,
+    fun getCategoryPostData(@Path("categoryId") categoryId: Int,
                             @Query("sort") sort : String,
                             @Query("page") page : Int,
                             @Query("size") size : Int) : Call<PostReadAllResponse>
@@ -180,10 +180,11 @@ interface MioInterface {
     //////////////////////////////////
     //평가 (후기)
 
-    //유저마다의 후기
+    //유저가 받은 후기
     @GET("/manners/get/{userId}")
     fun getMyMannersReceiveReview(@Query("userId") userId: Int) : Call<List<MyAccountReviewData>>
 
+    //유저가 보낸 후기
     @GET("/manners/post/{userId}")
     fun getMyMannersSendReview(@Query("userId") userId: Int) : Call<List<MyAccountReviewData>>
 

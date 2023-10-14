@@ -142,7 +142,7 @@ class ProfileReviewFragment : Fragment() {
         ///////////////////////////////////////////////////
 
         CoroutineScope(Dispatchers.IO).launch {
-            api.getMyMannersReview(profileUserId).enqueue(object : Callback<List<MyAccountReviewData>> {
+            api.getMyMannersReceiveReview(profileUserId).enqueue(object : Callback<List<MyAccountReviewData>> {
                 override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
                     if (response.isSuccessful) {
 

@@ -170,7 +170,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
                     val call = RetrofitServerConnect.service
                     CoroutineScope(Dispatchers.IO).launch {
-                        call.getServerPostData("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+                        call.getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                             override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                                 if (response.isSuccessful) {
 
@@ -798,7 +798,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             if (currentPage < totalPages - 1) {
                 currentPage += 1
                 CoroutineScope(Dispatchers.IO).launch {
-                    call.getServerPostData("createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                    call.getCategoryPostData(2,"createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
                         override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                             if (response.isSuccessful) {
 
@@ -963,7 +963,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
     private fun setSelectData() {
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getServerPostData("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            call.getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
 

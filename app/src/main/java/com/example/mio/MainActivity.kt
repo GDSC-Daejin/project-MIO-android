@@ -55,8 +55,8 @@ class MainActivity : AppCompatActivity() {
         /*sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
         sharedViewModel!!.getCalendarLiveData().observe(this)
         */
-       /*oldFragment = HomeFragment()
-        oldTAG = TAG_HOME*/
+        oldFragment = HomeFragment()
+        oldTAG = TAG_HOME
         setFragment(TAG_HOME, HomeFragment())
         setToolbarView(isClicked)
         initNavigationBar()
@@ -87,24 +87,10 @@ class MainActivity : AppCompatActivity() {
         return when(item.itemId){
             R.id.action_notification -> {
                 isClicked = true
-                //검색 버튼 눌렀을 때
-                //Toast.makeText(applicationContext, "dkffka 이벤트 실행", Toast.LENGTH_LONG).show()
 
-                setFragment(TAG_NOTIFICATION, NotificationFragment())
-                //changeFragment(NotificationFragment())
-                /*loadingDialog = LoadingProgressDialog(this)
-                //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-                //로딩창
-                loadingDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                loadingDialog.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-
-
-                loadingDialog.window!!.setLayout(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                loadingDialog.show()*/
                 setToolbarView(isClicked)
+                setFragment(TAG_NOTIFICATION, NotificationFragment())
+
                 println(isClicked)
                 super.onOptionsItemSelected(item)
             }
@@ -118,12 +104,13 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext, "세팅 이벤트 실행", Toast.LENGTH_LONG).show()
                 super.onOptionsItemSelected(item)
             }
+
             android.R.id.home -> {
-                oldFragment?.let { setFragment(oldTAG, it) }
+                setFragment(oldTAG, oldFragment!!)
+                setToolbarView(false)
                 isClicked = false
                 isSettingClicked = false
-                setToolbarView(isClicked)
-                println("clclc")
+                Log.e("eoerer", oldTAG)
                 super.onOptionsItemSelected(item)
             }
             else -> super.onOptionsItemSelected(item)
@@ -162,13 +149,13 @@ class MainActivity : AppCompatActivity() {
                             putExtra("type","ADD")
                         }
                         requestActivity.launch(intent)
-                        oldFragment = HomeFragment()
+                        /*oldFragment = HomeFragment()
                         oldTAG = TAG_HOME
                         //setToolbarView(TAG_HOME, oldTAG)
                         setFragment(TAG_HOME, HomeFragment())
                         setToolbarView(false)
                         isClicked = false
-                        isSettingClicked = false
+                        isSettingClicked = false*/
                     }
 
 
@@ -180,7 +167,6 @@ class MainActivity : AppCompatActivity() {
                         setToolbarView(false)
                         isClicked = false
                         isSettingClicked = false
-
                     }
 
 
@@ -259,7 +245,13 @@ class MainActivity : AppCompatActivity() {
                         oldTAG = TAG_NOTIFICATION
                         //setToolbarView(TAG_HOME, oldTAG)
                         setFragment(TAG_NOTIFICATION, NotificationFragment())
-                        mBinding.bottomNavigationView.selectedItemId = R.id.action_notification
+                        //mBinding.bottomNavigationView.selectedItemId = R.id.action_notification
+                    }
+
+                    9 -> {
+                        setToolbarView(isClicked)
+                        setFragment(TAG_HOME, HomeFragment())
+                        mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
                     }
 
                 }

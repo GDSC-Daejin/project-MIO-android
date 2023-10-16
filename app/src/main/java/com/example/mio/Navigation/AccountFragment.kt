@@ -1,6 +1,9 @@
 package com.example.mio.Navigation
 
 import android.animation.ObjectAnimator
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -12,6 +15,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.example.mio.Adapter.AccountTabAdapter
 import com.example.mio.Adapter.CategoryTabAdapter
 import com.example.mio.Model.PostReadAllResponse
@@ -90,6 +94,10 @@ class AccountFragment : Fragment() {
                 putExtra("userId", myAccountData!!.id) //4 숫자만
             }
             startActivity(intent)
+        }
+
+        aBinding.accountBank.setOnClickListener {
+            createClipData(myAccountData!!.accountNumber)
         }
 
         aBinding.accountViewpager.adapter = AccountTabAdapter(requireActivity())
@@ -268,6 +276,17 @@ class AccountFragment : Fragment() {
             })
         }
 
+    }
+
+    //클립보드에 복사하기
+    private fun createClipData(message : String) {
+        val clipManager = requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+
+        val clipData = ClipData.newPlainText("message", message)
+
+        clipManager.setPrimaryClip(clipData)
+
+        Toast.makeText(context, "복사되었습니다.", Toast.LENGTH_SHORT).show()
     }
 
     companion object {

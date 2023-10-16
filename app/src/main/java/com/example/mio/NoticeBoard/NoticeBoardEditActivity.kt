@@ -214,11 +214,10 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
         //뒤로가기
         mBinding.backArrow.setOnClickListener {
-            /*val intent = Intent(this@NoticeBoardEditActivity, MainActivity::class.java).apply {
-
+            val intent = Intent(this@NoticeBoardEditActivity, MainActivity::class.java).apply {
+                putExtra("flag", 9)
             }
-            setResult(8, intent)
-            finish()*/
+            setResult(RESULT_OK, intent)
             finish()
         }
 

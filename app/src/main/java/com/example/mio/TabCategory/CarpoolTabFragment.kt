@@ -937,7 +937,6 @@ class CarpoolTabFragment : Fragment() {
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {
             AppCompatActivity.RESULT_OK -> {
-                val post = it.data?.getSerializableExtra("postData") as PostData
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {
@@ -958,10 +957,11 @@ class CarpoolTabFragment : Fragment() {
                     }
                     //edit
                     1 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            carpoolAllData[dataPosition] = post
-                        }
-                        noticeBoardAdapter!!.notifyItemChanged(post.postID)
+
+                    }
+
+                    9 -> {
+
                     }
 
                 }

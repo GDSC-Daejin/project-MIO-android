@@ -38,6 +38,8 @@ import com.example.mio.Helper.AlertReceiver
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.*
 import com.example.mio.TabAccount.ProfileActivity
+import com.example.mio.TabCategory.MoreCarpoolTabActivity
+import com.example.mio.TabCategory.MoreTaxiTabActivity
 import com.example.mio.databinding.ActivityNoticeBoardReadBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
@@ -86,6 +88,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     private var temp : PostData? = null
     //받아온 proflie
     private var tempProfile : String? = null
+    //포스트의 카테고리
+    private var isCategory : Boolean? = null //true = 카풀, false = 택시
 
 
     //유저확인
@@ -141,6 +145,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         if (type.equals("READ")) {
             temp = intent.getSerializableExtra("postItem") as PostData?
             tempProfile = intent.getSerializableExtra("uri") as String
+            isCategory = temp!!.postCategory == "carpool"
 
             val imageUrl = Uri.parse(tempProfile)
             CoroutineScope(Dispatchers.Main).launch {
@@ -603,7 +608,20 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     //예
                                     dialogRightBtn.setOnClickListener {
                                         alertDialog.dismiss()
-                                        deletePostData()
+                                        if (isCategory == true) { //카풀
+                                            val intent = Intent(this@NoticeBoardReadActivity, MoreCarpoolTabActivity::class.java).apply {
+                                                putExtra("flag", 2)
+                                            }
+                                            setResult(RESULT_OK, intent)
+                                            deletePostData()
+                                        } else { //택시
+                                            val intent = Intent(this@NoticeBoardReadActivity, MoreTaxiTabActivity::class.java).apply {
+                                                putExtra("flag", 2)
+                                            }
+                                            setResult(RESULT_OK, intent)
+                                            deletePostData()
+                                        }
+
                                         this@NoticeBoardReadActivity.finish()
                                     }
                                     alertDialog.show()
@@ -687,7 +705,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     }
 
                                     "삭제" -> {
-
+                                        deleteCommentData(itemId)
+                                        fetchAllComments()
                                     }
                                 }
                             }
@@ -1403,6 +1422,60 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
                 override fun onFailure(call: Call<List<Content>>, t: Throwable) {
                     Log.d("error", t.toString())
+                }
+            })
+        }
+    }
+
+    private fun deleteCommentData(deleteCommentId : Int) {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.substring(0 until 8)
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
+
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        ///////////////////////////////////////////////////////
+        CoroutineScope(Dispatchers.IO).launch {
+            api.deleteCommentData(deleteCommentId).enqueue(object : Callback<CommentData> {
+                override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
+                    if (response.isSuccessful) {
+                        println("ssssssss")
+                        println(response.code())
+                    } else {
+                        println("faafa")
+                        Log.d("add", response.errorBody()?.string()!!)
+                        Log.d("message", call.request().toString())
+                        println(response.code())
+                    }
+                }
+
+                override fun onFailure(call: Call<CommentData>, t: Throwable) {
+                    Log.e("ERROR", t.toString())
                 }
             })
         }

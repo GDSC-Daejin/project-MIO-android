@@ -953,6 +953,13 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                     }
                     //edit
                     1 -> {
+
+                    }
+
+                    2 -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            setSelectData()
+                        }
                     }
 
                 }

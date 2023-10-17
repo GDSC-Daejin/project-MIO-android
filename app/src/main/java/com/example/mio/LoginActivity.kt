@@ -231,11 +231,17 @@ class LoginActivity : AppCompatActivity() {
             if (result.resultCode == Activity.RESULT_OK) {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 handleSignInResult(task)
-                Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
 
-                val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                startActivity(intent)
-                this@LoginActivity.finish()
+                if (userEmail.substring(9..20).toString() == "daejin.ac.kr") {
+                    Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
+
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    this@LoginActivity.finish()
+                } else {
+                    Toast.makeText(this, "대진대학교 학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                }
+
             }
         }
     }
@@ -249,11 +255,10 @@ class LoginActivity : AppCompatActivity() {
             val authCode = account.serverAuthCode
             val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
 
+            userEmail = email
+
             //회원가입과 함께 새로운 계정 정보 저장
             if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity)!!.isEmpty()) {
-                //나중에 재개편 필요함 -> navigation graph를 정리할 필요성이 있음 Todo
-                // call Login Activity
-                //val intent = Intent(this@MainActivity, LoginActivity::class.java)
                 intent.apply {
                     putExtra("email", saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email).toString())
                 }
@@ -273,7 +278,6 @@ class LoginActivity : AppCompatActivity() {
 
             getAccessToken(authCode!!)
 
-            Toast.makeText(this, "복사되었습니다.", Toast.LENGTH_SHORT).show()
 
 
         } catch (e : ApiException) {

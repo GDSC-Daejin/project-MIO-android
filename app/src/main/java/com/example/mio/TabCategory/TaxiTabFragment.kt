@@ -124,9 +124,11 @@ class TaxiTabFragment : Fragment() {
         taxiTabBinding = FragmentTaxiTabBinding.inflate(inflater, container, false)
 
         initNoticeBoardRecyclerView()
-        initCurrentNoticeBoardRecyclerView()
+
         initCalendarRecyclerView()
         initSwipeRefresh()
+
+        initCurrentNoticeBoardRecyclerView()
         initMyAreaRecyclerView()
 
 
@@ -344,7 +346,9 @@ class TaxiTabFragment : Fragment() {
         loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
         loadingDialog.show()*/
 
-        setCurrentTaxiData()
+        CoroutineScope(Dispatchers.IO).launch {
+            setCurrentTaxiData()
+        }
 
 
         currentNoticeBoardAdapter = CurrentNoticeBoardAdapter()

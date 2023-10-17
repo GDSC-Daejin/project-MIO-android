@@ -92,6 +92,9 @@ interface MioInterface {
     @PATCH("/comments/{commentId}")
     fun editCommentData(@Body commentData: SendCommentData, @Path("commentId") commentId : Int) : Call<CommentData>
 
+    //댓글 삭제
+    @PATCH("/comments/delete/{commentId}")
+    fun deleteCommentData(@Path("commentId") commentId : Int) : Call<CommentData>
 
 
     /////////////////////////////////////////

@@ -60,17 +60,6 @@ interface MioInterface {
     @POST("/auth/google")
     fun addUserInfoData(@Body token: TokenRequest) : Call<LoginResponsesData>
 
-    //회원가입 수정
-    //@PUT("todo/{id}")
-    //fun updateData(@Body userInfoData: LoginGoogleResponse, @Path("id") userId : String) : Call<MyResponse>
-
-    /*@DELETE("todo/{id}")
-    fun deleteData(@Path("id") todoId : String) : Call<MyResponse>
-
-    @GET("todo/trash")
-    fun getTrashDataByPage(@Query("page") page : Int,
-                           @Query("size") size : Int?) : Call<MyResponse>
-    */
 
     ////////////////////////////////////
     //댓글

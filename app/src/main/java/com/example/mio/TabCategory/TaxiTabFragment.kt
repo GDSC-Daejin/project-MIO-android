@@ -96,6 +96,7 @@ class TaxiTabFragment : Fragment() {
     private var sharedViewModel: SharedViewModel? = null
     private var calendarTempData = ArrayList<String>()
     private var calendarTaxiAllData : ArrayList<PostData> = ArrayList()
+    private var selectCalendarTaxiData : ArrayList<PostData> = ArrayList()
     //edit에서 받은 값
     private var selectCalendarData = HashMap<String, ArrayList<PostData>>()
     private var testselectCalendarData = HashMap<String, ArrayList<PostData>>()
@@ -170,6 +171,7 @@ class TaxiTabFragment : Fragment() {
             override fun onClick(view: View, position: Int, itemId: String) {
                 CoroutineScope(Dispatchers.IO).launch {
                     if (calendarTaxiAllData.isNotEmpty()) {
+                        //여기 안되면 adapter의 데이터 교체 사용햅기 TODO
                         try {
                             println(itemId)
                             val selectDateData = calendarTaxiAllData.filter { it.postTargetDate == itemId }
@@ -177,13 +179,22 @@ class TaxiTabFragment : Fragment() {
                             println(selectDateData)
 
                             if (selectDateData.isNotEmpty()) {
+
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                                    taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
+                                }
                                 calendarTaxiAllData.clear()
 
                                 for (i in selectDateData.indices) {
                                     calendarTaxiAllData.add(selectDateData[i])
                                 }
+
                             } else {
-                                //없음 데이터 띄우기?
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                                    taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
+                                }
                             }
                         } catch (e: java.lang.IndexOutOfBoundsException) {
                             println("tesetstes")
@@ -564,6 +575,8 @@ class TaxiTabFragment : Fragment() {
                         }
 
                         calendarTaxiAllData = taxiAllData
+                        selectCalendarTaxiData = calendarTaxiAllData
+
                         calendarAdapter!!.notifyDataSetChanged()
 
                         loadingDialog.dismiss()

@@ -374,65 +374,93 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     }
                 }
             } else {
-                val now = System.currentTimeMillis()
-                val date = Date(now)
-                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-                val currentDate = sdf.format(date)
-                val formatter = DateTimeFormatter
-                    .ofPattern("yyyy-MM-dd HH:mm:ss")
-                    .withZone(ZoneId.systemDefault())
-                val result: Instant = Instant.from(formatter.parse(currentDate))
+                val typeface = resources.getFont(com.example.mio.R.font.pretendard_medium)
+                nbrBinding.readApplyBtn.text = "신청 취소하기"
+                CoroutineScope(Dispatchers.Main).launch {
+                    nbrBinding.readApplyBtn.apply {
+                        setBackgroundResource(R.drawable.read_apply_btn_update_layout)
+                        setTypeface(typeface)
+                        nbrBinding.readApplyBtn.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@NoticeBoardReadActivity, R.color.mio_gray_11))
+                    }
+                }
 
-                val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-                val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+                val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
+                val view = layoutInflater.inflate(R.layout.dialog_layout, null)
+                val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
+                    .setView(view)
+                    .create()
+                val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
+                val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
+                val dialogRightBtn =  view.findViewById<View>(R.id.dialog_right_btn)
 
-                /////////interceptor
-                val SERVER_URL = BuildConfig.server_URL
-                val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                //Authorization jwt토큰 로그인
-                val interceptor = Interceptor { chain ->
-                    var newRequest: Request
-                    if (token != null && token != "") { // 토큰이 없는 경우
-                        // Authorization 헤더에 토큰 추가
-                        newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                        val expireDate: Long = getExpireDate.toLong()
-                        if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                            //refresh 들어갈 곳
+                dialogContent.text = "신청을 취소하시겠습니까?" //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
+                //아니오
+                dialogLeftBtn.setOnClickListener {
+                    alertDialog.dismiss()
+                }
+                //예
+                dialogRightBtn.setOnClickListener {
+                    val now = System.currentTimeMillis()
+                    val date = Date(now)
+                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+                    val currentDate = sdf.format(date)
+                    val formatter = DateTimeFormatter
+                        .ofPattern("yyyy-MM-dd HH:mm:ss")
+                        .withZone(ZoneId.systemDefault())
+                    val result: Instant = Instant.from(formatter.parse(currentDate))
+
+                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                    val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+                    val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+
+                    /////////interceptor
+                    val SERVER_URL = BuildConfig.server_URL
+                    val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                        .addConverterFactory(GsonConverterFactory.create())
+                    //Authorization jwt토큰 로그인
+                    val interceptor = Interceptor { chain ->
+                        var newRequest: Request
+                        if (token != null && token != "") { // 토큰이 없는 경우
+                            // Authorization 헤더에 토큰 추가
                             newRequest =
                                 chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                            return@Interceptor chain.proceed(newRequest)
-                        }
-                    } else newRequest = chain.request()
-                    chain.proceed(newRequest)
-                }
-                val builder = OkHttpClient.Builder()
-                builder.interceptors().add(interceptor)
-                val client: OkHttpClient = builder.build()
-                retrofit.client(client)
-                val retrofit2: Retrofit = retrofit.build()
-                val api = retrofit2.create(MioInterface::class.java)
-                /////////
-                CoroutineScope(Dispatchers.IO).launch {
-                    api.deleteParticipate(postId = temp!!.postID).enqueue(object : Callback<Void> {
-                        override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                            if (response.isSuccessful) {
-                                Log.d("check", response.code().toString())
-                            } else {
-                                println("faafa")
-                                Log.d("comment", response.errorBody()?.string()!!)
-                                Log.d("message", call.request().toString())
-                                println(response.code())
+                            val expireDate: Long = getExpireDate.toLong()
+                            if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                                //refresh 들어갈 곳
+                                newRequest =
+                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                                return@Interceptor chain.proceed(newRequest)
                             }
-                        }
+                        } else newRequest = chain.request()
+                        chain.proceed(newRequest)
+                    }
+                    val builder = OkHttpClient.Builder()
+                    builder.interceptors().add(interceptor)
+                    val client: OkHttpClient = builder.build()
+                    retrofit.client(client)
+                    val retrofit2: Retrofit = retrofit.build()
+                    val api = retrofit2.create(MioInterface::class.java)
+                    /////////
+                    CoroutineScope(Dispatchers.IO).launch {
+                        api.deleteParticipate(postId = temp!!.postID).enqueue(object : Callback<Void> {
+                            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                                if (response.isSuccessful) {
+                                    Log.d("check", response.code().toString())
+                                } else {
+                                    println("faafa")
+                                    Log.d("comment", response.errorBody()?.string()!!)
+                                    Log.d("message", call.request().toString())
+                                    println(response.code())
+                                }
+                            }
 
-                        override fun onFailure(call: Call<Void>, t: Throwable) {
-                            Log.d("error", t.toString())
-                        }
-                    })
+                            override fun onFailure(call: Call<Void>, t: Throwable) {
+                                Log.d("error", t.toString())
+                            }
+                        })
+                    }
                 }
+                alertDialog.show()
             }
         }
 
@@ -727,6 +755,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 }
             }
             println(isReplyComment)
+        }
+
+        nbrBinding.readUserId.setOnClickListener {
+            val intent = Intent(this, ProfileActivity::class.java).apply {
+                putExtra("studentId", temp!!.user.id)
+            }
+            startActivity(intent)
         }
 
         nbrBinding.readUserProfile.setOnClickListener {

@@ -143,15 +143,37 @@
                         android:layout_marginBottom="140dp"
                         android:clickable="true"
                         android:descendantFocusability="blocksDescendants"
+                        android:visibility="visible"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/calendar_RV"
                         tools:listitem="@layout/post_item" />
+
+
                 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
             </LinearLayout>
 
-
+            <TextView
+                android:id="@+id/non_calendar_data_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="20dp"
+                android:clickable="true"
+                android:descendantFocusability="blocksDescendants"
+                android:fontFamily="@font/pretendard_bold"
+                android:gravity="center"
+                android:text="선택한 날짜의 글이 존재하지 않습니다."
+                android:textColor="@color/mio_gray_12"
+                android:textSize="16sp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/calendar_RV" />
 
             <Button
                 android:id="@+id/moreBtn"

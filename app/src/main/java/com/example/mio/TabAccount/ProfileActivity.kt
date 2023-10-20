@@ -1,5 +1,6 @@
 package com.example.mio.TabAccount
 
+import android.animation.ObjectAnimator
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -30,7 +31,8 @@ class ProfileActivity : AppCompatActivity() {
     private val tabTextList = listOf("게시글", "후기")
     private var profileId = 0
     private var profileData : User? = null
-    private var userGrade = ""
+    private var userGrade : String? = null
+    private var mannerCount : Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,18 +63,24 @@ class ProfileActivity : AppCompatActivity() {
 
                     if (response.isSuccessful) {
 
-
                         println("scssucsucsucs")
 
                         profileData = response.body()
 
                         userGrade = try {
-                            response.body()!!.grade.isEmpty()
                             response.body()!!.grade
                         } catch (e : java.lang.NullPointerException) {
                             Log.d("null", e.toString())
-                            "B"
+                            "F"
                         }
+
+                        mannerCount = try {
+                            response.body()!!.mannerCount
+                        } catch (e : java.lang.NullPointerException) {
+                            Log.d("null", e.toString())
+                            0
+                        }
+
 
                         println(profileData)
 
@@ -82,15 +90,52 @@ class ProfileActivity : AppCompatActivity() {
                         pBinding.profileUserGrade.text = "${profileData!!.studentId}님의 현재 등급은 $userGrade 입니다"
 
                         if (userGrade != null) {
-                            val word = userGrade
+                            println("mn")
+
+                            pBinding.profileUserGrade.text = "${profileData!!.studentId}님의 현재 등급은 $userGrade 입니다"
+
+                            if (userGrade != null) {
+                                val word = userGrade!!
+                                val start: Int = pBinding.profileUserGrade.text.indexOf(word)
+                                val end = start + word.length
+                                val spannableString = SpannableString(pBinding.profileUserGrade.text) //객체 생성
+                                //등급 글자의 색변경
+                                spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                                pBinding.profileUserGrade.text = spannableString
+                            } else {
+
+                            }
+
+                            CoroutineScope(Dispatchers.Main).launch {
+                                val animator = ObjectAnimator.ofInt(pBinding.profileGradePb, "progress", 0, mannerCount!!)
+
+                                // 애니메이션 지속 시간 설정 (예: 2초)
+                                animator.duration = 1500
+
+                                // 애니메이션 시작
+                                animator.start()
+                            }
+                        } else {
+                            println("mmc")
+                            pBinding.profileUserGrade.text = "${profileData!!.studentId}님의 현재 등급은 F 입니다"
+
+                            val word = "F"
                             val start: Int = pBinding.profileUserGrade.text.indexOf(word)
                             val end = start + word.length
                             val spannableString = SpannableString(pBinding.profileUserGrade.text) //객체 생성
                             //등급 글자의 색변경
                             spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                             pBinding.profileUserGrade.text = spannableString
-                        } else {
 
+                            CoroutineScope(Dispatchers.Main).launch {
+                                val animator = ObjectAnimator.ofInt(pBinding.profileGradePb, "progress", 0, 0)
+
+                                // 애니메이션 지속 시간 설정 (예: 2초)
+                                animator.duration = 2000
+
+                                // 애니메이션 시작
+                                animator.start()
+                            }
                         }
 
                     } else {

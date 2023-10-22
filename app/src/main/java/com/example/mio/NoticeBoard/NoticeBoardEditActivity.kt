@@ -389,6 +389,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 }
             }
         }
+
         mBinding.editCategoryCarpoolBtn.setOnClickListener {
             selectCategory = "carpool"
             selectCategoryId = 1
@@ -396,13 +397,21 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
             }
+            mBinding.editCategoryTaxiBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
+            }
         }
         mBinding.editCategoryTaxiBtn.setOnClickListener {
             selectCategory = "taxi"
-            selectCategoryId = 0
+            selectCategoryId = 2
             mBinding.editCategoryTaxiBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+            }
+            mBinding.editCategoryCarpoolBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
             }
         }
 

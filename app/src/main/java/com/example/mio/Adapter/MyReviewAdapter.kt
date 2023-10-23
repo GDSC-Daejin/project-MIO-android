@@ -37,7 +37,6 @@ class MyReviewAdapter : RecyclerView.Adapter<MyReviewAdapter.MyReviewViewHolder>
         private var reviewContent = binding.reviewContentTv
         private var reviewCreateDate = binding.reviewCreateDate
 
-
         fun bind(reviewData: MyAccountReviewData, position : Int) {
             this.position = position
             //accountId.text = accountData.accountID

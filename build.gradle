@@ -7,6 +7,9 @@ buildscript {
     }
     dependencies {
         classpath 'com.google.gms:google-services:4.3.13'
+
+        // oss licenses plugin 추가
+        classpath 'com.google.android.gms:oss-licenses-plugin:0.10.4'
     }
 }
 plugins {

@@ -154,7 +154,8 @@ class ProfileReviewFragment : Fragment() {
                                 response.body()!![i].id,
                                 response.body()!![i].manner,
                                 response.body()!![i].content,
-                                response.body()!![i].userId,
+                                response.body()!![i].getUserId,
+                                response.body()!![i].postUserId,
                                 response.body()!![i].createDate,
                             ))
                             myAdapter!!.notifyDataSetChanged()

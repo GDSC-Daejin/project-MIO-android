@@ -78,8 +78,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     private var selectFormattedTime = ""
     private var hour1 = 0
     private var minute1 = 0
-    private var second1 = 0
-    private var nano1 = 0
+
     //선택한 탑승인원
     private var participateNumberOfPeople = 1
     /*세 번째 vf*/
@@ -89,7 +88,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     private var detailContent = ""
 
     private var isFirst = false
-    private var isThird = false
 
     //모든 값 체크
     private var isAllCheck : RequirementData = RequirementData(

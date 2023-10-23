@@ -13,4 +13,9 @@
 
     </PreferenceCategory>
 
+    <Preference
+        android:key="openSource_license"
+        android:title="오픈소스 라이선스"
+        app:fragment="com.example.mio.OpenSourceLicenseFragment" />
+
 </PreferenceScreen>

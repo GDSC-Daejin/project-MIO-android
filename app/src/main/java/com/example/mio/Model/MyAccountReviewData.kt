@@ -9,8 +9,10 @@ data class MyAccountReviewData(
     var manner : String,
     @SerializedName("content")
     var content : String,
-    @SerializedName("userId")
-    var userId : Int,
+    @SerializedName("getUserId")
+    var getUserId : Int,
+    @SerializedName("postUserId")
+    var postUserId : Int,
     @SerializedName("createDate")
     var createDate : String
 )

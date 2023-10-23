@@ -36,7 +36,7 @@ private const val ARG_PARAM2 = "param2"
  * Use the [MyReviewWrittenFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class MyReviewWrittenFragment : Fragment() {
+class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -116,7 +116,8 @@ class MyReviewWrittenFragment : Fragment() {
                                     response.body()!![i].id,
                                     response.body()!![i].manner,
                                     response.body()!![i].content,
-                                    response.body()!![i].userId,
+                                    response.body()!![i].getUserId,
+                                    response.body()!![i].postUserId,
                                     response.body()!![i].createDate,
                                 )
                             )

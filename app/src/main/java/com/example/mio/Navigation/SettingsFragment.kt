@@ -1,14 +1,17 @@
 package com.example.mio.Navigation
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import com.example.mio.R
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private var alarmSettingPreference : Preference? = null
+    private var openSourceLicensePreference : Preference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
@@ -17,6 +20,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         if (rootKey == null) {
             // Preference 객체들 초기화
             alarmSettingPreference = findPreference("alarmReceive")
+            openSourceLicensePreference = findPreference("openSource_license")
         }
 
         alarmSettingPreference!!.setOnPreferenceChangeListener { preference, newValue ->
@@ -33,6 +37,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
             return@setOnPreferenceChangeListener true
         }
+
+        openSourceLicensePreference!!.setOnPreferenceClickListener {
+            val intent = Intent(requireActivity(), OssLicensesMenuActivity::class.java)
+
+            startActivity(intent)
+
+            OssLicensesMenuActivity.setActivityTitle("오픈소스 라이선스")
+
+            return@setOnPreferenceClickListener true
+        }
+
+
     }
 
     override fun onResume() {

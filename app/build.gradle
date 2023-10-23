@@ -2,6 +2,9 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
+
+    // plugin 추가
+    id 'com.google.android.gms.oss-licenses-plugin'
 }
 
 Properties properties = new Properties()
@@ -100,6 +103,11 @@ dependencies {
 
     //work
     implementation "androidx.work:work-runtime-ktx:2.8.1"
+
+    //license library추가
+    // library 추가
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
+
     ////
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

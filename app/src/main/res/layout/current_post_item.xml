@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
-        android:background="@drawable/round_layout"
+        android:background="@drawable/round_current_layout"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,10 +25,10 @@
 
         <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="20dp"
             android:layout_marginStart="10dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="20dp"
             android:src="@drawable/post_item_icon" />
 
 
@@ -37,15 +37,16 @@
             android:id="@+id/post_inner_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginStart="20dp"
             android:layout_marginEnd="15dp"
+            android:layout_marginBottom="24dp"
             android:orientation="vertical">
 
             <!--날짜-->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp">
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/current_post_date"
@@ -78,7 +79,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
+                android:layout_marginTop="15dp"
                 >
 
                 <TextView

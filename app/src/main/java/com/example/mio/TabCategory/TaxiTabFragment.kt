@@ -171,7 +171,7 @@ class TaxiTabFragment : Fragment() {
             override fun onClick(view: View, position: Int, itemId: String) {
                 CoroutineScope(Dispatchers.IO).launch {
                     if (calendarTaxiAllData.isNotEmpty()) {
-                        //여기 안되면 adapter의 데이터 교체 사용햅기 TODO
+                        //여기 안되면 adapter의 데이터 교체 사용햅기 Todo
                         try {
                             println(itemId)
                             val selectDateData = calendarTaxiAllData.filter { it.postTargetDate == itemId }

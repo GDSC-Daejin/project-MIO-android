@@ -93,10 +93,11 @@ class CarpoolTabFragment : Fragment() {
     private var dataPosition = 0
     //게시글 위치
     private var position = 0
-    //게시글과 targetDate를 받아 viewmodel에저장
+    //게시글과 targetDate를 받아
     private var sharedViewModel: SharedViewModel? = null
     private var calendarTempData = ArrayList<String>()
     private var calendarTaxiAllData : ArrayList<PostData> = ArrayList()
+    private var selectCalendarCarpoolData : ArrayList<PostData> = ArrayList()
     //edit에서 받은 값
     private var selectCalendarData = HashMap<String, ArrayList<PostData>>()
     private var testselectCalendarData = HashMap<String, ArrayList<PostData>>()
@@ -176,13 +177,22 @@ class CarpoolTabFragment : Fragment() {
                             println(selectDateData)
 
                             if (selectDateData.isNotEmpty()) {
+
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                                    taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
+                                }
                                 calendarTaxiAllData.clear()
 
                                 for (i in selectDateData.indices) {
                                     calendarTaxiAllData.add(selectDateData[i])
                                 }
+
                             } else {
-                                //없음 데이터 띄우기?
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                                    taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
+                                }
                             }
                         } catch (e: java.lang.IndexOutOfBoundsException) {
                             println("tesetstes")
@@ -552,7 +562,17 @@ class CarpoolTabFragment : Fragment() {
                             noticeBoardAdapter!!.notifyDataSetChanged()
                         }
 
+                        if (carpoolAllData.isEmpty()) {
+                            taxiTabBinding.nonCarpoolData.visibility = View.VISIBLE
+                            taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                        } else {
+                            taxiTabBinding.nonCarpoolData.visibility = View.GONE
+                            taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                        }
+
                         calendarTaxiAllData = carpoolAllData
+                        selectCalendarCarpoolData = calendarTaxiAllData
+
                         calendarAdapter!!.notifyDataSetChanged()
 
                         loadingDialog.dismiss()

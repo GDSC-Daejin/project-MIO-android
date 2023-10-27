@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
     >
 
     <!--전체-->
@@ -12,11 +11,11 @@
         android:id="@+id/post_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:layout_marginStart="5dp"
         android:layout_marginEnd="5dp"
         android:background="@drawable/round_layout2"
         android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -24,8 +23,8 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_marginTop="20dp"
             android:layout_marginStart="25dp"
+            android:layout_marginTop="20dp"
             android:layout_marginBottom="20dp"
             android:src="@drawable/post_item_icon" />
 
@@ -36,15 +35,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginStart="15dp"
-            android:layout_marginBottom="20dp"
-            android:layout_marginEnd="15dp"
             android:layout_marginTop="20dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="20dp"
             android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                >
+                android:layout_height="wrap_content">
 
                 <TextView
                     android:id="@+id/post_title"
@@ -61,18 +59,16 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="5dp"
                     android:src="@drawable/reservation_ing"
-                    android:visibility="gone"
-                    />
+                    android:visibility="gone" />
             </LinearLayout>
-
 
 
             <!--날짜-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginTop="6dp">
+                android:layout_marginTop="6dp"
+                android:layout_weight="1">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -95,8 +91,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginTop="3dp">
+                android:layout_marginTop="3dp"
+                android:layout_weight="1">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -109,17 +105,17 @@
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
                     android:fontFamily="@font/pretendard_medium"
-                    android:textSize="13sp"
                     android:text="수락산역 3번출구"
-                    android:textColor="@color/mio_gray_6" />
+                    android:textColor="@color/mio_gray_6"
+                    android:textSize="13sp" />
             </LinearLayout>
 
             <!--가격-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginTop="3dp">
+                android:layout_marginTop="3dp"
+                android:layout_weight="1">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -131,21 +127,21 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
-                    android:gravity="center_vertical"
                     android:fontFamily="@font/pretendard_medium"
-                    android:textSize="13sp"
+                    android:gravity="center_vertical"
                     android:text="5000원"
-                    android:textColor="@color/mio_gray_6" />
+                    android:textColor="@color/mio_gray_6"
+                    android:textSize="13sp" />
             </LinearLayout>
 
             <!--인원 수-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:layout_gravity="center"
                 android:layout_marginTop="3dp"
-                android:layout_marginBottom="6dp">
+                android:layout_marginBottom="6dp"
+                android:layout_weight="1">
 
                 <ImageView
                     android:layout_width="wrap_content"
@@ -182,85 +178,4 @@
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
-
-    <!--<LinearLayout
-        android:id="@+id/accountLinearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@color/teal_200"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <ImageView
-            android:id="@+id/account_image"
-            android:layout_width="67dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:src="@drawable/account_menu" />
-
-        <TextView
-            android:id="@+id/account_id"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical"
-            android:text="이메일"
-            android:textColor="@color/black" />
-    </LinearLayout>
-
-
-    <TextView
-        android:id="@+id/post_content_text"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_marginTop="50dp"
-        android:textSize="30sp"
-        android:maxLines="1"
-        android:ellipsize="end"
-        android:scaleType="fitXY"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/accountLinearLayout" />
-
-    <LinearLayout
-        android:id="@+id/sub_LinearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@+id/post_content_text">
-        <ImageView
-            android:id="@+id/sub_share_image"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@android:drawable/ic_menu_share"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="20dp"/>
-        <ImageView
-            android:id="@+id/sub_edit_image"
-            android:src="@android:drawable/ic_menu_edit"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/sub_share_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="9dp"
-        android:layout_marginRight="10dp"
-        android:text="공유하기"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@+id/sub_LinearLayout"/>
-
-    <TextView
-        android:id="@+id/sub_share_edit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="80dp"
-        android:text="수정하기"
-        android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@+id/sub_LinearLayout"/>-->
 </androidx.constraintlayout.widget.ConstraintLayout>

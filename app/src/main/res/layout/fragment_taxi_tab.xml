@@ -181,6 +181,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/pretendard_medium"
                 android:backgroundTint="@color/mio_gray_3"
+                android:stateListAnimator="@null"
                 android:layout_gravity="center"
                 android:text="더보기"
                 android:textColor="@color/mio_gray_8"

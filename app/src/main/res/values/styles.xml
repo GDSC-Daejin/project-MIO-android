@@ -128,9 +128,9 @@
         <item name="android:windowFullscreen">true</item>
     </style>
 
-    <style name="SwitchTheme">
+    <!--<style name="SwitchTheme">
         <item name="android:thumbTint">@color/mio_gray_11</item>
         <item name="android:trackTint">@color/mio_blue_4</item>
-    </style>
+    </style>-->
 
 </resources>

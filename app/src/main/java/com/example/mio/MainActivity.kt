@@ -379,6 +379,7 @@ class MainActivity : AppCompatActivity() {
         if (isClicked) {
             setSupportActionBar(mBinding.toolBar)
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setHomeAsUpIndicator(R.drawable.baseline_arrow_back_24)
             supportActionBar?.setDisplayShowTitleEnabled(false)
         } else {
             setSupportActionBar(mBinding.toolBar)

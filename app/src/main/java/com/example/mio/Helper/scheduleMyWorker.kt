@@ -15,7 +15,7 @@ fun scheduleMyWorker(context: Context) {
         .build()
 
     val workRequest = PeriodicWorkRequestBuilder<MyWorker>(
-        repeatInterval = 15, // 주기 (분)
+        repeatInterval = 5, // 주기 (분)
         repeatIntervalTimeUnit = TimeUnit.MINUTES,
     ).setConstraints(constraints).build()
 

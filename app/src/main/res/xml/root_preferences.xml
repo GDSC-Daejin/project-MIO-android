@@ -8,7 +8,7 @@
             android:title= "알람 수신 여부"
             android:summary="메시지 알림을 받으려면 체크하세요"
             android:defaultValue="true"
-            android:theme="@style/SwitchTheme"
+            android:widgetLayout="@layout/custom_switch_preference"
             />
 
     </PreferenceCategory>

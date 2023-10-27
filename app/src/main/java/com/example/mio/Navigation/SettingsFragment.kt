@@ -6,11 +6,13 @@ import android.widget.Toast
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
+import androidx.preference.SwitchPreference
+import com.example.mio.Helper.NotificationHelper
 import com.example.mio.R
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 
 class SettingsFragment : PreferenceFragmentCompat() {
-    private var alarmSettingPreference : Preference? = null
+    private var alarmSettingPreference : SwitchPreference? = null
     private var openSourceLicensePreference : Preference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -22,6 +24,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             alarmSettingPreference = findPreference("alarmReceive")
             openSourceLicensePreference = findPreference("openSource_license")
         }
+
 
         alarmSettingPreference!!.setOnPreferenceChangeListener { preference, newValue ->
             var check = false
@@ -60,9 +63,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         // isAlarmEnabled를 사용하여 해당 스위치 설정에 대한 작업을 수행합니다.
         if (isAlarmEnabled) {
-            // 스위치가 활성화되어 있을 때 수행할 작업
+            val deleteAlarm = NotificationHelper(requireActivity())
+            deleteAlarm.getManager()
         } else {
-            // 스위치가 비활성화되어 있을 때 수행할 작업
+            // 스위치가 비활성화되어 있을 때 수행할 작업 channelID
+            val deleteAlarm = NotificationHelper(requireActivity())
+            deleteAlarm.deleteChannel()
         }
     }
 }

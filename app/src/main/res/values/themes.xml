@@ -14,4 +14,9 @@
         <!-- Customize your theme here. -->
         <item name="windowNoTitle">true</item>
     </style>
+
+    <style name="SwitchTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
+        <item name="android:thumb">@drawable/switch_thumb_selector</item>
+        <item name="android:track">@drawable/switch_track_selector</item>
+    </style>
 </resources>

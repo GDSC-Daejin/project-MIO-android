@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
+    <!-- 권한 요청 -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
+        android:name=".Model.FragSharedViewModel2"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
@@ -16,7 +22,25 @@
         android:theme="@style/Theme.MIO"
         android:usesCleartextTraffic="true"
         android:windowSoftInputMode="adjustResize"
-        tools:targetApi="31">
+        tools:targetApi="33">
+        <activity
+            android:name=".TabCategory.MoreCarpoolTabActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TabCategory.MoreTaxiTabActivity"
+            android:exported="false" />
+
+        <receiver
+            android:name=".Helper.AlertReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <activity
+            android:name=".ApplyNextActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
         <activity
             android:name=".NoticeBoard.NoticeBoardEditActivity"
             android:exported="false" />
@@ -28,14 +52,28 @@
             android:name=".NoticeBoard.NoticeBoardActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".SearchTap.SearchResultActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustNothing"/>
+        <activity
+            android:name=".SearchTap.NearbypostActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true"
+            android:theme="@style/Theme.App.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="${kakaoSdkAppkey}" />
+
     </application>
 
 </manifest>

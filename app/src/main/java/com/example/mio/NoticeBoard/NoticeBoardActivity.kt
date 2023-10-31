@@ -39,7 +39,7 @@ class NoticeBoardActivity : AppCompatActivity() {
                     dataPosition = position
                     /*val intent = Intent(activity, HomeEditActivity::class.java).apply {
                         putExtra("type", "edit")
-                        putExtra("item", todo)
+
                         putExtra("categoryNameData", categoryTempData)
                     }
                     requestActivity.launch(intent)*/
@@ -48,17 +48,17 @@ class NoticeBoardActivity : AppCompatActivity() {
         })
 
         //여기서 edit으로 이동동
-       nbBinding.addBtn.setOnClickListener {
+       /*nbBinding.addBtn.setOnClickListener {
             data.add(PostData("2020202", 0, "test", "test"))
             noticeBoardAdapter!!.notifyItemInserted(position)
             position += 1
-        }
+        }*/
     }
 
 
     private fun initRecyclerView() {
         noticeBoardAdapter = NoticeBoardAdapter()
-        noticeBoardAdapter!!.postItemData = data
+        //noticeBoardAdapter!!.postItemData = data
         nbBinding.noticeBoardRV.adapter = noticeBoardAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true

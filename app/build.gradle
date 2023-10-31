@@ -5,6 +5,7 @@ plugins {
 
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def kakao_Sdk_Appkey = properties.getProperty('kakao.sdk.appkey')
 
 android {
     namespace 'com.example.mio'
@@ -12,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.mio"
-        minSdk 24
+        minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -22,6 +23,9 @@ android {
         buildConfigField "String", "client_web_api_key", properties['client_web_api_key']
         buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
         buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
+        buildConfigField "String", "server_URL", properties['server_URL']
+        buildConfigField "String", "map_api_key", properties['map_api_key']
+        manifestPlaceholders = [kakaoSdkAppkey: kakao_Sdk_Appkey]
     }
 
     buildTypes {
@@ -41,6 +45,11 @@ android {
     buildFeatures {
         viewBinding true
         dataBinding true
+    }
+}
+allprojects {
+    repositories {
+        maven {url 'https://jitpack.io'}
     }
 }
 
@@ -66,8 +75,28 @@ dependencies {
     //preference
     implementation 'androidx.preference:preference-ktx:1.2.0'
 
+    //retrofit2
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.0'
+    //통신 로그
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.11.0'
+
+    //splashScreen
+    implementation 'androidx.core:core-splashscreen:1.0.0-alpha01'
+
+    //calendar
+    //implementation 'com.prolificinteractive:material-calendarview:1.4.3'
+
+    //sticky
+    implementation 'com.github.amarjain07:StickyScrollView:1.0.3'
+
     ////
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    implementation "androidx.activity:activity-ktx:1.2.3"
+
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation files('libs/libDaumMapAndroid.jar')
 }

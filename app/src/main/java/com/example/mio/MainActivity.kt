@@ -1,176 +1,305 @@
 package com.example.mio
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import com.example.mio.Model.LoginGoogleResponse
-import com.example.mio.NoticeBoard.NoticeBoardActivity
+import androidx.core.graphics.alpha
+import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.ViewModelProvider
+import com.example.mio.Model.AddPostData
+import com.example.mio.Model.PostData
+import com.example.mio.Model.SharedViewModel
+import com.example.mio.Navigation.AccountFragment
+import com.example.mio.Navigation.HomeFragment
+import com.example.mio.Navigation.NotificationFragment
+import com.example.mio.Navigation.SearchFragment
+import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.databinding.ActivityMainBinding
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.tasks.Task
-import okhttp3.*
-import org.json.JSONException
-import org.json.JSONObject
-import java.io.IOException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
-    lateinit var mGoogleSignInClient: GoogleSignInClient
-    lateinit var resultLauncher: ActivityResultLauncher<Intent>
-    lateinit var mBinding : ActivityMainBinding
-    private val CLIENT_WEB_ID_KEY = BuildConfig.client_web_id_key
-    private val CLIENT_WEB_SECRET_KEY = BuildConfig.client_web_secret_key
+    private lateinit var mBinding : ActivityMainBinding
 
+    private val TAG_HOME = "home_fragment"
+    private val TAG_SEARCH = "search_fragment"
+    private val TAG_ACCOUNT = "account_fragment"
+    private val TAG_NOTIFICATION = "notification_fragment"
+    private var isClicked = false
+    //notification에서 뒤로가기 구현할 때 그 전에 어느 fragment에 있었는 지 알기위한 변수
+    private var oldFragment : Fragment? = null
+    private var oldTAG = ""
+    //
+    private var sharedViewModel: SharedViewModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
-
-        setResultSignUp()
-
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            //.requestIdToken(R.string.defalut_client_id.toString())
-            .requestServerAuthCode(CLIENT_WEB_ID_KEY)
-            .requestProfile()
-            .build()
-
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
-
-        mBinding.signInButton.setOnClickListener {
-            signIn()
-        }
-
-        mBinding.textView.setOnClickListener {
-            val intent = Intent(this, NoticeBoardActivity::class.java).apply {
-                //putExtra("type", "")
-            }
-            startActivity(intent)
-        }
-
-    }
-    private fun setResultSignUp() {
-        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                handleSignInResult(task)
-                Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
-            }
-        }
+        /*sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
+        sharedViewModel!!.getCalendarLiveData().observe(this)
+        */
+        oldFragment = HomeFragment()
+        oldTAG = TAG_HOME
+        setFragment(TAG_HOME, HomeFragment())
+        setToolbarView(isClicked)
+        initNavigationBar()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.top_menu, menu)
 
-    private fun handleSignInResult(completedTask : Task<GoogleSignInAccount>) {
-        try {
-            val account = completedTask.getResult(ApiException::class.java)
-            val email = account?.email.toString()
-            val authCode = account.serverAuthCode
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val actionNotification = menu!!.findItem(R.id.action_notification)
 
-            //회원가입과 함께 새로운 계정 정보 저장
-            if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@MainActivity)!!.isEmpty()) {
-                //나중에 재개편 필요함 -> navigation graph를 정리할 필요성이 있음
-                // call Login Activity
-                /*val intent = Intent(this@MainActivity, LoginActivity::class.java)
-                intent.putExtra("email", saveSharedPreferenceGoogleLogin.setUserEMAIL(this, email).toString())
-                startActivity(intent)
-                finish()*/
+        if (isClicked) {
+            actionNotification.isVisible = !isClicked
+        } else {
+            actionNotification.isVisible = !isClicked
+        }
 
-            } else { //현재 로그인, 또는 로그인했던 정보가 저장되어있으면 home으로
-                val intent = Intent(this, NoticeBoardActivity::class.java)
-                startActivity(intent)
-                this.finish()
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when(item.itemId){
+            R.id.action_notification -> {
+                isClicked = true
+                //검색 버튼 눌렀을 때
+                //Toast.makeText(applicationContext, "dkffka 이벤트 실행", Toast.LENGTH_LONG).show()
+
+                setFragment(TAG_NOTIFICATION, NotificationFragment())
+
+                //changeFragment(NotificationFragment())
+
+
+                setToolbarView(isClicked)
+                println(isClicked)
+                super.onOptionsItemSelected(item)
             }
-
-            Toast.makeText(this, "tjd", Toast.LENGTH_SHORT).show()
-            println(email)
-            println(authCode.toString())
-
-            getAccessToken(authCode!!)
-
-        } catch (e : ApiException) {
-            Log.w("failed", "signinresultfalied code = " + e.statusCode)
+            R.id.action_setting -> {
+                //공유 버튼 눌렀을 때
+                Toast.makeText(applicationContext, "세팅 이벤트 실행", Toast.LENGTH_LONG).show()
+                super.onOptionsItemSelected(item)
+            }
+            android.R.id.home -> {
+                oldFragment?.let { setFragment(oldTAG, it) }
+                isClicked = false
+                setToolbarView(isClicked)
+                println("clclc")
+                super.onOptionsItemSelected(item)
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
-    private fun getAccessToken(authCode : String) {
-        val client = OkHttpClient()
-        val requestBody: RequestBody = FormBody.Builder()
-            //1시간
-            .add("grant_type", "authorization_code")
-            .add(
-                "client_id",
-                CLIENT_WEB_ID_KEY
-            )
-            .add("client_secret", CLIENT_WEB_SECRET_KEY)
-            .add("redirect_uri", "")
-            .add("code", authCode)
-            //refresh token 필요시
-            .add("response_type", "code")
-            .add("access_type", "offline")
-            .add("approval_prompt", "force")
-            .build()
 
-        val request = Request.Builder()
-            .url("https://oauth2.googleapis.com/token")
-            .post(requestBody)
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                print("Failed")
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                try {
-                    val jsonObject = JSONObject(response.body!!.string())
-                    val message = jsonObject.keys() //.toString(5)
-
-                    //json파일 키와 벨류를 잠시담는 변수
-                    val tempKey = ArrayList<String>()
-                    val tempValue = ArrayList<String>()
-
-                    val user_info = ArrayList<LoginGoogleResponse>()
-                    user_info.clear()
-                    while (message.hasNext()) {
-                        val s = message.next().toString()
-                        tempKey.add(s)
+    private fun initNavigationBar() {
+        mBinding.bottomNavigationView.
+            setOnItemSelectedListener {item ->
+                when(item.itemId) {
+                    R.id.navigation_home -> {
+                        oldFragment = HomeFragment()
+                        oldTAG = TAG_HOME
+                        //setToolbarView(TAG_HOME, oldTAG)
+                        setFragment(TAG_HOME, HomeFragment())
 
                     }
 
-                    for (i in tempKey.indices) {
-                        //fruitValueList.add(fruitObject.getString(fruitKeyList.get(j)));
-                        tempValue.add(jsonObject.getString(tempKey[i]))
-                        println(tempKey[i] + "/" + jsonObject.getString(tempKey[i]))
+                    R.id.navigation_search -> {
+                        oldFragment = SearchFragment()
+                        oldTAG = TAG_SEARCH
+                        //setToolbarView(TAG_HOME, oldTAG)
+                        setFragment(TAG_SEARCH, SearchFragment())
+
                     }
 
-                    user_info.add(LoginGoogleResponse(tempValue[0], tempValue[1].toInt(), tempValue[2], tempValue[3], tempValue[4]))
-                    println()
-                    println(message)
-                    println(user_info[0].id_token)
-                    tempKey.clear()
-                    tempValue.clear()
-                } catch (e: JSONException) {
-                    e.printStackTrace()
+                    R.id.navigation_writing -> {
+                        val intent = Intent(this, NoticeBoardEditActivity::class.java).apply {
+                            putExtra("type","ADD")
+                        }
+                        requestActivity.launch(intent)
+                    }
+
+
+                    R.id.navigation_account -> {
+                        oldFragment = AccountFragment()
+                        oldTAG = TAG_ACCOUNT
+                        //setToolbarView(TAG_HOME, oldTAG)
+                        setFragment(TAG_ACCOUNT, AccountFragment())
+
+                    }
+
+
+                    else -> {
+                        oldFragment = HomeFragment()
+                        oldTAG = TAG_HOME
+                        setFragment(TAG_HOME, HomeFragment())
+
+                    }
+
                 }
+                true
             }
 
-        })
-    }
-    private fun signIn() {
-        val signIntent = mGoogleSignInClient.signInIntent
-        resultLauncher.launch(signIntent)
+
     }
 
 
+
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+        when (it.resultCode) {
+            AppCompatActivity.RESULT_OK -> {
+                val post = it.data?.getSerializableExtra("postData") as AddPostData
+                when(it.data?.getIntExtra("flag", -1)) {
+                    //add
+                    0 -> {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            supportFragmentManager.beginTransaction()
+                                .replace(R.id.fragment_content, HomeFragment())
+                                .commit()
+                        }
+                    }
+                    //edit
+
+                }
+                //getSerializableExtra = intent의 값을 보내고 받을때사용
+                //타입 변경을 해주지 않으면 Serializable객체로 만들어지니 as로 캐스팅해주자
+                /*val pill = it.data?.getSerializableExtra("pill") as PillData
+                val selectCategory = it.data?.getSerializableExtra("cg") as String*/
+
+                //선택한 카테고리 및 데이터 추가
+
+
+                /*if (selectCategory.isNotEmpty()) {
+                    selectCategoryData[selectCategory] = categoryArr
+                }*/
+
+
+                //api 33이후 아래로 변경됨
+                /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    getSerializable(key, T::class.java)
+                } else {
+                    getSerializable(key) as? T
+                }*/
+                /*when(it.data?.getIntExtra("flag", -1)) {
+                    //add
+                    0 -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            data.add(pill)
+                            categoryArr.add(pill)
+                            //add면 그냥 추가
+                            selectCategoryData[selectCategory] = categoryArr
+                            //전
+                            //println( categoryArr[dataPosition])
+                        }
+                        println("전 ${selectCategoryData[selectCategory]}")
+                        //livedata
+                        sharedViewModel!!.setCategoryLiveData("add", selectCategoryData)
+
+
+                        homeAdapter!!.notifyDataSetChanged()
+                        Toast.makeText(activity, "추가되었습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                    //edit
+                    1 -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            data[dataPosition] = pill
+                            categoryArr[dataPosition] = pill
+                            selectCategoryData.clear()
+                            selectCategoryData[selectCategory] = categoryArr
+                            //후
+                            //println(categoryArr[dataPosition])
+                        }
+                        println("선택 $selectCategory")
+                        //livedata
+                        sharedViewModel!!.categoryLiveData.value = selectCategoryData
+                        println(testselectCategoryData)
+                        homeAdapter!!.notifyDataSetChanged()
+                        //Toast.makeText(activity, "수정되었습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(activity, "$testselectCategoryData", Toast.LENGTH_SHORT).show()
+                    }
+                }*/
+            }
+        }
+    }
+
+
+    private fun setFragment(tag : String, fragment: Fragment) {
+        val manager : FragmentManager = supportFragmentManager
+        val bt = manager.beginTransaction()
+
+        if (manager.findFragmentByTag(tag) == null) {
+            bt.add(R.id.fragment_content, fragment, tag)
+        }
+
+        val home = manager.findFragmentByTag(TAG_HOME)
+        val search = manager.findFragmentByTag(TAG_SEARCH)
+        val account = manager.findFragmentByTag(TAG_ACCOUNT)
+        val notification = manager.findFragmentByTag(TAG_NOTIFICATION)
+
+
+        if (home != null) {
+            bt.hide(home)
+        }
+        if (search != null) {
+            bt.hide(search)
+        }
+        if (account != null) {
+            bt.hide(account)
+        }
+        if (notification != null) {
+            bt.hide(notification)
+        }
+
+        if (tag == TAG_HOME) {
+            if (home != null) {
+                bt.show(home)
+            }
+        }
+        else if (tag == TAG_SEARCH) {
+            if (search != null) {
+                bt.show(search)
+            }
+        }
+        else if (tag == TAG_ACCOUNT) {
+            if (account != null) {
+                bt.show(account)
+            }
+        }
+        else if (tag == TAG_NOTIFICATION) {
+            if (notification != null) {
+                bt.show(notification)
+            }
+        }
+        bt.commitAllowingStateLoss()
+    }
+
+    private fun setToolbarView(isClicked : Boolean) {
+        if (isClicked) {
+            setSupportActionBar(mBinding.toolBar)
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setDisplayShowTitleEnabled(false)
+        } else {
+            setSupportActionBar(mBinding.toolBar)
+            supportActionBar?.setDisplayHomeAsUpEnabled(false)
+            supportActionBar?.setDisplayShowTitleEnabled(false)
+        }
+    }
+
+    fun changeFragment(fragment : Fragment) {
+        //프래그먼트를 교체 하는 작업을 수행할 수 있게 해줍니다.
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_content, fragment)
+            .commit()
+    }
 }

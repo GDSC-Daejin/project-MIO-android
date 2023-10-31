@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
 
     private var sharedViewModel: SharedViewModel? = null
 
+    private var toolbarType = "기본"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -58,7 +59,7 @@ class MainActivity : AppCompatActivity() {
         oldFragment = HomeFragment()
         oldTAG = TAG_HOME
         setFragment(TAG_HOME, HomeFragment())
-        setToolbarView(isClicked)
+        setToolbarView(toolbarType)
         initNavigationBar()
     }
 
@@ -76,6 +77,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isSettingClicked) {
             actionSetting.isVisible = !isSettingClicked
+            actionNotification.isVisible = false
         } else {
             actionSetting.isVisible = !isSettingClicked
         }
@@ -87,8 +89,8 @@ class MainActivity : AppCompatActivity() {
         return when(item.itemId){
             R.id.action_notification -> {
                 isClicked = true
-
-                setToolbarView(isClicked)
+                toolbarType = "알림"
+                setToolbarView(toolbarType)
                 setFragment(TAG_NOTIFICATION, NotificationFragment())
 
                 println(isClicked)
@@ -99,7 +101,8 @@ class MainActivity : AppCompatActivity() {
                 isSettingClicked = true
 
                 setFragment(TAG_SETTING, SettingsFragment())
-                setToolbarView(isSettingClicked)
+                toolbarType = "설정"
+                setToolbarView(toolbarType)
 
                 Toast.makeText(applicationContext, "세팅 이벤트 실행", Toast.LENGTH_LONG).show()
                 super.onOptionsItemSelected(item)
@@ -107,7 +110,8 @@ class MainActivity : AppCompatActivity() {
 
             android.R.id.home -> {
                 setFragment(oldTAG, oldFragment!!)
-                setToolbarView(false)
+                toolbarType = "기본"
+                setToolbarView(toolbarType)
                 isClicked = false
                 isSettingClicked = false
                 Log.e("eoerer", oldTAG)
@@ -127,7 +131,8 @@ class MainActivity : AppCompatActivity() {
                         oldTAG = TAG_HOME
                         //setToolbarView(TAG_HOME, oldTAG)
                         setFragment(TAG_HOME, HomeFragment())
-                        setToolbarView(false)
+                        toolbarType = "기본"
+                        setToolbarView(toolbarType)
                         isClicked = false
                         isSettingClicked = false
 
@@ -138,7 +143,8 @@ class MainActivity : AppCompatActivity() {
                         oldTAG = TAG_SEARCH
                         //setToolbarView(TAG_HOME, oldTAG)
                         setFragment(TAG_SEARCH, SearchFragment())
-                        setToolbarView(false)
+                        toolbarType = "기본"
+                        setToolbarView(toolbarType)
                         isClicked = false
                         isSettingClicked = false
 
@@ -164,7 +170,8 @@ class MainActivity : AppCompatActivity() {
                         oldTAG = TAG_ACCOUNT
                         //setToolbarView(TAG_HOME, oldTAG)
                         setFragment(TAG_ACCOUNT, AccountFragment())
-                        setToolbarView(false)
+                        toolbarType = "기본"
+                        setToolbarView(toolbarType)
                         isClicked = false
                         isSettingClicked = false
                     }
@@ -174,7 +181,8 @@ class MainActivity : AppCompatActivity() {
                         oldFragment = HomeFragment()
                         oldTAG = TAG_HOME
                         setFragment(TAG_HOME, HomeFragment())
-                        setToolbarView(false)
+                        toolbarType = "기본"
+                        setToolbarView(toolbarType)
                         isClicked = false
                         isSettingClicked = false
 
@@ -240,7 +248,8 @@ class MainActivity : AppCompatActivity() {
                     //여기는 알람 클릭 시 notificationFragment로 이동하기 위함
                     8 -> {
                         isClicked = true
-                        setToolbarView(isClicked)
+                        toolbarType = "알림"
+                        setToolbarView(toolbarType)
                         oldFragment = NotificationFragment()
                         oldTAG = TAG_NOTIFICATION
                         //setToolbarView(TAG_HOME, oldTAG)
@@ -249,7 +258,8 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     9 -> {
-                        setToolbarView(isClicked)
+                        toolbarType = "기본"
+                        setToolbarView(toolbarType)
                         setFragment(TAG_HOME, HomeFragment())
                         mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
                     }
@@ -375,16 +385,34 @@ class MainActivity : AppCompatActivity() {
         bt.commitAllowingStateLoss()
     }
 
-    private fun setToolbarView(isClicked : Boolean) {
-        if (isClicked) {
-            setSupportActionBar(mBinding.toolBar)
-            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-            supportActionBar?.setHomeAsUpIndicator(R.drawable.baseline_arrow_back_24)
-            supportActionBar?.setDisplayShowTitleEnabled(false)
-        } else {
-            setSupportActionBar(mBinding.toolBar)
-            supportActionBar?.setDisplayHomeAsUpEnabled(false)
-            supportActionBar?.setDisplayShowTitleEnabled(false)
+    private fun setToolbarView(type : String) {
+        when (type) {
+            "기본" -> {
+                setSupportActionBar(mBinding.toolBar)
+                supportActionBar?.setLogo(R.drawable.top_icon_vector)
+                supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                supportActionBar?.setDisplayShowTitleEnabled(false)
+            }
+            "설정" -> {
+                setSupportActionBar(mBinding.toolBar)
+                supportActionBar?.title = "설정"
+                supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                supportActionBar?.setLogo(null)
+
+                supportActionBar?.setHomeAsUpIndicator(R.drawable.baseline_arrow_back_24)
+                supportActionBar?.setDisplayShowTitleEnabled(true)
+
+            }
+            "알림" -> {
+                setSupportActionBar(mBinding.toolBar)
+                supportActionBar?.title = "알림"
+                supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                supportActionBar?.setLogo(null)
+
+                supportActionBar?.setHomeAsUpIndicator(R.drawable.baseline_arrow_back_24)
+                supportActionBar?.setDisplayShowTitleEnabled(true)
+
+            }
         }
     }
 

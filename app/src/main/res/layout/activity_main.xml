@@ -29,6 +29,8 @@
         android:layout_gravity="top"
         android:background="@color/white"
         android:visibility="visible"
+        android:gravity="center"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

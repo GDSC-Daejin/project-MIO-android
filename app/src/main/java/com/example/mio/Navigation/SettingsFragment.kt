@@ -12,7 +12,7 @@ import com.example.mio.R
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 
 class SettingsFragment : PreferenceFragmentCompat() {
-    private var alarmSettingPreference : SwitchPreference? = null
+    private var alarmSettingPreference : Preference? = null
     private var openSourceLicensePreference : Preference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {

@@ -17,10 +17,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.CalendarAdapter
 import com.example.mio.Adapter.NoticeBoardAdapter
-import com.example.mio.BottomSheetFragment
 import com.example.mio.CalendarUtil
 import com.example.mio.Model.*
-import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.RetrofitServerConnect
 import com.example.mio.databinding.FragmentTaxiTabBinding

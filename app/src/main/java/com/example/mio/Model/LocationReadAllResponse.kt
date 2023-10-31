@@ -2,80 +2,55 @@ package com.example.mio.Model
 
 import com.google.gson.annotations.SerializedName
 
-class PostReadAllResponse(
-    @SerializedName("totalPages")
-    var totalPages : Int,
-    @SerializedName("totalElements")
-    var totalElements : Int,
-    @SerializedName("size")
-    var size : Int,
-    @SerializedName("content")
-    var content : ArrayList<Content>,
-    @SerializedName("number")
-    var number : Int,
-    @SerializedName("sort")
-    var sort : Sort,
-    @SerializedName("numberOfElements")
-    var numberOfElements : Int,
-    @SerializedName("pageable")
-    var pageable: Pageable,
-    @SerializedName("last")
-    var last : Boolean,
-    @SerializedName("first")
-    var first : Boolean,
-    @SerializedName("empty")
-    var empty : Boolean,
-)
-
-data class Content(
+data class LocationReadAllResponse(
     @SerializedName("postId")
-    var postId : Int,
+    var postId: Int,
     @SerializedName("title")
-    var title : String,
+    var title: String,
     @SerializedName("content")
-    var content : String,
+    var content: String,
     @SerializedName("createDate")
-    var createDate : String,
+    var createDate: String,
     @SerializedName("targetDate")
-    var targetDate : String,
+    var targetDate: String,
     @SerializedName("targetTime")
-    var targetTime : String,
+    var targetTime: String,
     @SerializedName("category")
-    var category : Category,
+    var category: LocationCategory,
     @SerializedName("verifyGoReturn")
-    var verifyGoReturn : Boolean,
+    var verifyGoReturn: Boolean,
     @SerializedName("numberOfPassengers")
-    var numberOfPassengers : Int,
+    var numberOfPassengers: Int,
     @SerializedName("user")
-    var user : User,
+    var user: LocationUser,
     @SerializedName("viewCount")
-    var viewCount : Int,
+    var viewCount: Int,
     @SerializedName("verifyFinish")
-    var verifyFinish : Boolean,
+    var verifyFinish: Boolean,
     @SerializedName("participants")
-    var participants : ArrayList<Participants>,
+    var participants: ArrayList<LocationParticipants>,
     @SerializedName("latitude")
-    var latitude : Double,
+    var latitude: Double,
     @SerializedName("longitude")
-    var longitude : Double,
+    var longitude: Double,
     @SerializedName("bookMarkCount")
-    var bookMarkCount : Int,
+    var bookMarkCount: Int,
     @SerializedName("participantsCount")
-    var participantsCount : Int,
+    var participantsCount: Int,
     @SerializedName("location")
-    var location : String,
+    var location: String,
     @SerializedName("cost")
-    var cost : Int
+    var cost: Int
 )
 
-data class Category(
+data class LocationCategory(
     @SerializedName("categoryId")
     var categoryId : Int,
     @SerializedName("categoryName")
     var categoryName : String,
 )
 
-data class User(
+data class LocationUser(
     @SerializedName("id")
     var id : Int,
     @SerializedName("email")
@@ -102,7 +77,7 @@ data class User(
     var grade : String,
 )
 
-data class Participants(
+data class LocationParticipants(
     @SerializedName("id")
     var id : Int,
     @SerializedName("email")
@@ -129,26 +104,3 @@ data class Participants(
     var grade : String,
 )
 
-data class Sort(
-    @SerializedName("empty")
-    var empty : Boolean,
-    @SerializedName("sorted")
-    var sorted : Boolean,
-    @SerializedName("unsorted")
-    var unsorted : Boolean,
-)
-
-data class Pageable(
-    @SerializedName("offset")
-    var offset : Int,
-    @SerializedName("sort")
-    var sort : Sort,
-    @SerializedName("pageNumber")
-    var pageNumber : Int,
-    @SerializedName("pageSize")
-    var pageSize : Int,
-    @SerializedName("paged")
-    var paged : Boolean,
-    @SerializedName("unpaged")
-    var unpaged : Boolean,
-)

@@ -31,16 +31,12 @@ import com.example.mio.Model.SharedViewModel
 import com.example.mio.Model.*
 import com.example.mio.TabCategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
-import com.google.gson.JsonObject
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -1119,9 +1115,23 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
         val addresses = geocoder.getFromLocation(latitude, longitude, 1)
         if (addresses != null) {
-            if (addresses.isNotEmpty()) {
+/*            if (addresses.isNotEmpty()) {
                 val address = addresses[0].getAddressLine(0)
                 mBinding.placeRoad.text = "$address"
+            }*/
+            if (addresses.isNotEmpty()) {
+                val address = addresses[0]
+
+                val adminArea = address.adminArea ?: ""
+                val subAdminArea = address.subAdminArea ?: ""
+                val locality = address.locality ?: ""
+                val subLocality = address.subLocality ?: ""
+                val thoroughfare = address.thoroughfare ?: ""
+                val featureName = address.featureName ?: ""
+
+                val detailedAddress = "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
+
+                mBinding.placeRoad.text = detailedAddress
             }
         }
     }

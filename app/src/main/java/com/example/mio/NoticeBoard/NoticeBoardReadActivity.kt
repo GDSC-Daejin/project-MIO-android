@@ -9,23 +9,17 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
-import com.example.mio.Adapter.CalendarAdapter
-import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.NoticeBoardReadAdapter
-import com.example.mio.Adapter.ReplyCommentAdapter
 import com.example.mio.Helper.AlertReceiver
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.*
@@ -44,11 +38,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.collections.List
 
 

@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
+        android:name=".Model.FragSharedViewModel2"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
@@ -50,6 +51,14 @@
         <activity
             android:name=".NoticeBoard.NoticeBoardActivity"
             android:exported="false" />
+        <activity
+            android:name=".SearchTap.SearchResultActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustNothing"/>
+        <activity
+            android:name=".SearchTap.NearbypostActivity"
+            android:exported="false" />
+
         <activity
             android:name=".LoginActivity"
             android:exported="true"

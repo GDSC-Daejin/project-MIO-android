@@ -1,25 +1,16 @@
 package com.example.mio.Navigation
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.animation.OvershootInterpolator
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.NotificationAdapter
 import com.example.mio.Helper.SharedPref
-import com.example.mio.MainActivity
 import com.example.mio.Model.NotificationData
 import com.example.mio.Model.PostData
 import com.example.mio.Model.SharedViewModel
-import com.example.mio.R
 import com.example.mio.databinding.FragmentNotificationBinding
-import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

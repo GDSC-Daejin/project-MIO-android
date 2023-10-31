@@ -4,25 +4,21 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.animation.OvershootInterpolator
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
 import com.example.mio.Adapter.MoreTaxiTabAdapter
-import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Model.PostData
 import com.example.mio.Model.PostReadAllResponse
 import com.example.mio.Model.SharedViewModel
 import com.example.mio.databinding.ActivityMoreTaxiTabBinding
-import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.util.HashMap
 
 class MoreTaxiTabActivity : AppCompatActivity() {
     private lateinit var mttBinding : ActivityMoreTaxiTabBinding

@@ -1,5 +1,6 @@
 package com.example.mio.NoticeBoard
 
+import android.animation.ObjectAnimator
 import android.app.*
 import android.content.Context
 import android.content.Context.NOTIFICATION_SERVICE
@@ -12,7 +13,10 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.*
 import android.text.Editable
+import android.text.Spannable
+import android.text.SpannableString
 import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -95,6 +99,18 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     //유저확인
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var email = ""
+    private var writerEmail = ""
+    private var gender : Boolean? = null //false 남, true 여
+    private var accountNumber : String? = null
+    private var verifySmoker : Boolean? = null //false 비흡, true 흡
+    private var mannerCount = 0
+    private var grade : String? = null
+    private var activityLocation : String? = null
+
+    private var tempGender = ""
+    private var tempSmoke = ""
+    private var tempVerifyGoReturn = ""
+
 
 
     //알람설정
@@ -144,6 +160,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         if (type.equals("READ")) {
             temp = intent.getSerializableExtra("postItem") as PostData?
+            writerEmail = temp!!.user.email
             tempProfile = intent.getSerializableExtra("uri") as String
             isCategory = temp!!.postCategory == "carpool"
 
@@ -1516,6 +1533,102 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
     }
 
+    private fun writerIdentification() {
+        val call = RetrofitServerConnect.service
+        CoroutineScope(Dispatchers.IO).launch {
+            call.getAccountData(email).enqueue(object : Callback<User> {
+                override fun onResponse(call: Call<User>, response: Response<User>) {
+                    if (response.isSuccessful) {
+
+                        gender = try {
+                            response.body()!!.gender
+                        } catch (e: java.lang.NullPointerException) {
+                            Log.d("null", e.toString())
+                            null
+                        }
+
+                        accountNumber = try {
+                            response.body()!!.accountNumber
+                        } catch (e: java.lang.NullPointerException) {
+                            Log.d("null", e.toString())
+                            null
+                        }
+
+                        verifySmoker = try {
+                            response.body()!!.verifySmoker
+                        } catch (e: java.lang.NullPointerException) {
+                            Log.d("null", e.toString())
+                            null
+                        }
+
+                        mannerCount = try {
+                            response.body()!!.mannerCount
+                        } catch (e: java.lang.NullPointerException) {
+                            Log.d("null", e.toString())
+                            0
+                        }
+
+                        grade = try {
+                            response.body()!!.grade
+                        } catch (e: java.lang.NullPointerException) {
+                            Log.d("null", e.toString())
+                            "F"
+                        }
+
+                        activityLocation = try {
+                            response.body()!!.activityLocation
+                        } catch (e: java.lang.NullPointerException) {
+                            Log.d("null", e.toString())
+                            null
+                        }
+
+                        tempGender = if (gender!!) {
+                            "여성"
+                        } else {
+                            "남성"
+                        }
+
+                        tempSmoke = if (verifySmoker!!) {
+                            "흡연 X"
+                        } else {
+                            "흡연 O"
+                        }
+
+                        tempVerifyGoReturn = if (temp!!.postVerifyGoReturn) {
+                            "등교"
+                        } else {
+                            "하교"
+                        }
+
+                        val textView = arrayListOf<String>()
+                        textView.add(tempGender)
+                        textView.add(tempSmoke)
+                        textView.add(tempVerifyGoReturn)
+
+                        for (text in textView) {
+                            val addTextView = TextView(this@NoticeBoardReadActivity)
+                            addTextView.text = text
+                            addTextView.textSize = 12F
+                            addTextView.setBackgroundResource(R.drawable.round_filter_btn)
+                            addTextView.setTextColor(ContextCompat.getColor(this@NoticeBoardReadActivity ,R.color.mio_blue_4))
+
+                            nbrBinding.readSetFilterLl.addView(addTextView)
+                        }
+
+                    } else {
+                        println("faafa")
+                        Log.d("comment", response.errorBody()?.string()!!)
+                        Log.d("message", call.request().toString())
+                        println(response.code())
+                    }
+                }
+
+                override fun onFailure(call: Call<User>, t: Throwable) {
+                    Log.d("error", "error $t")
+                }
+            })
+        }
+    }
     /*private fun btnViewChanger() {
         nbrBinding.favoriteBtn.setOnClickListener {
             isFavoriteBtn = !isFavoriteBtn

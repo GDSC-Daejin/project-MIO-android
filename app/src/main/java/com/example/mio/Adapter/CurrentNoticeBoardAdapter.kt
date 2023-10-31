@@ -1,5 +1,4 @@
 package com.example.mio.Adapter
-import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -9,8 +8,6 @@ import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.CurrentPostItemBinding
-import com.example.mio.databinding.PostItemBinding
-import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -37,8 +34,34 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
         fun bind(accountData: PostData, position : Int) {
             this.position = position
             //accountId.text = accountData.accountID
-            val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
-            cPostDate.text = s
+            val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime) //10-34.5.67.8.910 , 8-5
+
+            //요일 구하기
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA)
+            val dayDate = dateFormat.parse(accountData.postTargetDate)
+            val cal = Calendar.getInstance()
+            if (dayDate != null) {
+                cal.time = dayDate
+            }
+            val dayOfWeek = when (cal.get(Calendar.DAY_OF_WEEK)) {
+                Calendar.SUNDAY -> "일"
+                Calendar.MONDAY -> "월"
+                Calendar.TUESDAY -> "화"
+                Calendar.WEDNESDAY -> "수"
+                Calendar.THURSDAY -> "목"
+                Calendar.FRIDAY -> "금"
+                Calendar.SATURDAY -> "토"
+                else -> ""
+            }
+
+
+            val year = accountData.postTargetDate.substring(2..3)
+            val month = accountData.postTargetDate.substring(5..6)
+            val date1 = accountData.postTargetDate.substring(8..9)
+            val hour = accountData.postTargetTime.substring(0..1)
+            val minute = accountData.postTargetTime.substring(3..4)
+
+            cPostDate.text = "${year}.${month}.${date1} ($dayOfWeek) ${hour}:${minute}"
             cPostLocation.text = accountData.postLocation
             val now = System.currentTimeMillis()
             val date = Date(now)

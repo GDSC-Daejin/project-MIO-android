@@ -8,4 +8,24 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="colorAccent">#BC40FF</color>
+
+    <color name="mio_gray_1">#FFFFFF</color>
+    <color name="mio_gray_2">#FCFCFC</color>
+    <color name="mio_gray_3">#F8F8F8</color>
+    <color name="mio_gray_4">#EFEFEF</color>
+    <color name="mio_gray_5">#DFDFDF</color>
+    <color name="mio_gray_6">#B7B7B7</color>
+    <color name="mio_gray_7">#949494</color>
+    <color name="mio_gray_8">#777777</color>
+    <color name="mio_gray_9">#555555</color>
+    <color name="mio_gray_10">#2A2A2A</color>
+    <color name="mio_gray_11">#111111</color>
+    <color name="mio_gray_12">#000000</color>
+
+    <color name="mio_blue_1">#CCDDFF</color>
+    <color name="mio_blue_2">#99BCFF</color>
+    <color name="mio_blue_3">#669AFF</color>
+    <color name="mio_blue_4">#3379FF</color>
+    <color name="mio_blue_5">#0057FF</color>
+    <color name="mio_blue_6">#0046CC</color>
 </resources>

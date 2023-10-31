@@ -1,18 +1,22 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+
+    // plugin 추가
+    id 'com.google.android.gms.oss-licenses-plugin'
 }
 
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
-
+def kakao_Sdk_Appkey = properties.getProperty('kakao.sdk.appkey')
 android {
     namespace 'com.example.mio'
     compileSdk 33
 
     defaultConfig {
         applicationId "com.example.mio"
-        minSdk 24
+        minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -22,6 +26,9 @@ android {
         buildConfigField "String", "client_web_api_key", properties['client_web_api_key']
         buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
         buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
+        buildConfigField "String", "server_URL", properties['server_URL']
+        buildConfigField "String", "map_api_key", properties['map_api_key']
+        manifestPlaceholders = [kakaoSdkAppkey: kakao_Sdk_Appkey]
     }
 
     buildTypes {
@@ -41,6 +48,11 @@ android {
     buildFeatures {
         viewBinding true
         dataBinding true
+    }
+}
+allprojects {
+    repositories {
+        maven {url 'https://jitpack.io'}
     }
 }
 
@@ -65,6 +77,36 @@ dependencies {
 
     //preference
     implementation 'androidx.preference:preference-ktx:1.2.0'
+
+    //retrofit2
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.0'
+    //통신 로그
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.11.0'
+
+    //splashScreen
+    implementation 'androidx.core:core-splashscreen:1.0.0-alpha01'
+
+    //calendar
+    //implementation 'com.prolificinteractive:material-calendarview:1.4.3'
+
+    //sticky
+    implementation 'com.github.amarjain07:StickyScrollView:1.0.3'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+
+    //glide
+    implementation("com.github.bumptech.glide:glide:4.14.2")
+    implementation 'androidx.preference:preference:1.2.1'
+    kapt("com.github.bumptech.glide:compiler:4.14.2")
+    //lottie
+    implementation 'com.airbnb.android:lottie:3.0.7'
+
+    //work
+    implementation "androidx.work:work-runtime-ktx:2.8.1"
+
+    //license library추가
+    // library 추가
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
 
     ////
     testImplementation 'junit:junit:4.13.2'

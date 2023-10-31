@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
+    android:oneshot="false">
+    <item android:drawable="@drawable/loading_progress_icon" android:duration="300" />
+    <item android:drawable="@drawable/loading2" android:duration="300" />
+    <item android:drawable="@drawable/loading3" android:duration="300" />
+    <item android:drawable="@drawable/loading4" android:duration="300" />
+    <!-- 위의 <item>을 원하는 만큼 반복하여 추가 -->
+</animation-list>

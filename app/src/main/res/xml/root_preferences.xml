@@ -1,0 +1,25 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory app:title="알람">
+
+        <SwitchPreferenceCompat
+            android:key="alarmReceive"
+            android:title= "알람 수신 여부"
+            android:summary="메시지 알림을 받으려면 체크하세요"
+            android:defaultValue="true"
+            android:widgetLayout="@layout/custom_switch_preference"
+            />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="정보">
+
+        <Preference
+            android:key="openSource_license"
+            android:title="오픈소스 라이선스"
+            app:fragment="com.example.mio.OpenSourceLicenseFragment" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

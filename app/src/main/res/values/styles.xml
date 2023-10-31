@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <!-- Light/Day Mode theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">#2196F3</item>
+        <item name="colorPrimaryDark">#1976D2</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="backgroundcolor1">#FCFCFC</item>
+        <item name="toolbar">#4E5DB3</item>
+        <item name="textcolor">#000000</item>
+        <item name="tintcolor">#4E5DB3</item>
+        <item name="buttoncolor">#2196F3</item>
+        <item name="bottomnavibackground">#FFFFFF</item>
+        <item name="floatbutton">#4E5DB3</item>
+        <item name="modeselect">#000000</item>
+        <item name="cardColor">#00BCD4</item>
+    </style>
+
+
+    <!-- Night / dark  Mode theme. -->
+    <style name="darktheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">#212121</item>
+        <item name="colorPrimaryDark">#000000</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="backgroundcolor1">#303030</item>
+        <item name="toolbar">#424242</item>
+        <item name="textcolor">#ffffff</item>
+        <item name="tintcolor">#ffffff</item>
+        <item name="buttoncolor">#2196F3</item>
+        <item name="bottomnavibackground">#212121</item>
+        <item name="floatbutton">#1A1A1B</item>
+        <item name="modeselect">#FCFCFC</item>
+        <item name="cardColor">#3D4155</item>
+    </style>
+
+    <style name="dialogStyle" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="searchViewStyle" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:background">?attr/modeselect</item>
+    </style>
+
+    <style name="layoutTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:background">?attr/backgroundcolor1</item>
+    </style>
+
+    <style name="HeaderItemTextStyle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">23sp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:shadowColor">#81000000</item>
+        <item name="android:shadowDx">1</item>
+        <item name="android:shadowDy">6</item>
+        <item name="android:shadowRadius">5</item>
+    </style>
+
+    <style name="HeaderItemLineStyle">
+        <item name="android:layout_width">30dp</item>
+        <item name="android:layout_height">3dp</item>
+        <item name="android:background">@android:color/white</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <style name="Theme.App.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/img</item>
+        <item name="windowSplashScreenAnimationDuration">1000</item>
+        <item name="postSplashScreenTheme">@style/Theme.MIO</item>
+        <item name="android:windowLightStatusBar" >true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        <item name="android:navigationBarColor">@color/white</item>
+    </style>
+
+    <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BottomSheetStyle</item>
+    </style>
+
+    <style name="BottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
+        <item name="background">@android:color/transparent</item>
+        <item name="android:textColor">@color/mio_gray_10</item>
+    </style>
+
+    <style name="MySpinnerDatePickerStyle" parent="Theme.AppCompat.Light.Dialog">
+        <!-- 상단 색 변경 -->
+        <item name="colorAccent">@color/mio_gray_1</item>
+        <!-- dialog의 배경 변경 -->
+        <item name="background">@color/mio_gray_1</item>
+        <!--day , month TextColor-->
+        <item name="android:textColorPrimaryInverse">@color/mio_gray_11</item>
+        <!-- 선택한 날짜를 표시할 색상 -->
+        <item name="colorControlActivated">@color/mio_blue_5</item>
+        <!--오늘 날짜 색상-->
+        <item name="colorControlHighlight">@color/mio_blue_5</item>
+        <!-- 취소/확인버튼 색상 -->
+        <item name="android:textColor">@color/mio_blue_5</item>
+    </style>
+
+
+    <style name="CustomAlertDialog">
+
+        <!-- 꽉 채운 화면에 배경 없이 (custom view 영역만 보일 것이다.) -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
+
+        <!-- Dim 처리 -->
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:colorBackground">?attr/colorBackgroundFloating</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+
+        <!-- Dialog가 센터에 나오도록 -->
+        <item name="android:windowIsFloating">true</item>
+    </style>
+
+    <style name="FullScreenDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <!--<style name="SwitchTheme">
+        <item name="android:thumbTint">@color/mio_gray_11</item>
+        <item name="android:trackTint">@color/mio_blue_4</item>
+    </style>-->
+
+</resources>

@@ -356,15 +356,15 @@
         <LinearLayout
             android:id="@+id/edit_second_vf"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@+id/edit_bottom_ll"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
             <LinearLayout
+                android:id="@+id/page_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="24dp"
@@ -411,40 +411,42 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:layout_marginStart="27dp"
                 android:layout_marginTop="15dp"
                 android:layout_marginEnd="27dp"
                 android:background="@drawable/round_layout">
 
-                <TextView
-                    android:id="@+id/edit_select_location"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="15dp"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/pretendard_medium"
-                    android:gravity="center|fill"
-                    android:text="장소를 입력해주세요"
-                    android:textColor="@color/mio_gray_6" />
+                <EditText
+                    android:id="@+id/et_search_field"
+                    android:layout_width="270dp"
+                    android:layout_height="48dp"
+                    android:layout_marginLeft="20dp"
+                    android:background="@null"
+                    android:hint="장소를 입력해주세요"
+                    android:textColor="@color/mio_gray_8"
+                    android:textColorHint="@color/mio_gray_6" />
 
-                <ImageView
-                    android:id="@+id/edit_search_location"
-                    android:layout_width="wrap_content"
+                <ImageButton
+                    android:id="@+id/btn_search"
+                    android:layout_width="48dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginEnd="12dp"
-                    android:contentDescription="장소 선택"
-                    android:src="@drawable/edit_search_icon" />
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:padding="13dp"
+                    app:srcCompat="@drawable/search_btn_icon" />
             </LinearLayout>
 
             <!--space는 투명해야함 따라서 색넣고 space 기능을 원하면 View를 사용하자-->
             <View
+                android:id="@+id/line2"
                 android:layout_width="match_parent"
                 android:layout_height="10dp"
                 android:layout_marginTop="40dp"
                 android:background="@color/mio_gray_4" />
 
             <TextView
+                android:id="@+id/recent_search"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="27dp"
@@ -453,17 +455,107 @@
                 android:text="최근 검색어"
                 android:textColor="@color/mio_gray_6" />
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/recent_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
                 <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvRecentSearchList"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginBottom="15dp"
-                    tools:listitem="@layout/search_word_layout" />
-            </LinearLayout>
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+                <!--tools:listitem="@layout/search_word_layout"-->
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+        <!--2.5번째 뷰플립-->
+        <LinearLayout
+            android:id="@+id/edit_second2_vf"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+
+                <net.daum.mf.map.api.MapView
+                    android:id="@+id/mapView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toTopOf="@+id/map_info"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/map_explain"
+                    android:gravity="center"
+                    android:text="지도를 움직여 위치를 설정하세요"
+                    android:textColor="@color/mio_gray_8"
+                    android:layout_marginTop="30dp"
+                    android:paddingBottom="2dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/map_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent">
+
+                    <TextView
+                        android:id="@+id/place_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:layout_marginLeft="20dp"
+                        android:textColor="@color/mio_gray_10"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        app:layout_constraintBottom_toTopOf="@+id/place_road"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <TextView
+                        android:id="@+id/place_road"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginBottom="20dp"
+                        android:textColor="@color/mio_gray_8"
+                        android:textSize="20sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
         </LinearLayout>
 
 

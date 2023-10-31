@@ -15,6 +15,6 @@ data class PostData(
     var postVerifyGoReturn: Boolean, //등/하교 -> true 등, false 하
     var user : User
 
-) : java.io.Serializable {
+    ) : java.io.Serializable {
 
 }

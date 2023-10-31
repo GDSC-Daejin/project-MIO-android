@@ -41,6 +41,7 @@ data class LocationReadAllResponse(
     var location : String,
     @SerializedName("cost")
     var cost : Int
+
 )
 
 data class LocationCategory(

@@ -47,10 +47,19 @@ interface MioInterface {
     fun getServerDateData() : Call<PostReadAllResponse>
     @GET("/readAll/cost")
     fun getServerCostData() : Call<PostReadAllResponse>
+// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+/*    @GET("/post/location")
+    fun getLocationPostData(@Query("latitude") latitude : Double, @Query("longitude") longitude : Double) : Call<List<LocationReadAllResponse>>*/
 
     @PATCH("/post/verfiyFinish/{id}")
     fun patchVerifyFinish(@Body verifyFinish : Boolean, @Path("id") id : Int) : Call<AddPostResponse>
 
+    @GET("/post/location2")
+    fun getLocationPostData(@Query("location") location : String) : Call<List<LocationReadAllResponse>>
+
+    @GET("/post/distance/{postId}")
+    fun getNearByPostData(@Path("postId") postId : Int) : Call<List<LocationReadAllResponse>>
+// ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 
 
     /////////////////////////////////

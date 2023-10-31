@@ -25,8 +25,8 @@ import com.example.mio.Adapter.CalendarAdapter
 import com.example.mio.Adapter.CurrentNoticeBoardAdapter
 import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.NoticeBoardMyAreaAdapter
+import com.example.mio.CalendarUtil
 import com.example.mio.Model.*
-import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentTaxiTabBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator

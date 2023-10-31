@@ -17,7 +17,9 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+
     <application
+        android:name=".Model.FragSharedViewModel2"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
@@ -80,6 +82,14 @@
             android:name=".NoticeBoard.NoticeBoardActivity"
             android:exported="false" />
         <activity
+            android:name=".SearchTap.SearchResultActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustNothing"/>
+        <activity
+            android:name=".SearchTap.NearbypostActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".LoginActivity"
             android:exported="true"
             android:theme="@style/Theme.App.Splash">
@@ -107,6 +117,7 @@
                 <action android:name="androidx.work.impl.background.systemjob.SystemJobService" />
             </intent-filter>
         </service>
+
     </application>
 
 </manifest>

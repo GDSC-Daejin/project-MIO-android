@@ -63,6 +63,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.List
+
 
 
 class NoticeBoardReadActivity : AppCompatActivity() {

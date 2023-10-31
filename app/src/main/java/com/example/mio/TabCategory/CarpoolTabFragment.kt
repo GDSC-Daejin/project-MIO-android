@@ -96,10 +96,12 @@ class CarpoolTabFragment : Fragment() {
     //게시글과 targetDate를 받아
     private var sharedViewModel: SharedViewModel? = null
     private var calendarTempData = ArrayList<String>()
+    //이건 캘린더에 적용될 모든 데이터
     private var calendarTaxiAllData : ArrayList<PostData> = ArrayList()
+    //캘린더에서 선택된거 저장하고 없어지고 할 데이터
     private var selectCalendarCarpoolData : ArrayList<PostData> = ArrayList()
     //edit에서 받은 값
-    private var selectCalendarData = HashMap<String, ArrayList<PostData>>()
+    //private var selectCalendarData = HashMap<String, ArrayList<PostData>>()
     private var testselectCalendarData = HashMap<String, ArrayList<PostData>>()
 
     //뒤로 가기 받아오기
@@ -174,19 +176,36 @@ class CarpoolTabFragment : Fragment() {
                             println(itemId)
                             val selectDateData = calendarTaxiAllData.filter { it.postTargetDate == itemId }
 
-                            println(selectDateData)
+
+                            println("선택된거" + selectCalendarCarpoolData)
 
                             if (selectDateData.isNotEmpty()) {
+                                noticeBoardAdapter = NoticeBoardAdapter()
+                                noticeBoardAdapter!!.postItemData = selectCalendarCarpoolData
+                                taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
+                                //레이아웃 뒤집기 안씀
+                                //manager.reverseLayout = true
+                                //manager.stackFromEnd = true
+                                taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
+                                taxiTabBinding.noticeBoardRV.layoutManager = manager
 
                                 CoroutineScope(Dispatchers.Main).launch {
                                     taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
                                     taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                                 }
-                                calendarTaxiAllData.clear()
+                                selectCalendarCarpoolData.clear()
 
-                                for (i in selectDateData.indices) {
+                               /* for (i in selectDateData.indices) {
                                     calendarTaxiAllData.add(selectDateData[i])
+                                }*/
+                                for (select in selectDateData) {
+                                    selectCalendarCarpoolData.add(select)
                                 }
+
+
+                                noticeBoardAdapter!!.notifyDataSetChanged()
+
+                                println("캘린더 전부" + calendarTaxiAllData)
 
                             } else {
                                 CoroutineScope(Dispatchers.Main).launch {
@@ -319,13 +338,13 @@ class CarpoolTabFragment : Fragment() {
         taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
         taxiTabBinding.noticeBoardRV.layoutManager = manager
 
-        taxiTabBinding.noticeBoardRV.itemAnimator =  SlideInUpAnimator(OvershootInterpolator(1f))
+        /*taxiTabBinding.noticeBoardRV.itemAnimator =  SlideInUpAnimator(OvershootInterpolator(1f))
         taxiTabBinding.noticeBoardRV.itemAnimator?.apply {
             addDuration = 1000
             removeDuration = 100
             moveDuration = 1000
             changeDuration = 100
-        }
+        }*/
     }
 
     private fun initMyAreaRecyclerView() {
@@ -806,6 +825,26 @@ class CarpoolTabFragment : Fragment() {
                         Log.d("add", response.errorBody()?.string()!!)
                         Log.d("message", call.request().toString())
                         Log.d("f", response.code().toString())
+
+                        taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                        taxiTabBinding.nonCurrentRvTv.text = "예상치 못한 오류가 발생했습니다"
+                        taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+                        taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
+
+                        taxiTabBinding.nonCurrentRvTv.setOnClickListener {
+                            setCurrentTaxiData()
+                        }
+
+                        if (currentTaxiAllData.isEmpty()) {
+                            taxiTabBinding.currentRv.visibility = View.GONE
+                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+
+                        } else {
+                            taxiTabBinding.currentRv.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
+                            taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
+                        }
                     }
                 }
 

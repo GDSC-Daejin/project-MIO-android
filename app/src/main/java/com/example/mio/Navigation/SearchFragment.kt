@@ -209,17 +209,19 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
                 intent.putExtra("POST_ID", location.postId)  // 게시글의 ID 또는 유일한 키를 전달
                 startActivity(intent)*/
                 val postData = PostData(
-                    accountID = "",
+                    accountID = location.user.studentId,
                     postID = location.postId,
                     postTitle = location.title,
                     postContent = location.content,
                     postTargetDate = location.targetDate,
                     postTargetTime = location.targetTime,
-                    postCategory = "",
+                    postCategory = location.category.categoryName,
                     postLocation = location.location,
                     postParticipation = location.participantsCount,
                     postParticipationTotal = location.numberOfPassengers,
-                    postCost = location.cost
+                    postCost = location.cost,
+                    postVerifyGoReturn = location.verifyGoReturn,
+                    user = location.user
                 )
 
                 // Intent를 통해 NoticeBoardReadActivity로 전달

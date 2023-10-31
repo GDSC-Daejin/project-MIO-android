@@ -1,6 +1,8 @@
 package com.example.mio.Navigation
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.view.animation.OvershootInterpolator
@@ -17,10 +19,8 @@ import com.example.mio.Adapter.NotificationAdapter
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
-import com.example.mio.Model.NotificationData
-import com.example.mio.Model.PostData
-import com.example.mio.Model.SharedViewModel
 import com.example.mio.databinding.FragmentNotificationBinding
+import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -150,7 +150,7 @@ class NotificationFragment : Fragment() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         /////////
-       CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             api.getMyAlarm().enqueue(object : Callback<List<AddAlarmResponseData>> {
                 override fun onResponse(call: Call<List<AddAlarmResponseData>>, response: Response<List<AddAlarmResponseData>>) {
                     if (response.isSuccessful) {

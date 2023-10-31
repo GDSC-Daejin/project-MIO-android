@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NearbyPostAdapter
 import com.example.mio.Model.LocationReadAllResponse
+import com.example.mio.Model.LocationUser
 import com.example.mio.Model.PostData
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.RetrofitServerConnect
@@ -34,17 +35,19 @@ class NearbypostActivity  : AppCompatActivity() {
         nbinding.rvNearbypostList.layoutManager = LinearLayoutManager(this)
         adapter = NearbyPostAdapter { post ->
             val postData = PostData(
-                accountID = "",
+                accountID = post.user.studentId,
                 postID = post.postId,
                 postTitle = post.title,
                 postContent = post.content,
                 postTargetDate = post.targetDate,
                 postTargetTime = post.targetTime,
-                postCategory = "",
+                postCategory = post.category.categoryName,
                 postLocation = post.location,
                 postParticipation = post.participantsCount,
                 postParticipationTotal = post.numberOfPassengers,
-                postCost = post.cost
+                postCost = post.cost,
+                postVerifyGoReturn = post.verifyGoReturn,
+                user = post.user
             )
 
             // Intent를 통해 NoticeBoardReadActivity로 전달

@@ -33,6 +33,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
@@ -168,7 +169,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
             val imageUrl = Uri.parse(tempProfile)
             CoroutineScope(Dispatchers.Main).launch {
-                GlideApp.with(this@NoticeBoardReadActivity)
+                Glide.with(this@NoticeBoardReadActivity)
                     .load(imageUrl)
                     .error(R.drawable.top_icon_vector)
                     .centerCrop()

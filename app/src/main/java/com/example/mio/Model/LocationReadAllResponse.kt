@@ -22,7 +22,7 @@ data class LocationReadAllResponse(
     @SerializedName("numberOfPassengers")
     var numberOfPassengers : Int,
     @SerializedName("user")
-    var user : LocationUser,
+    var user : User,
     @SerializedName("viewCount")
     var viewCount : Int,
     @SerializedName("verifyFinish")

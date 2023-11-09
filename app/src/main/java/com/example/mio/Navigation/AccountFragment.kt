@@ -16,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import com.example.mio.Adapter.AccountTabAdapter
 import com.example.mio.Adapter.CategoryTabAdapter
 import com.example.mio.Model.PostReadAllResponse
@@ -226,9 +227,12 @@ class AccountFragment : Fragment() {
                                 "여성"
                             } else {
                                 "남성"
-                           }
+                            }
+                            aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
+
                         } else {
-                            aBinding.accountGender.text = "성별 설정 바람"
+                            aBinding.accountGender.text = "성별"
+                            aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
                         }
 
                         if (verifySmoker != null) {
@@ -237,20 +241,26 @@ class AccountFragment : Fragment() {
                             } else {
                                 "비흡연자"
                             }
+                            aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
+
                         } else {
-                            aBinding.accountSmokingStatus.text = "흡연여부 설정 바람"
+                            aBinding.accountSmokingStatus.text = "흡연여부"
+                            aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
                         }
 
                         if (activityLocation != null) {
-                            aBinding.accountAddress.text = activityLocation
+                            aBinding.accountAddress.text = activityLocation + "/"
+                            aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
                         } else {
-                            aBinding.accountAddress.text = "지역 설정 바람"
+                            aBinding.accountAddress.text = "설정에서 개인정보를 입력해주세요"
+                            aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_6))
                         }
 
                         if (accountNumber != null) {
                             aBinding.accountBank.text = accountNumber
+                            aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
                         } else {
-                            aBinding.accountBank.text = "계좌 설정 바람"
+                            aBinding.accountBank.text = ""
                         }
 
 

@@ -16,12 +16,22 @@ import kotlin.collections.ArrayList
 class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter.CurrentNoticeBoardViewHolder>(){
     private lateinit var binding : CurrentPostItemBinding
     var currentPostItemData = ArrayList<PostData>()
+    private var hashMapCurrentPostItemData = HashMap<Int, PostStatus>()
     private lateinit var context : Context
 
     private var identification = ""
+    enum class PostStatus {
+        Passenger, //손님이면서 카풀완료
+        Driver, //운전자이면서 카풀완료
+        Neither //둘 다 아니고 그냥 자기가 예약한 게시글 보고 싶음
+    }
 
     init {
         setHasStableIds(true)
+
+        for (i in currentPostItemData.indices) {
+            hashMapCurrentPostItemData[i] = PostStatus.Neither
+        }
     }
 
     inner class CurrentNoticeBoardViewHolder(private val binding : CurrentPostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
@@ -87,6 +97,11 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
                 if (diffSeconds > 0) {
                     binding.currentCompleteFl.visibility = View.VISIBLE
                     binding.currentCompleteTv.text = "카풀 완료"
+                    if (identification == currentPostItemData[position].user.email) {
+                        hashMapCurrentPostItemData[position] = PostStatus.Driver
+                    } else {
+                        hashMapCurrentPostItemData[position] = PostStatus.Passenger
+                    }
                 } else {
                     binding.currentCompleteFl.visibility = View.GONE
                 }
@@ -116,12 +131,22 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
 
-        if (identification == currentPostItemData[holder.adapterPosition].user.email) {
+        //본인이 작성자(운전자) 이면서 카풀이 완료
+        if (identification == currentPostItemData[holder.adapterPosition].user.email && hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Driver) {
+            holder.itemView.setOnClickListener {
+                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID, PostStatus.Driver)
+            }
+        } else if (hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Passenger) { //본인은 운전자가 아니고 손님
+            holder.itemView.setOnClickListener {
+                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID,  PostStatus.Passenger)
+            }
+        } else { //그냥 자기 게시글 확인
+            holder.itemView.setOnClickListener {
+                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID, PostStatus.Neither)
+            }
         }
 
-        holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID)
-        }
+
 
     /*binding.homeRemoveIv.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)
@@ -165,7 +190,7 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
     }
 
     interface ItemClickListener {
-        fun onClick(view: View, position: Int, itemId: Int)
+        fun onClick(view: View, position: Int, itemId: Int, status : PostStatus?)
     }
 
     //약한 참조로 참조하는 객체가 사용되지 않을 경우 가비지 콜렉션에 의해 자동해제

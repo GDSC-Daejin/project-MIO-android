@@ -89,6 +89,7 @@ class CarpoolTabFragment : Fragment() {
     //게시글 전체 데이터 및 adapter와 공유하는 데이터
     private var carpoolAllData : ArrayList<PostData> = ArrayList()
     private var currentTaxiAllData = ArrayList<PostData>()
+    private var carpoolParticipantsData = kotlin.collections.ArrayList<Participants>()
     //게시글 선택 시 위치를 잠시 저장하는 변수
     private var dataPosition = 0
     //게시글 위치
@@ -152,14 +153,33 @@ class CarpoolTabFragment : Fragment() {
         })
 
         currentNoticeBoardAdapter!!.setItemClickListener(object : CurrentNoticeBoardAdapter.ItemClickListener {
-            override fun onClick(view: View, position: Int, itemId: Int) {
+            override fun onClick(view: View, position: Int, itemId: Int, status : CurrentNoticeBoardAdapter.PostStatus?) {
                 CoroutineScope(Dispatchers.IO).launch {
                     val temp = currentTaxiAllData[position]
+                    var intent : Intent? = null
                     dataPosition = position
-                    val intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
-                        putExtra("type", "READ")
-                        putExtra("postItem", temp)
-                        putExtra("uri", temp.user.profileImageUrl)
+                    when(status!!) {
+                        CurrentNoticeBoardAdapter.PostStatus.Passenger -> {
+                            intent = Intent(activity, PassengersReviewActivity::class.java).apply {
+                                putExtra("type", "PASSENGER")
+                                putExtra("postDriver", temp.user)
+                            }
+                        }
+
+                        CurrentNoticeBoardAdapter.PostStatus.Driver -> {
+                            intent = Intent(activity, PassengersReviewActivity::class.java).apply {
+                                putExtra("type", "DRIVER")
+                                putExtra("postPassengers", carpoolParticipantsData)
+                            }
+                        }
+
+                        CurrentNoticeBoardAdapter.PostStatus.Neither -> {
+                            intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
+                                putExtra("type", "READ")
+                                putExtra("postItem", temp)
+                                putExtra("uri", temp.user.profileImageUrl)
+                            }
+                        }
                     }
                     requestActivity.launch(intent)
                 }
@@ -374,7 +394,7 @@ class CarpoolTabFragment : Fragment() {
         loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
         loadingDialog.show()*/
 
-        setCurrentTaxiData()
+        setCurrentCarpoolData()
 
 
         currentNoticeBoardAdapter = CurrentNoticeBoardAdapter()
@@ -740,12 +760,10 @@ class CarpoolTabFragment : Fragment() {
         }
     }
 
-    private fun setCurrentTaxiData() {
+    private fun setCurrentCarpoolData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
 
         val interceptor = Interceptor { chain ->
             var newRequest: Request
@@ -804,6 +822,26 @@ class CarpoolTabFragment : Fragment() {
                             ))
                             currentNoticeBoardAdapter!!.notifyDataSetChanged()
                         }
+                        CoroutineScope(Dispatchers.IO).launch {
+                            for (i in response.body()!!.indices) {
+                                for (j in response.body()!![i].participants.indices) {
+                                    carpoolParticipantsData.add(Participants(
+                                        response.body()!![i].participants[j].id,
+                                        response.body()!![i].participants[j].email,
+                                        response.body()!![i].participants[j].studentId,
+                                        response.body()!![i].participants[j].profileImageUrl,
+                                        response.body()!![i].participants[j].name,
+                                        response.body()!![i].participants[j].accountNumber,
+                                        response.body()!![i].participants[j].gender,
+                                        response.body()!![i].participants[j].verifySmoker,
+                                        response.body()!![i].participants[j].roleType,
+                                        response.body()!![i].participants[j].status,
+                                        response.body()!![i].participants[j].mannerCount,
+                                        response.body()!![i].participants[j].grade,
+                                    ))
+                                }
+                            }
+                        }
 
                         if (currentTaxiAllData.isEmpty()) {
                             taxiTabBinding.currentRv.visibility = View.GONE
@@ -832,7 +870,7 @@ class CarpoolTabFragment : Fragment() {
                         taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
 
                         taxiTabBinding.nonCurrentRvTv.setOnClickListener {
-                            setCurrentTaxiData()
+                            setCurrentCarpoolData()
                         }
 
                         if (currentTaxiAllData.isEmpty()) {

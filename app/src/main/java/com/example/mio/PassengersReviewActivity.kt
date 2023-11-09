@@ -5,23 +5,36 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import androidx.core.content.ContextCompat
+import com.example.mio.Model.Participants
+import com.example.mio.Model.User
 import com.example.mio.databinding.ActivityPassengersReviewBinding
 
 class PassengersReviewActivity : AppCompatActivity() {
     private lateinit var prBinding : ActivityPassengersReviewBinding
-
     //edittext
     private var reviewEditText = ""
 
     private var mannerCount = ""
 
+    private var type = ""
+    private var passengersData = ArrayList<Participants>()
+    private var driverData : User? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         prBinding = ActivityPassengersReviewBinding.inflate(layoutInflater)
 
         setIcon()
 
+        type = intent.getStringExtra("type") as String
+
+        if (type == "PASSENGER") { //내가 손님일때
+            driverData = intent.getSerializableExtra("postDriver") as User
+        } else if (type == "DRIVER") { //내가 운전자일때
+            passengersData = intent.getSerializableExtra("postPassengers") as ArrayList<Participants>
+        }
+
+        //여기에 인원 수 만큼 chip? 추가하기 Todo
         prBinding.passengersReviewEt.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 

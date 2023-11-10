@@ -159,9 +159,26 @@
                 android:textColorHint="@color/mio_gray_6"
                 android:textSize="16sp" />
         </LinearLayout>
+    </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/review_participants_id_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/passengers_review_registration_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passengers_review_ll">
 
-
+        <com.google.android.material.chip.Chip
+            android:id="@+id/review_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/MioChipStyle"
+            android:text="전체"
+            android:textAlignment="center"
+            />
 
     </LinearLayout>
 

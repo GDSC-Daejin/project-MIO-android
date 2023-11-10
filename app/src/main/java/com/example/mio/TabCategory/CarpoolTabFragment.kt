@@ -797,6 +797,7 @@ class CarpoolTabFragment : Fragment() {
             api.getMyParticipantsData(0, 20).enqueue(object : Callback<List<Content>> {
                 override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
                     if (response.isSuccessful) {
+                        val responseData = response.body().isNullOrEmpty()
                         println("예약 정보")
                         //데이터 청소
                         currentTaxiAllData.clear()
@@ -822,24 +823,47 @@ class CarpoolTabFragment : Fragment() {
                             ))
                             currentNoticeBoardAdapter!!.notifyDataSetChanged()
                         }
-                        CoroutineScope(Dispatchers.IO).launch {
-                            for (i in response.body()!!.indices) {
-                                for (j in response.body()!![i].participants.indices) {
-                                    carpoolParticipantsData.add(Participants(
-                                        response.body()!![i].participants[j].id,
-                                        response.body()!![i].participants[j].email,
-                                        response.body()!![i].participants[j].studentId,
-                                        response.body()!![i].participants[j].profileImageUrl,
-                                        response.body()!![i].participants[j].name,
-                                        response.body()!![i].participants[j].accountNumber,
-                                        response.body()!![i].participants[j].gender,
-                                        response.body()!![i].participants[j].verifySmoker,
-                                        response.body()!![i].participants[j].roleType,
-                                        response.body()!![i].participants[j].status,
-                                        response.body()!![i].participants[j].mannerCount,
-                                        response.body()!![i].participants[j].grade,
-                                    ))
+
+                        if (responseData) {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                response.body()?.forEach { content ->
+                                    content.participants.forEach { participants ->
+                                        if (participants != null) {
+                                            carpoolParticipantsData.add(Participants(
+                                                participants.id,
+                                                participants.email,
+                                                participants.studentId,
+                                                participants.profileImageUrl,
+                                                participants.name,
+                                                participants.accountNumber,
+                                                participants.gender,
+                                                participants.verifySmoker,
+                                                participants.roleType,
+                                                participants.status,
+                                                participants.mannerCount,
+                                                participants.grade,
+                                            ))
+                                        }
+                                    }
                                 }
+                                /*for (i in response.body()!!.indices) {
+                                    for (j in response.body()!![i].participants.indices) {
+                                        carpoolParticipantsData.add(Participants(
+                                            response.body()!![i].participants[j].id,
+                                            response.body()!![i].participants[j].email,
+                                            response.body()!![i].participants[j].studentId,
+                                            response.body()!![i].participants[j].profileImageUrl,
+                                            response.body()!![i].participants[j].name,
+                                            response.body()!![i].participants[j].accountNumber,
+                                            response.body()!![i].participants[j].gender,
+                                            response.body()!![i].participants[j].verifySmoker,
+                                            response.body()!![i].participants[j].roleType,
+                                            response.body()!![i].participants[j].status,
+                                            response.body()!![i].participants[j].mannerCount,
+                                            response.body()!![i].participants[j].grade,
+                                        ))
+                                    }
+                                }*/
                             }
                         }
 

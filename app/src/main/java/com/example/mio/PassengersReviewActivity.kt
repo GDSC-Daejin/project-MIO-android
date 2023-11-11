@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat
 import com.example.mio.Model.Participants
 import com.example.mio.Model.User
 import com.example.mio.databinding.ActivityPassengersReviewBinding
+import com.google.android.material.chip.Chip
 
 class PassengersReviewActivity : AppCompatActivity() {
     private lateinit var prBinding : ActivityPassengersReviewBinding
@@ -19,6 +20,7 @@ class PassengersReviewActivity : AppCompatActivity() {
     private var type = ""
     private var passengersData = ArrayList<Participants>()
     private var driverData : User? = null
+    private var passengersChipList = ArrayList<Chip>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,9 +34,29 @@ class PassengersReviewActivity : AppCompatActivity() {
             driverData = intent.getSerializableExtra("postDriver") as User
         } else if (type == "DRIVER") { //내가 운전자일때
             passengersData = intent.getSerializableExtra("postPassengers") as ArrayList<Participants>
+            //여기에 인원 수 만큼 chip? 추가하기 Todo
+            for (j in passengersData.indices) {
+                passengersChipList.add(createNewChip(
+                    passengersData[j].studentId
+                ))
+            }
+
+            for (i in passengersChipList.indices) {
+                // 마지막 Chip 뷰의 인덱스를 계산
+                val lastChildIndex = prBinding.reviewSetPassengersCg.childCount - 1
+
+                // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
+                // 현재 Chip을 바로 그 앞에 추가
+                if (lastChildIndex >= 0) {
+                    prBinding.reviewSetPassengersCg.addView(passengersChipList[i], lastChildIndex)
+                } else {
+                    // ChipGroup에 자식이 없는 경우, 그냥 추가
+                    prBinding.reviewSetPassengersCg.addView(passengersChipList[i])
+                }
+            }
         }
 
-        //여기에 인원 수 만큼 chip? 추가하기 Todo
+
         prBinding.passengersReviewEt.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 
@@ -120,6 +142,8 @@ class PassengersReviewActivity : AppCompatActivity() {
             }
         }
 
+
+
         prBinding.passengersDissatisfactionIv.setOnClickListener {
             mannerCount = "bad"
 
@@ -145,5 +169,12 @@ class PassengersReviewActivity : AppCompatActivity() {
             }
         }
 
+    }
+
+    private fun createNewChip(text: String): Chip {
+        val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, null, false) as Chip
+        chip.text = text
+        //chip.isCloseIconVisible = false
+        return chip
     }
 }

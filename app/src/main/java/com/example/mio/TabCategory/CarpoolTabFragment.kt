@@ -506,7 +506,7 @@ class CarpoolTabFragment : Fragment() {
 
                         for (i in response.body()!!.content.indices) {
                             //탑승자 null체크
-                            var part = 0
+                            var part : Int? = 0
                             var location = ""
                             var title = ""
                             var content = ""
@@ -517,8 +517,8 @@ class CarpoolTabFragment : Fragment() {
                             var verifyGoReturn = false
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants.isEmpty()
-                                    response.body()!!.content[i].participants.size
+                                    response.body()!!.content[i].participants?.isEmpty()
+                                    response.body()!!.content[i].participants?.size
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0
@@ -581,23 +581,25 @@ class CarpoolTabFragment : Fragment() {
                             }
 
                             //println(response!!.body()!!.content[i].user.studentId)
-                            carpoolAllData.add(PostData(
-                                response.body()!!.content[i].user.studentId,
-                                response.body()!!.content[i].postId,
-                                title,
-                                content,
-                                targetDate,
-                                targetTime,
-                                categoryName,
-                                location,
-                                //participantscount가 현재 참여하는 인원들
-                                part,
-                                //numberOfPassengers은 총 탑승자 수
-                                response.body()!!.content[i].numberOfPassengers,
-                                cost,
-                                verifyGoReturn,
-                                response.body()!!.content[i].user
-                            ))
+                            part?.let {
+                                PostData(
+                                    response.body()!!.content[i].user.studentId,
+                                    response.body()!!.content[i].postId,
+                                    title,
+                                    content,
+                                    targetDate,
+                                    targetTime,
+                                    categoryName,
+                                    location,
+                                    //participantscount가 현재 참여하는 인원들
+                                    it,
+                                    //numberOfPassengers은 총 탑승자 수
+                                    response.body()!!.content[i].numberOfPassengers,
+                                    cost,
+                                    verifyGoReturn,
+                                    response.body()!!.content[i].user
+                                )
+                            }?.let { carpoolAllData.add(it) }
                             noticeBoardAdapter!!.notifyDataSetChanged()
                         }
 
@@ -652,7 +654,7 @@ class CarpoolTabFragment : Fragment() {
 
                         for (i in response.body()!!.content.indices) {
                             //탑승자 null체크
-                            var part = 0
+                            var part : Int? = 0
                             var location = ""
                             var title = ""
                             var content = ""
@@ -663,8 +665,8 @@ class CarpoolTabFragment : Fragment() {
                             var verifyGoReturn = false
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants.isEmpty()
-                                    response.body()!!.content[i].participants.size
+                                    response.body()!!.content[i].participants?.isEmpty()
+                                    response.body()!!.content[i].participants?.size
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0
@@ -727,23 +729,26 @@ class CarpoolTabFragment : Fragment() {
                             }
 
                             //println(response!!.body()!!.content[i].user.studentId)
-                            myAreaItemData.add(PostData(
-                                response.body()!!.content[i].user.studentId,
-                                response.body()!!.content[i].postId,
-                                title,
-                                content,
-                                targetDate,
-                                targetTime,
-                                categoryName,
-                                location,
-                                //participantscount가 현재 참여하는 인원들
-                                part,
-                                //numberOfPassengers은 총 탑승자 수
-                                response.body()!!.content[i].numberOfPassengers,
-                                cost,
-                                verifyGoReturn,
-                                response.body()!!.content[i].user
-                            ))
+                            part?.let {
+                                PostData(
+                                    response.body()!!.content[i].user.studentId,
+                                    response.body()!!.content[i].postId,
+                                    title,
+                                    content,
+                                    targetDate,
+                                    targetTime,
+                                    categoryName,
+                                    location,
+                                    //participantscount가 현재 참여하는 인원들
+                                    it,
+                                    //numberOfPassengers은 총 탑승자 수
+                                    response.body()!!.content[i].numberOfPassengers,
+                                    cost,
+                                    verifyGoReturn,
+                                    response.body()!!.content[i].user
+                                )
+                            }?.let { myAreaItemData.add(it) }
+
                             noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
                         }
                         loadingDialog.dismiss()
@@ -827,23 +832,21 @@ class CarpoolTabFragment : Fragment() {
                         if (responseData) {
                             CoroutineScope(Dispatchers.IO).launch {
                                 response.body()?.forEach { content ->
-                                    content.participants.forEach { participants ->
-                                        if (participants != null) {
-                                            carpoolParticipantsData.add(Participants(
-                                                participants.id,
-                                                participants.email,
-                                                participants.studentId,
-                                                participants.profileImageUrl,
-                                                participants.name,
-                                                participants.accountNumber,
-                                                participants.gender,
-                                                participants.verifySmoker,
-                                                participants.roleType,
-                                                participants.status,
-                                                participants.mannerCount,
-                                                participants.grade,
-                                            ))
-                                        }
+                                    content.participants?.forEach { participants ->
+                                        carpoolParticipantsData.add(Participants(
+                                            participants.id,
+                                            participants.email,
+                                            participants.studentId,
+                                            participants.profileImageUrl,
+                                            participants.name,
+                                            participants.accountNumber,
+                                            participants.gender,
+                                            participants.verifySmoker,
+                                            participants.roleType,
+                                            participants.status,
+                                            participants.mannerCount,
+                                            participants.grade,
+                                        ))
                                     }
                                 }
                                 /*for (i in response.body()!!.indices) {

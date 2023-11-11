@@ -492,7 +492,7 @@ class TaxiTabFragment : Fragment() {
 
                         for (i in response.body()!!.content.indices) {
                             //탑승자 null체크
-                            var part = 0
+                            var part : Int? = 0
                             var location = ""
                             var title = ""
                             var content = ""
@@ -503,8 +503,8 @@ class TaxiTabFragment : Fragment() {
                             var verifyGoReturn = false
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants.isEmpty()
-                                    response.body()!!.content[i].participants.size
+                                    response.body()!!.content[i].participants?.isEmpty()
+                                    response.body()!!.content[i].participants?.size
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0
@@ -567,7 +567,7 @@ class TaxiTabFragment : Fragment() {
                             }
 
                             //println(response!!.body()!!.content[i].user.studentId)
-                            taxiAllData.add(PostData(
+                           /* taxiAllData.add(PostData(
                                 response.body()!!.content[i].user.studentId,
                                 response.body()!!.content[i].postId,
                                 title,
@@ -577,13 +577,34 @@ class TaxiTabFragment : Fragment() {
                                 categoryName,
                                 location,
                                 //participantscount가 현재 참여하는 인원들
-                                part,
+                                part?,
                                 //numberOfPassengers은 총 탑승자 수
                                 response.body()!!.content[i].numberOfPassengers,
                                 cost,
                                 verifyGoReturn,
                                 response.body()!!.content[i].user
-                            ))
+                            ))*/
+
+                            part?.let {
+                                PostData(
+                                    response.body()!!.content[i].user.studentId,
+                                    response.body()!!.content[i].postId,
+                                    title,
+                                    content,
+                                    targetDate,
+                                    targetTime,
+                                    categoryName,
+                                    location,
+                                    //participantscount가 현재 참여하는 인원들
+                                    it,
+                                    //numberOfPassengers은 총 탑승자 수
+                                    response.body()!!.content[i].numberOfPassengers,
+                                    cost,
+                                    verifyGoReturn,
+                                    response.body()!!.content[i].user
+                                )
+                            }?.let { taxiAllData.add(it) }
+
                             noticeBoardAdapter!!.notifyDataSetChanged()
                         }
 
@@ -638,7 +659,7 @@ class TaxiTabFragment : Fragment() {
 
                         for (i in response.body()!!.content.indices) {
                             //탑승자 null체크
-                            var part = 0
+                            var part : Int? = 0
                             var location = ""
                             var title = ""
                             var content = ""
@@ -649,8 +670,8 @@ class TaxiTabFragment : Fragment() {
                             var verifyGoReturn = false
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants.isEmpty()
-                                    response.body()!!.content[i].participants.size
+                                    response.body()!!.content[i].participants?.isEmpty()
+                                    response.body()!!.content[i].participants?.size
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0
@@ -713,23 +734,26 @@ class TaxiTabFragment : Fragment() {
                             }
 
                             //println(response!!.body()!!.content[i].user.studentId)
-                            myAreaItemData.add(PostData(
-                                response.body()!!.content[i].user.studentId,
-                                response.body()!!.content[i].postId,
-                                title,
-                                content,
-                                targetDate,
-                                targetTime,
-                                categoryName,
-                                location,
-                                //participantscount가 현재 참여하는 인원들
-                                part,
-                                //numberOfPassengers은 총 탑승자 수
-                                response.body()!!.content[i].numberOfPassengers,
-                                cost,
-                                verifyGoReturn,
-                                response.body()!!.content[i].user
-                            ))
+                            part?.let {
+                                PostData(
+                                    response.body()!!.content[i].user.studentId,
+                                    response.body()!!.content[i].postId,
+                                    title,
+                                    content,
+                                    targetDate,
+                                    targetTime,
+                                    categoryName,
+                                    location,
+                                    //participantscount가 현재 참여하는 인원들
+                                    it,
+                                    //numberOfPassengers은 총 탑승자 수
+                                    response.body()!!.content[i].numberOfPassengers,
+                                    cost,
+                                    verifyGoReturn,
+                                    response.body()!!.content[i].user
+                                )
+                            }?.let { myAreaItemData.add(it) }
+
                             noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
                         }
                         loadingDialog.dismiss()
@@ -785,6 +809,7 @@ class TaxiTabFragment : Fragment() {
             api.getMyParticipantsData(0, 20).enqueue(object : Callback<List<Content>> {
                 override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
                     if (response.isSuccessful) {
+                        val responseData = response.body().isNullOrEmpty()
                         println("예약 정보")
                         //데이터 청소
                         currentTaxiAllData.clear()
@@ -810,24 +835,44 @@ class TaxiTabFragment : Fragment() {
                             ))
                             currentNoticeBoardAdapter!!.notifyDataSetChanged()
                         }
-                        CoroutineScope(Dispatchers.IO).launch {
-                            for (i in response.body()!!.indices) {
-                                for (j in response.body()!![i].participants.indices) {
-                                    taxiParticipantsData.add(Participants(
-                                        response.body()!![i].participants[j].id,
-                                        response.body()!![i].participants[j].email,
-                                        response.body()!![i].participants[j].studentId,
-                                        response.body()!![i].participants[j].profileImageUrl,
-                                        response.body()!![i].participants[j].name,
-                                        response.body()!![i].participants[j].accountNumber,
-                                        response.body()!![i].participants[j].gender,
-                                        response.body()!![i].participants[j].verifySmoker,
-                                        response.body()!![i].participants[j].roleType,
-                                        response.body()!![i].participants[j].status,
-                                        response.body()!![i].participants[j].mannerCount,
-                                        response.body()!![i].participants[j].grade,
-                                    ))
+                        if (responseData) {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                response.body()?.forEach { content ->
+                                    content.participants?.forEach { participants ->
+                                        taxiParticipantsData.add(Participants(
+                                            participants.id,
+                                            participants.email,
+                                            participants.studentId,
+                                            participants.profileImageUrl,
+                                            participants.name,
+                                            participants.accountNumber,
+                                            participants.gender,
+                                            participants.verifySmoker,
+                                            participants.roleType,
+                                            participants.status,
+                                            participants.mannerCount,
+                                            participants.grade,
+                                        ))
+                                    }
                                 }
+                                /*for (i in response.body()!!.indices) {
+                                    for (j in response.body()!![i].participants.indices) {
+                                        carpoolParticipantsData.add(Participants(
+                                            response.body()!![i].participants[j].id,
+                                            response.body()!![i].participants[j].email,
+                                            response.body()!![i].participants[j].studentId,
+                                            response.body()!![i].participants[j].profileImageUrl,
+                                            response.body()!![i].participants[j].name,
+                                            response.body()!![i].participants[j].accountNumber,
+                                            response.body()!![i].participants[j].gender,
+                                            response.body()!![i].participants[j].verifySmoker,
+                                            response.body()!![i].participants[j].roleType,
+                                            response.body()!![i].participants[j].status,
+                                            response.body()!![i].participants[j].mannerCount,
+                                            response.body()!![i].participants[j].grade,
+                                        ))
+                                    }
+                                }*/
                             }
                         }
 

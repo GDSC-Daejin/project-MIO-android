@@ -1,10 +1,7 @@
 package com.example.mio.NoticeBoard
 
-import android.animation.ObjectAnimator
 import android.app.*
 import android.content.Context
-import android.content.Context.NOTIFICATION_SERVICE
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -13,24 +10,19 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.*
 import android.text.Editable
-import android.text.Spannable
-import android.text.SpannableString
 import android.text.TextWatcher
-import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -46,6 +38,7 @@ import com.example.mio.TabAccount.ProfileActivity
 import com.example.mio.TabCategory.MoreCarpoolTabActivity
 import com.example.mio.TabCategory.MoreTaxiTabActivity
 import com.example.mio.databinding.ActivityNoticeBoardReadBinding
+import com.google.android.material.chip.Chip
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -145,7 +138,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
     //같은 시간대에 예약한 것이 있는지 체크할 때 가져온 응답
     private var checkResponseBody = ""
-
+    //칩 생성
+    private var chipList = kotlin.collections.ArrayList<Chip>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nbrBinding = ActivityNoticeBoardReadBinding.inflate(layoutInflater)
@@ -166,6 +160,38 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             writerEmail = temp!!.user.email
             tempProfile = intent.getSerializableExtra("uri") as String
             isCategory = temp!!.postCategory == "carpool"
+
+            if (temp?.user?.gender != null && temp?.user?.verifySmoker != null && temp?.postVerifyGoReturn != null) {
+                chipList.add(createNewChip(text = if (temp?.postVerifyGoReturn == true) {
+                    "등교"
+                } else {
+                    "하교"
+                }))
+                chipList.add(createNewChip(text = if (temp?.user?.gender == true) {
+                    "여성"
+                } else {
+                    "남성"
+                }))
+                chipList.add(createNewChip(text = if (temp?.user?.verifySmoker == true) {
+                    "흡연 O"
+                } else {
+                    "흡연 X"
+                }))
+
+                for (i in chipList.indices) {
+                    // 마지막 Chip 뷰의 인덱스를 계산
+                    val lastChildIndex = nbrBinding.readSetFilterCg.childCount - 1
+
+                    // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
+                    // 현재 Chip을 바로 그 앞에 추가
+                    if (lastChildIndex >= 0) {
+                        nbrBinding.readSetFilterCg.addView(chipList[i], lastChildIndex)
+                    } else {
+                        // ChipGroup에 자식이 없는 경우, 그냥 추가
+                        nbrBinding.readSetFilterCg.addView(chipList[i])
+                    }
+                }
+            }
 
             val imageUrl = Uri.parse(tempProfile)
             CoroutineScope(Dispatchers.Main).launch {
@@ -1632,11 +1658,18 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             })
         }
     }
+
+    private fun createNewChip(text: String): Chip {
+        val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, null, false) as Chip
+        chip.text = text
+        //chip.isCloseIconVisible = false
+        return chip
+    }
     /*private fun btnViewChanger() {
         nbrBinding.favoriteBtn.setOnClickListener {
             isFavoriteBtn = !isFavoriteBtn
 
-            //여기에 누가 버튼을 눌렀는지 데이터 저장하는 함수도 필요함 Todo
+            //여기에 누가 버튼을 눌렀는지 데이터 저장하는 함수도 필요함
 
             if (isFavoriteBtn) {
                 CoroutineScope(Dispatchers.Main).launch {

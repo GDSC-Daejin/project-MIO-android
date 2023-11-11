@@ -171,14 +171,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/passengers_review_ll">
 
-        <com.google.android.material.chip.Chip
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/review_set_passengers_cg"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <!--<com.google.android.material.chip.Chip
+                style="@style/MioChipStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/mio_blue_4"
+                android:text="등교"
+                />-->
+        </com.google.android.material.chip.ChipGroup>
+        <!--<com.google.android.material.chip.Chip
             android:id="@+id/review_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/MioChipStyle"
             android:text="전체"
             android:textAlignment="center"
-            />
+            />-->
 
     </LinearLayout>
 

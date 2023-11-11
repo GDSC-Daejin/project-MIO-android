@@ -55,7 +55,7 @@ data class Content(
     @SerializedName("verifyFinish")
     var verifyFinish : Boolean,
     @SerializedName("participants")
-    var participants : ArrayList<Participants>,
+    var participants : ArrayList<Participants>?,
     @SerializedName("latitude")
     var latitude : Double,
     @SerializedName("longitude")

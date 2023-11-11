@@ -129,11 +129,10 @@
     </style>
 
     <style name="MioChipStyle" parent="Widget.MaterialComponents.Chip.Choice">
-        <item name="chipStrokeColor">@color/colorAccent</item>
+        <item name="chipStrokeColor">@color/mio_blue_4</item>
         <item name="chipStrokeWidth">1dp</item>
-        <item name="chipBackgroundColor">@color/cardview_dark_background</item>
-        <item name="android:textColor">@color/black</item>
-
+        <item name="chipBackgroundColor">@color/mio_gray_1</item>
+        <item name="android:textColor">@color/mio_blue_4</item>
         <item name="textStartPadding">8dp</item>
         <item name="textEndPadding">8dp</item>
         <item name="chipIconVisible">false</item>
@@ -145,12 +144,13 @@
         <item name="android:theme">@style/ChipOverlayTheme</item>
     </style>
 
-    <style name="ChipOverlayTheme" parent="Theme.AppCompat.DayNight.DarkActionBar">
+    <style name="ChipOverlayTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Any other customization for this theme overlay -->
     </style>
     <!--<style name="SwitchTheme">
         <item name="android:thumbTint">@color/mio_gray_11</item>
         <item name="android:trackTint">@color/mio_blue_4</item>
     </style>-->
+
 
 </resources>

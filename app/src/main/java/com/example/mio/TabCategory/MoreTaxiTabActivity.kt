@@ -83,7 +83,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                     override fun sendValue(value: String) {
                         Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                         if (value.split(" ")[5].toBoolean()) {
-                            println(value.split(" ").map { it.toString() })
+                            println(value.split(" ").map { it })
                             myViewModel.postCheckFilter(getBottomData)
                             mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_gray_8))
                             mttBinding.moreFilterBtn.setBackgroundResource(R.drawable.filter_icon)
@@ -189,7 +189,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                     moreTaxiAllData.clear()
                                     for (i in response.body()!!.content.indices) {
                                         //탑승자 null체크
-                                        var part = 0
+                                        var part :Int?= 0
                                         var location = ""
                                         var title = ""
                                         var content = ""
@@ -200,8 +200,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                         var verifyGoReturn = false
                                         if (response.isSuccessful) {
                                             part = try {
-                                                response.body()!!.content[i].participants.isEmpty()
-                                                response.body()!!.content[i].participants.size
+                                                response.body()!!.content[i].participants?.isEmpty()
+                                                response.body()!!.content[i].participants?.size
                                             } catch (e : java.lang.NullPointerException) {
                                                 Log.d("null", e.toString())
                                                 0
@@ -264,23 +264,26 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                         }
 
                                         //println(response!!.body()!!.content[i].user.studentId)
-                                        moreTaxiAllData.add(PostData(
-                                            response.body()!!.content[i].user.studentId,
-                                            response.body()!!.content[i].postId,
-                                            title,
-                                            content,
-                                            targetDate,
-                                            targetTime,
-                                            categoryName,
-                                            location,
-                                            //participantscount가 현재 참여하는 인원들
-                                            part,
-                                            //numberOfPassengers은 총 탑승자 수
-                                            response.body()!!.content[i].numberOfPassengers,
-                                            cost,
-                                            verifyGoReturn,
-                                            response.body()!!.content[i].user
-                                        ))
+                                        part?.let {
+                                            PostData(
+                                                response.body()!!.content[i].user.studentId,
+                                                response.body()!!.content[i].postId,
+                                                title,
+                                                content,
+                                                targetDate,
+                                                targetTime,
+                                                categoryName,
+                                                location,
+                                                //participantscount가 현재 참여하는 인원들
+                                                it,
+                                                //numberOfPassengers은 총 탑승자 수
+                                                response.body()!!.content[i].numberOfPassengers,
+                                                cost,
+                                                verifyGoReturn,
+                                                response.body()!!.content[i].user
+                                            )
+                                        }?.let { moreTaxiAllData.add(it) }
+
                                         mtAdapter!!.notifyDataSetChanged()
                                     }
                                 } else {
@@ -318,7 +321,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                     moreTaxiAllData.clear()
                                     for (i in response.body()!!.content.indices) {
                                         //탑승자 null체크
-                                        var part = 0
+                                        var part :Int?= 0
                                         var location = ""
                                         var title = ""
                                         var content = ""
@@ -329,8 +332,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                         var verifyGoReturn = false
                                         if (response.isSuccessful) {
                                             part = try {
-                                                response.body()!!.content[i].participants.isEmpty()
-                                                response.body()!!.content[i].participants.size
+                                                response.body()!!.content[i].participants?.isEmpty()
+                                                response.body()!!.content[i].participants?.size
                                             } catch (e : java.lang.NullPointerException) {
                                                 Log.d("null", e.toString())
                                                 0
@@ -393,23 +396,26 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                         }
 
                                         //println(response!!.body()!!.content[i].user.studentId)
-                                        moreTaxiAllData.add(PostData(
-                                            response.body()!!.content[i].user.studentId,
-                                            response.body()!!.content[i].postId,
-                                            title,
-                                            content,
-                                            targetDate,
-                                            targetTime,
-                                            categoryName,
-                                            location,
-                                            //participantscount가 현재 참여하는 인원들
-                                            part,
-                                            //numberOfPassengers은 총 탑승자 수
-                                            response.body()!!.content[i].numberOfPassengers,
-                                            cost,
-                                            verifyGoReturn,
-                                            response.body()!!.content[i].user
-                                        ))
+                                        part?.let {
+                                            PostData(
+                                                response.body()!!.content[i].user.studentId,
+                                                response.body()!!.content[i].postId,
+                                                title,
+                                                content,
+                                                targetDate,
+                                                targetTime,
+                                                categoryName,
+                                                location,
+                                                //participantscount가 현재 참여하는 인원들
+                                                it,
+                                                //numberOfPassengers은 총 탑승자 수
+                                                response.body()!!.content[i].numberOfPassengers,
+                                                cost,
+                                                verifyGoReturn,
+                                                response.body()!!.content[i].user
+                                            )
+                                        }?.let { moreTaxiAllData.add(it) }
+
                                         mtAdapter!!.notifyDataSetChanged()
                                     }
                                 } else {
@@ -447,7 +453,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                     moreTaxiAllData.clear()
                                     for (i in response.body()!!.content.indices) {
                                         //탑승자 null체크
-                                        var part = 0
+                                        var part :Int?= 0
                                         var location = ""
                                         var title = ""
                                         var content = ""
@@ -458,8 +464,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                         var verifyGoReturn = false
                                         if (response.isSuccessful) {
                                             part = try {
-                                                response.body()!!.content[i].participants.isEmpty()
-                                                response.body()!!.content[i].participants.size
+                                                response.body()!!.content[i].participants?.isEmpty()
+                                                response.body()!!.content[i].participants?.size
                                             } catch (e : java.lang.NullPointerException) {
                                                 Log.d("null", e.toString())
                                                 0
@@ -522,23 +528,25 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                         }
 
                                         //println(response!!.body()!!.content[i].user.studentId)
-                                        moreTaxiAllData.add(PostData(
-                                            response.body()!!.content[i].user.studentId,
-                                            response.body()!!.content[i].postId,
-                                            title,
-                                            content,
-                                            targetDate,
-                                            targetTime,
-                                            categoryName,
-                                            location,
-                                            //participantscount가 현재 참여하는 인원들
-                                            part,
-                                            //numberOfPassengers은 총 탑승자 수
-                                            response.body()!!.content[i].numberOfPassengers,
-                                            cost,
-                                            verifyGoReturn,
-                                            response.body()!!.content[i].user
-                                        ))
+                                        part?.let {
+                                            PostData(
+                                                response.body()!!.content[i].user.studentId,
+                                                response.body()!!.content[i].postId,
+                                                title,
+                                                content,
+                                                targetDate,
+                                                targetTime,
+                                                categoryName,
+                                                location,
+                                                //participantscount가 현재 참여하는 인원들
+                                                it,
+                                                //numberOfPassengers은 총 탑승자 수
+                                                response.body()!!.content[i].numberOfPassengers,
+                                                cost,
+                                                verifyGoReturn,
+                                                response.body()!!.content[i].user
+                                            )
+                                        }?.let { moreTaxiAllData.add(it) }
                                         println(moreTaxiAllData)
                                         mtAdapter!!.notifyDataSetChanged()
                                     }
@@ -556,7 +564,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             }
         }
 
-        myViewModel.checkFilter.observe(this, Observer { it ->
+        myViewModel.checkFilter.observe(this) { it ->
             val temp = it.split(" ")
             if (temp.size >= 4) {
                 when (temp[5]) {
@@ -584,7 +592,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             }*/
                             setBackgroundResource(R.color.white)
                             setBackgroundResource(R.drawable.round_filter_btn)
-                            setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
+                            setTextColor(
+                                ContextCompat.getColor(
+                                    this@MoreTaxiTabActivity,
+                                    R.color.mio_blue_4
+                                )
+                            )
                             text = "흡연O"
 
                             width = resources.getDimensionPixelSize(R.dimen.button_height)
@@ -609,7 +622,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             }*/
                             setBackgroundResource(R.color.white)
                             setBackgroundResource(R.drawable.round_filter_btn)
-                            setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
+                            setTextColor(
+                                ContextCompat.getColor(
+                                    this@MoreTaxiTabActivity,
+                                    R.color.mio_blue_4
+                                )
+                            )
                             //backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MoreTaxiTabActivity, R.color.white))
                             text = "흡연x"
                         }
@@ -636,7 +654,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             }*/
                             setBackgroundResource(R.color.white)
                             setBackgroundResource(R.drawable.round_filter_btn)
-                            setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
+                            setTextColor(
+                                ContextCompat.getColor(
+                                    this@MoreTaxiTabActivity,
+                                    R.color.mio_blue_4
+                                )
+                            )
                             //backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MoreTaxiTabActivity, R.color.white))
                             text = "남성"
                         }
@@ -657,7 +680,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             }*/
                             setBackgroundResource(R.color.white)
                             setBackgroundResource(R.drawable.round_filter_btn)
-                            setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
+                            setTextColor(
+                                ContextCompat.getColor(
+                                    this@MoreTaxiTabActivity,
+                                    R.color.mio_blue_4
+                                )
+                            )
                             //backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MoreTaxiTabActivity, R.color.white))
                             text = "여성"
                         }
@@ -681,7 +709,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             }*/
                             setBackgroundResource(R.color.white)
                             setBackgroundResource(R.drawable.round_filter_btn)
-                            setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
+                            setTextColor(
+                                ContextCompat.getColor(
+                                    this@MoreTaxiTabActivity,
+                                    R.color.mio_blue_4
+                                )
+                            )
                             //backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MoreTaxiTabActivity, R.color.white))
                             text = "등교"
                         }
@@ -703,7 +736,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             }*/
                             setBackgroundResource(R.color.white)
                             setBackgroundResource(R.drawable.round_filter_btn)
-                            setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
+                            setTextColor(
+                                ContextCompat.getColor(
+                                    this@MoreTaxiTabActivity,
+                                    R.color.mio_blue_4
+                                )
+                            )
                             //backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MoreTaxiTabActivity, R.color.white))
                             text = "하교"
                         }
@@ -712,10 +750,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 }
 
 
-
-
             }
-        })
+        }
 
         mttBinding.backArrow.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
@@ -788,7 +824,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         val call = RetrofitServerConnect.service
 
         val handler = Handler(Looper.getMainLooper())
-        handler.postDelayed(java.lang.Runnable {
+        handler.postDelayed({
             //null추가한 거 삭제
             moreTaxiAllData.removeAt(moreTaxiAllData.size - 1)
 
@@ -816,7 +852,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
 
                                 for (i in response.body()!!.content.indices) {
                                     //탑승자 null체크
-                                    var part = 0
+                                    var part:Int? = 0
                                     var location = ""
                                     var title = ""
                                     var content = ""
@@ -827,8 +863,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                     var verifyGoReturn = false
                                     if (response.isSuccessful) {
                                         part = try {
-                                            response.body()!!.content[i].participants.isEmpty()
-                                            response.body()!!.content[i].participants.size
+                                            response.body()!!.content[i].participants?.isEmpty()
+                                            response.body()!!.content[i].participants?.size
                                         } catch (e : java.lang.NullPointerException) {
                                             Log.d("null", e.toString())
                                             0
@@ -890,23 +926,25 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                     }
 
                                     //println(response!!.body()!!.content[i].user.studentId)
-                                    moreTaxiAllData.add(PostData(
-                                        response.body()!!.content[i].user.studentId,
-                                        response.body()!!.content[i].postId,
-                                        title,
-                                        content,
-                                        targetDate,
-                                        targetTime,
-                                        categoryName,
-                                        location,
-                                        //participantscount가 현재 참여하는 인원들
-                                        part,
-                                        //numberOfPassengers은 총 탑승자 수
-                                        response.body()!!.content[i].numberOfPassengers,
-                                        cost,
-                                        verifyGoReturn,
-                                        response.body()!!.content[i].user
-                                    ))
+                                    part?.let {
+                                        PostData(
+                                            response.body()!!.content[i].user.studentId,
+                                            response.body()!!.content[i].postId,
+                                            title,
+                                            content,
+                                            targetDate,
+                                            targetTime,
+                                            categoryName,
+                                            location,
+                                            //participantscount가 현재 참여하는 인원들
+                                            it,
+                                            //numberOfPassengers은 총 탑승자 수
+                                            response.body()!!.content[i].numberOfPassengers,
+                                            cost,
+                                            verifyGoReturn,
+                                            response.body()!!.content[i].user
+                                        )
+                                    }?.let { moreTaxiAllData.add(it) }
 
                                     mtAdapter!!.notifyDataSetChanged()
                                 }
@@ -920,8 +958,6 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                         }
                     })
                 }
-            } else {
-
             }
 
             println(moreTaxiAllData)
@@ -931,7 +967,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {
-            AppCompatActivity.RESULT_OK -> {
+            RESULT_OK -> {
                 val post = it.data?.getSerializableExtra("postData") as PostData
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add

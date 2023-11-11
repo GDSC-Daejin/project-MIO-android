@@ -48,11 +48,11 @@ class NoticeBoardActivity : AppCompatActivity() {
         })
 
         //여기서 edit으로 이동동
-       /*nbBinding.addBtn.setOnClickListener {
-            data.add(PostData("2020202", 0, "test", "test"))
-            noticeBoardAdapter!!.notifyItemInserted(position)
-            position += 1
-        }*/
+        /*nbBinding.addBtn.setOnClickListener {
+             data.add(PostData("2020202", 0, "test", "test"))
+             noticeBoardAdapter!!.notifyItemInserted(position)
+             position += 1
+         }*/
     }
 
 
@@ -97,63 +97,63 @@ class NoticeBoardActivity : AppCompatActivity() {
                     }
 
                 }
-            //getSerializableExtra = intent의 값을 보내고 받을때사용
-            //타입 변경을 해주지 않으면 Serializable객체로 만들어지니 as로 캐스팅해주자
-            /*val pill = it.data?.getSerializableExtra("pill") as PillData
-            val selectCategory = it.data?.getSerializableExtra("cg") as String*/
+                //getSerializableExtra = intent의 값을 보내고 받을때사용
+                //타입 변경을 해주지 않으면 Serializable객체로 만들어지니 as로 캐스팅해주자
+                /*val pill = it.data?.getSerializableExtra("pill") as PillData
+                val selectCategory = it.data?.getSerializableExtra("cg") as String*/
 
-            //선택한 카테고리 및 데이터 추가
-
-
-            /*if (selectCategory.isNotEmpty()) {
-                selectCategoryData[selectCategory] = categoryArr
-            }*/
+                //선택한 카테고리 및 데이터 추가
 
 
-            //api 33이후 아래로 변경됨
-            /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                getSerializable(key, T::class.java)
-            } else {
-                getSerializable(key) as? T
-            }*/
-            /*when(it.data?.getIntExtra("flag", -1)) {
-                //add
-                0 -> {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        data.add(pill)
-                        categoryArr.add(pill)
-                        //add면 그냥 추가
-                        selectCategoryData[selectCategory] = categoryArr
-                        //전
-                        //println( categoryArr[dataPosition])
+                /*if (selectCategory.isNotEmpty()) {
+                    selectCategoryData[selectCategory] = categoryArr
+                }*/
+
+
+                //api 33이후 아래로 변경됨
+                /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    getSerializable(key, T::class.java)
+                } else {
+                    getSerializable(key) as? T
+                }*/
+                /*when(it.data?.getIntExtra("flag", -1)) {
+                    //add
+                    0 -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            data.add(pill)
+                            categoryArr.add(pill)
+                            //add면 그냥 추가
+                            selectCategoryData[selectCategory] = categoryArr
+                            //전
+                            //println( categoryArr[dataPosition])
+                        }
+                        println("전 ${selectCategoryData[selectCategory]}")
+                        //livedata
+                        sharedViewModel!!.setCategoryLiveData("add", selectCategoryData)
+
+
+                        homeAdapter!!.notifyDataSetChanged()
+                        Toast.makeText(activity, "추가되었습니다.", Toast.LENGTH_SHORT).show()
                     }
-                    println("전 ${selectCategoryData[selectCategory]}")
-                    //livedata
-                    sharedViewModel!!.setCategoryLiveData("add", selectCategoryData)
-
-
-                    homeAdapter!!.notifyDataSetChanged()
-                    Toast.makeText(activity, "추가되었습니다.", Toast.LENGTH_SHORT).show()
-                }
-                //edit
-                1 -> {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        data[dataPosition] = pill
-                        categoryArr[dataPosition] = pill
-                        selectCategoryData.clear()
-                        selectCategoryData[selectCategory] = categoryArr
-                        //후
-                        //println(categoryArr[dataPosition])
+                    //edit
+                    1 -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            data[dataPosition] = pill
+                            categoryArr[dataPosition] = pill
+                            selectCategoryData.clear()
+                            selectCategoryData[selectCategory] = categoryArr
+                            //후
+                            //println(categoryArr[dataPosition])
+                        }
+                        println("선택 $selectCategory")
+                        //livedata
+                        sharedViewModel!!.categoryLiveData.value = selectCategoryData
+                        println(testselectCategoryData)
+                        homeAdapter!!.notifyDataSetChanged()
+                        //Toast.makeText(activity, "수정되었습니다.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(activity, "$testselectCategoryData", Toast.LENGTH_SHORT).show()
                     }
-                    println("선택 $selectCategory")
-                    //livedata
-                    sharedViewModel!!.categoryLiveData.value = selectCategoryData
-                    println(testselectCategoryData)
-                    homeAdapter!!.notifyDataSetChanged()
-                    //Toast.makeText(activity, "수정되었습니다.", Toast.LENGTH_SHORT).show()
-                    Toast.makeText(activity, "$testselectCategoryData", Toast.LENGTH_SHORT).show()
-                }
-            }*/
+                }*/
             }
         }
     }

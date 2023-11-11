@@ -52,11 +52,11 @@
             android:name=".NoticeBoard.NoticeBoardActivity"
             android:exported="false" />
         <activity
-            android:name=".SearchTap.SearchResultActivity"
+            android:name=".TapSearch.SearchResultActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustNothing"/>
         <activity
-            android:name=".SearchTap.NearbypostActivity"
+            android:name=".TapSearch.NearbypostActivity"
             android:exported="false" />
 
         <activity

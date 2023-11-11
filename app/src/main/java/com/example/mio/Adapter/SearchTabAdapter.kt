@@ -2,10 +2,8 @@ package com.example.mio.Adapter
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.example.mio.SearchTap.LocationSearchFragment
-import com.example.mio.SearchTap.PostSearchFragment
-import com.example.mio.TabCategory.CarpoolTabFragment
-import com.example.mio.TabCategory.TaxiTabFragment
+import com.example.mio.TapSearch.LocationSearchFragment
+import com.example.mio.TapSearch.PostSearchFragment
 
 //여기 페이지 변경하기
 class SearchTabAdapter(fragmentActivity: FragmentActivity): FragmentStateAdapter(fragmentActivity) {

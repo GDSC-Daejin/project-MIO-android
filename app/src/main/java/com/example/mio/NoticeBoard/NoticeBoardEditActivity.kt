@@ -128,11 +128,11 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     //모든 값 체크
     private var isAllCheck : RequirementData = RequirementData(
         FirstVF(
-        isTitle = false,
-        isCalendar = false,
-        isTime = false,
-        isParticipants = false,
-        isFirst = false
+            isTitle = false,
+            isCalendar = false,
+            isTime = false,
+            isParticipants = false,
+            isFirst = false
         ), SecondVF(
             isPlaceName = false,
             isPlaceRode = false,
@@ -190,44 +190,44 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
         //여기가 사용할것들
         ////////////////////////////
-       /* mBinding.datePickerBtn.setOnClickListener {
-            val cal = Calendar.getInstance()
-            val data = DatePickerDialog.OnDateSetListener { view, year, month, day ->
-               selectTargetDate = "${year}년/${month+1}월/${day}일"
-            }
-            DatePickerDialog(this, data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
-        }
+        /* mBinding.datePickerBtn.setOnClickListener {
+             val cal = Calendar.getInstance()
+             val data = DatePickerDialog.OnDateSetListener { view, year, month, day ->
+                selectTargetDate = "${year}년/${month+1}월/${day}일"
+             }
+             DatePickerDialog(this, data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+         }
 
-        mBinding.categorySelectBtn.setOnClickListener {
-            categorySelect = "taxi"
-        }*/
+         mBinding.categorySelectBtn.setOnClickListener {
+             categorySelect = "taxi"
+         }*/
         //여기가 사용할것들
         ///////////////////////////////////
-         //카테고리 생각하여 데이터 변경하기 Todo
-         /*mBinding.editAdd.setOnClickListener {
-            val contentPost = mBinding.editPostContent.text.toString()
-            val contentTitle = mBinding.editPostTitle.text.toString()
+        //카테고리 생각하여 데이터 변경하기 Todo
+        /*mBinding.editAdd.setOnClickListener {
+           val contentPost = mBinding.editPostContent.text.toString()
+           val contentTitle = mBinding.editPostTitle.text.toString()
 
-            if (type.equals("ADD")) {
-                if (contentPost.isNotEmpty() && contentTitle.isNotEmpty() && selectTargetDate.isNotEmpty()) {
-                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                    //현재 로그인된 유저 email 가져오기
-                    userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
-                    //데이터 세팅 후 임시저장
-                    temp = PostData(userEmail, pos, contentTitle, contentPost, selectTargetDate, categorySelect, "location", "targetTime" ,1, 4)
-                    selectCalendarDataNoticeBoard[selectTargetDate] = arrayListOf()
-                    selectCalendarDataNoticeBoard[selectTargetDate]!!.add(temp!!)
-                    //pos는 현재 저장되지 않지만 나중에 짜피 백엔드에 데이터 넣을 거니 괜찮을듯
-                    //나중에 api연결할때 여기 바꾸기
-                    sharedViewModel!!.setCalendarLiveData("add", selectCalendarDataNoticeBoard)
+           if (type.equals("ADD")) {
+               if (contentPost.isNotEmpty() && contentTitle.isNotEmpty() && selectTargetDate.isNotEmpty()) {
+                   val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                   //현재 로그인된 유저 email 가져오기
+                   userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
+                   //데이터 세팅 후 임시저장
+                   temp = PostData(userEmail, pos, contentTitle, contentPost, selectTargetDate, categorySelect, "location", "targetTime" ,1, 4)
+                   selectCalendarDataNoticeBoard[selectTargetDate] = arrayListOf()
+                   selectCalendarDataNoticeBoard[selectTargetDate]!!.add(temp!!)
+                   //pos는 현재 저장되지 않지만 나중에 짜피 백엔드에 데이터 넣을 거니 괜찮을듯
+                   //나중에 api연결할때 여기 바꾸기
+                   sharedViewModel!!.setCalendarLiveData("add", selectCalendarDataNoticeBoard)
 
-                    val intent = Intent().apply {
-                        putExtra("postData", temp)
-                        putExtra("flag", 0)
-                    }
-                    setResult(RESULT_OK, intent)
-                    finish()
-                   *//*val intent = Intent(this, TaxiTabFragment::class.java).apply {
+                   val intent = Intent().apply {
+                       putExtra("postData", temp)
+                       putExtra("flag", 0)
+                   }
+                   setResult(RESULT_OK, intent)
+                   finish()
+                  *//*val intent = Intent(this, TaxiTabFragment::class.java).apply {
                         putExtra("postData", temp)
                         putExtra("flag", 0)
                     }*//*
@@ -285,7 +285,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 && (it.isThirdVF.isSmoke || it.isThirdVF.isNSmoke)
                 && (it.isThirdVF.isMGender || it.isThirdVF.isWGender)
                 && it.isThirdVF.isAmount ) {
-                    it.isThirdVF.isThird = true
+                it.isThirdVF.isThird = true
             }
 
             if (it.isFirstVF.isFirst) {
@@ -553,7 +553,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
                 isAllCheck.isThirdVF.isAmount = editable.isNotEmpty()
                 mBinding.editDetailContent.clearFocus()
-               // mBinding.editDetailContent.movementMethod = null
+                // mBinding.editDetailContent.movementMethod = null
                 myViewModel.postCheckValue(isAllCheck)
             }
         })
@@ -699,7 +699,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             val SERVER_URL = BuildConfig.server_URL
             val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
                 .addConverterFactory(GsonConverterFactory.create())
-                //.client(clientBuilder)
+            //.client(clientBuilder)
             //Authorization jwt토큰 로그인
             val interceptor = Interceptor { chain ->
 

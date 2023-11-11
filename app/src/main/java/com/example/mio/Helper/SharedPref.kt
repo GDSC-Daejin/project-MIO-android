@@ -59,7 +59,7 @@ class SharedPref(context: Context) {
     fun getSearchData() : String {
         return mySharedPref.getString("search", "").toString()
     }
-////////////////////////
+    ////////////////////////
     fun setNightModeState(state: Boolean?) {
         val editor = mySharedPref.edit()
         editor.putBoolean("NightMode", state!!)

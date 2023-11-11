@@ -60,9 +60,9 @@ class LoginActivity : AppCompatActivity() {
         .build()
     val service = retrofit.create(MioInterface::class.java)
     val interceptor = HttpLoggingInterceptor()*/
-   /* interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-    val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
-*/
+    /* interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+     val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
+ */
 
     override fun onCreate(savedInstanceState: Bundle?) {
         //상태바 지우기(이 activity만)

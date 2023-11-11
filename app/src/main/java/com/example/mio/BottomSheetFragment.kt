@@ -81,26 +81,26 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.filterTime.setOnClickListener {
             showHourPicker()
-        /*val time = TimePickerDialog.OnTimeSetListener { _, i, i2 ->
-                selectTime = "${i} 시 ${i2} 분?"
+            /*val time = TimePickerDialog.OnTimeSetListener { _, i, i2 ->
+                    selectTime = "${i} 시 ${i2} 분?"
 
-                bsBinding.selectTime.text = selectTime
-                bsBinding.selectDateTv.setTextColor(Color.BLACK)
-            }
+                    bsBinding.selectTime.text = selectTime
+                    bsBinding.selectDateTv.setTextColor(Color.BLACK)
+                }
 
-            val timePickerDialog = TimePickerDialog(
-                activity,
-                android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
-                time,
-                hour,
-                minute,
-                true
-            )
+                val timePickerDialog = TimePickerDialog(
+                    activity,
+                    android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
+                    time,
+                    hour,
+                    minute,
+                    true
+                )
 
-            TimePickerDialog(requireActivity(), time, 15, 24, false)
-            timePickerDialog.setTitle("Choose hour:")
-            timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-            timePickerDialog.show()*/
+                TimePickerDialog(requireActivity(), time, 15, 24, false)
+                timePickerDialog.setTitle("Choose hour:")
+                timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+                timePickerDialog.show()*/
         }
 
         bsBinding.filterChecklistIv.setOnClickListener {

@@ -1,4 +1,4 @@
-package com.example.mio.SearchTap
+package com.example.mio.TapSearch
 
 import android.os.Bundle
 import android.util.Log
@@ -78,7 +78,7 @@ class PostSearchFragment : Fragment() {
     private fun setSearchData() {
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getServerPostData().enqueue(object : Callback<PostReadAllResponse> {
+            call.getServerPostData("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
                         //println(response.body()!!.content)
@@ -106,8 +106,8 @@ class PostSearchFragment : Fragment() {
                             var cost = 0
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants.isEmpty()
-                                    response.body()!!.content[i].participants.size
+                                    response.body()!!.content[i].participants!!.isEmpty()
+                                    response.body()!!.content[i].participants!!.size
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0
@@ -177,7 +177,9 @@ class PostSearchFragment : Fragment() {
                                 part,
                                 //numberOfPassengers은 총 탑승자 수
                                 response.body()!!.content[i].numberOfPassengers,
-                                cost
+                                cost,
+                                response.body()!!.content[i].verifyGoReturn,
+                                response.body()!!.content[i].user
                             ))
                             sAdapter!!.notifyDataSetChanged()
                         }

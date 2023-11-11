@@ -104,51 +104,51 @@ class MainActivity : AppCompatActivity() {
 
     private fun initNavigationBar() {
         mBinding.bottomNavigationView.
-            setOnItemSelectedListener {item ->
-                when(item.itemId) {
-                    R.id.navigation_home -> {
-                        oldFragment = HomeFragment()
-                        oldTAG = TAG_HOME
-                        //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(TAG_HOME, HomeFragment())
-
-                    }
-
-                    R.id.navigation_search -> {
-                        oldFragment = SearchFragment()
-                        oldTAG = TAG_SEARCH
-                        //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(TAG_SEARCH, SearchFragment())
-
-                    }
-
-                    R.id.navigation_writing -> {
-                        val intent = Intent(this, NoticeBoardEditActivity::class.java).apply {
-                            putExtra("type","ADD")
-                        }
-                        requestActivity.launch(intent)
-                    }
-
-
-                    R.id.navigation_account -> {
-                        oldFragment = AccountFragment()
-                        oldTAG = TAG_ACCOUNT
-                        //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(TAG_ACCOUNT, AccountFragment())
-
-                    }
-
-
-                    else -> {
-                        oldFragment = HomeFragment()
-                        oldTAG = TAG_HOME
-                        setFragment(TAG_HOME, HomeFragment())
-
-                    }
+        setOnItemSelectedListener {item ->
+            when(item.itemId) {
+                R.id.navigation_home -> {
+                    oldFragment = HomeFragment()
+                    oldTAG = TAG_HOME
+                    //setToolbarView(TAG_HOME, oldTAG)
+                    setFragment(TAG_HOME, HomeFragment())
 
                 }
-                true
+
+                R.id.navigation_search -> {
+                    oldFragment = SearchFragment()
+                    oldTAG = TAG_SEARCH
+                    //setToolbarView(TAG_HOME, oldTAG)
+                    setFragment(TAG_SEARCH, SearchFragment())
+
+                }
+
+                R.id.navigation_writing -> {
+                    val intent = Intent(this, NoticeBoardEditActivity::class.java).apply {
+                        putExtra("type","ADD")
+                    }
+                    requestActivity.launch(intent)
+                }
+
+
+                R.id.navigation_account -> {
+                    oldFragment = AccountFragment()
+                    oldTAG = TAG_ACCOUNT
+                    //setToolbarView(TAG_HOME, oldTAG)
+                    setFragment(TAG_ACCOUNT, AccountFragment())
+
+                }
+
+
+                else -> {
+                    oldFragment = HomeFragment()
+                    oldTAG = TAG_HOME
+                    setFragment(TAG_HOME, HomeFragment())
+
+                }
+
             }
+            true
+        }
 
 
     }

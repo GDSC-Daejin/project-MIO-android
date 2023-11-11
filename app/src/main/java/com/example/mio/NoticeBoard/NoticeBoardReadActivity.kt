@@ -330,7 +330,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     response.body()!![i].postId,
                                     response.body()!![i].user,
                                     response.body()!![i].childComments
-                            ))
+                                ))
                             noticeBoardReadAdapter!!.notifyDataSetChanged()
                         }
                     } else {
@@ -533,7 +533,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(channelID, channelName,
                 NotificationManager.IMPORTANCE_DEFAULT).apply {
-                    description = "참여 알림"
+                description = "참여 알림"
             }
             //이 채널에 게시된 알림이 해당 기능을 지원하는 장치에서 알림 표시등을 표시할지 여부를 설정합니다.
             channel.enableLights(true)
@@ -581,7 +581,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             //PendingIntent.FLAG_UPDATE_CURRENT,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
 
-        )
+            )
 
         val notificationCreate = NotificationCompat.Builder(this@NoticeBoardReadActivity, channelID)
             .setContentTitle("알람")

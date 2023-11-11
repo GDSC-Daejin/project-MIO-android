@@ -1,6 +1,10 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+
+    // plugin 추가
+    id 'com.google.android.gms.oss-licenses-plugin'
 }
 
 Properties properties = new Properties()
@@ -89,6 +93,21 @@ dependencies {
 
     //sticky
     implementation 'com.github.amarjain07:StickyScrollView:1.0.3'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+
+    //glide
+    implementation("com.github.bumptech.glide:glide:4.14.2")
+    implementation 'androidx.preference:preference:1.2.1'
+    kapt("com.github.bumptech.glide:compiler:4.14.2")
+    //lottie
+    implementation 'com.airbnb.android:lottie:3.0.7'
+
+    //work
+    implementation "androidx.work:work-runtime-ktx:2.8.1"
+
+    //license library추가
+    // library 추가
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.0.1'
 
     ////
     testImplementation 'junit:junit:4.13.2'

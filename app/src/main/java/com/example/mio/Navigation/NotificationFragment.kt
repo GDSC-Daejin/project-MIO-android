@@ -64,7 +64,7 @@ class NotificationFragment : Fragment() {
         setHasOptionsMenu(true)
 
         initNotificationRV()
-        initData()
+        /*initData()*/
         /*data = arguments?.getSerializable("notification") as NotificationData
         Log.d("data" , "$data")*/
 
@@ -76,12 +76,12 @@ class NotificationFragment : Fragment() {
 
         return nfBinding.root
     }
-
+/*
     private fun initData() {
         CoroutineScope(Dispatchers.IO).launch {
             getHistory()
         }
-    }
+    }*/
 
 
 
@@ -131,12 +131,12 @@ class NotificationFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         println("resume")
-        getHistory()
+        /*getHistory()
         if (notificationAllData.isEmpty()) {
             nfBinding.notNotificationLl.visibility = View.VISIBLE
         } else {
             nfBinding.notNotificationLl.visibility = View.GONE
-        }
+        }*/
     }
 
 
@@ -151,7 +151,7 @@ class NotificationFragment : Fragment() {
     }
 
 
-
+/*
     private fun getHistory() {
         val historyData = sharedPref!!.getNotify(requireContext(), setKey)
 
@@ -169,7 +169,7 @@ class NotificationFragment : Fragment() {
         }
 
 
-    }
+    }*/
 
 
     companion object {

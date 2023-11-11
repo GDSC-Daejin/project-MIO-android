@@ -96,7 +96,7 @@ class PostSearchFragment : Fragment() {
 
                         for (i in response.body()!!.content.indices) {
                             //탑승자 null체크
-                            var part = 0
+                            var part : Int? = 0
                             var location = ""
                             var title = ""
                             var content = ""
@@ -104,10 +104,12 @@ class PostSearchFragment : Fragment() {
                             var targetTime = ""
                             var categoryName = ""
                             var cost = 0
+                            var verifyGoReturn = false
+
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants.isEmpty()
-                                    response.body()!!.content[i].participants.size
+                                    response.body()!!.content[i].participants?.isEmpty()
+                                    response.body()!!.content[i].participants?.size
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0
@@ -161,26 +163,35 @@ class PostSearchFragment : Fragment() {
                                     Log.d("null", e.toString())
                                     0
                                 }
+                                verifyGoReturn = try {
+                                    response.body()!!.content[i].verifyGoReturn
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    false
+                                }
                             }
 
                             //println(response!!.body()!!.content[i].user.studentId)
-                            searchAllData.add(PostData(
-                                response.body()!!.content[i].user.studentId,
-                                response.body()!!.content[i].postId,
-                                title,
-                                content,
-                                targetDate,
-                                targetTime,
-                                categoryName,
-                                location,
-                                //participantscount가 현재 참여하는 인원들
-                                part,
-                                //numberOfPassengers은 총 탑승자 수
-                                response.body()!!.content[i].numberOfPassengers,
-                                cost,
-                                response.body()!!.content[i].verifyGoReturn,
-                                response.body()!!.content[i].user
-                            ))
+                            part?.let {
+                                PostData(
+                                    response.body()!!.content[i].user.studentId,
+                                    response.body()!!.content[i].postId,
+                                    title,
+                                    content,
+                                    targetDate,
+                                    targetTime,
+                                    categoryName,
+                                    location,
+                                    //participantscount가 현재 참여하는 인원들
+                                    it,
+                                    //numberOfPassengers은 총 탑승자 수
+                                    response.body()!!.content[i].numberOfPassengers,
+                                    cost,
+                                    verifyGoReturn,
+                                    response.body()!!.content[i].user
+                                )
+                            }?.let { searchAllData.add(it) }
+
                             sAdapter!!.notifyDataSetChanged()
                         }
                     } else {

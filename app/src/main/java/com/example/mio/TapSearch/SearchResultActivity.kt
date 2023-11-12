@@ -1,4 +1,4 @@
-package com.example.mio.SearchTap
+package com.example.mio.TapSearch
 
 import android.os.Bundle
 import android.text.Editable

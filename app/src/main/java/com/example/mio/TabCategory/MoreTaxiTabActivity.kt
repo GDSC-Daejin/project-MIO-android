@@ -26,6 +26,7 @@ import com.example.mio.Model.PostReadAllResponse
 import com.example.mio.Model.SharedViewModel
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityMoreTaxiTabBinding
+import com.google.android.material.chip.Chip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,6 +46,9 @@ class MoreTaxiTabActivity : AppCompatActivity() {
     private var moreTaxiAllData = ArrayList<PostData?>()
     private var dataPosition = 0
     private var date = ""
+
+    //칩 생성
+    private var chipList = kotlin.collections.ArrayList<Chip>()
 
     //로딩 즉 item의 끝이며 스크롤의 끝인지
     private var isLoading = false
@@ -564,22 +568,37 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             }
         }
 
-        myViewModel.checkFilter.observe(this) { it ->
+        myViewModel.checkFilter.observe(this) {
             val temp = it.split(" ")
+            /*for (i in chipList.indices) {
+                // 마지막 Chip 뷰의 인덱스를 계산
+                val lastChildIndex = nbrBinding.readSetFilterCg.childCount - 1
+
+                // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
+                // 현재 Chip을 바로 그 앞에 추가
+                if (lastChildIndex >= 0) {
+                    nbrBinding.readSetFilterCg.addView(chipList[i], lastChildIndex)
+                } else {
+                    // ChipGroup에 자식이 없는 경우, 그냥 추가
+                    nbrBinding.readSetFilterCg.addView(chipList[i])
+                }
+            }*/
             if (temp.size >= 4) {
                 when (temp[5]) {
                     "true" -> {
                         println("true")
-                        mttBinding.moreAddFilterBtnLl.removeAllViewsInLayout()
+                        mttBinding.moreAddFilterBtnSg.removeAllViewsInLayout()
                     }
-
                     "false" -> {
 
                     }
                 }
                 when (temp[2]) {
-                    "흡연O" -> {
-                        val params = LayoutParams(
+                    "등교" -> {
+                        chipList.add(createNewChip(
+                            text = "등교"
+                        ))
+                        /*val params = LayoutParams(
                             ViewGroup.LayoutParams.WRAP_CONTENT,
                             ViewGroup.LayoutParams.WRAP_CONTENT
                         )
@@ -587,9 +606,9 @@ class MoreTaxiTabActivity : AppCompatActivity() {
 
                         val btn = Button(this).apply {
                             layoutParams = params
-                            /*setOnClickListener {
+                            *//*setOnClickListener {
                                 println("ciclcc")
-                            }*/
+                            }*//*
                             setBackgroundResource(R.color.white)
                             setBackgroundResource(R.drawable.round_filter_btn)
                             setTextColor(
@@ -604,34 +623,13 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             height = resources.getDimensionPixelSize(R.dimen.button_height)
 
                         }
-                        mttBinding.moreAddFilterBtnLl.addView(btn)
-                    }
-                    "흡연x" -> {
-                        val params = LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        )
-                        params.setMargins(20, 15, 0, 15) // 왼쪽, 위, 오른쪽, 아래 순서입니다.
+                        mttBinding.moreAddFilterBtnLl.addView(btn)*/
 
-                        val btn = Button(this).apply {
-                            width = 15.dpToPx()
-                            height = 15.dpToPx()
-                            layoutParams = params
-                            /*setOnClickListener {
-                                println("ciclcc")
-                            }*/
-                            setBackgroundResource(R.color.white)
-                            setBackgroundResource(R.drawable.round_filter_btn)
-                            setTextColor(
-                                ContextCompat.getColor(
-                                    this@MoreTaxiTabActivity,
-                                    R.color.mio_blue_4
-                                )
-                            )
-                            //backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MoreTaxiTabActivity, R.color.white))
-                            text = "흡연x"
-                        }
-                        mttBinding.moreAddFilterBtnLl.addView(btn)
+                    }
+                    "하교" -> {
+                        chipList.add(createNewChip(
+                            text = "하교"
+                        ))
                     }
                     else -> {
                         // 다른 경우 처리
@@ -640,116 +638,43 @@ class MoreTaxiTabActivity : AppCompatActivity() {
 
                 when (temp[3]) {
                     "남성" -> {
-                        val params = LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        )
-                        params.setMargins(20, 15, 0, 15)
-                        val btn = Button(this).apply {
-                            width = 15
-                            height = 15
-                            layoutParams = params
-                            /*setOnClickListener {
-                                println("ciclcc")
-                            }*/
-                            setBackgroundResource(R.color.white)
-                            setBackgroundResource(R.drawable.round_filter_btn)
-                            setTextColor(
-                                ContextCompat.getColor(
-                                    this@MoreTaxiTabActivity,
-                                    R.color.mio_blue_4
-                                )
-                            )
-                            //backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MoreTaxiTabActivity, R.color.white))
+                        chipList.add(createNewChip(
                             text = "남성"
-                        }
-                        mttBinding.moreAddFilterBtnLl.addView(btn)
+                        ))
                     }
                     "여성" -> {
-                        val params = LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        )
-                        params.setMargins(20, 15, 0, 15)
-                        val btn = Button(this).apply {
-                            width = 15
-                            height = 15
-                            layoutParams = params
-                            /*setOnClickListener {
-                                println("ciclcc")
-                            }*/
-                            setBackgroundResource(R.color.white)
-                            setBackgroundResource(R.drawable.round_filter_btn)
-                            setTextColor(
-                                ContextCompat.getColor(
-                                    this@MoreTaxiTabActivity,
-                                    R.color.mio_blue_4
-                                )
-                            )
-                            //backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MoreTaxiTabActivity, R.color.white))
+                        chipList.add(createNewChip(
                             text = "여성"
-                        }
-                        mttBinding.moreAddFilterBtnLl.addView(btn)
+                        ))
                     }
                 }
 
                 when (temp[4]) {
-                    "등교" -> {
-                        val params = LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        )
-                        params.setMargins(20, 15, 0, 15)
-                        val btn = Button(this).apply {
-                            width = 15
-                            height = 15
-                            layoutParams = params
-                            /*setOnClickListener {
-                                println("ciclcc")
-                            }*/
-                            setBackgroundResource(R.color.white)
-                            setBackgroundResource(R.drawable.round_filter_btn)
-                            setTextColor(
-                                ContextCompat.getColor(
-                                    this@MoreTaxiTabActivity,
-                                    R.color.mio_blue_4
-                                )
-                            )
-                            //backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MoreTaxiTabActivity, R.color.white))
-                            text = "등교"
-                        }
-                        mttBinding.moreAddFilterBtnLl.addView(btn)
+                    "흡연여부 O" -> {
+                        chipList.add(createNewChip(
+                            text = "흡연여부 O"
+                        ))
                     }
-                    "하교" -> {
-                        val params = LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        )
-                        params.setMargins(20, 15, 0, 15)
-                        val btn = Button(this).apply {
-                            width = 15
-                            height = 15
-                            layoutParams = params
-
-                            /*setOnClickListener {
-                                println("ciclcc")
-                            }*/
-                            setBackgroundResource(R.color.white)
-                            setBackgroundResource(R.drawable.round_filter_btn)
-                            setTextColor(
-                                ContextCompat.getColor(
-                                    this@MoreTaxiTabActivity,
-                                    R.color.mio_blue_4
-                                )
-                            )
-                            //backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@MoreTaxiTabActivity, R.color.white))
-                            text = "하교"
-                        }
-                        mttBinding.moreAddFilterBtnLl.addView(btn)
+                    "흡연여부 X" -> {
+                        chipList.add(createNewChip(
+                            text = "흡연여부 O"
+                        ))
                     }
                 }
 
+                for (i in chipList.indices) {
+                    // 마지막 Chip 뷰의 인덱스를 계산
+                    val lastChildIndex = mttBinding.moreAddFilterBtnSg.childCount - 1
 
+                    // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
+                    // 현재 Chip을 바로 그 앞에 추가
+                    if (lastChildIndex >= 0) {
+                        mttBinding.moreAddFilterBtnSg.addView(chipList[i], lastChildIndex)
+                    } else {
+                        // ChipGroup에 자식이 없는 경우, 그냥 추가
+                        mttBinding.moreAddFilterBtnSg.addView(chipList[i])
+                    }
+                }
             }
         }
 
@@ -759,10 +684,6 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         }
 
         setContentView(mttBinding.root)
-    }
-    fun Int.dpToPx(): Int {
-        val scale = resources.displayMetrics.density
-        return (this * scale + 0.5f).toInt()
     }
 
     private fun initSwipeRefresh() {
@@ -965,7 +886,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         }, 2000)
     }
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         when (it.resultCode) {
             RESULT_OK -> {
                 val post = it.data?.getSerializableExtra("postData") as PostData
@@ -1143,5 +1064,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         //manager.stackFromEnd = true
         mttBinding.moreTaxiTabRv.setHasFixedSize(true)
         mttBinding.moreTaxiTabRv.layoutManager = manager
+    }
+
+    private fun createNewChip(text: String): Chip {
+        val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, null, false) as Chip
+        chip.text = text
+        //chip.isCloseIconVisible = false
+        return chip
     }
 }

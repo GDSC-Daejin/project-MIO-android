@@ -158,8 +158,8 @@ class CarpoolTabFragment : Fragment() {
                     val temp = currentTaxiAllData[position]
                     var intent : Intent? = null
                     dataPosition = position
-                    when(status!!) {
-                        CurrentNoticeBoardAdapter.PostStatus.Passenger -> {
+                    when(status) {
+                        /*CurrentNoticeBoardAdapter.PostStatus.Passenger -> {
                             intent = Intent(activity, PassengersReviewActivity::class.java).apply {
                                 putExtra("type", "PASSENGER")
                                 putExtra("postDriver", temp.user)
@@ -171,6 +171,19 @@ class CarpoolTabFragment : Fragment() {
                                 putExtra("type", "DRIVER")
                                 putExtra("postPassengers", carpoolParticipantsData)
                             }
+                        }*/
+                        CurrentNoticeBoardAdapter.PostStatus.Passenger -> {
+                            intent = Intent(activity, CompleteActivity::class.java).apply {
+                                putExtra("type", "PASSENGER")
+                                //putExtra("postDriver", temp.user)
+                            }
+                        }
+
+                        CurrentNoticeBoardAdapter.PostStatus.Driver -> {
+                            intent = Intent(activity, CompleteActivity::class.java).apply {
+                                putExtra("type", "DRIVER")
+                                //putExtra("postPassengers", carpoolParticipantsData)
+                            }
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Neither -> {
@@ -179,6 +192,9 @@ class CarpoolTabFragment : Fragment() {
                                 putExtra("postItem", temp)
                                 putExtra("uri", temp.user.profileImageUrl)
                             }
+                        }
+                        else -> {
+
                         }
                     }
                     requestActivity.launch(intent)

@@ -32,6 +32,9 @@
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="33">
         <activity
+            android:name=".CompleteActivity"
+            android:exported="false" />
+        <activity
             android:name=".OpenSourceManagementActivity"
             android:exported="false" />
         <activity

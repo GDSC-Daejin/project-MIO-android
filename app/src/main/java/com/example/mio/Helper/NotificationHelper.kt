@@ -50,4 +50,8 @@ class NotificationHelper(context : Context?) : ContextWrapper(context) {
             .setAutoCancel(true)
         //.setContentIntent(pendingIntent)
     }
+
+    fun deleteChannel() {
+        getManager().deleteNotificationChannel("channelID")
+    }
 }

@@ -114,7 +114,9 @@ interface MioInterface {
     @GET("/user/id/{userId}")
     fun getUserProfileData(@Path("userId") userId : Int) : Call<User>
 
-
+    //유저 정보 추가입력
+    @PATCH("/user/{userId}")
+    fun editMyAccountData(@Path("userId") userId : Int, @Body editData : EditAccountData) : Call<User>
 
     ////////////////////////////////
     //위치가져오기
@@ -153,6 +155,21 @@ interface MioInterface {
     @DELETE("/{participantId}/reject")
     fun deleteParticipants(@Path("participantId") participantId : Int) : Call<Void>
 
-    ////////////////////////////////
+    //////////////////////////////////
+    //평가 리뷰 (후기)
+
+    //유저가 받은 후기
+    @GET("/manners/get/{userId}")
+    fun getMyMannersReceiveReview(@Query("userId") userId: Int) : Call<List<MyAccountReviewData>>
+
+    //작성가능한 후기
+    @GET("/post/review")
+    fun getMyMannersWriteableReview(@Query("sort") sort : String,
+                                    @Query("page") page : Int,
+                                    @Query("size") size : Int) : Call<PostReadAllResponse>
+
+    //유저가 보낸 후기
+    @GET("/manners/post/{userId}")
+    fun getMyMannersSendReview(@Query("userId") userId: Int) : Call<List<MyAccountReviewData>>
 
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".TabAccount.MyBookmarkFragment">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="서비스 준비 중입니다! \n 다음 업데이트를 기대해 주세요!"
+        android:fontFamily="@font/pretendard_bold"
+        android:textSize="16sp"
+        android:textColor="@color/mio_gray_12"
+        />
+
+</FrameLayout>

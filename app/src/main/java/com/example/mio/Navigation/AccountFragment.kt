@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Spannable
@@ -123,8 +124,6 @@ class AccountFragment : Fragment() {
             call.getAccountData(email).enqueue(object : Callback<User> {
                 override fun onResponse(call: Call<User>, response: Response<User>) {
                     if (response.isSuccessful) {
-
-
                         gender = try {
                             response.body()!!.gender
                         } catch (e : java.lang.NullPointerException) {
@@ -231,8 +230,10 @@ class AccountFragment : Fragment() {
                             aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
 
                         } else {
+                            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(requireActivity() , R.color.mio_gray_4))
                             aBinding.accountGender.text = "성별"
                             aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
+                            aBinding.accountGender.backgroundTintList = colorStateList
                         }
 
                         if (verifySmoker != null) {
@@ -241,11 +242,12 @@ class AccountFragment : Fragment() {
                             } else {
                                 "비흡연자"
                             }
-                            aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
-
+                            aBinding.accountSmokingStatus.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
                         } else {
+                            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(requireActivity() , R.color.mio_gray_4))
                             aBinding.accountSmokingStatus.text = "흡연여부"
-                            aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
+                            aBinding.accountSmokingStatus.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
+                            aBinding.accountSmokingStatus.backgroundTintList = colorStateList
                         }
 
                         if (activityLocation != null) {

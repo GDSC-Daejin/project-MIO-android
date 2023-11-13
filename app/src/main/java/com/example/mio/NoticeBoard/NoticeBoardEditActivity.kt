@@ -1,6 +1,6 @@
 package com.example.mio.NoticeBoard
 
-import PlaceAdapter
+import com.example.mio.Adapter.PlaceAdapter
 import android.animation.ObjectAnimator
 import android.app.DatePickerDialog
 import android.content.Context
@@ -20,7 +20,6 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
@@ -169,8 +168,9 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         //뷰의 이벤트 리스너
         myViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
-        mapView = mBinding.mapView
+        mapView = MapView(this)
         mapView.setMapViewEventListener(this)
+        mBinding.mapView.addView(mapView)
         geocoder = Geocoder(this)
 
         type = intent.getStringExtra("type")

@@ -17,6 +17,11 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+    <queries>
+        <package android:name="viva.republica.toss" /> <!-- 토스뱅크 -->
+        <package android:name="com.kakao.talk" /> <!-- 카카오페이 -->
+    </queries>
+
     <application
         android:name=".Model.FragSharedViewModel2"
         android:allowBackup="true"
@@ -31,9 +36,24 @@
         android:usesCleartextTraffic="true"
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="33">
+
         <activity
             android:name=".CompleteActivity"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- host와 scheme이 이렇게 설정되었다면 ~uitest://deeplink~ 라는 URI는 무조건 해당 Activity가 실행됩니다. -->
+                <data
+                    android:host="deeplink"
+                    android:scheme="miopay" />
+            </intent-filter>
+        </activity>
+
+
         <activity
             android:name=".OpenSourceManagementActivity"
             android:exported="false" />

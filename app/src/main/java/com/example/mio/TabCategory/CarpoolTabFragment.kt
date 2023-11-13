@@ -175,7 +175,7 @@ class CarpoolTabFragment : Fragment() {
                         CurrentNoticeBoardAdapter.PostStatus.Passenger -> {
                             intent = Intent(activity, CompleteActivity::class.java).apply {
                                 putExtra("type", "PASSENGER")
-                                //putExtra("postDriver", temp.user)
+                                putExtra("postDriver", temp.user)
                             }
                         }
 
@@ -522,7 +522,7 @@ class CarpoolTabFragment : Fragment() {
 
                         for (i in response.body()!!.content.indices) {
                             //탑승자 null체크
-                            var part : Int? = 0
+                            var part = 0
                             var location = ""
                             var title = ""
                             var content = ""
@@ -533,8 +533,8 @@ class CarpoolTabFragment : Fragment() {
                             var verifyGoReturn = false
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants?.isEmpty()
-                                    response.body()!!.content[i].participants?.size
+                                    response.body()!!.content[i].participants!!.isEmpty()
+                                    response.body()!!.content[i].participants!!.size
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0
@@ -596,8 +596,27 @@ class CarpoolTabFragment : Fragment() {
                                 }
                             }
 
+                            carpoolAllData.add(
+                                PostData(
+                                    response.body()!!.content[i].user.studentId,
+                                    response.body()!!.content[i].postId,
+                                    title,
+                                    content,
+                                    targetDate,
+                                    targetTime,
+                                    categoryName,
+                                    location,
+                                    //participantscount가 현재 참여하는 인원들
+                                    part,
+                                    //numberOfPassengers은 총 탑승자 수
+                                    response.body()!!.content[i].numberOfPassengers,
+                                    cost,
+                                    verifyGoReturn,
+                                    response.body()!!.content[i].user
+                            ))
+
                             //println(response!!.body()!!.content[i].user.studentId)
-                            part?.let {
+                            /*part?.let {
                                 PostData(
                                     response.body()!!.content[i].user.studentId,
                                     response.body()!!.content[i].postId,
@@ -615,9 +634,10 @@ class CarpoolTabFragment : Fragment() {
                                     verifyGoReturn,
                                     response.body()!!.content[i].user
                                 )
-                            }?.let { carpoolAllData.add(it) }
-                            noticeBoardAdapter!!.notifyDataSetChanged()
+                            }?.let { carpoolAllData.add(it) }*/
+                            println(carpoolAllData)
                         }
+                        noticeBoardAdapter!!.notifyDataSetChanged()
 
                         if (carpoolAllData.isEmpty()) {
                             taxiTabBinding.nonCarpoolData.visibility = View.VISIBLE
@@ -670,7 +690,7 @@ class CarpoolTabFragment : Fragment() {
 
                         for (i in response.body()!!.content.indices) {
                             //탑승자 null체크
-                            var part : Int? = 0
+                            var part = 0
                             var location = ""
                             var title = ""
                             var content = ""
@@ -681,8 +701,8 @@ class CarpoolTabFragment : Fragment() {
                             var verifyGoReturn = false
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants?.isEmpty()
-                                    response.body()!!.content[i].participants?.size
+                                    response.body()!!.content[i].participants!!.isEmpty()
+                                    response.body()!!.content[i].participants!!.size
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0
@@ -745,7 +765,7 @@ class CarpoolTabFragment : Fragment() {
                             }
 
                             //println(response!!.body()!!.content[i].user.studentId)
-                            part?.let {
+                            myAreaItemData.add(
                                 PostData(
                                     response.body()!!.content[i].user.studentId,
                                     response.body()!!.content[i].postId,
@@ -756,14 +776,13 @@ class CarpoolTabFragment : Fragment() {
                                     categoryName,
                                     location,
                                     //participantscount가 현재 참여하는 인원들
-                                    it,
+                                    part,
                                     //numberOfPassengers은 총 탑승자 수
                                     response.body()!!.content[i].numberOfPassengers,
                                     cost,
                                     verifyGoReturn,
                                     response.body()!!.content[i].user
-                                )
-                            }?.let { myAreaItemData.add(it) }
+                                ))
 
                             noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
                         }

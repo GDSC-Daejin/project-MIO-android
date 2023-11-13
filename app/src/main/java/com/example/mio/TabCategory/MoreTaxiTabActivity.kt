@@ -773,7 +773,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
 
                                 for (i in response.body()!!.content.indices) {
                                     //탑승자 null체크
-                                    var part:Int? = 0
+                                    var part = 0
                                     var location = ""
                                     var title = ""
                                     var content = ""
@@ -784,8 +784,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                     var verifyGoReturn = false
                                     if (response.isSuccessful) {
                                         part = try {
-                                            response.body()!!.content[i].participants?.isEmpty()
-                                            response.body()!!.content[i].participants?.size
+                                            response.body()!!.content[i].participants!!.isEmpty()
+                                            response.body()!!.content[i].participants!!.size
                                         } catch (e : java.lang.NullPointerException) {
                                             Log.d("null", e.toString())
                                             0
@@ -847,7 +847,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                     }
 
                                     //println(response!!.body()!!.content[i].user.studentId)
-                                    part?.let {
+                                    moreTaxiAllData.add(
                                         PostData(
                                             response.body()!!.content[i].user.studentId,
                                             response.body()!!.content[i].postId,
@@ -858,14 +858,13 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                             categoryName,
                                             location,
                                             //participantscount가 현재 참여하는 인원들
-                                            it,
+                                            part,
                                             //numberOfPassengers은 총 탑승자 수
                                             response.body()!!.content[i].numberOfPassengers,
                                             cost,
                                             verifyGoReturn,
                                             response.body()!!.content[i].user
-                                        )
-                                    }?.let { moreTaxiAllData.add(it) }
+                                        ))
 
                                     mtAdapter!!.notifyDataSetChanged()
                                 }

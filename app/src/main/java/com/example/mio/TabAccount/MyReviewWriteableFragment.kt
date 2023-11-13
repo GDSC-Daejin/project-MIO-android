@@ -1,19 +1,20 @@
 package com.example.mio.TabAccount
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mio.*
+import com.example.mio.Adapter.CurrentNoticeBoardAdapter
 import com.example.mio.Adapter.MyReviewAdapter
 import com.example.mio.Adapter.MyReviewWriteableAdapter
-import com.example.mio.BuildConfig
-import com.example.mio.MioInterface
-import com.example.mio.Model.MyAccountReviewData
-import com.example.mio.R
-import com.example.mio.SaveSharedPreferenceGoogleLogin
+import com.example.mio.Model.*
 import com.example.mio.databinding.FragmentMyReviewWriteableBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,8 +46,10 @@ class MyReviewWriteableFragment : Fragment() {
     private lateinit var wBinding:FragmentMyReviewWriteableBinding
     private var wAdapter : MyReviewWriteableAdapter? = null
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
-    private var reviewWriteableReadAllData = ArrayList<MyAccountReviewData>()
+    private var reviewWriteableReadAllData = ArrayList<PostData>()
+    private var reviewPassengersData = ArrayList<Participants>()
 
+    private var identification = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -62,6 +65,28 @@ class MyReviewWriteableFragment : Fragment() {
         wBinding = FragmentMyReviewWriteableBinding.inflate(inflater, container, false)
 
         initRecyclerview()
+
+        wAdapter?.setItemClickListener(object : MyReviewWriteableAdapter.ItemClickListener{
+            override fun onClick(view: View, position: Int, itemId: Int) {
+                val temp = reviewWriteableReadAllData[position]
+                //내가 손님일때
+                if (identification != reviewWriteableReadAllData[position].user.email) {
+                    val intent = Intent(activity, PassengersReviewActivity::class.java).apply {
+                        putExtra("type",  CurrentNoticeBoardAdapter.PostStatus.Passenger)
+                        putExtra("postDriver", temp.user)
+                    }
+                    requestActivity.launch(intent)
+
+                } else { //내가 작성자(운전자)일때
+                    val intent = Intent(activity, PassengersReviewActivity::class.java).apply {
+                        putExtra("type",  CurrentNoticeBoardAdapter.PostStatus.Driver)
+                        putExtra("postPassengers", reviewPassengersData)
+                    }
+                    requestActivity.launch(intent)
+                }
+            }
+
+        })
 
         return wBinding.root
     }
@@ -102,27 +127,153 @@ class MyReviewWriteableFragment : Fragment() {
 
         //여기 나중에 데이터 바뀌면 체크 TODO
         CoroutineScope(Dispatchers.IO).launch {
-            api.getMyMannersReceiveReview(userId).enqueue(object :
-                Callback<List<MyAccountReviewData>> {
-                override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
+            api.getMyMannersWriteableReview("createDate,desc",0, 5).enqueue(object :
+                Callback<PostReadAllResponse> {
+                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
-
                         //데이터 청소
                         reviewWriteableReadAllData.clear()
 
-                        for (i in response.body()!!.indices) {
+                        for (i in response.body()!!.content.indices) {
+                            //탑승자 null체크
+                            var part = 0
+                            var location = ""
+                            var title = ""
+                            var content = ""
+                            var targetDate = ""
+                            var targetTime = ""
+                            var categoryName = ""
+                            var cost = 0
+                            var verifyGoReturn = false
+
+                            if (response.isSuccessful) {
+                                part = try {
+                                    response.body()!!.content[i].participants!!.isEmpty()
+                                    response.body()!!.content[i].participants!!.size
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    0
+                                }
+                                location = try {
+                                    response.body()!!.content[i].location.isEmpty()
+                                    response.body()!!.content[i].location
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "수락산역 3번 출구"
+                                }
+                                title = try {
+                                    response.body()!!.content[i].title.isEmpty()
+                                    response.body()!!.content[i].title
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                content = try {
+                                    response.body()!!.content[i].content.isEmpty()
+                                    response.body()!!.content[i].content
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                targetDate = try {
+                                    response.body()!!.content[i].targetDate.isEmpty()
+                                    response.body()!!.content[i].targetDate
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                targetTime = try {
+                                    response.body()!!.content[i].targetTime.isEmpty()
+                                    response.body()!!.content[i].targetTime
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                categoryName = try {
+                                    response.body()!!.content[i].category.categoryName.isEmpty()
+                                    response.body()!!.content[i].category.categoryName
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    "null"
+                                }
+                                cost = try {
+                                    response.body()!!.content[i].cost
+                                    response.body()!!.content[i].cost
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    0
+                                }
+                                verifyGoReturn = try {
+                                    response.body()!!.content[i].verifyGoReturn
+                                } catch (e : java.lang.NullPointerException) {
+                                    Log.d("null", e.toString())
+                                    false
+                                }
+                            }
+
+                            //println(response!!.body()!!.content[i].user.studentId)
                             reviewWriteableReadAllData.add(
-                                MyAccountReviewData(
-                                    response.body()!![i].id,
-                                    response.body()!![i].manner,
-                                    response.body()!![i].content,
-                                    response.body()!![i].getUserId,
-                                    response.body()!![i].postUserId,
-                                    response.body()!![i].createDate,
-                                )
-                            )
+                                PostData(
+                                    response.body()!!.content[i].user.studentId,
+                                    response.body()!!.content[i].postId,
+                                    title,
+                                    content,
+                                    targetDate,
+                                    targetTime,
+                                    categoryName,
+                                    location,
+                                    //participantscount가 현재 참여하는 인원들
+                                    part,
+                                    //numberOfPassengers은 총 탑승자 수
+                                    response.body()!!.content[i].numberOfPassengers,
+                                    cost,
+                                    verifyGoReturn,
+                                    response.body()!!.content[i].user
+                                ))
+
                             wAdapter!!.notifyDataSetChanged()
                         }
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            response.body()?.content?.forEach { content ->
+                                content.participants?.forEach { participants ->
+                                    reviewPassengersData.add(Participants(
+                                        participants.id,
+                                        participants.email,
+                                        participants.studentId,
+                                        participants.profileImageUrl,
+                                        participants.name,
+                                        participants.accountNumber,
+                                        participants.gender,
+                                        participants.verifySmoker,
+                                        participants.roleType,
+                                        participants.status,
+                                        participants.mannerCount,
+                                        participants.grade,
+                                    ))
+                                }
+                            }
+                            /*for (i in response.body()!!.indices) {
+                                for (j in response.body()!![i].participants.indices) {
+                                    carpoolParticipantsData.add(Participants(
+                                        response.body()!![i].participants[j].id,
+                                        response.body()!![i].participants[j].email,
+                                        response.body()!![i].participants[j].studentId,
+                                        response.body()!![i].participants[j].profileImageUrl,
+                                        response.body()!![i].participants[j].name,
+                                        response.body()!![i].participants[j].accountNumber,
+                                        response.body()!![i].participants[j].gender,
+                                        response.body()!![i].participants[j].verifySmoker,
+                                        response.body()!![i].participants[j].roleType,
+                                        response.body()!![i].participants[j].status,
+                                        response.body()!![i].participants[j].mannerCount,
+                                        response.body()!![i].participants[j].grade,
+                                    ))
+                                }
+                            }*/
+                        }
+
+
                         if (reviewWriteableReadAllData.size > 0) {
                             wBinding.writeableReviewPostNotDataLl.visibility = View.GONE
                             wBinding.writeablReviewSwipe.visibility = View.VISIBLE
@@ -138,7 +289,7 @@ class MyReviewWriteableFragment : Fragment() {
                     }
                 }
 
-                override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
+                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                     Log.d("error", t.toString())
                 }
             })
@@ -146,6 +297,8 @@ class MyReviewWriteableFragment : Fragment() {
     }
 
     private fun initRecyclerview() {
+        val s = SaveSharedPreferenceGoogleLogin()
+        identification = s.getUserEMAIL(requireActivity()).toString()
         setReadReviewData()
         wAdapter = MyReviewWriteableAdapter()
         wAdapter!!.myReviewWriteableData = reviewWriteableReadAllData
@@ -153,6 +306,19 @@ class MyReviewWriteableFragment : Fragment() {
         wBinding.writeablReviewPostRv.adapter = wAdapter
         wBinding.writeablReviewPostRv.setHasFixedSize(true)
         wBinding.writeablReviewPostRv.layoutManager = manager
+    }
+
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+        when (it.resultCode) {
+            AppCompatActivity.RESULT_OK -> {
+                when(it.data?.getIntExtra("flag", -1)) {
+                    //add
+                    0 -> {
+                        setReadReviewData()
+                    }
+                }
+            }
+        }
     }
 
     companion object {

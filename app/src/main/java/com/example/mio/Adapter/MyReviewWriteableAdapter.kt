@@ -18,7 +18,7 @@ import java.lang.ref.WeakReference
 
 class MyReviewWriteableAdapter : RecyclerView.Adapter<MyReviewWriteableAdapter.MyReviewWriteableViewHolder>(){
     private lateinit var binding : MyReviewWriteableItemBinding
-    var myReviewWriteableData = ArrayList<MyAccountReviewData>()
+    var myReviewWriteableData = ArrayList<PostData>()
     private lateinit var context : Context
 
     init {
@@ -34,12 +34,13 @@ class MyReviewWriteableAdapter : RecyclerView.Adapter<MyReviewWriteableAdapter.M
         private var reviewCompleteCreateDate = binding.reviewWriteableCompleteCreateDate
 
 
-        fun bind(reviewData: MyAccountReviewData, position : Int) {
+        fun bind(reviewData: PostData, position : Int) {
             this.position = position
             //accountId.text = accountData.accountID
 
             //reviewTitle.text = reviewData.
-            reviewCompleteCreateDate.text = reviewData.createDate
+            reviewCompleteCreateDate.text = reviewData.postTargetDate
+            reviewTitle.text = reviewData.postTitle
 
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
@@ -57,7 +58,7 @@ class MyReviewWriteableAdapter : RecyclerView.Adapter<MyReviewWriteableAdapter.M
         holder.bind(myReviewWriteableData[holder.adapterPosition], position)
 
         holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, myReviewWriteableData[holder.adapterPosition].id)
+            itemClickListener.onClick(it, holder.adapterPosition, myReviewWriteableData[holder.adapterPosition].postID)
         }
 
     /*binding.homeRemoveIv.setOnClickListener {

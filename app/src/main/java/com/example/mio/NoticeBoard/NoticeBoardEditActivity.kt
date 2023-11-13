@@ -1,6 +1,5 @@
 package com.example.mio.NoticeBoard
 
-import PlaceAdapter
 import android.animation.ObjectAnimator
 import android.app.DatePickerDialog
 import android.content.Context
@@ -20,10 +19,10 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
+import com.example.mio.Adapter.PlaceAdapter
 import com.example.mio.Model.PlaceData
 import com.example.mio.Model.PostData
 import com.example.mio.Model.ResultSearchKeyword
@@ -60,8 +59,11 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     }
 
     private lateinit var mBinding : ActivityNoticeBoardEditBinding
-    //클릭한 포스트(게시글)의 데이터 임시저장 edit용
+    //클릭한 포스트(게시글)의 데이터 임시저장
     private var temp : AddPostData? = null
+    //edit용 임시저장 데이터
+    private var eTemp : PostData? = null
+
     private var pos = 0
     //받은 계정 정보
     private var userEmail = ""
@@ -100,6 +102,9 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     //선택한 날짜
     private var selectTargetDate = ""
     private var selectFormattedDate = ""
+    private var isCategory = false //true : 카풀, false : 택시
+    private var selectCategory = ""
+    private var selectCategoryId = 0
     //설정한 제목
     private var editTitle = ""
     //선택한 시간
@@ -107,8 +112,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     private var selectFormattedTime = ""
     private var hour1 = 0
     private var minute1 = 0
-    private var second1 = 0
-    private var nano1 = 0
+
     //선택한 탑승인원
     private var participateNumberOfPeople = 1
     /*두 번째 vf*/
@@ -124,6 +128,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     private var isFirst = false
     private var isSecond = false
     private var isThird = false
+
 
     //모든 값 체크
     private var isAllCheck : RequirementData = RequirementData(
@@ -153,7 +158,6 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         )
 
     )
-    private val liveData = MutableLiveData("default")
     private lateinit var myViewModel : SharedViewModel
     val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
 
@@ -164,27 +168,31 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         //뷰의 이벤트 리스너
         myViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
-        mapView = mBinding.mapView
+        mapView = MapView(this)
         mapView.setMapViewEventListener(this)
+        mBinding.mapView.addView(mapView)
         geocoder = Geocoder(this)
 
         type = intent.getStringExtra("type")
 
-
-        bottomBtnEvent()
-        //vf 생성
-        firstVF()
-        secondVF()
-        thirdVF()
-        fourthVF()
-        fifthVF()
-        /*if (type.equals("ADD")) { //add
-            temp = intent.getSerializableExtra("postItem") as PostData?
-            mBinding.editAdd.text = temp!!.postContent
-
-        } else { //edit
-
-        }*/
+        if (type.equals("ADD")) { //add
+            bottomBtnEvent()
+            //vf 생성
+            firstVF()
+            secondVF()
+            thirdVF()
+            fourthVF()
+            fifthVF()
+        } else if (type.equals("EDIT")){ //edit
+            eTemp = intent.getSerializableExtra("editPostData") as PostData
+            bottomBtnEvent()
+            //vf 생성
+            firstVF()
+            secondVF()
+            thirdVF()
+            fourthVF()
+            fifthVF()
+        }
 
 
 
@@ -203,7 +211,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
          }*/
         //여기가 사용할것들
         ///////////////////////////////////
-        //카테고리 생각하여 데이터 변경하기 Todo
+        //카테고리 생각하여 데이터 변경하기
         /*mBinding.editAdd.setOnClickListener {
            val contentPost = mBinding.editPostContent.text.toString()
            val contentTitle = mBinding.editPostTitle.text.toString()
@@ -262,9 +270,9 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         //뒤로가기
         mBinding.backArrow.setOnClickListener {
             val intent = Intent(this@NoticeBoardEditActivity, MainActivity::class.java).apply {
-
+                putExtra("flag", 9)
             }
-            setResult(8, intent)
+            setResult(RESULT_OK, intent)
             finish()
         }
 
@@ -367,10 +375,15 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     }
 
     private fun firstVF() {
-
+        if (type == "EDIT") {
+            mBinding.editTitle.setText(eTemp!!.postTitle)
+        }
         mBinding.editTitle.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-
+                /*if (type == "EDIT") {
+                    mBinding.editTitle.setText(eTemp!!.postTitle)
+                    editTitle = eTemp!!.postTitle
+                }*/
             }
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 
@@ -391,6 +404,11 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             }
         })
 
+
+        if (type == "EDIT") {
+            mBinding.editSelectDateTv.text = eTemp!!.postTargetDate
+            selectFormattedDate = eTemp!!.postTargetDate
+        }
         mBinding.editCalendar.setOnClickListener {
             val cal = Calendar.getInstance()
             val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
@@ -406,10 +424,64 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 Calendar.DAY_OF_MONTH)).show()
         }
 
+
+        if (type == "EDIT") {
+            mBinding.editSelectTime.text = eTemp!!.postTargetTime
+            selectFormattedTime = eTemp!!.postTargetTime
+        }
         mBinding.editTime.setOnClickListener {
             showHourPicker()
         }
 
+        //카테고리 관리
+        if (type == "EDIT") {
+            selectCategory = eTemp!!.postCategory
+            if (selectCategory == "carpool") {
+                selectCategoryId = 1
+                mBinding.editCategoryCarpoolBtn.apply {
+                    setBackgroundResource(R.drawable.round_btn_update_layout)
+                    setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+                }
+            } else {
+                selectCategoryId = 0
+                mBinding.editCategoryCarpoolBtn.apply {
+                    setBackgroundResource(R.drawable.round_btn_update_layout)
+                    setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+                }
+            }
+        }
+
+        mBinding.editCategoryCarpoolBtn.setOnClickListener {
+            selectCategory = "carpool"
+            selectCategoryId = 1
+            mBinding.editCategoryCarpoolBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_update_layout)
+                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+            }
+            mBinding.editCategoryTaxiBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
+            }
+        }
+        mBinding.editCategoryTaxiBtn.setOnClickListener {
+            selectCategory = "taxi"
+            selectCategoryId = 2
+            mBinding.editCategoryTaxiBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_update_layout)
+                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+            }
+            mBinding.editCategoryCarpoolBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
+            }
+        }
+
+
+
+        if (type == "EDIT") {
+            mBinding.editParticipateTv.text = eTemp!!.postParticipationTotal.toString()
+            participateNumberOfPeople = eTemp!!.postParticipation
+        }
         mBinding.editMinus.setOnClickListener {
             participateNumberOfPeople -= 1
             if (participateNumberOfPeople > 0) {
@@ -533,9 +605,15 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             selectCost = mBinding.editSelectAmount.text.toString()
             isAllCheck.isThirdVF.isAmount = true
         }*/
+        if (type == "EDIT") {
+            mBinding.editSelectAmount.setText(eTemp!!.postCost.toString())
+            selectCost = eTemp!!.postCost.toString()
+        }
         mBinding.editSelectAmount.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-
+                /*if (type == "EDIT") {
+                    mBinding.editSelectAmount.setText(eTemp!!.postCost)
+                }*/
             }
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
                 //타이틀 체크
@@ -642,9 +720,15 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     }
 
     private fun fourthVF() {
+        if (type == "EDIT") {
+            mBinding.editDetailContent.setText(eTemp!!.postContent)
+            detailContent = eTemp!!.postContent
+        }
         mBinding.editDetailContent.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-
+                /* if (type == "EDIT") {
+                     mBinding.editDetailContent.setText(eTemp!!.postContent)
+                 }*/
             }
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 
@@ -700,6 +784,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
                 .addConverterFactory(GsonConverterFactory.create())
             //.client(clientBuilder)
+
             //Authorization jwt토큰 로그인
             val interceptor = Interceptor { chain ->
 
@@ -784,7 +869,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     println(temp)
                     CoroutineScope(Dispatchers.IO).launch {
                         /*"application/json; charset=UTF-8",*/
-                        api.addPostData(temp!!, 1).enqueue(object : Callback<AddPostResponse> {
+                        api.addPostData(temp!!, selectCategoryId).enqueue(object : Callback<AddPostResponse> {
                             override fun onResponse(
                                 call: Call<AddPostResponse>,
                                 response: Response<AddPostResponse>
@@ -812,6 +897,57 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 val intent = Intent(this, TaxiTabFragment::class.java).apply {
                     putExtra("postData", temp)
                     putExtra("flag", 0)
+                }
+                setResult(RESULT_OK, intent)
+                finish()
+
+            } else if (type.equals("EDIT")) {
+                if (isFirst) {
+                    var school = false
+                    var smoke = false
+                    var gender = false
+                    if (isAllCheck.isThirdVF.isGSchool) {
+                        school = true
+                    }
+                    if (isAllCheck.isThirdVF.isSmoke) {
+                        smoke = true
+                    }
+                    if (isAllCheck.isThirdVF.isMGender) {
+                        gender = true
+                    }
+
+                    temp = AddPostData(editTitle, detailContent, selectFormattedDate, selectFormattedTime, school, participateNumberOfPeople, 0, false, 0.0, 0.0, "수락산역 3번 출구", selectCost.toInt())
+
+                    CoroutineScope(Dispatchers.IO).launch {
+                        /*"application/json; charset=UTF-8",*/
+                        api.editPostData(temp!!, eTemp!!.postID).enqueue(object : Callback<AddPostResponse> {
+                            override fun onResponse(
+                                call: Call<AddPostResponse>,
+                                response: Response<AddPostResponse>
+                            ) {
+                                if (response.isSuccessful) {
+                                    println("succcckkkk")
+                                } else {
+                                    println("faafa")
+                                    Log.d("edit", response.errorBody()?.string()!!)
+                                    Log.d("message", call.request().toString())
+                                    println(response.code())
+                                }
+                            }
+
+                            override fun onFailure(call: Call<AddPostResponse>, t: Throwable) {
+                                Log.d("error", t.toString())
+                            }
+
+                        })
+                    }
+                } else {
+                    Toast.makeText(this, "빈 칸이 존재합니다. 빈 칸을 채워주세요!", Toast.LENGTH_SHORT).show()
+                }
+
+                val intent = Intent(this, TaxiTabFragment::class.java).apply {
+                    putExtra("postData", temp)
+                    putExtra("flag", 1)
                 }
                 setResult(RESULT_OK, intent)
                 finish()
@@ -872,11 +1008,11 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     }
 
     private fun bottomBtnEvent() {
-        if (isFirst) {
+        if (isFirst || type == "EDIT") {
             CoroutineScope(Dispatchers.Main).launch {
                 mBinding.editNext.apply {
                     setBackgroundResource(R.drawable.round_btn_update_layout)
-                    setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
+                    setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
                 }
             }
             mBinding.editNext.setOnClickListener {

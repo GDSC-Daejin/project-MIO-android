@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@color/white"
     tools:context=".NoticeBoard.NoticeBoardEditActivity">
 
 
@@ -137,16 +138,18 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
+                android:layout_marginStart="27dp"
                 android:layout_marginTop="15dp"
                 android:fontFamily="@font/pretendard_bold"
-                android:text="카풀 일정을 만들어 보세요"
+                android:text="일정을 만들어보세요"
+                android:textSize="20sp"
                 android:textColor="@color/mio_gray_11" />
 
             <!--제목-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
                 android:layout_marginStart="27dp"
                 android:layout_marginEnd="27dp"
                 android:background="@drawable/round_layout">
@@ -160,6 +163,7 @@
                     android:autofillHints=""
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/pretendard_medium"
+                    android:textSize="18sp"
                     android:hint="제목을 입력해주세요"
                     android:textColorHint="@color/mio_gray_6" />
 
@@ -171,9 +175,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="27dp"
                 android:layout_marginTop="32dp"
+                android:fontFamily="@font/pretendard_medium"
                 android:text="날짜"
-                android:textColor="@color/black"
-                android:textStyle="bold" />
+                android:textSize="18sp"
+                android:textColor="@color/mio_gray_9" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -189,9 +194,10 @@
                     android:layout_marginStart="15dp"
                     android:layout_weight="1"
                     android:gravity="center|fill"
+                    android:fontFamily="@font/pretendard_medium"
                     android:text="yyyy/mm/dd"
-                    android:textColor="@color/mio_gray_7"
-                    android:textStyle="bold" />
+                    android:textColor="@color/mio_gray_6"
+                    />
 
                 <ImageView
                     android:id="@+id/edit_calendar"
@@ -208,9 +214,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="27dp"
                 android:layout_marginTop="50dp"
+                android:fontFamily="@font/pretendard_medium"
                 android:text="시간"
-                android:textColor="@color/black"
-                android:textStyle="bold" />
+                android:textSize="18sp"
+                android:textColor="@color/mio_gray_9"
+                />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -226,9 +234,10 @@
                     android:layout_marginStart="15dp"
                     android:layout_weight="1"
                     android:gravity="center|fill"
+                    android:fontFamily="@font/pretendard_medium"
                     android:text="오전 00:00"
-                    android:textColor="@color/mio_gray_7"
-                    android:textStyle="bold" />
+                    android:textColor="@color/mio_gray_6"
+                    />
 
                 <ImageView
                     android:id="@+id/edit_time"
@@ -242,12 +251,65 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:layout_marginTop="20dp"
+                android:background="@color/mio_gray_4" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="27dp"
+                android:layout_marginEnd="27dp"
+                android:orientation="vertical"
+                android:visibility="visible">
+                <!--카테고리 설정-->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="카풀 / 택시"
+                    android:textSize="18sp"
+                    android:textColor="@color/mio_gray_9" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/edit_category_carpool_btn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/edit_check_btn"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:text="카풀"
+                        android:textColor="@color/mio_gray_9" />
+
+                    <Space
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp" />
+
+                    <Button
+                        android:id="@+id/edit_category_taxi_btn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/edit_check_btn"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:text="택시"
+                        android:textColor="@color/mio_gray_9" />
+                </LinearLayout>
+            </LinearLayout>
+
             <!--탑승인원-->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="27dp"
-                android:layout_marginTop="50dp"
+                android:layout_marginTop="40dp"
                 android:layout_marginEnd="27dp"
                 android:orientation="horizontal">
 
@@ -256,8 +318,9 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:text="탑승인원"
-                    android:textColor="@color/black"
-                    android:textStyle="bold" />
+                    android:textSize="18sp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:textColor="@color/mio_gray_9" />
 
                 <Space
                     android:layout_width="0dp"
@@ -429,20 +492,21 @@
             app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/mapView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent">
 
 
-                <net.daum.mf.map.api.MapView
-                    android:id="@+id/mapView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintBottom_toTopOf="@+id/map_info"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                <!-- <net.daum.mf.map.api.MapView
+                     android:id="@+id/mapView"
+                     android:layout_width="match_parent"
+                     android:layout_height="wrap_content"
+                     app:layout_constraintBottom_toTopOf="@+id/map_info"
+                     app:layout_constraintEnd_toEndOf="parent"
+                     app:layout_constraintStart_toStartOf="parent"
+                     app:layout_constraintTop_toTopOf="parent" />-->
 
                 <TextView
                     android:layout_width="wrap_content"

@@ -1,4 +1,4 @@
-package com.example.mio
+package com.example.mio.BottomSheetFragment
 
 import android.app.Dialog
 import android.os.Bundle
@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
-import androidx.core.content.ContentProviderCompat.requireContext
+import com.example.mio.R
 import com.example.mio.databinding.FragmentAnotherBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -97,7 +97,7 @@ class AnotherBottomSheetFragment : BottomSheetDialogFragment() {
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
             behavior.isDraggable = false
         }*/
-        val dialog = BottomSheetDialog(requireContext(),  R.style.BottomSheetDialogTheme)
+        val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
         dialog.setOnShowListener {
 
             val bottomSheetDialog = it as BottomSheetDialog

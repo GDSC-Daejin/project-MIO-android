@@ -1,4 +1,4 @@
-package com.example.mio
+package com.example.mio.BottomSheetFragment
 
 import android.app.DatePickerDialog
 import android.app.Dialog
@@ -11,6 +11,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
+import com.example.mio.R
+import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -34,6 +36,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     private var param2: String? = null
 
     private lateinit var bsBinding : FragmentBottomSheetBinding
+    private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     //선택한 날짜
     private var selectTargetDate = ""
     //선택한 시간
@@ -53,6 +56,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     private var isCheckGender = ""
     //참여 인원 수
     private var participateNumberOfPeople = 1
+    //초기화 체크
+    private var isReset = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +73,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     ): View? {
         bsBinding = FragmentBottomSheetBinding.inflate(inflater, container, false)
 
+        initSetting()
+
         bsBinding.filterCalendar.setOnClickListener {
             val cal = Calendar.getInstance()
             val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
@@ -75,8 +82,9 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 bsBinding.selectDateTv.text = selectTargetDate
                 bsBinding.selectDateTv.setTextColor(Color.BLACK)
             }
-            DatePickerDialog(requireActivity(), R.style.MySpinnerDatePickerStyle, data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(
-                Calendar.DAY_OF_MONTH)).show()
+            DatePickerDialog(requireActivity(),
+                R.style.MySpinnerDatePickerStyle, data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(
+                    Calendar.DAY_OF_MONTH)).show()
         }
 
         bsBinding.filterTime.setOnClickListener {
@@ -148,109 +156,114 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.gtschoolBtn.setOnClickListener {
             isCheckSchool = "등교" //등교
+            saveSharedPreferenceGoogleLogin.setSchool(context, isCheckSchool)
 
             bsBinding.gtschoolBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
             }
 
             bsBinding.aschoolBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
 
         bsBinding.aschoolBtn.setOnClickListener {
             isCheckSchool = "하교" //하교
+            saveSharedPreferenceGoogleLogin.setSchool(context, isCheckSchool)
 
             bsBinding.aschoolBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
             }
             bsBinding.gtschoolBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
 
         bsBinding.manBtn.setOnClickListener {
             isCheckGender = "남성" //남성
+            saveSharedPreferenceGoogleLogin.setGender(context, isCheckGender)
 
             bsBinding.manBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
             }
             bsBinding.womanBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
 
         bsBinding.womanBtn.setOnClickListener {
             isCheckGender = "여성" //여성
+            saveSharedPreferenceGoogleLogin.setGender(context, isCheckSchool)
 
             bsBinding.womanBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
             }
             bsBinding.manBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
 
         bsBinding.smokerBtn.setOnClickListener {
-            isCheckSmoke = "흡연 O" //흡연 O
-
+            isCheckSmoke = "흡연O" //흡연 O
+            saveSharedPreferenceGoogleLogin.setSmoke(context, isCheckSmoke)
             bsBinding.smokerBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
             }
             bsBinding.nsmokerBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
 
         bsBinding.nsmokerBtn.setOnClickListener {
-            isCheckSmoke = "흡연 x" //흡연 X
-
+            isCheckSmoke = "흡연x" //흡연 X
+            saveSharedPreferenceGoogleLogin.setSmoke(context, isCheckSmoke)
             bsBinding.nsmokerBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_1))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
             }
             bsBinding.smokerBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_layout)
-                setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
 
         bsBinding.filterResetTvBtn.setOnClickListener {
+            isReset = true
             //뷰 초기화
             CoroutineScope(Dispatchers.Main).launch {
                 bsBinding.gtschoolBtn.apply {
                     setBackgroundResource(R.drawable.round_btn_layout)
-                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                    setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
                 bsBinding.aschoolBtn.apply {
                     setBackgroundResource(R.drawable.round_btn_layout)
-                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                    setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
                 bsBinding.manBtn.apply {
                     setBackgroundResource(R.drawable.round_btn_layout)
-                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                    setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
                 bsBinding.womanBtn.apply {
                     setBackgroundResource(R.drawable.round_btn_layout)
-                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                    setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
                 bsBinding.smokerBtn.apply {
                     setBackgroundResource(R.drawable.round_btn_layout)
-                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                    setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
                 bsBinding.nsmokerBtn.apply {
                     setBackgroundResource(R.drawable.round_btn_layout)
-                    setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_11))
+                    setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
             }
 
@@ -267,10 +280,14 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             bsBinding.filterParticipateTv.text = "1"
 
             bsBinding.selectDateTv.text = "yyyy/mm/dd"
-            bsBinding.selectDateTv.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
+            bsBinding.selectDateTv.setTextColor(ContextCompat.getColor(requireActivity() ,
+                R.color.mio_gray_7
+            ))
 
             bsBinding.selectTime.text = "오전 00:00"
-            bsBinding.selectTime.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
+            bsBinding.selectTime.setTextColor(ContextCompat.getColor(requireActivity() ,
+                R.color.mio_gray_7
+            ))
         }
 
         bsBinding.bottomSheetDismissIv.setOnClickListener {
@@ -279,9 +296,11 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.filterSearchBtn.setOnClickListener {
             if (listener == null) return@setOnClickListener
-            listener?.sendValue("$selectTargetDate, ${participateNumberOfPeople}, $isCheckSmoke, $isCheckGender, $isCheckSchool")
+            listener?.sendValue("${selectTargetDate} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset")
             dismiss()
         }
+
+
 
         return bsBinding.root
     }
@@ -326,7 +345,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
             behavior.isDraggable = false
         }*/
-        val dialog = BottomSheetDialog(requireContext(),  R.style.BottomSheetDialogTheme)
+        val dialog = BottomSheetDialog(requireActivity(), R.style.BottomSheetDialogTheme)
         dialog.setOnShowListener {
 
             val bottomSheetDialog = it as BottomSheetDialog
@@ -358,6 +377,69 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
     fun setCallback(listener: OnSendFromBottomSheetDialog) {
         this.listener = listener
+    }
+
+    private fun initSetting() {
+        if (saveSharedPreferenceGoogleLogin.getSharedSchool(context) != null) {
+            isCheckSchool = saveSharedPreferenceGoogleLogin.getSharedSchool(context)!!
+
+            if (isCheckSchool == "등교") {
+                CoroutineScope(Dispatchers.Main).launch {
+                    bsBinding.gtschoolBtn.apply {
+                        setBackgroundResource(R.drawable.round_btn_update_layout)
+                        setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
+                    }
+                }
+            } else if (isCheckSchool == "히교") {
+                CoroutineScope(Dispatchers.Main).launch {
+                    bsBinding.aschoolBtn.apply {
+                        setBackgroundResource(R.drawable.round_btn_update_layout)
+                        setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
+                    }
+                }
+            }
+        }
+
+
+        if (saveSharedPreferenceGoogleLogin.getSharedGender(context) != null) {
+            isCheckGender = saveSharedPreferenceGoogleLogin.getSharedGender(context)!!
+
+            if (isCheckGender == "남성") {
+                CoroutineScope(Dispatchers.Main).launch {
+                    bsBinding.manBtn.apply {
+                        setBackgroundResource(R.drawable.round_btn_update_layout)
+                        setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
+                    }
+                }
+            } else if (isCheckGender == "여성") {
+                CoroutineScope(Dispatchers.Main).launch {
+                    bsBinding.womanBtn.apply {
+                        setBackgroundResource(R.drawable.round_btn_update_layout)
+                        setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
+                    }
+                }
+            }
+        }
+
+        if (saveSharedPreferenceGoogleLogin.getSharedSmoke(context) != null) {
+            isCheckSmoke = saveSharedPreferenceGoogleLogin.getSharedSmoke(context)!!
+
+            if (isCheckSmoke == "흡연O") {
+                CoroutineScope(Dispatchers.Main).launch {
+                    bsBinding.smokerBtn.apply {
+                        setBackgroundResource(R.drawable.round_btn_update_layout)
+                        setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
+                    }
+                }
+            } else if (isCheckSmoke == "흡연x") {
+                CoroutineScope(Dispatchers.Main).launch {
+                    bsBinding.nsmokerBtn.apply {
+                        setBackgroundResource(R.drawable.round_btn_update_layout)
+                        setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
+                    }
+                }
+            }
+        }
     }
 
 

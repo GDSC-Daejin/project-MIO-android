@@ -81,6 +81,9 @@ interface MioInterface {
     @POST("/comments/parent/{postId}")
     fun addCommentData(@Body commentData: SendCommentData, @Path("postId") postId : Int) : Call<CommentData>
 
+    //대댓글 작성
+    @POST("/comments/child/{parentId}")
+    fun addChildCommentData(@Body commentData: SendChildCommentData, @Path("parentId") parentId : Int) : Call<CommentData>
 
     //댓글 수정
     @PATCH("/comments/{commentId}")
@@ -117,6 +120,11 @@ interface MioInterface {
     //유저 정보 추가입력
     @PATCH("/user/{userId}")
     fun editMyAccountData(@Path("userId") userId : Int, @Body editData : EditAccountData) : Call<User>
+
+    ///////////////////////////
+    //포스트 id로 참가 신청한 내역 가져오기
+    @GET("/{postId}/participants")
+    fun getParticipationData(@Path("postId") postId : Int) : Call<List<ParticipationData>>
 
     ////////////////////////////////
     //위치가져오기

@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:name=".Model.FragSharedViewModel2"
@@ -23,6 +24,39 @@
         android:usesCleartextTraffic="true"
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="33">
+
+        <activity
+            android:name=".CompleteActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- host와 scheme이 이렇게 설정되었다면 ~uitest://deeplink~ 라는 URI는 무조건 해당 Activity가 실행됩니다. -->
+                <data
+                    android:host="deeplink"
+                    android:scheme="miopay" />
+            </intent-filter>
+        </activity>
+
+
+        <activity
+            android:name=".TabAccount.AccountReviewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TabAccount.ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PassengersReviewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ParticipationReceiveActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TabAccount.AccountSettingActivity"
+            android:exported="false" />
         <activity
             android:name=".TabCategory.MoreCarpoolTabActivity"
             android:exported="false" />
@@ -34,6 +68,8 @@
             android:name=".Helper.AlertReceiver"
             android:enabled="true"
             android:exported="false" />
+
+
 
         <activity
             android:name=".ApplyNextActivity"
@@ -73,6 +109,11 @@
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="${kakaoSdkAppkey}" />
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove" />
 
     </application>
 

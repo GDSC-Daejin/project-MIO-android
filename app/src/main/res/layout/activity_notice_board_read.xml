@@ -127,24 +127,40 @@
 
                 <!--필터 같은 거 동적으로 추가할 ll-->
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/read_time_check"
+                    android:id="@+id/read_set_filter_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/pretendard_medium"
-                    android:gravity="end"
-                    android:text="10분 전"
-                    android:textColor="@color/mio_gray_7" />
+                    android:orientation="horizontal"
+                    >
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/read_set_filter_cg"
+                        android:orientation="horizontal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
 
+                        <!--<com.google.android.material.chip.Chip
+                            style="@style/MioChipStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/mio_blue_4"
+                            android:text="등교"
+                            />-->
+                    </com.google.android.material.chip.ChipGroup>
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        />
+                    <TextView
+                        android:id="@+id/read_time_check"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:text="10분 전"
+                        android:layout_gravity="center|end"
+                        android:gravity="end"
+                        android:textColor="@color/mio_gray_7" />
+                </LinearLayout>
             </LinearLayout>
 
             <!--고정될 뷰-->
@@ -154,6 +170,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:orientation="vertical"
+                android:background="@color/mio_gray_1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
@@ -163,25 +180,31 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <androidx.cardview.widget.CardView
+                    <FrameLayout
                         android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="center"
-                        android:layout_marginStart="15dp"
-                        app:cardCornerRadius="100dp">
-
+                        android:layout_height="match_parent">
                         <ImageView
+                            android:id="@+id/read_user_profile"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:layout_gravity="center"
-                            android:background="@drawable/profile_round_background"
-                            android:paddingStart="10dp"
-                            android:paddingTop="10dp"
-                            android:paddingEnd="10dp"
-                            android:paddingBottom="10dp"
+                            android:layout_marginStart="10dp"
+                            android:layout_marginEnd="5dp"
+                            android:scaleType="centerCrop" />
+
+                        <ImageView
+                            android:id="@+id/read_user_check_iv"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:layout_marginStart="25dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginEnd="8dp"
                             android:scaleType="centerCrop"
-                            android:src="@drawable/filter_cancel_icon" />
-                    </androidx.cardview.widget.CardView>
+                            android:src="@drawable/read_user_profile_icon" />
+
+                    </FrameLayout>
+
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -351,10 +374,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
-                app:layout_constraintBottom_toBottomOf="@+id/read_fix_bottom"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/read_fix_detail_content">
+                >
 
                 <!--댓글-->
                 <LinearLayout
@@ -423,6 +443,16 @@
                         android:layout_weight="1"
                         android:src="@drawable/baseline_send_24"
                         android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/read_edit_send_comment"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="end"
+                        android:layout_marginEnd="15dp"
+                        android:layout_weight="1"
+                        android:src="@drawable/baseline_send_24"
+                        android:visibility="gone"/>
                 </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -474,7 +504,22 @@
                     android:background="@drawable/read_apply_btn_layout"
                     android:backgroundTint="@color/mio_blue_5"
                     android:text="신청하기"
-                    android:textColor="@color/mio_gray_3" />
+                    android:textColor="@color/mio_gray_3"
+                    android:textSize="15sp"
+                    android:visibility="visible" />
+
+                <Button
+                    android:id="@+id/read_cancel_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/read_apply_btn_layout"
+                    android:backgroundTint="@color/mio_gray_7"
+                    android:text="신청 취소하기"
+                    android:textColor="@color/mio_gray_3"
+                    android:textSize="15sp"
+                    android:visibility="gone" />
             </LinearLayout>
         </LinearLayout>
 

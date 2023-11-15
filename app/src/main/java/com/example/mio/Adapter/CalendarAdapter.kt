@@ -8,9 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.CalendarUtil
 import com.example.mio.Model.DateData
+import com.example.mio.R
 import com.example.mio.databinding.CalendarCellBinding
 import java.text.SimpleDateFormat
 import java.util.*
@@ -31,13 +33,15 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
     inner class CalendarViewHolder(private val binding : CalendarCellBinding ) : RecyclerView.ViewHolder(binding.root) {
 
         private var position : Int? = null
-        private var dateTV = binding.dateCell
-        private var dayTV = binding.dayCell
+        var dateTV = binding.dateCell
+        var dayTV = binding.dayCell
         var containerLL = binding.calendarLl
 
         fun bind(calendarData: DateData, position : Int) {
             this.position = position
             dateTV.text = calendarData.date
+            //dateTV.setTextColor(ContextCompat.getColor(context , R.color.mio_gray_7))
+
             dayTV.text = calendarData.day
 
 
@@ -62,9 +66,13 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
 
 
         if (selectedPostion == holder.adapterPosition) {
-            holder.containerLL.setBackgroundColor(Color.BLUE)
+            //holder.containerLL.setBackgroundColor(Color.BLUE)
+            holder.containerLL.setBackgroundResource(R.drawable.round_update_background)
+            holder.dateTV.setTextColor(ContextCompat.getColor(context , R.color.mio_gray_1))
         } else {
             holder.containerLL.setBackgroundColor(Color.TRANSPARENT)
+            holder.containerLL.setBackgroundResource(R.drawable.round_background)
+            holder.dateTV.setTextColor(ContextCompat.getColor(context , R.color.mio_gray_11))
         }
 
         holder.itemView.setOnClickListener {

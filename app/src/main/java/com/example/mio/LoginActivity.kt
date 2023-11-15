@@ -6,14 +6,18 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.os.Build
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.view.*
 import android.view.animation.AnticipateInterpolator
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -35,6 +39,7 @@ import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 
 
@@ -64,6 +69,7 @@ class LoginActivity : AppCompatActivity() {
      val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
  */
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         //상태바 지우기(이 activity만)
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -95,6 +101,19 @@ class LoginActivity : AppCompatActivity() {
         mBinding.signInButton.setOnClickListener {
             signIn()
         }
+        /*try {
+            val information = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+            val signatures = information.signingInfo.apkContentsSigners
+            for (signature in signatures) {
+                val md = MessageDigest.getInstance("SHA").apply {
+                    update(signature.toByteArray())
+                }
+                val HASH_CODE = String(Base64.encode(md.digest(), 0))
+                Log.d("TAG", "HASH_CODE -> $HASH_CODE")
+            }
+        } catch (e: Exception) {
+            Log.d("TAG", "Exception -> $e")
+        }*/
     }
 
     private fun initData() {
@@ -147,6 +166,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun signInCheck(userInfoToken : TokenRequest) {
+        println("signInCheck")
         /*var interceptor = HttpLoggingInterceptor()
         interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
         val client = OkHttpClient.Builder().addInterceptor(interceptor).build()*/
@@ -175,11 +195,10 @@ class LoginActivity : AppCompatActivity() {
                             putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
                             putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
                         }
-
-
                         builder.build()
-                        println("success")
-                        println(response.code())
+                        println(response.body()!!.accessTokenExpiresIn.toString())
+
+
                     } else {
                         println("fail")
                     }
@@ -207,15 +226,22 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setResultSignUp() {
+        println("setResultSignUp")
         resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 handleSignInResult(task)
-                Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
 
-                val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                startActivity(intent)
-                finish()
+                if (userEmail.substring(9..20).toString() == "daejin.ac.kr") {
+                    Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
+
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    this@LoginActivity.finish()
+                } else {
+                    Toast.makeText(this, "대진대학교 학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                }
+
             }
         }
     }
@@ -223,16 +249,16 @@ class LoginActivity : AppCompatActivity() {
 
     private fun handleSignInResult(completedTask : Task<GoogleSignInAccount>) {
         try {
+            println("handleSignInResult")
             val account = completedTask.getResult(ApiException::class.java)
             val email = account?.email.toString()
             val authCode = account.serverAuthCode
             val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
 
+            userEmail = email
+
             //회원가입과 함께 새로운 계정 정보 저장
             if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity)!!.isEmpty()) {
-                //나중에 재개편 필요함 -> navigation graph를 정리할 필요성이 있음 Todo
-                // call Login Activity
-                //val intent = Intent(this@MainActivity, LoginActivity::class.java)
                 intent.apply {
                     putExtra("email", saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email).toString())
                 }
@@ -243,7 +269,7 @@ class LoginActivity : AppCompatActivity() {
             } else { //현재 로그인, 또는 로그인했던 정보가 저장되어있으면 home으로
                 val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 startActivity(intent)
-                this.finish()
+                this@LoginActivity.finish()
             }
 
             Toast.makeText(this, "tjd", Toast.LENGTH_SHORT).show()
@@ -252,7 +278,6 @@ class LoginActivity : AppCompatActivity() {
 
             getAccessToken(authCode!!)
 
-            Toast.makeText(this, "복사되었습니다.", Toast.LENGTH_SHORT).show()
 
 
         } catch (e : ApiException) {
@@ -261,6 +286,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun getAccessToken(authCode : String) {
+        println("getAccessToken")
         val client = OkHttpClient()
         val requestBody: RequestBody = FormBody.Builder()
             //1시간
@@ -329,8 +355,45 @@ class LoginActivity : AppCompatActivity() {
         }
     }
     private fun signIn() {
+        println("signIn")
         val signIntent = mGoogleSignInClient.signInIntent
         resultLauncher.launch(signIntent)
+    }
+
+    private fun refreshAccessToken(refreshToken: String) {
+        val client = OkHttpClient()
+        val requestBody = FormBody.Builder()
+            .add("grant_type", "refresh_token")
+            .add("refresh_token", refreshToken)
+            .add("client_id", CLIENT_WEB_ID_KEY)
+            .add("client_secret", CLIENT_WEB_SECRET_KEY)
+            .build()
+
+        val request = Request.Builder()
+            .url("https://oauth2.googleapis.com/token")
+            .post(requestBody)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                // 실패 시 처리
+                Log.e("Refresh Token", "Failed to refresh access token")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                if (response.isSuccessful) {
+                    val jsonResponse = JSONObject(response.body!!.string())
+                    val newAccessToken = jsonResponse.getString("access_token")
+
+                    // TODO: 새로운 액세스 토큰을 저장하고 사용
+                    // 여기에서 새로운 액세스 토큰을 저장하고 필요한 요청에 사용합니다.
+                    println(newAccessToken)
+                } else {
+                    // 실패 시 처리
+                    Log.e("Refresh Token", "Failed to refresh access token")
+                }
+            }
+        })
     }
 
     //클립보드에 복사하기
@@ -344,5 +407,9 @@ class LoginActivity : AppCompatActivity() {
         //Toast.makeText(this, "복사되었습니다.", Toast.LENGTH_SHORT).show()
     }*/
 
+    override fun onDestroy() {
+        super.onDestroy()
+        this@LoginActivity.finish()
+    }
 
 }

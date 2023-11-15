@@ -138,6 +138,9 @@ interface MioInterface {
     ///////////////////////////////
     //참여
 
+    //유저가 게시글에 참여신청
+    @POST("/{postId}/participate")
+    fun addParticipate(@Path("postId") postId: Int, @Body content: ParticipateData) : Call<String?>
 
 
     //유저가 게시글에 참여를 취소
@@ -162,6 +165,18 @@ interface MioInterface {
     //작성자가 참여한 사람 거절
     @DELETE("/{participantId}/reject")
     fun deleteParticipants(@Path("participantId") participantId : Int) : Call<Void>
+
+    ////////////////////////////////
+    //알람
+
+    @POST("/alarm/create")
+    fun addAlarm(@Body alarmSendData : AddAlarmData) : Call<AddAlarmResponseData>
+
+    @GET("/alarm/readAll")
+    fun getMyAlarm() : Call<List<AddAlarmResponseData>>
+
+
+
 
     //////////////////////////////////
     //평가 리뷰 (후기)

@@ -41,7 +41,9 @@
             </intent-filter>
         </activity>
 
-
+        <activity
+            android:name=".OpenSourceManagementActivity"
+            android:exported="false" />
         <activity
             android:name=".TabAccount.AccountReviewActivity"
             android:exported="false" />

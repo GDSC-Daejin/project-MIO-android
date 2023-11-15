@@ -5,7 +5,6 @@ import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.AddAlarmResponseData
@@ -14,48 +13,41 @@ import com.example.mio.Model.NotificationData
 import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.NotificationItemBinding
+import com.example.mio.databinding.NotificationItemRvLayoutBinding
 import com.example.mio.databinding.PostItemBinding
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
 
-class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder>(){
-    private lateinit var binding : NotificationItemBinding
-    var notificationItemData = ArrayList<AddAlarmResponseData>()
+class NotificationContentAdapter : RecyclerView.Adapter<NotificationContentAdapter.NotificationContentViewHolder>(){
+    private lateinit var binding : NotificationItemRvLayoutBinding
+    var notificationItemContentData = ArrayList<AddAlarmResponseData>()
     private lateinit var context : Context
     var sharedPref : SharedPref? = null
     private var setKey = "setting_history"
-    private var manager : LinearLayoutManager? = null
 
-
-    //알람의 내용
-    private var notificationContentAdapter : NotificationContentAdapter? = null
-    var notificationContentItemData = ArrayList<AddAlarmResponseData?>()
     init {
         setHasStableIds(true)
     }
 
-    inner class NotificationViewHolder(private val binding : NotificationItemBinding ) : RecyclerView.ViewHolder(binding.root) {
+    inner class NotificationContentViewHolder(private val binding : NotificationItemRvLayoutBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
-        var notificationContentText = binding.notificationContentTv
-        var notificationTitleText = binding.notificationItemTitleTv
+        var notificationItemContentText = binding.notificationItemTv
+        //var notificationItemDate = binding.notificationItemDateTv
 
-        fun bind(notification : AddAlarmResponseData, position : Int) {
+        fun bind(notificationContentData : AddAlarmResponseData, position : Int) {
             this.position = position
+            //val tempText = context.getString(R.string.setText,notification.notificationContentText.accountID, notification.notificationContentText.postCategory.toString())
+            notificationItemContentText.text = notificationContentData.content
 
-            val tempText = context.getString(R.string.setText,notification.post.user.studentId, notification.post.category.toString())
-            notificationContentText.text = notification.content
-            notificationTitleText.text = tempText
-
-            //accountProfile.setImageURI() = pillData.pillTakeTime
             val now = System.currentTimeMillis()
             val date = Date(now)
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
             val currentDate = sdf.format(date)
 
 
-            val postDateTime = context.getString(R.string.setText, notification!!.createDate.substring(0 .. 9), notification!!.createDate.substring(11 .. 18))
+            val postDateTime = context.getString(R.string.setText, notificationContentData!!.createDate.substring(0 .. 9), notificationContentData!!.createDate.substring(11 .. 18))
 
             val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
             val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)
@@ -67,38 +59,41 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
             if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
 
                 if(diffSeconds > -1){
-                    binding.notificationTime.text = "방금전"
+                    binding.notificationItemDateTv.text = "방금전"
                 }
                 if (diffSeconds > 0) {
-                    binding.notificationTime.text = "${diffSeconds.toString()}초전"
+                    binding.notificationItemDateTv.text = "${diffSeconds.toString()}초전"
                 }
                 if (diffMinutes > 0) {
-                    binding.notificationTime.text = "${diffMinutes.toString()}분전"
+                    binding.notificationItemDateTv.text = "${diffMinutes.toString()}분전"
                 }
                 if (diffHours > 0) {
-                    binding.notificationTime.text = "${diffHours.toString()}시간전"
+                    binding.notificationItemDateTv.text = "${diffHours.toString()}시간전"
                 }
                 if (diffDays > 0) {
-                    binding.notificationTime.text = "${diffDays.toString()}일전"
+                    binding.notificationItemDateTv.text = "${diffDays.toString()}일전"
                 }
             }
 
 
+
+            //accountProfile.setImageURI() = pillData.pillTakeTime
+
             binding.root.setOnClickListener {
-                itemClickListener.onClick(it, layoutPosition, notificationItemData[layoutPosition].id)
+                itemClickListener.onClick(it, layoutPosition, notificationItemContentData[layoutPosition].id)
             }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationContentAdapter.NotificationContentViewHolder {
         context = parent.context
         sharedPref = this.context?.let { SharedPref(it) }
-        binding = NotificationItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return NotificationViewHolder(binding)
+        binding = NotificationItemRvLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return NotificationContentViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
-        holder.bind(notificationItemData[holder.adapterPosition], holder.adapterPosition)
+    override fun onBindViewHolder(holder: NotificationContentViewHolder, position: Int) {
+        holder.bind(notificationItemContentData[holder.adapterPosition], holder.adapterPosition)
         /*binding.deleteNotify.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)
             val ad : AlertDialog = builder.create()
@@ -126,17 +121,23 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
     }
 
     override fun getItemCount(): Int {
-        return notificationItemData.size
+        return notificationItemContentData.size
     }
 
     override fun getItemId(position: Int): Long {
         return position.toLong()
     }
 
+    fun setNotificationContentData(notificationContents: List<AddAlarmResponseData>) {
+        notificationItemContentData.clear()
+        notificationItemContentData.addAll(notificationContents)
+        notifyDataSetChanged()
+    }
+
     //데이터 Handle 함수
     fun removeData(position: Int) {
-        notificationItemData.removeAt(position)
-        //sharedPref!!.setNotify(context, setKey, notificationItemData)
+        notificationItemContentData.removeAt(position)
+        //sharedPref!!.setNotify(context, setKey, notificationItemContentData)
         notifyItemRemoved(position)
     }
 

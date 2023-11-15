@@ -1,5 +1,6 @@
 package com.example.mio.NoticeBoard
 
+import com.example.mio.Adapter.PlaceAdapter
 import android.animation.ObjectAnimator
 import android.app.DatePickerDialog
 import android.content.Context
@@ -22,7 +23,6 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
-import com.example.mio.Adapter.PlaceAdapter
 import com.example.mio.Model.PlaceData
 import com.example.mio.Model.PostData
 import com.example.mio.Model.ResultSearchKeyword

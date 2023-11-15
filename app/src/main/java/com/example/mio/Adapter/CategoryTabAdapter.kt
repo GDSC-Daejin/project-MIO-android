@@ -12,8 +12,8 @@ class CategoryTabAdapter(fragmentActivity: FragmentActivity): FragmentStateAdapt
 
     override fun createFragment(position: Int): Fragment {
         return when(position) {
-            0 -> TaxiTabFragment()
-            else -> CarpoolTabFragment()
+            0 -> CarpoolTabFragment()
+            else -> TaxiTabFragment()
         }
     }
 }

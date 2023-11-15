@@ -1,4 +1,5 @@
 package com.example.mio.Adapter
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
+import java.lang.ref.WeakReference
 
 
 class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardViewHolder>(){
@@ -27,6 +29,7 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
         var postLocation = binding.postLocation
         var postParticipation = binding.postParticipation
         var postParticipantTotal = binding.postParticipationTotal
+        var postCost = binding.postCost
 
         fun bind(accountData: PostData, position : Int) {
             this.position = position
@@ -37,12 +40,10 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
             postLocation.text = accountData.postLocation
             postParticipation.text = accountData.postParticipation.toString()
             postParticipantTotal.text = accountData.postParticipationTotal.toString()
+            postCost.text = context.getString(R.string.setCost, accountData.postCost.toString())
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
-
-            binding.root.setOnClickListener {
-                itemClickListener.onClick(it, layoutPosition, postItemData[layoutPosition].postID)
-            }
+            //val listener = itemClickListener?.get()
         }
     }
 
@@ -53,31 +54,36 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
     }
 
     override fun onBindViewHolder(holder: NoticeBoardViewHolder, position: Int) {
-        holder.bind(postItemData[holder.adapterPosition], holder.adapterPosition)
-        /*binding.homeRemoveIv.setOnClickListener {
-            val builder : AlertDialog.Builder = AlertDialog.Builder(context)
-            val ad : AlertDialog = builder.create()
-            var deleteData = pillItemData[holder.adapterPosition]!!.pillName
-            builder.setTitle(deleteData)
-            builder.setMessage("정말로 삭제하시겠습니까?")
-            builder.setNegativeButton("예",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                    //temp = listData[holder.adapterPosition]!!
-                    //extraditeData()
-                    //testData.add(temp)
-                    //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
-                    removeData(holder.adapterPosition)
-                    //removeServerData(deleteServerData!!)
-                    //println(deleteServerData)
-                })
+        holder.bind(postItemData[holder.adapterPosition], position)
 
-            builder.setPositiveButton("아니오",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                })
-            builder.show()
-        }*/
+        holder.itemView.setOnClickListener {
+            itemClickListener.onClick(it, holder.adapterPosition, postItemData[holder.adapterPosition].postID)
+        }
+
+        /*binding.homeRemoveIv.setOnClickListener {
+                val builder : AlertDialog.Builder = AlertDialog.Builder(context)
+                val ad : AlertDialog = builder.create()
+                var deleteData = pillItemData[holder.adapterPosition]!!.pillName
+                builder.setTitle(deleteData)
+                builder.setMessage("정말로 삭제하시겠습니까?")
+                builder.setNegativeButton("예",
+                    DialogInterface.OnClickListener { dialog, which ->
+                        ad.dismiss()
+                        //temp = listData[holder.adapterPosition]!!
+                        //extraditeData()
+                        //testData.add(temp)
+                        //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
+                        removeData(holder.adapterPosition)
+                        //removeServerData(deleteServerData!!)
+                        //println(deleteServerData)
+                    })
+
+                builder.setPositiveButton("아니오",
+                    DialogInterface.OnClickListener { dialog, which ->
+                        ad.dismiss()
+                    })
+                builder.show()
+            }*/
     }
 
     override fun getItemCount(): Int {
@@ -99,9 +105,11 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
         fun onClick(view: View, position: Int, itemId: Int)
     }
 
-    private lateinit var itemClickListener: ItemClickListener
+    //약한 참조로 참조하는 객체가 사용되지 않을 경우 가비지 콜렉션에 의해 자동해제
+    //private var itemClickListener: WeakReference<ItemClickListener>? = null
+    private lateinit var itemClickListener: NoticeBoardAdapter.ItemClickListener
 
-    fun setItemClickListener(itemClickListener: ItemClickListener) {
+    fun setItemClickListener(itemClickListener: NoticeBoardAdapter.ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
 

@@ -95,6 +95,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     //유저확인
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var email = ""
+
     private var writerEmail = ""
     private var gender : Boolean? = null //false 남, true 여
     private var accountNumber : String? = null

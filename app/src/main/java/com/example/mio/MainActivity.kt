@@ -411,7 +411,6 @@ class MainActivity : AppCompatActivity() {
 
                 supportActionBar?.setHomeAsUpIndicator(R.drawable.baseline_arrow_back_24)
                 supportActionBar?.setDisplayShowTitleEnabled(true)
-
             }
         }
     }

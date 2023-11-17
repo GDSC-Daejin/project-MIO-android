@@ -373,6 +373,7 @@
                 android:id="@+id/linearLayout6"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:gravity="center"
                 android:orientation="vertical"
                 >
 
@@ -474,57 +475,54 @@
                     android:textColor="@color/mio_gray_9" />
 
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/read_fix_bottom"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@color/mio_gray_3"
-                android:gravity="bottom"
-                android:orientation="horizontal"
-                android:paddingTop="10dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent">
-
-                <Button
-                    android:id="@+id/read_bookmark"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="10dp"
-                    android:background="@drawable/read_bookmark_icon" />
-
-                <Button
-                    android:id="@+id/read_apply_btn"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:background="@drawable/read_apply_btn_layout"
-                    android:backgroundTint="@color/mio_blue_5"
-                    android:text="신청하기"
-                    android:textColor="@color/mio_gray_3"
-                    android:textSize="15sp"
-                    android:visibility="visible" />
-
-                <Button
-                    android:id="@+id/read_cancel_btn"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:background="@drawable/read_apply_btn_layout"
-                    android:backgroundTint="@color/mio_gray_7"
-                    android:text="신청 취소하기"
-                    android:textColor="@color/mio_gray_3"
-                    android:textSize="15sp"
-                    android:visibility="gone" />
-            </LinearLayout>
         </LinearLayout>
-
-
     </com.amar.library.ui.StickyScrollView>
 
+    <LinearLayout
+        android:id="@+id/read_fix_bottom"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/mio_gray_3"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        android:paddingTop="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/read_bookmark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/read_bookmark_icon" />
+
+        <Button
+            android:id="@+id/read_apply_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/read_apply_btn_layout"
+            android:backgroundTint="@color/mio_blue_5"
+            android:text="신청하기"
+            android:textColor="@color/mio_gray_3"
+            android:textSize="15sp"
+            android:visibility="visible" />
+
+        <Button
+            android:id="@+id/read_cancel_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/read_apply_btn_layout"
+            android:backgroundTint="@color/mio_gray_7"
+            android:text="신청 취소하기"
+            android:textColor="@color/mio_gray_3"
+            android:textSize="15sp"
+            android:visibility="gone" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

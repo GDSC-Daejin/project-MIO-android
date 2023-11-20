@@ -414,22 +414,12 @@ class CarpoolTabFragment : Fragment() {
     }
 
     private fun initCurrentNoticeBoardRecyclerView() {
-        //로딩창 실행
-        /*loadingDialog = LoadingProgressDialog(activity)
-        loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        loadingDialog.show()*/
-
         setCurrentCarpoolData()
-
-
         currentNoticeBoardAdapter = CurrentNoticeBoardAdapter()
         currentNoticeBoardAdapter!!.currentPostItemData = currentTaxiAllData
         taxiTabBinding.currentRv.adapter = currentNoticeBoardAdapter
-        //레이아웃 뒤집기 안씀
-        //manager.reverseLayout = true
-        //manager.stackFromEnd = true
+
         taxiTabBinding.currentRv.setHasFixedSize(true)
-        //taxiTabBinding.currentRv.layoutManager = manager
     }
 
     private fun initCalendarRecyclerView() {
@@ -1122,7 +1112,6 @@ class CarpoolTabFragment : Fragment() {
                         }
                         //livemodel을 통해 저장
                         //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
-                        noticeBoardAdapter!!.notifyDataSetChanged()
                     }
                     //edit
                     1 -> {

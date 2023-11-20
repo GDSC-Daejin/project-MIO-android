@@ -86,7 +86,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 setCallback(object : BottomSheetFragment.OnSendFromBottomSheetDialog{
                     override fun sendValue(value: String) {
                         Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
-                        if (value.split(" ")[5].toBoolean()) {
+                        //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
+                        if (value.split(" ")[6].toBoolean()) {
                             println(value.split(" ").map { it })
                             myViewModel.postCheckFilter(getBottomData)
                             mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_gray_8))
@@ -442,45 +443,32 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             }
         }
 
-        myViewModel.checkFilter.observe(this) {
+        myViewModel.checkFilter.observe(this) { it ->
+            //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
             val temp = it.split(" ")
-            /*for (i in chipList.indices) {
-                // 마지막 Chip 뷰의 인덱스를 계산
-                val lastChildIndex = nbrBinding.readSetFilterCg.childCount - 1
-
-                // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
-                // 현재 Chip을 바로 그 앞에 추가
-                if (lastChildIndex >= 0) {
-                    nbrBinding.readSetFilterCg.addView(chipList[i], lastChildIndex)
-                } else {
-                    // ChipGroup에 자식이 없는 경우, 그냥 추가
-                    nbrBinding.readSetFilterCg.addView(chipList[i])
+            when (temp[6]) {
+                "true" -> {
+                    println("true")
+                    mttBinding.moreAddFilterBtnSg.removeAllViewsInLayout()
                 }
-            }*/
-            if (temp.size >= 4) {
-                when (temp[5]) {
-                    "true" -> {
-                        println("true")
-                        mttBinding.moreAddFilterBtnSg.removeAllViewsInLayout()
-                    }
-                    "false" -> {
+                "false" -> {
 
-                    }
                 }
-                when (temp[2]) {
-                    "등교" -> {
-                        chipList.add(createNewChip(
-                            text = "등교"
-                        ))
-                        /*val params = LayoutParams(
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        )
-                        params.setMargins(20, 15, 0, 15) // 왼쪽, 위, 오른쪽, 아래 순서입니다.
+            }
+            when (temp[3]) {
+                "등교" -> {
+                    chipList.add(createNewChip(
+                        text = "등교"
+                    ))
+                    /*val params = LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                    params.setMargins(20, 15, 0, 15) // 왼쪽, 위, 오른쪽, 아래 순서입니다.
 
-                        val btn = Button(this).apply {
-                            layoutParams = params
-                            *//*setOnClickListener {
+                    val btn = Button(this).apply {
+                        layoutParams = params
+                        *//*setOnClickListener {
                                 println("ciclcc")
                             }*//*
                             setBackgroundResource(R.color.white)
@@ -499,55 +487,133 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                         }
                         mttBinding.moreAddFilterBtnLl.addView(btn)*/
 
-                    }
-                    "하교" -> {
-                        chipList.add(createNewChip(
-                            text = "하교"
-                        ))
-                    }
-                    else -> {
-                        // 다른 경우 처리
+                }
+                "하교" -> {
+                    chipList.add(createNewChip(
+                        text = "하교"
+                    ))
+                }
+                else -> {
+                    // 다른 경우 처리
+                }
+            }
+
+            when (temp[4]) {
+                "남성" -> {
+                    chipList.add(createNewChip(
+                        text = "남성"
+                    ))
+                }
+                "여성" -> {
+                    chipList.add(createNewChip(
+                        text = "여성"
+                    ))
+                }
+                else -> {
+
+                }
+            }
+
+            when (temp[5]) {
+                "흡연여부 O" -> {
+                    chipList.add(createNewChip(
+                        text = "흡연여부 O"
+                    ))
+                }
+                "흡연여부 X" -> {
+                    chipList.add(createNewChip(
+                        text = "흡연여부 O"
+                    ))
+                }
+                else -> {
+
+                }
+            }
+
+            var tempFilterPostData : List<PostData?> = ArrayList()
+            CoroutineScope(Dispatchers.IO).launch {
+                //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
+                for (i in temp.indices) {
+                    when(temp[i]) {
+                        temp[0] -> { //날짜
+                            if (temp[0].isNotEmpty()) {
+                                //null 값을 제외한 List를 반환
+                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.postTargetDate == temp[0] }
+                            }
+                        }
+                        temp[1] -> { //시간
+                            if (temp[1].isNotEmpty() && tempFilterPostData.isEmpty()) {
+                                //null 값을 제외한 List를 반환
+                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.postTargetTime == temp[1] }
+                            } else if (temp[1].isNotEmpty()) {
+                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.postTargetTime == temp[1] }
+                            }
+                        }
+                        temp[2] -> { //인원수
+                            if (temp[2].isNotEmpty() && tempFilterPostData.isEmpty()) {
+                                //null 값을 제외한 List를 반환
+                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.postParticipation == temp[2].toInt() }
+                            } else if (temp[2].isNotEmpty()) {
+                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.postParticipation == temp[2].toInt() }
+                            }
+                        }
+                        temp[3] -> { //등하교
+                            if (temp[3].isNotEmpty() && tempFilterPostData.isEmpty()) {
+                                var postVerifyGoReturn: Boolean?
+                                postVerifyGoReturn = temp[3] == "등교"
+
+                                //null 값을 제외한 List를 반환
+                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.postVerifyGoReturn == postVerifyGoReturn }
+                            } else if (temp[3].isNotEmpty()) {
+                                var postVerifyGoReturn: Boolean?
+                                postVerifyGoReturn = temp[3] == "등교"
+
+                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.postVerifyGoReturn == postVerifyGoReturn }
+                            }
+                        }
+                        temp[4] -> { //성별
+                            if (temp[4].isNotEmpty() && tempFilterPostData.isEmpty()) {
+                                var isGender: Boolean?
+                                isGender = temp[4] == "여성"
+
+                                //null 값을 제외한 List를 반환
+                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.user.gender == isGender }
+                            } else if (temp[4].isNotEmpty()) {
+                                var isGender: Boolean?
+                                isGender = temp[4] == "여성"
+
+                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.user.gender == isGender }
+                            }
+                        }
+                        temp[5] -> { //흡연여부
+                            if (temp[5].isNotEmpty() && tempFilterPostData.isEmpty()) {
+                                var isSmoke: Boolean?
+                                isSmoke = temp[5] == "흡연O"
+
+                                //null 값을 제외한 List를 반환
+                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.user.verifySmoker == isSmoke }
+                            } else if (temp[5].isNotEmpty()) {
+                                var isSmoke: Boolean?
+                                isSmoke = temp[5] == "흡연O"
+
+                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.user.verifySmoker == isSmoke }
+                            }
+                        }
                     }
                 }
+            }
 
-                when (temp[3]) {
-                    "남성" -> {
-                        chipList.add(createNewChip(
-                            text = "남성"
-                        ))
-                    }
-                    "여성" -> {
-                        chipList.add(createNewChip(
-                            text = "여성"
-                        ))
-                    }
-                }
+            for (i in chipList.indices) {
+                // 마지막 Chip 뷰의 인덱스를 계산
+                val lastChildIndex = mttBinding.moreAddFilterBtnSg.childCount - 1
 
-                when (temp[4]) {
-                    "흡연여부 O" -> {
-                        chipList.add(createNewChip(
-                            text = "흡연여부 O"
-                        ))
-                    }
-                    "흡연여부 X" -> {
-                        chipList.add(createNewChip(
-                            text = "흡연여부 O"
-                        ))
-                    }
-                }
-
-                for (i in chipList.indices) {
-                    // 마지막 Chip 뷰의 인덱스를 계산
-                    val lastChildIndex = mttBinding.moreAddFilterBtnSg.childCount - 1
-
-                    // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
-                    // 현재 Chip을 바로 그 앞에 추가
-                    if (lastChildIndex >= 0) {
-                        mttBinding.moreAddFilterBtnSg.addView(chipList[i], lastChildIndex)
-                    } else {
-                        // ChipGroup에 자식이 없는 경우, 그냥 추가
-                        mttBinding.moreAddFilterBtnSg.addView(chipList[i])
-                    }
+                // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
+                // 현재 Chip을 바로 그 앞에 추가
+                if (lastChildIndex >= 0) {
+                    mttBinding.moreAddFilterBtnSg.addView(chipList[i], lastChildIndex)
+                } else {
+                    // ChipGroup에 자식이 없는 경우, 그냥 추가
+                    mttBinding.moreAddFilterBtnSg.addView(chipList[i])
                 }
             }
         }

@@ -104,16 +104,17 @@ class CompleteActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun deepLink(packageName: String, cost : Int) {
         // 딥링크 URI를 정확히 작성해야 합니다.
-        val uri = Uri.parse("miopay://deeplink?cost=$${cost}")
+        /*val uri = Uri.parse("miopay://deeplink?cost=$${cost}")
 
-        val intent = Intent(Intent.ACTION_VIEW, uri)
+        val intent = Intent(Intent.ACTION_VIEW, uri)*/
 
         // 토스 앱의 패키지 이름을 알아야 합니다. -> packageName
 
+        val intentPackageName = packageManager.getLaunchIntentForPackage(packageName)
+
         // 토스 앱이 설치되어 있는지 확인하고 실행합니다.
         if (isPackageInstalled(packageName)) {
-            intent.setPackage(packageName)
-            startActivity(intent)
+            startActivity(intentPackageName)
         } else {
             if (packageName == "viva.republica.toss") {
                 // 토스 앱이 설치되어 있지 않은 경우 처리할 내용을 여기에 추가합니다.

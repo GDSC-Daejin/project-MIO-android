@@ -163,21 +163,22 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             isCategory = temp!!.postCategory == "carpool"
 
             if (temp?.user?.gender != null && temp?.user?.verifySmoker != null && temp?.postVerifyGoReturn != null) {
-                chipList.add(createNewChip(text = if (temp?.postVerifyGoReturn == true) {
-                    "등교"
+                chipList.add(createNewChip(text = if (temp?.user?.verifySmoker == true) {
+                    "흡연 O"
                 } else {
-                    "하교"
+                    "흡연 X"
                 }))
                 chipList.add(createNewChip(text = if (temp?.user?.gender == true) {
                     "여성"
                 } else {
                     "남성"
                 }))
-                chipList.add(createNewChip(text = if (temp?.user?.verifySmoker == true) {
-                    "흡연 O"
+                chipList.add(createNewChip(text = if (temp?.postVerifyGoReturn == true) {
+                    "등교"
                 } else {
-                    "흡연 X"
+                    "하교"
                 }))
+
 
                 for (i in chipList.indices) {
                     // 마지막 Chip 뷰의 인덱스를 계산
@@ -337,7 +338,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     val api = retrofit2.create(MioInterface::class.java)
                     /////////
 
-                    //여기 데이터 나오는 대로 처리 내일 수정 Todo
                     CoroutineScope(Dispatchers.IO).launch {
                         api.checkParticipate(postId = temp!!.postID).enqueue(object : Callback<Boolean> {
                             override fun onResponse(call: Call<Boolean>, response: Response<Boolean>) {

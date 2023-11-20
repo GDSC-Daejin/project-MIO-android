@@ -1093,7 +1093,6 @@ class TaxiTabFragment : Fragment() {
                         }
                         //livemodel을 통해 저장
                         //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
-                        noticeBoardAdapter!!.notifyDataSetChanged()
                     }
                     //edit
                     1 -> {

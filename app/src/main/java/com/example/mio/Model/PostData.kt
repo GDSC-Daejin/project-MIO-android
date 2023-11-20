@@ -9,8 +9,8 @@ data class PostData(
     var postTargetTime : String,
     var postCategory : String,
     var postLocation : String,
-    var postParticipation : Int,
-    var postParticipationTotal : Int,
+    var postParticipation : Int, //현재 함께할 손님 인원수
+    var postParticipationTotal : Int, //총 받을 손님 인원수
     var postCost : Int,
     var postVerifyGoReturn: Boolean, //등/하교 -> true 등, false 하
     var user : User

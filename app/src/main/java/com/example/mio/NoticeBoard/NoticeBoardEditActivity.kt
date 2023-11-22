@@ -100,7 +100,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
     /*첫 번째 vf*/
     //선택한 날짜
-    private var selectTargetDate = ""
+    private var selectTargetDate : String? = ""
     private var selectFormattedDate = ""
     private var isCategory = false //true : 카풀, false : 택시
     private var selectCategory = ""
@@ -108,7 +108,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     //설정한 제목
     private var editTitle = ""
     //선택한 시간
-    private var selectTime = ""
+    private var selectTime :String?= ""
     private var selectFormattedTime = ""
     private var hour1 = 0
     private var minute1 = 0
@@ -419,6 +419,9 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 //isCalendar = true
                 isAllCheck.isFirstVF.isCalendar = true
                 myViewModel.postCheckValue(isAllCheck)
+                if (selectTargetDate != null) {
+                    mBinding.editCalendar.setImageResource(R.drawable.filter_calendar_update_icon)
+                }
             }
             DatePickerDialog(this, R.style.MySpinnerDatePickerStyle, data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(
                 Calendar.DAY_OF_MONTH)).show()
@@ -1074,6 +1077,9 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     mBinding.editSelectTime.text = selectTime
                     mBinding.editSelectTime.setTextColor(ContextCompat.getColor(this ,R.color.mio_gray_11))
                     isAllCheck.isFirstVF.isTime = true
+                }
+                if (selectTime != null) {
+                    mBinding.editTime.setImageResource(R.drawable.filter_time_update_icon)
                 }
             }
         val timePickerDialog = TimePickerDialog(

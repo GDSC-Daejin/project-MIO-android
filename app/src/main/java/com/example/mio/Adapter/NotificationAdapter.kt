@@ -92,37 +92,13 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationViewHolder {
         context = parent.context
-        sharedPref = this.context?.let { SharedPref(it) }
+        sharedPref = SharedPref(context)
         binding = NotificationItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return NotificationViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
         holder.bind(notificationItemData[holder.adapterPosition], holder.adapterPosition)
-        /*binding.deleteNotify.setOnClickListener {
-            val builder : AlertDialog.Builder = AlertDialog.Builder(context)
-            val ad : AlertDialog = builder.create()
-            var deleteData = notificationItemData[holder.adapterPosition]!!.applyDate
-            builder.setTitle(deleteData)
-            builder.setMessage("정말로 삭제하시겠습니까?")
-            builder.setNegativeButton("예",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                    //temp = listData[holder.adapterPosition]!!
-                    //extraditeData()
-                    //testData.add(temp)
-                    //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
-                    removeData(holder.adapterPosition)
-                    //removeServerData(deleteServerData!!)
-                    //println(deleteServerData)
-                })
-
-            builder.setPositiveButton("아니오",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                })
-            builder.show()
-        }*/
     }
 
     override fun getItemCount(): Int {

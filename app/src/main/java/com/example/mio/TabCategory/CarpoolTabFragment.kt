@@ -1,15 +1,14 @@
 package com.example.mio.TabCategory
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.service.autofill.Validators.or
 import android.util.Log
 import android.view.*
-import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,10 +24,7 @@ import com.example.mio.Adapter.NoticeBoardMyAreaAdapter
 import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
-import com.example.mio.Utils.RecyclerviewDecoration
 import com.example.mio.databinding.FragmentCarpoolTabBinding
-import com.example.mio.databinding.FragmentTaxiTabBinding
-import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -40,18 +36,13 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.component1
-import kotlin.collections.component2
-
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
@@ -77,7 +68,7 @@ class CarpoolTabFragment : Fragment() {
     private var noticeBoardMyAreaAdapter : NoticeBoardMyAreaAdapter? = null
 
     //나의 활동 지역
-    private var myAreaItemData : kotlin.collections.ArrayList<PostData> = ArrayList()
+    private var myAreaItemData : ArrayList<PostData> = ArrayList()
 
 
     //캘린더
@@ -156,31 +147,20 @@ class CarpoolTabFragment : Fragment() {
                     var intent : Intent? = null
                     dataPosition = position
                     when(status) {
-                        /*CurrentNoticeBoardAdapter.PostStatus.Passenger -> {
-                            intent = Intent(activity, PassengersReviewActivity::class.java).apply {
-                                putExtra("type", "PASSENGER")
-                                putExtra("postDriver", temp.user)
-                            }
-                        }
-
-                        CurrentNoticeBoardAdapter.PostStatus.Driver -> {
-                            intent = Intent(activity, PassengersReviewActivity::class.java).apply {
-                                putExtra("type", "DRIVER")
-                                putExtra("postPassengers", carpoolParticipantsData)
-                            }
-                        }*/
-                        CurrentNoticeBoardAdapter.PostStatus.Passenger -> {
+                        CurrentNoticeBoardAdapter.PostStatus.Passenger -> {//내가 손님으로 카풀이 완료되었을 떄
                             intent = Intent(activity, CompleteActivity::class.java).apply {
                                 putExtra("type", "PASSENGER")
                                 putExtra("postDriver", temp.user)
                             }
+                            sendAlarmData("PASSENGER", position, currentTaxiAllData[position])
                         }
 
-                        CurrentNoticeBoardAdapter.PostStatus.Driver -> {
+                        CurrentNoticeBoardAdapter.PostStatus.Driver -> { //내가 운전자로 카풀이 완료되었을 떄
                             intent = Intent(activity, CompleteActivity::class.java).apply {
                                 putExtra("type", "DRIVER")
                                 //putExtra("postPassengers", carpoolParticipantsData)
                             }
+                            sendAlarmData("DRIVER", position, currentTaxiAllData[position])
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Neither -> {
@@ -459,7 +439,7 @@ class CarpoolTabFragment : Fragment() {
 
     private fun setCalendarData() {
 
-        val cal = Calendar.getInstance()
+        //val cal = Calendar.getInstance()
         //cal.set(2023, 5, 1)
         /*cal.add(Calendar.YEAR, LocalDate.now().year)
         cal.add(Calendar.MONTH, LocalDate.now().monthValue)
@@ -482,7 +462,9 @@ class CarpoolTabFragment : Fragment() {
         //현재 달의 마지막 날짜
         //val lastDayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
         //val lastDayOfMonth = localDate.withDayOfMonth(localDate.lengthOfMonth())
-        for (i in 1..lastDayOfMonth) {
+
+        //현재 날짜에서 이번달의 마지막 날짜 까지 ex)오늘 11월20일이면 캘린더 리사이클러뷰에는 20일 부터 30일까지
+        for (i in localDate.toString().substring(8..9).toInt()..lastDayOfMonth) {
             val date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, i)
             val dayOfWeek: DayOfWeek = date.dayOfWeek
             val tempDayOfWeek = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
@@ -492,9 +474,14 @@ class CarpoolTabFragment : Fragment() {
             //현재 월, 현재 요일, 날짜
             //println(DateData(LocalDate.now().year.toString(), LocalDate.now().month.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
 
-            calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), tempDayOfWeek.toString().substring(0, 1), i.toString()))
-
+            if (calendarItemData.isEmpty()) {
+                calendarItemData.add(DateData(LocalDate.now().year.toString(), "오늘", tempDayOfWeek.toString().substring(0, 1), i.toString()))
+            } else {
+                calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), tempDayOfWeek.toString().substring(0, 1), i.toString()))
+            }
         }
+        val currentDate = localDate.toString().substring(8..9).toInt()
+        triggerFirstItemOfCalendarAdapter(currentDate)
     }
 
 
@@ -863,7 +850,7 @@ class CarpoolTabFragment : Fragment() {
                             ))
                             currentNoticeBoardAdapter!!.notifyDataSetChanged()
                         }
-
+                        //val list : ArrayList<Participants> = ArrayList()
                         if (responseData) {
                             CoroutineScope(Dispatchers.IO).launch {
                                 response.body()?.forEach { content ->
@@ -903,6 +890,27 @@ class CarpoolTabFragment : Fragment() {
                                     }
                                 }*/
                             }
+                        /*CoroutineScope(Dispatchers.IO).launch {
+                                for (i in response.body()?.indices!!) { //List<content>
+                                    for (j in response.body()?.get(i)?.participants?.indices!!) {
+                                        list.add(Participants(
+                                            response.body()!![i].participants!![j].id,
+                                            response.body()!![i].participants!![j].email,
+                                            response.body()!![i].participants!![j].studentId,
+                                            response.body()!![i].participants!![j].profileImageUrl,
+                                            response.body()!![i].participants!![j].name,
+                                            response.body()!![i].participants!![j].accountNumber,
+                                            response.body()!![i].participants!![j].gender,
+                                            response.body()!![i].participants!![j].verifySmoker,
+                                            response.body()!![i].participants!![j].roleType,
+                                            response.body()!![i].participants!![j].status,
+                                            response.body()!![i].participants!![j].mannerCount,
+                                            response.body()!![i].participants!![j].grade,
+                                        ))
+                                    }
+                                    carpoolParticipantsData.add()
+                                }
+                            }*/
                         }
 
                         if (currentTaxiAllData.isEmpty()) {
@@ -1184,21 +1192,118 @@ class CarpoolTabFragment : Fragment() {
         }
     }
 
-    /*override fun onAttach(context: Context) {
-        super.onAttach(context)
-        callback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (System.currentTimeMillis() - backPressedTime < 2500) {
-                    activity?.finish()
-                    return
+    //오늘날짜에 선택되게
+    private fun triggerFirstItemOfCalendarAdapter(currentDatePos : Int) {
+        taxiTabBinding.calendarRV.post {
+            taxiTabBinding.calendarRV.findViewHolderForAdapterPosition(currentDatePos)?.itemView?.performClick()
+        }
+    }
+
+    private fun sendAlarmData(status:String , dataPos : Int, postData : PostData) { //카풀이 종료(종료버튼 눌렀을 때) 되었을 때 후기 알림
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val myId = saveSharedPreferenceGoogleLogin.getUserId(requireActivity()).toString()
+        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
+        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity()).toString().substring(0..7)
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        //.client(clientBuilder)
+
+        //Authorization jwt토큰 로그인
+        val interceptor = Interceptor { chain ->
+
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    return@Interceptor chain.proceed(newRequest)
                 }
-                Toast.makeText(activity, "한 번 더 누르면 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()
-                backPressedTime = System.currentTimeMillis()
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        ///////////////////////////////
+        val now = System.currentTimeMillis()
+        val date = Date(now)
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+        val currentDate = sdf.format(date)
+        val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
+        val nowDate = nowFormat?.toString()
+
+
+
+        //내가 운전자 일때 후기를 받을 사람들한테 알림 전송 //여기수정 TODO
+        if (status == "DRIVER") {
+            for (i in carpoolParticipantsData.indices) {
+                //userId 가 알람 받는 사람
+                val temp = AddAlarmData(nowDate!!, "${carpoolParticipantsData[dataPos].id}님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
+
+                //entity가 알람 받는 사람, user가 알람 전송한 사람
+                CoroutineScope(Dispatchers.IO).launch {
+                    api.addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
+                        override fun onResponse(
+                            call: Call<AddAlarmResponseData?>,
+                            response: Response<AddAlarmResponseData?>
+                        ) {
+                            if (response.isSuccessful) {
+                                println("succcc send alarm")
+                            } else {
+                                println("faafa alarm")
+                                Log.d("alarm", response.errorBody()?.string()!!)
+                                Log.d("message", call.request().toString())
+                                println(response.code())
+                            }
+                        }
+
+                        override fun onFailure(call: Call<AddAlarmResponseData?>, t: Throwable) {
+                            Log.d("error", t.toString())
+                        }
+
+                    })
+                }
+            }
+        } else {
+            //내가 손님일 때 후기를 써주길 원하는 운전자에게 쓰도록 유도
+            val temp = AddAlarmData(nowDate!!, "${postData.user.studentId}님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
+
+            //entity가 알람 받는 사람, user가 알람 전송한 사람
+            CoroutineScope(Dispatchers.IO).launch {
+                api.addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
+                    override fun onResponse(
+                        call: Call<AddAlarmResponseData?>,
+                        response: Response<AddAlarmResponseData?>
+                    ) {
+                        if (response.isSuccessful) {
+                            println("succcc send alarm")
+                        } else {
+                            println("faafa alarm")
+                            Log.d("alarm", response.errorBody()?.string()!!)
+                            Log.d("message", call.request().toString())
+                            println(response.code())
+                        }
+                    }
+
+                    override fun onFailure(call: Call<AddAlarmResponseData?>, t: Throwable) {
+                        Log.d("error", t.toString())
+                    }
+
+                })
             }
         }
-        activity?.onBackPressedDispatcher!!.addCallback(this, callback)
-        //mainActivity = context as MainActivity
-    }*/
+
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -1218,6 +1323,13 @@ class CarpoolTabFragment : Fragment() {
             testselectCalendarData = textValue
         }
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val localDate = LocalDate.now().toString()
+        val currentDate = localDate.substring(8..9).toInt()
+        triggerFirstItemOfCalendarAdapter(currentDate)
     }
 
     companion object {

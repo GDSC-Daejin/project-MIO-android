@@ -9,7 +9,7 @@
 
     <!--프로필-->
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/linearLayout9"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -21,10 +21,14 @@
 
 
         <LinearLayout
+            android:id="@+id/linearLayout12"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <!--성별, 비흡연자 체크-->
             <LinearLayout
@@ -122,11 +126,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginEnd="20dp"
-            android:layout_marginStart="10dp"
             android:background="@drawable/account_review_btn_layout"
-            />
-    </LinearLayout>
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/linearLayout12"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!--유저 등급표시-->
     <LinearLayout
@@ -171,11 +176,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:layout_weight="10"
+            android:layout_weight="1"
             android:max="120"
             android:progress="20"
-            android:progressTint="@drawable/account_progressbar_gradient"
-            android:progressBackgroundTint="@color/mio_gray_7"
+            android:progressBackgroundTint="@color/mio_gray_5"
+            android:progressDrawable="@drawable/progress_drawable"
+            android:scaleY="0.6"
             />
 
         <LinearLayout
@@ -267,6 +273,7 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/account_category_tabLayout" />
 

@@ -166,7 +166,8 @@
                     android:fontFamily="@font/pretendard_medium"
                     android:textSize="18sp"
                     android:hint="제목을 입력해주세요"
-                    android:textColorHint="@color/mio_gray_6" />
+                    android:textColorHint="@color/mio_gray_6"
+                    android:inputType="textMultiLine" />
 
             </LinearLayout>
 
@@ -298,7 +299,7 @@
 
                     <Button
                         android:id="@+id/edit_category_taxi_btn"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/edit_check_btn"
                         android:fontFamily="@font/pretendard_medium"
@@ -643,7 +644,7 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="27dp"
                 android:layout_marginEnd="27dp"
                 android:orientation="vertical"
@@ -657,32 +658,31 @@
                     android:text="등/하교"
                     android:textColor="@color/mio_gray_11" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
                     <Button
                         android:id="@+id/edit_gtschool_btn"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/edit_check_btn"
                         android:text="등교"
-                        android:textColor="@color/mio_gray_11" />
-
-                    <Space
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp" />
+                        android:textColor="@color/mio_gray_11"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <Button
                         android:id="@+id/edit_aschool_btn"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/edit_check_btn"
                         android:text="하교"
-                        android:textColor="@color/mio_gray_11" />
-                </LinearLayout>
+                        android:textColor="@color/mio_gray_11"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
 
                 <!--성별-->
@@ -694,8 +694,8 @@
                     android:text="성별"
                     android:textColor="@color/mio_gray_11" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
@@ -706,12 +706,9 @@
                         android:background="@drawable/edit_check_btn"
                         android:contentDescription="남성"
                         android:text="남성"
-                        android:textColor="@color/mio_gray_11" />
-
-                    <Space
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp" />
+                        android:textColor="@color/mio_gray_11"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <Button
                         android:id="@+id/edit_woman_btn"
@@ -719,8 +716,10 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/edit_check_btn"
                         android:text="여성"
-                        android:textColor="@color/mio_gray_11" />
-                </LinearLayout>
+                        android:textColor="@color/mio_gray_11"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -730,8 +729,8 @@
                     android:text="흡연여부"
                     android:textColor="@color/mio_gray_11" />
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
@@ -741,12 +740,9 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/edit_check_btn"
                         android:text="O"
-                        android:textColor="@color/mio_gray_11" />
-
-                    <Space
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp" />
+                        android:textColor="@color/mio_gray_11"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <Button
                         android:id="@+id/edit_nsmoker_btn"
@@ -754,11 +750,11 @@
                         android:layout_height="wrap_content"
                         android:background="@drawable/edit_check_btn"
                         android:text="X"
-                        android:textColor="@color/mio_gray_11" />
-                </LinearLayout>
-
+                        android:textColor="@color/mio_gray_11"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
-
         </LinearLayout>
 
         <!--네번째 뷰플립-->

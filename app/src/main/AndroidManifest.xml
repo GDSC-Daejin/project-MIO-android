@@ -37,9 +37,15 @@
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="33">
 
+        <!--nohistory = stack에 저장 불가 시켜 뒤로가기해도 해당창은 뜨지않음-->
+        <!--android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" = 세로모드만 가능하도록 잠금-->
         <activity
             android:name=".CompleteActivity"
-            android:exported="true">
+            android:screenOrientation="portrait"
+            android:noHistory="true"
+            android:exported="true"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -56,27 +62,43 @@
 
         <activity
             android:name=".OpenSourceManagementActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".TabAccount.AccountReviewActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".TabAccount.ProfileActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".PassengersReviewActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".ParticipationReceiveActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".TabAccount.AccountSettingActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".TabCategory.MoreCarpoolTabActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".TabCategory.MoreTaxiTabActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
 
         <receiver
@@ -92,29 +114,45 @@
 
         <activity
             android:name=".ApplyNextActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".NoticeBoard.NoticeBoardEditActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".NoticeBoard.NoticeBoardReadActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".NoticeBoard.NoticeBoardActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".SearchTap.SearchResultActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name=".SearchTap.NearbypostActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="false" />
         <activity
             android:name=".LoginActivity"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
             android:exported="true"
             android:theme="@style/Theme.App.Splash">
             <intent-filter>

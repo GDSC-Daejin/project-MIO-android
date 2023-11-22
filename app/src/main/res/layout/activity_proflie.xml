@@ -86,11 +86,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:layout_weight="10"
+            android:layout_weight="1"
             android:max="120"
-            android:progress="20"
-            android:progressTint="@drawable/account_progressbar_gradient"
-            android:progressBackgroundTint="@color/mio_gray_7"
+            android:progress="120"
+            android:progressBackgroundTint="@color/mio_gray_5"
+            android:progressDrawable="@drawable/progress_drawable"
+            android:scaleY="0.6"
             />
 
         <LinearLayout

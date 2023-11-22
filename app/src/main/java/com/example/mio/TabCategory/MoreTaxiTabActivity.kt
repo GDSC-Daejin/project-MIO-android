@@ -92,6 +92,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             myViewModel.postCheckFilter(getBottomData)
                             mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_gray_8))
                             mttBinding.moreFilterBtn.setBackgroundResource(R.drawable.filter_icon)
+                            setSelectData()
                         } else {
                             getBottomData = value
                             myViewModel.postCheckFilter(getBottomData)
@@ -601,6 +602,26 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                         }
                     }
                 }
+                moreTaxiAllData.clear()
+
+                tempFilterPostData.forEach {
+                    moreTaxiAllData.add(PostData(
+                        it?.accountID!!,
+                        it.postID,
+                        it.postTitle,
+                        it.postContent,
+                        it.postTargetDate,
+                        it.postTargetTime,
+                        it.postCategory,
+                        it.postLocation,
+                        it.postParticipation,
+                        it.postParticipationTotal,
+                        it.postCost,
+                        it.postVerifyGoReturn,
+                        it.user
+                    ))
+                }
+                mtAdapter?.notifyDataSetChanged()
             }
 
             for (i in chipList.indices) {

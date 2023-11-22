@@ -85,6 +85,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             DatePickerDialog(requireActivity(),
                 R.style.MySpinnerDatePickerStyle, data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(
                 Calendar.DAY_OF_MONTH)).show()
+
+            bsBinding.filterCalendar.setImageResource(R.drawable.filter_calendar_update_icon)
         }
 
         bsBinding.filterTime.setOnClickListener {
@@ -109,6 +111,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             timePickerDialog.setTitle("Choose hour:")
             timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
             timePickerDialog.show()*/
+            bsBinding.filterTime.setImageResource(R.drawable.filter_time_update_icon)
         }
 
         bsBinding.filterChecklistIv.setOnClickListener {

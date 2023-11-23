@@ -1,14 +1,26 @@
 package com.example.mio
 
+import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import androidx.core.content.ContextCompat
-import com.example.mio.Model.Participants
-import com.example.mio.Model.User
+import com.example.mio.Model.*
 import com.example.mio.databinding.ActivityPassengersReviewBinding
 import com.google.android.material.chip.Chip
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class PassengersReviewActivity : AppCompatActivity() {
     private lateinit var prBinding : ActivityPassengersReviewBinding
@@ -21,6 +33,10 @@ class PassengersReviewActivity : AppCompatActivity() {
     private var passengersData = ArrayList<Participants>()
     private var driverData : User? = null
     private var passengersChipList = ArrayList<Chip>()
+    private var passengersChipItemData = ArrayList<ChipData>()
+    private var passengersReviewData = ArrayList<String?>()
+
+    private var postData : AlarmPost? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,13 +48,18 @@ class PassengersReviewActivity : AppCompatActivity() {
 
         if (type == "PASSENGER") { //내가 손님일때
             driverData = intent.getSerializableExtra("postDriver") as User
+            postData = intent.getSerializableExtra("Data") as AlarmPost?
+
         } else if (type == "DRIVER") { //내가 운전자일때
             passengersData = intent.getSerializableExtra("postPassengers") as ArrayList<Participants>
+            postData = intent.getSerializableExtra("Data") as AlarmPost?
+
             //여기에 인원 수 만큼 chip? 추가하기 Todo
             for (j in passengersData.indices) {
                 passengersChipList.add(createNewChip(
                     passengersData[j].studentId
                 ))
+                passengersChipItemData.add(ChipData(passengersData[j].studentId, j))
             }
 
             for (i in passengersChipList.indices) {
@@ -80,7 +101,42 @@ class PassengersReviewActivity : AppCompatActivity() {
         })
 
         prBinding.passengersReviewRegistrationBtn.setOnClickListener {
-            //후기 보내기 Todo
+            sendReviewData()
+        }
+
+        prBinding.reviewSetPassengersCg.setOnCheckedStateChangeListener { group, checkedId ->
+            val selectedChip = prBinding.reviewSetPassengersCg.findViewById<Chip>(prBinding.reviewSetPassengersCg.checkedChipId)
+            val chipName = selectedChip?.text
+
+
+            if (passengersChipItemData.find { it.chipName == chipName } != null) {
+                passengersReviewData.add(reviewEditText)
+                reviewEditText = ""
+                prBinding.passengersReviewEt.text.clear()
+                //background 변경
+                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this , R.color.mio_blue_1))
+                selectedChip.backgroundTintList = colorStateList
+                //테두리 변경
+                selectedChip.chipStrokeColor = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.mio_blue_4))
+                //텍스트컬러 변경
+                selectedChip.setTextColor(ContextCompat.getColor(this, R.color.mio_blue_4))
+                //체크 아이콘 색변경?
+                val drawable = selectedChip.chipIcon
+                drawable?.setTint(ContextCompat.getColor(this, R.color.mio_blue_4))
+            } else {
+                //background 변경
+                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this , R.color.mio_gray_1))
+                selectedChip.backgroundTintList = colorStateList
+                //테두리 변경
+                selectedChip.chipStrokeColor = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.mio_gray_5))
+                //텍스트컬러 변경
+                selectedChip.setTextColor(ContextCompat.getColor(this, R.color.mio_gray_7))
+                //체크 아이콘 색변경?
+                val drawable = selectedChip.chipIcon
+                drawable?.setTint(ContextCompat.getColor(this, R.color.mio_gray_7))
+            }
+
+            Log.d("TAG", "currentCategory: $chipName")
         }
 
 
@@ -171,8 +227,95 @@ class PassengersReviewActivity : AppCompatActivity() {
 
     }
 
+    private fun sendReviewData() {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+
+        /////////interceptor
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        //Authorization jwt토큰 로그인
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        ///
+        if (type == "DRIVER") { //내가 운전자일 때 손님들의 리뷰데이터를 전송
+            for (i in passengersData.indices) {
+                val temp = PassengersReviewData(mannerCount, reviewEditText, postData?.id!!)
+                CoroutineScope(Dispatchers.IO).launch {
+                    api.addPassengersReview(passengersData[i].id, temp).enqueue(object : Callback<PassengersReviewData> {
+                        override fun onResponse(
+                            call: Call<PassengersReviewData>,
+                            response: Response<PassengersReviewData>
+                        ) {
+                            if (response.isSuccessful) {
+                                Log.d("SUCCESS review", "탑승자들의 review를 잘보냄 : ${response.code()}")
+
+
+                            } else {
+                                Log.e("ERROR", "review1 : ${response.errorBody().toString()}")
+                                Log.e("ERROR", "review2 : ${response.message().toString()}")
+                                Log.e("ERROR", "review3 : ${response.code().toString()}")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
+                            Log.e("ERROR", "review : ${t.message.toString()}")
+                        }
+                    })
+                }
+            }
+        } else { //내가 손님일 때 운전자의 리뷰데이터를 전송
+            val temp = DriversReviewData(mannerCount, reviewEditText)
+            CoroutineScope(Dispatchers.IO).launch {
+                api.addDriversReview(postData?.id!!, temp).enqueue(object : Callback<PassengersReviewData> {
+                    override fun onResponse(
+                        call: Call<PassengersReviewData>,
+                        response: Response<PassengersReviewData>
+                    ) {
+                        if (response.isSuccessful) {
+                            Log.d("SUCCESS review", "운전자의 review를 잘보냄 : ${response.code()}")
+
+
+                        } else {
+                            Log.e("ERROR", "review1 : ${response.errorBody().toString()}")
+                            Log.e("ERROR", "review2 : ${response.message().toString()}")
+                            Log.e("ERROR", "review3 : ${response.code().toString()}")
+                        }
+                    }
+
+                    override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
+                        Log.e("ERROR", "review : ${t.message.toString()}")
+                    }
+                })
+            }
+        }
+
+    }
+
     private fun createNewChip(text: String): Chip {
-        val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, null, false) as Chip
+        val chip = layoutInflater.inflate(R.layout.review_chip_layout, null, false) as Chip
         chip.text = text
         //chip.isCloseIconVisible = false
         return chip

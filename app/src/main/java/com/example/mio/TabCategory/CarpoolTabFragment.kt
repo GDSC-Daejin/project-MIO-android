@@ -78,7 +78,7 @@ class CarpoolTabFragment : Fragment() {
     //게시글 전체 데이터 및 adapter와 공유하는 데이터
     private var carpoolAllData : ArrayList<PostData> = ArrayList()
     private var currentTaxiAllData = ArrayList<PostData>()
-    private var carpoolParticipantsData = kotlin.collections.ArrayList<Participants>()
+    private var carpoolParticipantsData = ArrayList<ArrayList<Participants>?>()
     //게시글 선택 시 위치를 잠시 저장하는 변수
     private var dataPosition = 0
     //게시글 위치
@@ -853,23 +853,27 @@ class CarpoolTabFragment : Fragment() {
                         //val list : ArrayList<Participants> = ArrayList()
                         if (responseData) {
                             CoroutineScope(Dispatchers.IO).launch {
-                                response.body()?.forEach { content ->
-                                    content.participants?.forEach { participants ->
-                                        carpoolParticipantsData.add(Participants(
-                                            participants.id,
-                                            participants.email,
-                                            participants.studentId,
-                                            participants.profileImageUrl,
-                                            participants.name,
-                                            participants.accountNumber,
-                                            participants.gender,
-                                            participants.verifySmoker,
-                                            participants.roleType,
-                                            participants.status,
-                                            participants.mannerCount,
-                                            participants.grade,
+                                for (i in response.body()!!.indices) {
+
+                                    carpoolParticipantsData.add(response.body()!![i].participants)
+
+                                    /*for (j in response.body()!![i].participants?.indices!!) {
+                                        tempData.add(Participants(
+                                            response.body()!![i].participants?.get(j)?.id!!,
+                                            response.body()!![i].participants?.get(j)?.email!!,
+                                            response.body()!![i].participants?.get(j)?.studentId!!,
+                                            response.body()!![i].participants?.get(j)?.profileImageUrl!!,
+                                            response.body()!![i].participants?.get(j)?.name!!,
+                                            response.body()!![i].participants?.get(j)?.accountNumber!!,
+                                            response.body()!![i].participants?.get(j)?.gender!!,
+                                            response.body()!![i].participants?.get(j)?.verifySmoker!!,
+                                            response.body()!![i].participants?.get(j)?.roleType!!,
+                                            response.body()!![i].participants?.get(j)?.status!!,
+                                            response.body()!![i].participants?.get(j)?.mannerCount!!,
+                                            response.body()!![i].participants?.get(j)?.grade!!,
                                         ))
                                     }
+                                    s.add(tempData)*/
                                 }
                                 /*for (i in response.body()!!.indices) {
                                     for (j in response.body()!![i].participants.indices) {
@@ -1244,11 +1248,11 @@ class CarpoolTabFragment : Fragment() {
 
 
 
-        //내가 운전자 일때 후기를 받을 사람들한테 알림 전송 //여기수정 TODO
+        //내가 운전자 일때 후기를 받을 손님들한테 알림 전송
         if (status == "DRIVER") {
-            for (i in carpoolParticipantsData.indices) {
+            for (i in carpoolParticipantsData[dataPos]?.indices!!) {
                 //userId 가 알람 받는 사람
-                val temp = AddAlarmData(nowDate!!, "${carpoolParticipantsData[dataPos].id}님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
+                val temp = AddAlarmData(nowDate!!, "${carpoolParticipantsData[dataPos]?.get(i)?.id!!}님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
 
                 //entity가 알람 받는 사람, user가 알람 전송한 사람
                 CoroutineScope(Dispatchers.IO).launch {
@@ -1302,7 +1306,6 @@ class CarpoolTabFragment : Fragment() {
                 })
             }
         }
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

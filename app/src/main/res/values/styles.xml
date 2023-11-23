@@ -133,6 +133,7 @@
         <item name="chipStrokeWidth">1dp</item>
         <item name="chipBackgroundColor">@color/mio_gray_1</item>
         <item name="android:textColor">@color/mio_blue_4</item>
+        <!--<item name="android:drawableEnd">@drawable/review_check_icon</item>-->
         <item name="textStartPadding">8dp</item>
         <item name="textEndPadding">8dp</item>
         <item name="chipIconVisible">false</item>
@@ -145,6 +146,51 @@
     </style>
 
     <style name="ChipOverlayTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Any other customization for this theme overlay -->
+    </style>
+
+    <style name="MioChipStyle2" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipStrokeColor">@color/mio_gray_5</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipBackgroundColor">@color/mio_gray_1</item>
+        <item name="android:textColor">@color/mio_gray_7</item>
+        <item name="android:drawableEnd">@drawable/review_check_icon</item>
+        <item name="android:drawablePadding">5dp</item>
+        <item name="textStartPadding">8dp</item>
+        <item name="textEndPadding">8dp</item>
+        <item name="chipIconVisible">false</item>
+        <!--<item name="chipIconTint">@color/icon_tint_category_state</item>
+        <item name="chipIconSize">12dp</item>
+        <item name="iconStartPadding">6dp</item>-->
+        <item name="fontFamily">@font/pretendard_medium</item>
+        <item name="chipEndPadding">3dp</item>
+        <item name="android:theme">@style/ChipOverlayTheme2</item>
+    </style>
+
+    <style name="ChipOverlayTheme2" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Any other customization for this theme overlay -->
+    </style>
+
+    <style name="MioChipUpdateStyle2" parent="Widget.MaterialComponents.Chip.Choice">
+        <item name="chipStrokeColor">@color/mio_blue_4</item>
+        <item name="chipStrokeWidth">1dp</item>
+        <item name="chipBackgroundColor">@color/mio_gray_1</item>
+        <item name="android:textColor">@color/mio_blue_4</item>
+        <item name="android:drawableEnd">@drawable/review_check_update_icon</item>
+        <item name="android:drawablePadding">5dp</item>
+        <item name="android:backgroundTint">@color/mio_blue_1</item>
+        <item name="textStartPadding">8dp</item>
+        <item name="textEndPadding">8dp</item>
+        <item name="chipIconVisible">false</item>
+        <!--<item name="chipIconTint">@color/mio_blue_3</item>-->
+        <item name="chipIconSize">12dp</item>
+        <item name="iconStartPadding">6dp</item>-->
+        <item name="fontFamily">@font/pretendard_medium</item>
+        <item name="chipEndPadding">3dp</item>
+        <item name="android:theme">@style/ChipOverlayUpdateTheme2</item>
+    </style>
+
+    <style name="ChipOverlayUpdateTheme2" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Any other customization for this theme overlay -->
     </style>
     <!--<style name="SwitchTheme">

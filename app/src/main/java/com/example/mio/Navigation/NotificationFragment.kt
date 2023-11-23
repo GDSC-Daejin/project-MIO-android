@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
+import com.example.mio.Adapter.CurrentNoticeBoardAdapter
 import com.example.mio.Adapter.MyAccountPostAdapter
 import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.NotificationAdapter
@@ -61,7 +62,7 @@ class NotificationFragment : Fragment() {
     var title : String? = null
 
     //알람에서 받아온 PostData를 따로 저장
-    private var notificationPostAllData : ArrayList<AlarmPost> = ArrayList()
+    private var notificationPostAllData : ArrayList<AlarmPost?> = ArrayList()
 
     private var dataPosition = 0
 
@@ -98,16 +99,42 @@ class NotificationFragment : Fragment() {
         }
 
 
-        nAdapter!!.setItemClickListener(object : NotificationAdapter.ItemClickListener {
-            override fun onClick(view: View, position: Int, itemId: Int) {
+        nAdapter.setItemClickListener(object : NotificationAdapter.ItemClickListener {
+            override fun onClick(view: View, position: Int, itemId: Int?, status : NotificationAdapter.NotificationStatus) {
                 CoroutineScope(Dispatchers.IO).launch {
                     val temp = notificationPostAllData[position]
+                    var intent : Intent? = null
                     dataPosition = position
                     //여기 구현 완료하기 클릭 시 해당 read로 이동해야함
-                    val intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
-                        putExtra("type", "READ")
-                        putExtra("postItem", temp)
-                        putExtra("uri", temp!!.user.profileImageUrl)
+                    when(status) {
+                        NotificationAdapter.NotificationStatus.Passenger -> {//내가 손님으로 카풀이 완료되었을 떄
+                            intent = Intent(activity, PassengersReviewActivity::class.java).apply {
+                                putExtra("type", "PASSENGER")
+                                putExtra("postDriver", temp?.user)
+                                putExtra("Data", temp)
+                            }
+                        }
+
+                        NotificationAdapter.NotificationStatus.Driver -> { //내가 운전자로 카풀이 완료되었을 떄
+                            intent = Intent(activity, PassengersReviewActivity::class.java).apply {
+                                putExtra("type", "DRIVER")
+                                putExtra("postPassengers", temp?.participants)
+                                putExtra("Data", temp)
+                            }
+                        }
+
+                        NotificationAdapter.NotificationStatus.Neither -> {
+                            intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
+                                putExtra("type", "READ")
+                                putExtra("postItem", temp)
+                                if (temp != null) {
+                                    putExtra("uri", temp.user.profileImageUrl)
+                                }
+                            }
+                        }
+                        else -> {
+
+                        }
                     }
                     requestActivity.launch(intent)
                 }
@@ -226,7 +253,8 @@ class NotificationFragment : Fragment() {
             nfBinding.notNotificationLl.visibility = View.GONE
         }*/
 
-        nAdapter!!.notificationItemData = notificationAllData
+        nAdapter.notificationItemData = notificationAllData
+        nAdapter.notificationContentItemData = notificationPostAllData
         nfBinding.notificationRV.adapter = nAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true

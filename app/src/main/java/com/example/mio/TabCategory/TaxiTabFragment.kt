@@ -89,7 +89,7 @@ class TaxiTabFragment : Fragment() {
     //게시글 전체 데이터 및 adapter와 공유하는 데이터
     private var taxiAllData : ArrayList<PostData> = ArrayList()
     private var currentTaxiAllData = ArrayList<PostData>()
-    private var taxiParticipantsData = kotlin.collections.ArrayList<Participants>()
+    private var taxiParticipantsData = ArrayList<ArrayList<Participants>?>()
     //게시글 선택 시 위치를 잠시 저장하는 변수
     private var dataPosition = 0
     //게시글 위치
@@ -872,23 +872,8 @@ class TaxiTabFragment : Fragment() {
                         }
                         if (responseData) {
                             CoroutineScope(Dispatchers.IO).launch {
-                                response.body()?.forEach { content ->
-                                    content.participants?.forEach { participants ->
-                                        taxiParticipantsData.add(Participants(
-                                            participants.id,
-                                            participants.email,
-                                            participants.studentId,
-                                            participants.profileImageUrl,
-                                            participants.name,
-                                            participants.accountNumber,
-                                            participants.gender,
-                                            participants.verifySmoker,
-                                            participants.roleType,
-                                            participants.status,
-                                            participants.mannerCount,
-                                            participants.grade,
-                                        ))
-                                    }
+                                for (i in response.body()!!.indices) {
+                                    taxiParticipantsData.add(response.body()!![i].participants)
                                 }
                                 /*for (i in response.body()!!.indices) {
                                     for (j in response.body()!![i].participants.indices) {
@@ -1132,9 +1117,9 @@ class TaxiTabFragment : Fragment() {
 
         //내가 운전자 일때 후기를 받을 사람들한테 알림 전송
         if (status == "DRIVER") {
-            for (i in taxiParticipantsData.indices) {
+            for (i in taxiParticipantsData[dataPos]?.indices!!) {
                 //userId 가 알람 받는 사람
-                val temp = AddAlarmData(nowDate!!, "${taxiParticipantsData[dataPos].id}님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
+                val temp = AddAlarmData(nowDate!!, "${taxiParticipantsData[dataPos]?.get(i)?.id!!}님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
 
                 //entity가 알람 받는 사람, user가 알람 전송한 사람
                 CoroutineScope(Dispatchers.IO).launch {

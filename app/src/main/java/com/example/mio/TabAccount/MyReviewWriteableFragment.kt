@@ -85,9 +85,7 @@ class MyReviewWriteableFragment : Fragment() {
                     requestActivity.launch(intent)
                 }
             }
-
         })
-
         return wBinding.root
     }
 

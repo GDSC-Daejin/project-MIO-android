@@ -3,8 +3,11 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="setText">%1$s %2$s</string>
     <string name="setCost">%1$s원</string>
-    <string name="setNotificationTitleText">%1$s님이 %2$s을 신청했어요 </string>
-    <string name="setEndNotificationText">%1$s님과의 %2$s 어떠셨나요?</string>
+    <string name="setNotificationTitleText">%1$s님이 %2$s을/를 신청했어요 </string>
+    <string name="setEndNotificationText">%1$s님과의 %2$s은/는 어떠셨나요?</string>
+    <string name="setReservationNotificationText">%1$s님과의 %2$s이/가 예약되었어요</string>
+    <string name="setCancelNotificationText">%1$s님과의 %2$s 예약이 취소되었어요</string>
+    <string name="setCommentNotificationText">%1$s님이 게시글에 댓글을 달았어요</string>
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>
     <string name="sync_header">Sync</string>

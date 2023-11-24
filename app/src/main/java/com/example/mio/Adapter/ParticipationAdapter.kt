@@ -9,11 +9,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mio.BuildConfig
-import com.example.mio.MioInterface
-import com.example.mio.Model.ParticipationData
-import com.example.mio.R
-import com.example.mio.SaveSharedPreferenceGoogleLogin
+import com.example.mio.*
+import com.example.mio.Model.*
 import com.example.mio.databinding.ParticipationItemLayoutBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,12 +24,16 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.ParticipationViewHolder>(){
     private lateinit var binding : ParticipationItemLayoutBinding
     var participationItemData = ArrayList<ParticipationData>()
     private lateinit var context : Context
+    var participantsUserData = ArrayList<User>()
 
     //클릭된 아이템의 위치를 저장할 변수
     private var selectedItem = -1
@@ -46,7 +47,6 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         //var accountId = binding.accountId
         //var accountProfile = binding.accountImage
         var itemFilter = binding.participationFilterTv
-        var itemDate = binding.participationDateTv
         var itemContent = binding.participationContentTv
 
         fun bind(partData : ParticipationData, position : Int) {
@@ -54,8 +54,21 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             //accountId.text = accountData.accountID
             //val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
             itemContent.text = partData.content
-            //accountProfile.setImageURI() = pillData.pillTakeTime
-            //val listener = itemClickListener?.get()
+
+            val gender = if (participantsUserData[position].gender == true) {
+                "여성"
+            } else {
+                "남성"
+            }
+
+            val smoke = if (participantsUserData[position].verifySmoker == true) {
+                "흡연 O"
+            } else {
+                "흡연 X"
+            }
+
+            itemFilter.text = "${participantsUserData[position].studentId} | $gender $smoke"
+
 
             if (partData.approvalOrReject == "APPROVAL") {
                 val handler = Handler(Looper.getMainLooper())
@@ -111,11 +124,20 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             cancelItem = -1
             selectedItem = approvalPosition
             notifyDataSetChanged()
+            sendAlarmData("예약", holder.adapterPosition, item)
         }
 
         binding.participationRefuse.setOnClickListener {
             //removeData(holder.adapterPosition)
+            println("cancleellelelelelelelelee")
+            val cancelPosition = holder.adapterPosition
+            selectedItem = -1
+            val item = participationItemData[cancelPosition]
+            cancelItem = cancelPosition
+            notifyDataSetChanged()
             println(participationItemData[holder.adapterPosition].approvalOrReject)
+            removeData(participationItemData[cancelPosition].userId, holder.adapterPosition)
+            sendAlarmData("취소", holder.adapterPosition, item)
         }
 
         binding.participationCancel.setOnClickListener {
@@ -125,41 +147,44 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             val item = participationItemData[cancelPosition]
             cancelItem = cancelPosition
             notifyDataSetChanged()
-
-            //removeData(holder.adapterPosition)
+            removeData(participationItemData[cancelPosition].userId, holder.adapterPosition)
         }
 
-        if (position == selectedItem) {
-            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) //승인
+        when (position) {
+            selectedItem -> {
+                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) //승인
 
-            // 배경색 변경
-            binding.participationCsl.backgroundTintList = colorStateList
-            binding.participationItemLl.backgroundTintList = colorStateList
+                // 배경색 변경
+                binding.participationCsl.backgroundTintList = colorStateList
+                binding.participationItemLl.backgroundTintList = colorStateList
 
-            binding.participationCancel.visibility = View.VISIBLE
-            binding.participationRefuse.visibility = View.GONE
-            binding.participationApproval.visibility = View.GONE
+                binding.participationCancel.visibility = View.VISIBLE
+                binding.participationRefuse.visibility = View.GONE
+                binding.participationApproval.visibility = View.GONE
 
-        } else if (position == cancelItem){
-            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
+            }
+            cancelItem -> {
+                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
 
-            // 배경색 변경
-            binding.participationCsl.backgroundTintList = colorStateList
-            binding.participationItemLl.backgroundTintList = colorStateList
+                // 배경색 변경
+                binding.participationCsl.backgroundTintList = colorStateList
+                binding.participationItemLl.backgroundTintList = colorStateList
 
-            binding.participationCancel.visibility = View.GONE
-            binding.participationRefuse.visibility = View.VISIBLE
-            binding.participationApproval.visibility = View.VISIBLE
-        } else {
-            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
+                binding.participationCancel.visibility = View.GONE
+                binding.participationRefuse.visibility = View.VISIBLE
+                binding.participationApproval.visibility = View.VISIBLE
+            }
+            else -> {
+                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
 
-            // 배경색 변경
-            binding.participationCsl.backgroundTintList = colorStateList
-            binding.participationItemLl.backgroundTintList = colorStateList
+                // 배경색 변경
+                binding.participationCsl.backgroundTintList = colorStateList
+                binding.participationItemLl.backgroundTintList = colorStateList
 
-            binding.participationCancel.visibility = View.GONE
-            binding.participationRefuse.visibility = View.VISIBLE
-            binding.participationApproval.visibility = View.VISIBLE
+                binding.participationCancel.visibility = View.GONE
+                binding.participationRefuse.visibility = View.VISIBLE
+                binding.participationApproval.visibility = View.VISIBLE
+            }
         }
 
     /*binding.homeRemoveIv.setOnClickListener {
@@ -200,7 +225,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
     }
 
     //데이터 Handle 함수
-    fun removeData(position: Int) {
+    fun removeData(userId: Int, position: Int) {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
@@ -233,14 +258,13 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         /////////
-        val deleteParticipantsId = participationItemData[position].userId
 
         //삭제 테스트해보기 TODO
         CoroutineScope(Dispatchers.IO).launch {
-            api.deleteParticipants(deleteParticipantsId).enqueue(object : Callback<Void> {
+            api.deleteParticipants(userId).enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
-                        println(response.code())
+                        println("PART Remove Success "+response.code())
                     } else {
                         println("error" + response.errorBody())
                         println(response.code())
@@ -346,7 +370,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                     if (response.isSuccessful) {
                         println(response.code())
                     } else {
-                        var stringToJson = JSONObject(response.errorBody()?.string()!!)
+                        val stringToJson = JSONObject(response.errorBody()?.string()!!)
                         Log.e("YMC", "stringToJson: $stringToJson")
                         println(response.code())
                     }
@@ -358,6 +382,77 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             })
         }
     }
+
+    private fun sendAlarmData(status : String, dataPos : Int, data : ParticipationData) {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        //.client(clientBuilder)
+
+        //Authorization jwt토큰 로그인
+        val interceptor = Interceptor { chain ->
+
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        ///////////////////////////////
+        val now = System.currentTimeMillis()
+        val date = Date(now)
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+        val currentDate = sdf.format(date)
+        val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
+        val nowDate = nowFormat?.toString()
+
+        //userId 가 알람 받는 사람
+        val temp = AddAlarmData(nowDate!!, "${status}${participantsUserData[dataPos].studentId}", data.postId, data.userId)
+
+        //entity가 알람 받는 사람, user가 알람 전송한 사람
+        CoroutineScope(Dispatchers.IO).launch {
+            api.addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
+                override fun onResponse(
+                    call: Call<AddAlarmResponseData?>,
+                    response: Response<AddAlarmResponseData?>
+                ) {
+                    if (response.isSuccessful) {
+                        println("succcc send alarm")
+                    } else {
+                        println("faafa alarm")
+                        Log.d("alarm", response.errorBody()?.string()!!)
+                        Log.d("message", call.request().toString())
+                        println(response.code())
+                    }
+                }
+
+                override fun onFailure(call: Call<AddAlarmResponseData?>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+
+            })
+        }
+    }
+
+
 
     interface ItemClickListener {
         fun onClick(view: View, position: Int, itemId: Int)

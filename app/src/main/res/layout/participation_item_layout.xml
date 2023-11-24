@@ -29,7 +29,7 @@
                 android:id="@+id/participation_filter_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:text="택시 | 등교 여성 흡연 X"
+                android:text="20202020 | 등교 여성 흡연 X"
                 android:fontFamily="@font/pretendard_medium"
                 android:textColor="@color/mio_gray_8"
                 />
@@ -39,14 +39,14 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1" />
 
-            <TextView
+           <!--<TextView
                 android:id="@+id/participation_date_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:text="2023-08-14"
                 android:fontFamily="@font/pretendard_medium"
                 android:textColor="@color/mio_gray_7"
-                />
+                />-->
 
         </LinearLayout>
 

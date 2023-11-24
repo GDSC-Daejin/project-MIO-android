@@ -55,11 +55,12 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
             this.position = position
             //여기 카풀신청, 예약, 댓글 시 받은 알림의 content를 사용하여 알림만들기 Todo
             val category = if (notification.post.category.categoryName == "carpool") {
-                "카풀은"
+                "카풀"
             } else {
-                "택시는"
+                "택시"
             }
-            val endText = context.getString(R.string.setEndNotificationText, notification.content.substring(0..7), category )
+
+
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
             val now = System.currentTimeMillis()
@@ -76,13 +77,30 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
             val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(notification.post.targetDate) //이건 게시글과의 차이를 계산해 카풀종료 알림인지 확인하기위함
             val diff = nowFormat?.time?.minus(format?.time!!)
 
-            if (diff?.div((60 * 1000))!! > 0) {
+            if (notification.content.substring(0..1) == "신청") {
+                notificationTitleText.text = context.getString(R.string.setNotificationTitleText, notification.content.substring(2..9), category)
+                notificationContentText.text = notification.content.removeRange(0..9)
+            } else if (notification.content.substring(0..1) == "예약") {
+                notificationTitleText.text = context.getString(R.string.setReservationNotificationText, notification.content.substring(2..9), category)
+                notificationContentText.text = notification.post.title
+            } else if (notification.content.substring(0..1) == "취소") {
+                notificationTitleText.text = context.getString(R.string.setReservationNotificationText, notification.content.substring(2..9), category)
+                notificationContentText.text = notification.post.title
+            } else if (notification.content.substring(0..1) == "댓글") {
+                notificationTitleText.text = context.getString(R.string.setCommentNotificationText, notification.content.substring(2..9))
+                notificationContentText.text = notification.content.removeRange(0..9)
+            } else if (diff?.div((60 * 1000))!! > 0) {
                 if (identification == notificationContentItemData[position]?.user?.email) {
+
+                    val endText = context.getString(R.string.setEndNotificationText, notification.content.substring(0..7), category )
+
                     hashMapCurrentPostItemData[position] = NotificationStatus.Driver
                     //driver이면서 게시글이 종료되었을 때는 후기니까 알람때보낸 content로
                     notificationTitleText.text = endText //님과의 카풀(택시)은/는 어떠셨나요?
                     notificationContentText.text = notification.content //2202020님이 후기를 기다리고 있어요
                 } else {
+                    val endText = context.getString(R.string.setEndNotificationText, notification.content.substring(0..7), category )
+
                     hashMapCurrentPostItemData[position] = NotificationStatus.Passenger
                     notificationTitleText.text = endText //님과의 카풀(택시)은/는 어떠셨나요?
                     notificationContentText.text = notification.content //2202020님이 후기를 기다리고 있어요

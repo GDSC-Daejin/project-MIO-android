@@ -8,6 +8,8 @@ data class ParticipationData(
     var postId : Int,
     @SerializedName("userId")
     var userId : Int,
+    @SerializedName("postUserId")
+    var postUserId : Int,
     @SerializedName("content")
     var content : String,
     @SerializedName("approvalOrReject")

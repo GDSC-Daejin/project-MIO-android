@@ -389,6 +389,7 @@ class ApplyNextActivity : AppCompatActivity() {
     private fun sendAlarmData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)?.substring(0..7).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
         val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
@@ -428,7 +429,7 @@ class ApplyNextActivity : AppCompatActivity() {
         val nowDate = nowFormat?.toString()
 
         //userId 가 알람 받는 사람
-        val temp = AddAlarmData(nowDate!!, applyEditContent, postId, postData!!.user.id)
+        val temp = AddAlarmData(nowDate!!, "신청${identification}${applyEditContent}", postId, postData!!.user.id)
 
         //entity가 알람 받는 사람, user가 알람 전송한 사람
         CoroutineScope(Dispatchers.IO).launch {

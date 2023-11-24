@@ -9,10 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.ParticipationAdapter
-import com.example.mio.Model.ParticipationData
-import com.example.mio.Model.PostData
-import com.example.mio.Model.PostReadAllResponse
-import com.example.mio.Model.SharedViewModel
+import com.example.mio.Model.*
 import com.example.mio.databinding.ActivityParticipationReceiveBinding
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +32,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
     private var manager : LinearLayoutManager = LinearLayoutManager(this)
 
     private var participationItemAllData = ArrayList<ParticipationData>()
+    private var participantsUserAllData = ArrayList<User>()
 
     //read에서 받아온 postId 저장
     private var postId = 0
@@ -61,10 +59,11 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         loadingDialog.show()
 
         setParticipationData()
-
+        setParticipantsUserData()
 
         participationAdapter = ParticipationAdapter()
         participationAdapter.participationItemData = participationItemAllData
+        participationAdapter.participantsUserData = participantsUserAllData
         pBinding.participationRv.adapter = participationAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true
@@ -87,6 +86,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                             ParticipationData(
                                 response.body()!![i].postId,
                                 response.body()!![i].userId,
+                                response.body()!![i].postUserId,
                                 response.body()!![i].content,
                                 response.body()!![i].approvalOrReject
                             )
@@ -103,8 +103,6 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                     println(participationItemAllData)
                     participationAdapter.notifyDataSetChanged()
 
-                    loadingDialog.dismiss()
-
                 } else {
                     println(response.errorBody().toString())
                     println(response.code())
@@ -116,6 +114,46 @@ class ParticipationReceiveActivity : AppCompatActivity() {
             }
         })
 
+    }
+
+    private fun setParticipantsUserData() {
+        val call = RetrofitServerConnect.service
+        CoroutineScope(Dispatchers.IO).launch {
+            for (i in participationItemAllData.indices) {
+                call.getUserProfileData(participationItemAllData[i].userId).enqueue(object : Callback<User>{
+                    override fun onResponse(call: Call<User>, response: Response<User>) {
+                        if (response.isSuccessful) {
+                            Log.d("part response", "success ${response.code()}")
+                            participantsUserAllData.add(User(
+                                response.body()?.id!!,
+                                response.body()?.email!!,
+                                response.body()?.studentId!!,
+                                response.body()?.profileImageUrl!!,
+                                response.body()?.name!!,
+                                response.body()?.accountNumber!!,
+                                response.body()?.gender!!,
+                                response.body()?.verifySmoker!!,
+                                response.body()?.roleType!!,
+                                response.body()?.status!!,
+                                response.body()?.mannerCount!!,
+                                response.body()?.grade!!,
+                                response.body()?.activityLocation!!
+                            ))
+
+                            loadingDialog.dismiss()
+                        } else {
+                            Log.e("PARTICIPATION RESPONSE ERROR", response.errorBody().toString())
+                            Log.i("response code", response.code().toString())
+                            Log.d("part", response.message().toString())
+                        }
+                    }
+
+                    override fun onFailure(call: Call<User>, t: Throwable) {
+                        Log.e("PARTICIPATION ERROR", t.message.toString())
+                    }
+                })
+            }
+        }
     }
 
     /*private fun set() {

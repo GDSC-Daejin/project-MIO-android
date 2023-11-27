@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
 import com.example.mio.Adapter.MoreTaxiTabAdapter
 import com.example.mio.Adapter.MyAccountPostAdapter
-import com.example.mio.Adapter.NoticeBoardReadAdapter
 import com.example.mio.Model.PostData
 import com.example.mio.Model.PostReadAllResponse
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity

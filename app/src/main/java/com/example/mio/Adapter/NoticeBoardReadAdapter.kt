@@ -1,27 +1,42 @@
 package com.example.mio.Adapter
 import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.PopupMenu
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.CommentData
 import com.example.mio.R
+import com.example.mio.ReadSettingBottomSheetFragment
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.CommentItemLayoutBinding
+import org.w3c.dom.Comment
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
 
-class NoticeBoardReadAdapter : RecyclerView.Adapter<NoticeBoardReadAdapter.NoticeBoardReadViewHolder>(){
+class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.NoticeBoardReadViewHolder>(){
     private lateinit var binding : CommentItemLayoutBinding
     var commentItemData = mutableListOf<CommentData?>()
+    var supportFragment : FragmentManager? = null
     private lateinit var context : Context
     private var manager : LinearLayoutManager? = null
+
+    //게시글용
+    private var getBottomSheetData = ""
 
 
     private var replyCommentAdapter : ReplyCommentAdapter? = null
@@ -35,7 +50,7 @@ class NoticeBoardReadAdapter : RecyclerView.Adapter<NoticeBoardReadAdapter.Notic
         private var position : Int? = null
         var commentContent = binding.commentContent
         var commentRealTimeCheck = binding.commentRealtimeCheck
-        var commentDetail = binding.commentDetailIv
+        /*var commentDetail = binding.commentDetailIv*/
         var commentUserId = binding.commentUserId
 
         fun bind(comment : CommentData, position : Int) {
@@ -47,8 +62,6 @@ class NoticeBoardReadAdapter : RecyclerView.Adapter<NoticeBoardReadAdapter.Notic
             binding.reCommentRv.layoutManager = manager
             replyCommentAdapter!!.setReplyCommentData(comment.childComments) // 댓글의 답변 댓글 리스트 설정
 
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!.substring(0..7)
 
             this.position = position
             if (identification == comment.user.studentId) {
@@ -59,7 +72,6 @@ class NoticeBoardReadAdapter : RecyclerView.Adapter<NoticeBoardReadAdapter.Notic
             }
 
             commentContent.text = comment.content
-            commentDetail
             //commentRealTimeCheck.text = comment.createDate
 
             val now = System.currentTimeMillis()
@@ -115,7 +127,8 @@ class NoticeBoardReadAdapter : RecyclerView.Adapter<NoticeBoardReadAdapter.Notic
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoticeBoardReadAdapter.NoticeBoardReadViewHolder {
         context = parent.context
         binding = CommentItemLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!.substring(0..7)
 
         return NoticeBoardReadViewHolder(binding)
     }
@@ -125,8 +138,51 @@ class NoticeBoardReadAdapter : RecyclerView.Adapter<NoticeBoardReadAdapter.Notic
 
         holder.bind(commentItemData[holder.adapterPosition]!!, holder.adapterPosition)
 
+        replyCommentAdapter?.setItemClickListener(object : ReplyCommentAdapter.ItemClickListener {
+            /*override fun onClick(view: View, position: Int, itemId: Int) {
+                println(itemId)
+            }*/
+
+            //수정,삭제
+            override fun onLongClick(view: View, position: Int, itemId: Int) {
+                //위에 요거는 itemId가 10인 commentItemData의 childComment를 찾고 아래가 부모댓글찾는거
+                //즉 이거는 클릭한 대댓글의 모든 정보
+                val temp = commentItemData.asSequence().flatMap { it?.childComments?.asSequence()!! }.find { it.commentId == itemId }
+
+                //any 함수는 하나라도 만족하는지 체크합니다.
+                //이거는 클릭한 대댓글의 부모 댓글의 모든 정보
+                val parentComment = commentItemData.find { comment ->
+                    comment?.childComments?.any { it.commentId == itemId }!! } //부모 댓글 찾기
+
+                if (identification == temp!!.user.studentId) {
+                    //수정용
+                    val bottomSheet = ReadSettingBottomSheetFragment()
+                    bottomSheet.show(supportFragment!!, bottomSheet.tag)
+                    bottomSheet.apply {
+                        setCallback(object : ReadSettingBottomSheetFragment.OnSendFromBottomSheetDialog{
+                            override fun sendValue(value: String) {
+                                Log.d("test adapter", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
+                                getBottomSheetData = value
+                                //댓글 부분 고치기 Todo
+                                when(value) {
+                                    "수정" -> {
+                                        Log.d("adpater Read Test", "${temp}")
+                                        Log.d("adpater Read Test", "${parentComment}")
+                                        commentClickListener.onReplyClicked("수정", parentComment?.commentId, temp)
+                                    }
+
+                                    "삭제" -> {
+                                        commentClickListener.onReplyClicked("삭제", temp.commentId, temp)
+                                    }
+                                }
+                            }
+                        })
+                    }
+                }
+            }
+        })
         //댓글 팝업메뉴
-        binding.commentDetailIv.setOnClickListener {
+        /*binding.commentDetailIv.setOnClickListener {
             val popUpMenu = PopupMenu(context, binding.commentDetailIv)
             popUpMenu.menuInflater.inflate(R.menu.comment_option_menu, popUpMenu.menu)
             popUpMenu.setOnMenuItemClickListener {
@@ -144,7 +200,7 @@ class NoticeBoardReadAdapter : RecyclerView.Adapter<NoticeBoardReadAdapter.Notic
                 return@setOnMenuItemClickListener true
             }
             popUpMenu.show()
-        }
+        }*/
         /*binding.homeRemoveIv.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)
             val ad : AlertDialog = builder.create()
@@ -187,10 +243,22 @@ class NoticeBoardReadAdapter : RecyclerView.Adapter<NoticeBoardReadAdapter.Notic
         fun onLongClick(view: View, position: Int, itemId: Int)
     }
 
+    interface CommentClickListener {
+        fun onReplyClicked(status : String? , commentId: Int?, commentData : CommentData?)
+    }
+
+
     private lateinit var itemClickListener: ItemClickListener
+
+    private lateinit var commentClickListener: CommentClickListener
 
     fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
+
+    fun setCommentClickListener(commentClickListener: CommentClickListener) {
+        this.commentClickListener = commentClickListener
+    }
+
 
 }

@@ -25,7 +25,7 @@ class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommen
         private var position : Int? = null
         private var reCommentContent = binding.reCommentContent
         private var reCommentRealTimeCheck = binding.reCommentRealtimeCheck
-        private var reCommentDetail = binding.reCommentDetailIv
+       /* private var reCommentDetail = binding.reCommentDetailIv*/
         private var reCommentUserId = binding.reCommentUserId
 
         fun bind(comment : CommentData, position : Int) {
@@ -41,8 +41,6 @@ class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommen
             }
             //reCommentUserId.text = comment.user.studentId.toString()
             reCommentContent.text = comment.content
-            reCommentDetail
-
 
 
             val now = System.currentTimeMillis()
@@ -81,9 +79,14 @@ class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommen
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
 
-            binding.root.setOnClickListener {
+            /*binding.root.setOnClickListener {
                 itemClickListener.onClick(it, layoutPosition, replyCommentItemData[layoutPosition]!!.commentId)
                 println(postDateTime)
+            }*/
+
+            binding.root.setOnLongClickListener {
+                itemClickListener.onLongClick(it, layoutPosition, replyCommentItemData[layoutPosition]!!.commentId)
+                return@setOnLongClickListener true
             }
         }
     }
@@ -96,30 +99,6 @@ class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommen
 
     override fun onBindViewHolder(holder: ReplyCommentAdapter.ReplyCommentViewHolder, position: Int) {
         holder.bind(replyCommentItemData[position]!!, position)
-        /*binding.homeRemoveIv.setOnClickListener {
-            val builder : AlertDialog.Builder = AlertDialog.Builder(context)
-            val ad : AlertDialog = builder.create()
-            var deleteData = pillItemData[holder.adapterPosition]!!.pillName
-            builder.setTitle(deleteData)
-            builder.setMessage("정말로 삭제하시겠습니까?")
-            builder.setNegativeButton("예",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                    //temp = listData[holder.adapterPosition]!!
-                    //extraditeData()
-                    //testData.add(temp)
-                    //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
-                    removeData(holder.adapterPosition)
-                    //removeServerData(deleteServerData!!)
-                    //println(deleteServerData)
-                })
-
-            builder.setPositiveButton("아니오",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                })
-            builder.show()
-        }*/
     }
 
     override fun getItemCount(): Int {
@@ -141,7 +120,9 @@ class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommen
     }
 
     interface ItemClickListener {
-        fun onClick(view: View, position: Int, itemId: Int)
+        //fun onClick(view: View, position: Int, itemId: Int)
+
+        fun onLongClick(view: View, position: Int, itemId: Int)
     }
 
     private lateinit var itemClickListener: ItemClickListener

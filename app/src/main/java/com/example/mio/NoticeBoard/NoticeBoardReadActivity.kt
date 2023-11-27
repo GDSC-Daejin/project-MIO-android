@@ -12,10 +12,9 @@ import android.os.*
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
+import android.util.TypedValue
+import android.view.*
+import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
@@ -56,12 +55,12 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.List
-
 
 
 class NoticeBoardReadActivity : AppCompatActivity() {
+    companion object {
+        private var previousHeight = 0
+    }
     private lateinit var nbrBinding : ActivityNoticeBoardReadBinding
     private var manager : LinearLayoutManager = LinearLayoutManager(this)
     //private var noticeBoardAdapter : NoticeBoardAdapter? = null
@@ -72,7 +71,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     private var commentAllData = mutableListOf<CommentData?>()
     //대댓글 용
     private var replyCommentAllData = kotlin.collections.ArrayList<CommentData?>()
-    private var replyCommentTemp = ArrayList<CommentData>()
+
     private var commentEditText = ""
     private var childComments = ArrayList<CommentData>()
     private var childCommentsSize = 0
@@ -111,17 +110,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
 
     //알람설정
-    private var setNotificationTime : Calendar? = null
     private val channelID = "NOTIFICATION_CHANNEL"
     private val channelName = "NOTIFICATION"
-    private var requestCode = 1
 
     private var sharedViewModel : SharedViewModel? = null
-    var sharedPref : SharedPref? = null
-    private var setKey = "setting_history"
-
-    //댓글진동
-    private lateinit var vib: Vibrator
+    private var sharedPref : SharedPref? = null
 
     //바텀시트에서 가져온 데이터 type (ex 수정, 삭제)
     //게시글용
@@ -155,6 +148,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         commentSetting()
 
         val type = intent.getStringExtra("type")
+
 
         if (type.equals("READ")) {
             temp = intent.getSerializableExtra("postItem") as PostData?
@@ -232,10 +226,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             nbrBinding.readContent.text = temp!!.postContent
             nbrBinding.readUserId.text = temp!!.accountID
             nbrBinding.readCost.text = temp!!.postCost.toString()
-            nbrBinding.readTitle.text = temp!!.postTitle.toString()
+            nbrBinding.readTitle.text = temp!!.postTitle
             nbrBinding.readNumberOfPassengersTotal.text = temp!!.postParticipationTotal.toString()
             nbrBinding.readNumberOfPassengers.text = temp!!.postParticipation.toString()
-            nbrBinding.readDetailLocation.text = temp!!.postLocation.toString()
+            nbrBinding.readDetailLocation.text = temp!!.postLocation
             nbrBinding.readDateTime.text = this.getString(R.string.setText, temp!!.postTargetDate, temp!!.postTargetTime)
 
 
@@ -278,7 +272,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
             // 글쓴이가 자기자신 이라면
             if (email == temp!!.user.email) {
-                val typeface = resources.getFont(com.example.mio.R.font.pretendard_medium)
+                val typeface = resources.getFont(R.font.pretendard_medium)
                 nbrBinding.readApplyBtn.text = "받은 신청 보러가기"
                 CoroutineScope(Dispatchers.Main).launch {
                     nbrBinding.readApplyBtn.apply {
@@ -723,6 +717,15 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             }
         }
 
+        nbrBinding.readCommentTv.setOnClickListener {
+            nbrBinding.readCommentLl.visibility = View.VISIBLE
+
+            //자동으로 포커스 줘서 댓글 달게 하기
+            nbrBinding.readCommentEt.requestFocus()
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
+        }
+
 
         //대댓글 달기 또는 다른 기능 추가 예정
         noticeBoardReadAdapter!!.setItemClickListener(object : NoticeBoardReadAdapter.ItemClickListener {
@@ -740,6 +743,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 if (vibration.hasVibrator()) {
                     vibration.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
                 }
+
+                nbrBinding.readCommentLl.visibility = View.VISIBLE
 
                 //자동으로 포커스 줘서 대댓글 달게 하기
                 nbrBinding.readCommentEt.requestFocus()
@@ -769,14 +774,19 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 when(value) {
                                     "수정" -> {
                                         println(realCommentAllData)
-                                        val filterCommentText = realCommentAllData.filter { it!!.commentId == commentPosition }
-                                        nbrBinding.readCommentEt.setText(filterCommentText[0]!!.content)
+                                        val filterCommentText = realCommentAllData.find { it!!.commentId == commentPosition }
+                                        nbrBinding.readCommentLl.visibility = View.VISIBLE
+                                        nbrBinding.readCommentEt.setText(filterCommentText?.content)
                                         println(filterCommentText)
                                         println(commentPosition)
                                         //자동으로 포커스 줘서 대댓글 달게 하기
-                                        nbrBinding.readCommentEt.requestFocus()
-                                        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                                        imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
+
+                                        nbrBinding.readCommentEt.post {
+                                            nbrBinding.readCommentEt.isFocusableInTouchMode = true
+                                            nbrBinding.readCommentEt.requestFocus()
+                                            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                                            imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
+                                        }
                                     }
 
                                     "삭제" -> {
@@ -827,7 +837,53 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             setResult(8, intent)
             finish()
         }
+
+        //대댓글 수정 및 삭제
+        noticeBoardReadAdapter?.setCommentClickListener(object : NoticeBoardReadAdapter.CommentClickListener {
+            override fun onReplyClicked(status: String?, commentId: Int?, commentData: CommentData?) {
+                if (status == "수정") {
+                    println(status)
+                    getBottomSheetCommentData = "수정"
+                    nbrBinding.readCommentLl.visibility = View.VISIBLE
+                    nbrBinding.readCommentEt.setText(commentData?.content)
+                    commentEditText = commentData?.content.toString()
+                    println(commentId) //이건 부모 댓글 id
+                    println(commentData?.content.toString()) //이건 수정할 대댓글의 정보
+
+                    //자동으로 포커스 줘서 대댓글 달게 하기
+                    nbrBinding.readCommentEt.post {
+                        nbrBinding.readCommentEt.isFocusableInTouchMode = true
+                        nbrBinding.readCommentEt.requestFocus()
+                        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                        imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
+                    }
+
+                } else {
+                    if (commentId != null) {
+                        deleteCommentData(commentId)
+                        fetchAllComments()
+                    }
+                }
+            }
+        })
+
+        /*val observer: ViewTreeObserver = nbrBinding.root.viewTreeObserver
+        observer.addOnPreDrawListener {
+            val currentHeight = nbrBinding.root.height
+            if (previousHeight - currentHeight > 100) {
+                // 키보드가 나타남
+                //nbrBinding ..visibility = View.GONE
+            } else if (currentHeight - previousHeight > 100) {
+                // 키보드가 사라짐
+                nbrBinding.readCommentLl.visibility = View.GONE
+            }
+            previousHeight = currentHeight
+            true
+        }*/
+
         setContentView(nbrBinding.root)
+
+
     }
 
     //edittext가 아닌 다른 곳 클릭 시 내리기
@@ -879,12 +935,15 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             override fun afterTextChanged(editable: Editable) {
                 commentEditText = editable.toString()
                 if (editable.isEmpty() && getBottomSheetCommentData != "수정") {
+                    println("비어있고 수정아닐때")
                     nbrBinding.readSendComment.visibility = View.GONE
                     nbrBinding.readEditSendComment.visibility = View.GONE
-                } else if (getBottomSheetCommentData != "수정"){
+                } else if (getBottomSheetCommentData != "수정"){ //일반 댓글용
+                    println("일반 댓글")
                     nbrBinding.readSendComment.visibility = View.VISIBLE
                     nbrBinding.readEditSendComment.visibility = View.GONE
-                } else {
+                } else { //댓글 수정용
+                    println("댓글 수정할때")
                     nbrBinding.readSendComment.visibility = View.GONE
                     nbrBinding.readEditSendComment.visibility = View.VISIBLE
                 }
@@ -944,6 +1003,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
                         if (response.isSuccessful) {
                             fetchAllComments()
+                            nbrBinding.readCommentEt.text = null
+                            nbrBinding.readCommentLl.visibility = View.GONE
                             println("수정성공")
                         } else {
                             println("faafa")
@@ -958,8 +1019,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     }
                 })
             }
-            nbrBinding.readCommentEt.text = null
-
         }
 
         nbrBinding.readSendComment.setOnClickListener {
@@ -1017,43 +1076,14 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     api.addChildCommentData(childCommentTemp, parentPosition).enqueue(object : Callback<CommentData> {
                         override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
                             if (response.isSuccessful) {
-                                /* val commentNullCheck  = try {
-                                     response.body()!!.childComments.isEmpty()
-                                     response.body()!!.childComments
-                                 } catch (e : java.lang.NullPointerException) {
-                                     Log.d("null", e.toString())
-                                     arrayListOf("null")
-                                 }
-
-                                 if (response.body()!!.childComments.isNotEmpty()) {
-                                     for (i in response.body()!!.childComments.indices) {
-
-                                     }
-                                 }
-
-                                 //null체크?
-                                 if (response.body()!!.childComments.isNotEmpty()) {
-                                     for (i in response.body()!!.childComments.indices) {
-                                         replyCommentAllData.add(
-                                             CommentData(
-                                                 response.body()!!.commentId,
-                                                 response.body()!!.content,
-                                                 response.body()!!.createDate,
-                                                 response.body()!!.postId,
-                                                 response.body()!!.user,
-                                                 response.body()!!.childComments,
-                                             )
-                                         )
-                                     }
-                                 }
-
-
-
-                                 noticeBoardReadAdapter!!.notifyDataSetChanged()*/
                                 fetchAllComments()
+                                nbrBinding.readCommentLl.visibility = View.GONE
                                 println("대댓글달기성공")
                                 //한 번 달고 끝내야하니 false전달
                                 sharedViewModel!!.postReply(reply = false)
+                                sendAlarmData("댓글", commentEditText, temp)
+                                commentEditText = ""
+                                nbrBinding.readCommentEt.text = null
                             } else {
                                 println("faafa")
                                 Log.d("comment", response.errorBody()?.string()!!)
@@ -1067,7 +1097,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         }
                     })
                 }
-                nbrBinding.readCommentEt.text = null
+
                 //nbrBinding.readCommentTotal.text = (commentAllData.size + )
 
             } else {  //댓글
@@ -1148,6 +1178,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 //setCommentData()
                                 println("scucuc")
                                 fetchAllComments()
+                                nbrBinding.readCommentLl.visibility = View.GONE
+                                sendAlarmData("댓글", commentEditText, temp)
+                                commentEditText = ""
+                                nbrBinding.readCommentTotal.text = commentAllData.size.toString()
+                                nbrBinding.readCommentEt.text = null
                             } else {
                                 println("faafa")
                                 Log.d("comment", response.errorBody()?.string()!!)
@@ -1161,8 +1196,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         }
                     })
                 }
-                nbrBinding.readCommentTotal.text = commentAllData.size.toString()
-                nbrBinding.readCommentEt.text = null
             }
         }
     }
@@ -1177,6 +1210,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         commentAllData.clear()
                         childComments.clear()
                         childCommentsSize = 0
+                        nbrBinding.readCommentLl.visibility = View.GONE
                         for (i in response.body()!!.indices) {
                             val commentResponse = response.body()!![i]
                            /* commentAllData.add(
@@ -1320,13 +1354,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             nbrBinding.notCommentTv.visibility = View.GONE
                         }
                     } else {
-                        // 에러 처리 코드
-                        println("FAFAFAFF")
+                        Log.e("ERROR COMMENT", response.errorBody().toString())
                     }
                 }
 
                 override fun onFailure(call: Call<List<CommentResponseData>>, t: Throwable) {
-                    Log.d("ERROR", t.toString())
+                    Log.d("ERROR COMMENT FAILURE", t.toString())
                 }
             })
         }
@@ -1391,6 +1424,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         noticeBoardReadAdapter = NoticeBoardReadAdapter()
         noticeBoardReadAdapter!!.commentItemData = commentAllData
         noticeBoardReadAdapter!!.replyCommentItemData = replyCommentAllData
+        noticeBoardReadAdapter!!.supportFragment = this@NoticeBoardReadActivity.supportFragmentManager
         nbrBinding.commentRV.adapter = noticeBoardReadAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true
@@ -1660,158 +1694,85 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
     }
 
+    fun adapterUIUpdate() {
+
+    }
+
     private fun createNewChip(text: String): Chip {
         val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, null, false) as Chip
         chip.text = text
         //chip.isCloseIconVisible = false
         return chip
     }
-    /*private fun btnViewChanger() {
-        nbrBinding.favoriteBtn.setOnClickListener {
-            isFavoriteBtn = !isFavoriteBtn
 
-            //여기에 누가 버튼을 눌렀는지 데이터 저장하는 함수도 필요함
+    private fun sendAlarmData(status : String, content : String?, data : PostData?) {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        //.client(clientBuilder)
 
-            if (isFavoriteBtn) {
-                CoroutineScope(Dispatchers.Main).launch {
-                    nbrBinding.favoriteBtn.setBackgroundResource(R.drawable.baseline_favorite_24)
+        //Authorization jwt토큰 로그인
+        val interceptor = Interceptor { chain ->
+
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    return@Interceptor chain.proceed(newRequest)
                 }
-            } else {
-                CoroutineScope(Dispatchers.Main).launch {
-                    nbrBinding.favoriteBtn.setBackgroundResource(R.drawable.baseline_favorite_border_24)
-                }
-            }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
         }
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        ///////////////////////////////
+        val now = System.currentTimeMillis()
+        val date = Date(now)
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+        val currentDate = sdf.format(date)
+        val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
+        val nowDate = nowFormat?.toString()
 
-        nbrBinding.applyBtn.setOnClickListener {
-            isApplyBtn = !isApplyBtn
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            //현재 로그인된 유저 email 가져오기
-            val userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
+        //userId 가 알람 받는 사람
+        val temp = AddAlarmData(nowDate!!, "${status}${content}", data?.postID!!, data.user.id)
 
-            if (isApplyBtn) {
-                CoroutineScope(Dispatchers.Main).launch {
-                    nbrBinding.applyBtn.setBackgroundResource(R.drawable.apply_button_update_background)
-                    nbrBinding.applyBtn.text = "참여 신청 완료"
+        //entity가 알람 받는 사람, user가 알람 전송한 사람
+        CoroutineScope(Dispatchers.IO).launch {
+            api.addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
+                override fun onResponse(
+                    call: Call<AddAlarmResponseData?>,
+                    response: Response<AddAlarmResponseData?>
+                ) {
+                    if (response.isSuccessful) {
+                        println("succcc send alarm")
+                    } else {
+                        println("faafa alarm")
+                        Log.d("alarm", response.errorBody()?.string()!!)
+                        Log.d("message", call.request().toString())
+                        println(response.code())
+                    }
                 }
-                //참석 이후 동의화면으로 이동
-                setNotification("${userEmail} 님이 참여 하셨습니다 즐거운 카풀되세요", temp!!)
-                //시간
-                val value = SimpleDateFormat("yyyy년 MM월 dd일 EE요일 a hh시 mm분", Locale.getDefault()).format( Calendar.getInstance().timeInMillis )
-                //저장할 데이터
-                val notifyTempArr : ArrayList<NotificationData> = ArrayList()
-                notifyTempArr.add( NotificationData(0, userEmail, temp!!, isApplyBtn, value) )
 
-                tempArr.add(NotificationData(0, userEmail, temp!!, isApplyBtn, value))
-
-                sharedViewModel!!.setNotificationLiveData("add", notifyTempArr)
-                println(tempArr)
-                sharedPref!!.setNotify(this@NoticeBoardReadActivity, setKey, tempArr)
-
-                //val tempNoti = NotificationData(0, userEmail, temp!!, isApplyBtn, value)
-
-
-
-
-                val intent = Intent(this, ApplyNextActivity::class.java)
-                startActivity(intent)
-            } else { //참석 눌렀을 떼
-                val builder = AlertDialog.Builder(this)
-                val ad : AlertDialog = builder.create()
-                builder.setTitle("취소 알림")
-                builder.setIcon(R.drawable.baseline_info_24)
-                val dialogView = layoutInflater.inflate(R.layout.apply_alert_dialog, null)
-                builder.setView(dialogView)
-                // p0에 해당 AlertDialog가 들어온다. findViewById를 통해 view를 가져와서 사용
-                *//*var listener = DialogInterface.OnClickListener { applyAnswer, p1 ->
-                    var alert = applyAnswer as AlertDialog
-
-                    //나중에 받고 싶은 값 받기
-                    *//**//*var edit1: EditText? = alert.findViewById<EditText>(R.id.editText)
-                    var edit2: EditText? = alert.findViewById<EditText>(R.id.editText2)
-
-                    tv1.text = "${edit1?.text}"
-                    tv1.append("${edit2?.text}")*//**//*
-                }*//*
-                builder.setNegativeButton("예",
-                    DialogInterface.OnClickListener { dialog, which ->
-                        ad.dismiss()
-                        CoroutineScope(Dispatchers.Main).launch {
-                            nbrBinding.applyBtn.setBackgroundResource(R.drawable.apply_button_background)
-                            nbrBinding.applyBtn.text = "참여 신청 하기"
-                        }
-                    })
-
-                builder.setPositiveButton("아니오",
-                    DialogInterface.OnClickListener { dialog, which ->
-                        ad.dismiss()
-                    })
-
-
-                builder.show()
-            }
-
-
+                override fun onFailure(call: Call<AddAlarmResponseData?>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
         }
-
-        *//*isBtnClick = !isBtnClick
-
-        if (isBtnClick) {
-            CoroutineScope(Dispatchers.Main).launch {
-                val color = getColor(R.color.black)
-                mBinding.button.setBackgroundColor(color)
-                mBinding.button.text = "실시간 위치 확인"
-            }
-        } else {
-            CoroutineScope(Dispatchers.Main).launch {
-                val color = getColor(R.color.teal_200)
-                mBinding.button.setBackgroundColor(color)
-                mBinding.button.text = "위치 확인 종료"
-            }
-        }*//*
     }
 
-
-
-    private fun sendComment() {
-        var et = ""
-        nbrBinding.messageET.setOnClickListener {
-            nbrBinding.messageET.isCursorVisible = true
-        }
-        nbrBinding.messageET.addTextChangedListener(object : TextWatcher{
-            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-
-            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                et = nbrBinding.messageET.text.toString()
-            }
-
-            override fun afterTextChanged(p0: Editable?) {}
-
-        })
-
-        nbrBinding.messageSendIV.setOnClickListener {
-            if (et.isEmpty()) {
-                Toast.makeText(this@NoticeBoardReadActivity, "내용을 입력하세요.", Toast.LENGTH_SHORT).show()
-            } else {
-                //나중에 여기서 데이터 변경하기 현재 로그인된 계정정보로 Todo
-                commentAllData.add(CommentData("2020202", et, 0))
-                //noticeBoardReadAdapter!!.notifyItemInserted(commentAllData[0]!!.commentPosition)
-                noticeBoardReadAdapter!!.notifyDataSetChanged()
-                nbrBinding.messageET.text.clear()
-            }
-            //커서 깜빡이 없앰
-            nbrBinding.messageET.isCursorVisible = false
-        }
-        *//*nbrBinding.messageSendIV.setOnClickListener {
-            if (et.isEmpty()) {
-                Toast.makeText(this, "내용을 입력하세요.", Toast.LENGTH_SHORT).show()
-            } else {
-                //나중에 여기서 데이터 변경하기 현재 로그인된 계정정보로 Todo
-                commentAllData.add(CommentData("2020202", et, 0))
-                noticeBoardReadAdapter!!.notifyDataSetChanged()
-            }
-        }*//*
-    }*/
     private fun getManager() : NotificationManager {
         return getSystemService(NOTIFICATION_SERVICE) as NotificationManager
     }
@@ -1882,5 +1843,53 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         getManager().notify(notificationChannelID, notificationCreate)
         //alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, setAlarmTime!!.timeInMillis, pendingIntent)
+    }
+
+    interface OnKeyboardVisibilityListener {
+        fun onVisibilityChanged(visible : Boolean)
+    }
+
+    private fun setKeyboardVisibilityListener(onKeyboardVisibilityListener: OnKeyboardVisibilityListener) {
+        val parentView = (nbrBinding.root as ViewGroup).getChildAt(0)
+        parentView.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
+            private var alreadyOpen = false
+            private val defaultKeyboardHeightDP = 100
+            private val EstimatedKeyboardDP =
+                defaultKeyboardHeightDP + if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) 48 else 0
+            private val rect = Rect()
+            override fun onGlobalLayout() {
+                val estimatedKeyboardHeight = TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    EstimatedKeyboardDP.toFloat(),
+                    parentView.resources.displayMetrics
+                ).toInt()
+                parentView.getWindowVisibleDisplayFrame(rect)
+                val heightDiff = parentView.rootView.height - (rect.bottom - rect.top)
+                val isShown = heightDiff >= estimatedKeyboardHeight
+                if (isShown == alreadyOpen) {
+                    Log.i("Keyboard state", "Ignoring global layout change...")
+                    return
+                }
+                alreadyOpen = isShown
+                onKeyboardVisibilityListener.onVisibilityChanged(isShown)
+            }
+        })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        setKeyboardVisibilityListener(object : OnKeyboardVisibilityListener {
+            override fun onVisibilityChanged(visible: Boolean) {
+                if (visible) {
+                    Log.d("READ Keyboard test", "키보드 올리기")
+                } else {
+                    //키보드가 숨겨졌을 때
+                    nbrBinding.readCommentLl.visibility = View.GONE
+                    nbrBinding.readCommentEt.text = null
+                    commentEditText = ""
+                    getBottomSheetCommentData = ""
+                }
+            }
+        })
     }
 }

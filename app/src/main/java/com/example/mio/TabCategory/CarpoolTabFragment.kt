@@ -416,6 +416,11 @@ class CarpoolTabFragment : Fragment() {
 
         horizonManager.orientation = LinearLayoutManager.HORIZONTAL
         taxiTabBinding.calendarRV.layoutManager = horizonManager
+
+        if (calendarItemData.isNotEmpty()) {
+            val s = calendarItemData.indexOf(calendarItemData.find { it?.day == "오늘" })
+            triggerFirstItemOfCalendarAdapter(s)
+        }
     }
 
     private fun initSwipeRefresh() {
@@ -467,7 +472,7 @@ class CarpoolTabFragment : Fragment() {
         for (i in localDate.toString().substring(8..9).toInt()..lastDayOfMonth) {
             val date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, i)
             val dayOfWeek: DayOfWeek = date.dayOfWeek
-            val tempDayOfWeek = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
+            val tempDayOfWeek = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN) //요일
             //println("dadad" + tempDayOfWeek.toString().substring(0, 3))
             /*println("날짜" + date)
             println("dayofweek" + dayOfWeek)*/
@@ -475,13 +480,11 @@ class CarpoolTabFragment : Fragment() {
             //println(DateData(LocalDate.now().year.toString(), LocalDate.now().month.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
 
             if (calendarItemData.isEmpty()) {
-                calendarItemData.add(DateData(LocalDate.now().year.toString(), "오늘", tempDayOfWeek.toString().substring(0, 1), i.toString()))
+                calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), "오늘", i.toString()))
             } else {
                 calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), tempDayOfWeek.toString().substring(0, 1), i.toString()))
             }
         }
-        val currentDate = localDate.toString().substring(8..9).toInt()
-        triggerFirstItemOfCalendarAdapter(currentDate)
     }
 
 

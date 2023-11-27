@@ -167,6 +167,7 @@ class TaxiTabFragment : Fragment() {
                                 putExtra("postDriver", temp.user)
                                 putExtra("postCost", temp.postCost)
                             }
+                            sendAlarmData("PASSENGER", position, currentTaxiAllData[position])
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Driver -> {
@@ -174,6 +175,7 @@ class TaxiTabFragment : Fragment() {
                                 putExtra("type", "DRIVER")
                                 //putExtra("postPassengers", carpoolParticipantsData)
                             }
+                            sendAlarmData("DRIVER", position, currentTaxiAllData[position])
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Neither -> {
@@ -437,6 +439,11 @@ class TaxiTabFragment : Fragment() {
 
         horizonManager.orientation = LinearLayoutManager.HORIZONTAL
         taxiTabBinding.calendarRV.layoutManager = horizonManager
+
+        if (calendarItemData.isNotEmpty()) {
+            val s = calendarItemData.indexOf(calendarItemData.find { it?.day == "오늘" })
+            triggerFirstItemOfCalendarAdapter(s)
+        }
     }
 
     private fun initSwipeRefresh() {
@@ -495,13 +502,13 @@ class TaxiTabFragment : Fragment() {
             //println(DateData(LocalDate.now().year.toString(), LocalDate.now().month.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
 
             if (calendarItemData.isEmpty()) {
-                calendarItemData.add(DateData(LocalDate.now().year.toString(), "오늘", tempDayOfWeek.toString().substring(0, 1), i.toString()))
+                calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), "오늘", i.toString()))
             } else {
                 calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), tempDayOfWeek.toString().substring(0, 1), i.toString()))
             }
         }
-        val currentDate = localDate.toString().substring(8..9).toInt()
-        triggerFirstItemOfCalendarAdapter(currentDate)
+        /*val currentDate = localDate.toString().substring(8..9).toInt()
+        triggerFirstItemOfCalendarAdapter(currentDate)*/
     }
 
 
@@ -1301,6 +1308,13 @@ class TaxiTabFragment : Fragment() {
             testselectCalendarData = textValue
         }
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val localDate = LocalDate.now().toString()
+        val currentDate = localDate.substring(8..9).toInt()
+        triggerFirstItemOfCalendarAdapter(currentDate)
     }
 
     companion object {

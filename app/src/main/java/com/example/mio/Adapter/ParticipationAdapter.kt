@@ -148,6 +148,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             cancelItem = cancelPosition
             notifyDataSetChanged()
             removeData(participationItemData[cancelPosition].userId, holder.adapterPosition)
+            sendAlarmData("취소", holder.adapterPosition, item)
         }
 
         when (position) {

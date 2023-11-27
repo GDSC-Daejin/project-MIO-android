@@ -241,13 +241,13 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="25dp"
+                        android:baselineAligned="true"
                         android:layout_marginTop="15dp"
                         android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="2dp"
                             android:layout_marginEnd="10dp"
                             android:contentDescription="TODO"
                             android:paddingTop="5dp"
@@ -256,22 +256,25 @@
                         <TextView
                             android:id="@+id/read_numberOfPassengers"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
                             android:fontFamily="@font/pretendard_medium"
                             android:text="1"
                             android:textColor="@color/mio_gray_8" />
 
                         <TextView
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:fontFamily="@font/pretendard_medium"
+                            android:gravity="center"
                             android:text="/"
                             android:textColor="@color/mio_gray_8" />
 
                         <TextView
                             android:id="@+id/read_numberOfPassengersTotal"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
                             android:fontFamily="@font/pretendard_medium"
                             android:text="4"
                             android:textColor="@color/mio_gray_8" />
@@ -416,44 +419,27 @@
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="10dp"
                     android:layout_marginBottom="5dp"
+                    android:gravity="center"
+                    android:layout_gravity="center"
                     android:background="@drawable/read_round_edittext"
                     android:baselineAligned="false"
                     android:orientation="horizontal">
 
-                    <EditText
-                        android:id="@+id/read_comment_et"
+                    <TextView
+                        android:id="@+id/read_comment_tv"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_marginStart="15dp"
                         android:layout_marginEnd="15dp"
+                        android:gravity="center|start"
                         android:layout_weight="10"
-                        android:autofillHints=""
                         android:background="@android:color/transparent"
                         android:baselineAligned="true"
-                        android:hint="댓글을 작성해보세요."
-                        android:inputType="textMultiLine"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:text="댓글을 작성해보세요."
                         android:scrollHorizontally="false"
                         android:textColorHint="@color/mio_gray_6" />
 
-                    <ImageView
-                        android:id="@+id/read_send_comment"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="end"
-                        android:layout_marginEnd="15dp"
-                        android:layout_weight="1"
-                        android:src="@drawable/baseline_send_24"
-                        android:visibility="gone" />
-
-                    <ImageView
-                        android:id="@+id/read_edit_send_comment"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="end"
-                        android:layout_marginEnd="15dp"
-                        android:layout_weight="1"
-                        android:src="@drawable/baseline_send_24"
-                        android:visibility="gone"/>
                 </LinearLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -477,6 +463,76 @@
             </LinearLayout>
         </LinearLayout>
     </com.amar.library.ui.StickyScrollView>
+
+    <LinearLayout
+        android:id="@+id/read_comment_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/mio_gray_1"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/read_fix_bottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="gone"
+        >
+
+        <LinearLayout
+            android:id="@+id/read_comment_ll2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/read_round_edittext"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            >
+
+            <EditText
+                android:id="@+id/read_comment_et"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:layout_weight="10"
+                android:autofillHints=""
+                android:background="@android:color/transparent"
+                android:backgroundTint="@color/mio_gray_1"
+                android:baselineAligned="true"
+                android:fontFamily="@font/pretendard_medium"
+                android:textSize="14sp"
+                android:hint="댓글을 작성해보세요."
+                android:padding="8dp"
+                android:inputType="textMultiLine"
+                android:scrollHorizontally="false"
+                android:textColorHint="@color/mio_gray_6"
+                android:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/read_send_comment"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="15dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_weight="1"
+                android:src="@drawable/baseline_send_24"
+                android:visibility="gone"
+                />
+
+            <ImageView
+                android:id="@+id/read_edit_send_comment"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="15dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:layout_weight="1"
+                android:src="@drawable/baseline_send_24"
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+
 
     <LinearLayout
         android:id="@+id/read_fix_bottom"

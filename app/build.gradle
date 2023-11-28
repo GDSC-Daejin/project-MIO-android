@@ -34,7 +34,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -73,8 +73,6 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp")
     implementation("com.squareup.okhttp3:logging-interceptor")
 
-    //animation
-    implementation 'jp.wasabeef:recyclerview-animators:4.0.2'
 
     //preference
     implementation 'androidx.preference:preference-ktx:1.2.0'
@@ -87,9 +85,6 @@ dependencies {
 
     //splashScreen
     implementation 'androidx.core:core-splashscreen:1.0.0-alpha01'
-
-    //calendar
-    //implementation 'com.prolificinteractive:material-calendarview:1.4.3'
 
     //sticky
     implementation 'com.github.amarjain07:StickyScrollView:1.0.3'

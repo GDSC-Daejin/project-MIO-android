@@ -38,7 +38,6 @@ import com.example.mio.TabCategory.MoreCarpoolTabActivity
 import com.example.mio.TabCategory.MoreTaxiTabActivity
 import com.example.mio.databinding.ActivityNoticeBoardReadBinding
 import com.google.android.material.chip.Chip
-import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -1431,14 +1430,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         //manager.stackFromEnd = true
         nbrBinding.commentRV.setHasFixedSize(true)
         nbrBinding.commentRV.layoutManager = manager
-
-        nbrBinding.commentRV.itemAnimator =  SlideInUpAnimator(OvershootInterpolator(1f))
-        nbrBinding.commentRV.itemAnimator?.apply {
-            addDuration = 1000
-            removeDuration = 100
-            moveDuration = 1000
-            changeDuration = 100
-        }
     }
 
     private fun initParticipationCheck() {
@@ -1855,7 +1846,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             private var alreadyOpen = false
             private val defaultKeyboardHeightDP = 100
             private val EstimatedKeyboardDP =
-                defaultKeyboardHeightDP + if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) 48 else 0
+                defaultKeyboardHeightDP + 48
             private val rect = Rect()
             override fun onGlobalLayout() {
                 val estimatedKeyboardHeight = TypedValue.applyDimension(

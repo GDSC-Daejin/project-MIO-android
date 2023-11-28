@@ -8,12 +8,14 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import androidx.preference.SwitchPreference
 import com.example.mio.Helper.NotificationHelper
+import com.example.mio.OpenSourceManagementActivity
 import com.example.mio.R
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 
 class SettingsFragment : PreferenceFragmentCompat() {
     private var alarmSettingPreference : Preference? = null
     private var openSourceLicensePreference : Preference? = null
+    private var openSourceLicensePreference2 : Preference? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
@@ -23,6 +25,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             // Preference 객체들 초기화
             alarmSettingPreference = findPreference("alarmReceive")
             openSourceLicensePreference = findPreference("openSource_license")
+            openSourceLicensePreference2 = findPreference("openSource_license2")
         }
 
 
@@ -51,6 +54,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
             return@setOnPreferenceClickListener true
         }
 
+        openSourceLicensePreference2!!.setOnPreferenceClickListener {
+            val intent = Intent(requireActivity(), OpenSourceManagementActivity::class.java)
+            startActivity(intent)
+
+            return@setOnPreferenceClickListener true
+        }
+
 
     }
 
@@ -63,10 +73,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         // isAlarmEnabled를 사용하여 해당 스위치 설정에 대한 작업을 수행합니다.
         if (isAlarmEnabled) {
+            println("switch changed $isAlarmEnabled")
             val deleteAlarm = NotificationHelper(requireActivity())
             deleteAlarm.getManager()
         } else {
             // 스위치가 비활성화되어 있을 때 수행할 작업 channelID
+            println("switch changed $isAlarmEnabled")
             val deleteAlarm = NotificationHelper(requireActivity())
             deleteAlarm.deleteChannel()
         }

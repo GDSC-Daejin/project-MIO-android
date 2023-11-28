@@ -30,7 +30,6 @@ import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentTaxiTabBinding
-import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -374,14 +373,14 @@ class TaxiTabFragment : Fragment() {
         //manager.stackFromEnd = true
         taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
         taxiTabBinding.noticeBoardRV.layoutManager = manager
-
+        /*
         taxiTabBinding.noticeBoardRV.itemAnimator =  SlideInUpAnimator(OvershootInterpolator(1f))
         taxiTabBinding.noticeBoardRV.itemAnimator?.apply {
             addDuration = 1000
             removeDuration = 100
             moveDuration = 1000
             changeDuration = 100
-        }
+        }*/
     }
 
     private fun initMyAreaRecyclerView() {
@@ -875,8 +874,9 @@ class TaxiTabFragment : Fragment() {
                                 response.body()!![i].verifyGoReturn,
                                 response.body()!![i].user
                             ))
-                            currentNoticeBoardAdapter!!.notifyDataSetChanged()
                         }
+                        currentNoticeBoardAdapter!!.notifyDataSetChanged()
+
                         if (responseData) {
                             CoroutineScope(Dispatchers.IO).launch {
                                 for (i in response.body()!!.indices) {
@@ -923,6 +923,26 @@ class TaxiTabFragment : Fragment() {
                         Log.d("add", response.errorBody()?.string()!!)
                         Log.d("message", call.request().toString())
                         Log.d("f", response.code().toString())
+
+                        taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                        taxiTabBinding.nonCurrentRvTv.text = "예상치 못한 오류가 발생했습니다"
+                        taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+                        taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
+
+                        taxiTabBinding.nonCurrentRvTv2.setOnClickListener {
+                            setCurrentTaxiData()
+                        }
+
+                        if (currentTaxiAllData.isEmpty()) {
+                            taxiTabBinding.currentRv.visibility = View.GONE
+                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+
+                        } else {
+                            taxiTabBinding.currentRv.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
+                            taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
+                        }
                     }
                 }
 

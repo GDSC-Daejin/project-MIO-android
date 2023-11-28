@@ -41,7 +41,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
 
     private var moreCarpoolAllData = ArrayList<PostData?>()
     //필터 리셋시 사용
-    private var moreTempCarpoolAllData =  ArrayList<PostData?>()
+    //private var moreTempCarpoolAllData =  ArrayList<PostData?>()
     private var dataPosition = 0
     private var date = ""
 
@@ -994,11 +994,10 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 verifyGoReturn,
                                 response.body()!!.content[i].user
                             ))
-
-                            mtAdapter!!.notifyDataSetChanged()
                         }
+                        mtAdapter!!.notifyDataSetChanged()
 
-                        moreTempCarpoolAllData.addAll(moreCarpoolAllData)
+                        //moreTempCarpoolAllData.addAll(moreCarpoolAllData)
 
                     } else {
                         Log.d("f", response.code().toString())

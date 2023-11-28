@@ -11,7 +11,6 @@ import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.ParticipationAdapter
 import com.example.mio.Model.*
 import com.example.mio.databinding.ActivityParticipationReceiveBinding
-import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

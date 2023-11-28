@@ -62,7 +62,7 @@ class CarpoolTabFragment : Fragment() {
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     private var areaManager : LinearLayoutManager = LinearLayoutManager(activity)
     private var horizonManager : LinearLayoutManager = LinearLayoutManager(activity)
-
+    private var horizonManager2 : LinearLayoutManager = LinearLayoutManager(activity)
     private var noticeBoardAdapter : NoticeBoardAdapter? = null
     private var currentNoticeBoardAdapter : CurrentNoticeBoardAdapter? = null
     private var noticeBoardMyAreaAdapter : NoticeBoardMyAreaAdapter? = null
@@ -394,12 +394,15 @@ class CarpoolTabFragment : Fragment() {
     }
 
     private fun initCurrentNoticeBoardRecyclerView() {
-        setCurrentCarpoolData()
+        CoroutineScope(Dispatchers.IO).launch {
+            setCurrentCarpoolData()
+        }
         currentNoticeBoardAdapter = CurrentNoticeBoardAdapter()
         currentNoticeBoardAdapter!!.currentPostItemData = currentTaxiAllData
         taxiTabBinding.currentRv.adapter = currentNoticeBoardAdapter
-
         taxiTabBinding.currentRv.setHasFixedSize(true)
+        horizonManager2.orientation = LinearLayoutManager.HORIZONTAL
+        taxiTabBinding.currentRv.layoutManager = horizonManager2
     }
 
     private fun initCalendarRecyclerView() {
@@ -822,81 +825,80 @@ class CarpoolTabFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
 
         //println(userId)
+        api.getMyParticipantsData(0, 20).enqueue(object : Callback<List<Content>> {
+            override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
+                if (response.isSuccessful) {
+                    val responseData = response.body().isNullOrEmpty()
+                    println("예약 정보")
+                    //데이터 청소
+                    currentTaxiAllData.clear()
 
-        CoroutineScope(Dispatchers.IO).launch {
-            api.getMyParticipantsData(0, 20).enqueue(object : Callback<List<Content>> {
-                override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
-                    if (response.isSuccessful) {
-                        val responseData = response.body().isNullOrEmpty()
-                        println("예약 정보")
-                        //데이터 청소
-                        currentTaxiAllData.clear()
+                    for (i in response.body()!!.indices) {
+                        //println(response!!.body()!!.content[i].user.studentId)
+                        currentTaxiAllData.add(PostData(
+                            response.body()!![i].user.studentId,
+                            response.body()!![i].postId,
+                            response.body()!![i].title,
+                            response.body()!![i].content,
+                            response.body()!![i].targetDate,
+                            response.body()!![i].targetTime,
+                            response.body()!![i].category.categoryName,
+                            response.body()!![i].location,
+                            //participantscount가 현재 참여하는 인원들
+                            response.body()!![i].participantsCount,
+                            //numberOfPassengers은 총 탑승자 수
+                            response.body()!![i].numberOfPassengers,
+                            response.body()!![i].cost,
+                            response.body()!![i].verifyGoReturn,
+                            response.body()!![i].user
+                        ))
+                    }
+                    currentNoticeBoardAdapter!!.notifyDataSetChanged()
 
-                        for (i in response.body()!!.indices) {
-                            //println(response!!.body()!!.content[i].user.studentId)
-                            currentTaxiAllData.add(PostData(
-                                response.body()!![i].user.studentId,
-                                response.body()!![i].postId,
-                                response.body()!![i].title,
-                                response.body()!![i].content,
-                                response.body()!![i].targetDate,
-                                response.body()!![i].targetTime,
-                                response.body()!![i].category.categoryName,
-                                response.body()!![i].location,
-                                //participantscount가 현재 참여하는 인원들
-                                response.body()!![i].participantsCount,
-                                //numberOfPassengers은 총 탑승자 수
-                                response.body()!![i].numberOfPassengers,
-                                response.body()!![i].cost,
-                                response.body()!![i].verifyGoReturn,
-                                response.body()!![i].user
-                            ))
-                            currentNoticeBoardAdapter!!.notifyDataSetChanged()
-                        }
-                        //val list : ArrayList<Participants> = ArrayList()
-                        if (responseData) {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                for (i in response.body()!!.indices) {
+                    //val list : ArrayList<Participants> = ArrayList()
+                    if (responseData) {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            for (i in response.body()!!.indices) {
 
-                                    carpoolParticipantsData.add(response.body()!![i].participants)
+                                carpoolParticipantsData.add(response.body()!![i].participants)
 
-                                    /*for (j in response.body()!![i].participants?.indices!!) {
-                                        tempData.add(Participants(
-                                            response.body()!![i].participants?.get(j)?.id!!,
-                                            response.body()!![i].participants?.get(j)?.email!!,
-                                            response.body()!![i].participants?.get(j)?.studentId!!,
-                                            response.body()!![i].participants?.get(j)?.profileImageUrl!!,
-                                            response.body()!![i].participants?.get(j)?.name!!,
-                                            response.body()!![i].participants?.get(j)?.accountNumber!!,
-                                            response.body()!![i].participants?.get(j)?.gender!!,
-                                            response.body()!![i].participants?.get(j)?.verifySmoker!!,
-                                            response.body()!![i].participants?.get(j)?.roleType!!,
-                                            response.body()!![i].participants?.get(j)?.status!!,
-                                            response.body()!![i].participants?.get(j)?.mannerCount!!,
-                                            response.body()!![i].participants?.get(j)?.grade!!,
-                                        ))
-                                    }
-                                    s.add(tempData)*/
+                                /*for (j in response.body()!![i].participants?.indices!!) {
+                                    tempData.add(Participants(
+                                        response.body()!![i].participants?.get(j)?.id!!,
+                                        response.body()!![i].participants?.get(j)?.email!!,
+                                        response.body()!![i].participants?.get(j)?.studentId!!,
+                                        response.body()!![i].participants?.get(j)?.profileImageUrl!!,
+                                        response.body()!![i].participants?.get(j)?.name!!,
+                                        response.body()!![i].participants?.get(j)?.accountNumber!!,
+                                        response.body()!![i].participants?.get(j)?.gender!!,
+                                        response.body()!![i].participants?.get(j)?.verifySmoker!!,
+                                        response.body()!![i].participants?.get(j)?.roleType!!,
+                                        response.body()!![i].participants?.get(j)?.status!!,
+                                        response.body()!![i].participants?.get(j)?.mannerCount!!,
+                                        response.body()!![i].participants?.get(j)?.grade!!,
+                                    ))
                                 }
-                                /*for (i in response.body()!!.indices) {
-                                    for (j in response.body()!![i].participants.indices) {
-                                        carpoolParticipantsData.add(Participants(
-                                            response.body()!![i].participants[j].id,
-                                            response.body()!![i].participants[j].email,
-                                            response.body()!![i].participants[j].studentId,
-                                            response.body()!![i].participants[j].profileImageUrl,
-                                            response.body()!![i].participants[j].name,
-                                            response.body()!![i].participants[j].accountNumber,
-                                            response.body()!![i].participants[j].gender,
-                                            response.body()!![i].participants[j].verifySmoker,
-                                            response.body()!![i].participants[j].roleType,
-                                            response.body()!![i].participants[j].status,
-                                            response.body()!![i].participants[j].mannerCount,
-                                            response.body()!![i].participants[j].grade,
-                                        ))
-                                    }
-                                }*/
+                                s.add(tempData)*/
                             }
+                            /*for (i in response.body()!!.indices) {
+                                for (j in response.body()!![i].participants.indices) {
+                                    carpoolParticipantsData.add(Participants(
+                                        response.body()!![i].participants[j].id,
+                                        response.body()!![i].participants[j].email,
+                                        response.body()!![i].participants[j].studentId,
+                                        response.body()!![i].participants[j].profileImageUrl,
+                                        response.body()!![i].participants[j].name,
+                                        response.body()!![i].participants[j].accountNumber,
+                                        response.body()!![i].participants[j].gender,
+                                        response.body()!![i].participants[j].verifySmoker,
+                                        response.body()!![i].participants[j].roleType,
+                                        response.body()!![i].participants[j].status,
+                                        response.body()!![i].participants[j].mannerCount,
+                                        response.body()!![i].participants[j].grade,
+                                    ))
+                                }
+                            }*/
+                        }
                         /*CoroutineScope(Dispatchers.IO).launch {
                                 for (i in response.body()?.indices!!) { //List<content>
                                     for (j in response.body()?.get(i)?.participants?.indices!!) {
@@ -918,194 +920,55 @@ class CarpoolTabFragment : Fragment() {
                                     carpoolParticipantsData.add()
                                 }
                             }*/
-                        }
+                    }
 
-                        if (currentTaxiAllData.isEmpty()) {
-                            taxiTabBinding.currentRv.visibility = View.GONE
-                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
-                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
-                        } else {
-                            taxiTabBinding.currentRv.visibility = View.VISIBLE
-                            taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
-                            taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
-                        }
-
-                        loadingDialog.dismiss()
-
-                    } else {
-                        println(response.errorBody().toString())
-                        println(response.message().toString())
-                        println("실패")
-                        println("faafa")
-                        Log.d("add", response.errorBody()?.string()!!)
-                        Log.d("message", call.request().toString())
-                        Log.d("f", response.code().toString())
-
+                    if (currentTaxiAllData.isEmpty()) {
+                        taxiTabBinding.currentRv.visibility = View.GONE
                         taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
-                        taxiTabBinding.nonCurrentRvTv.text = "예상치 못한 오류가 발생했습니다"
                         taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
-                        taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
-
-                        taxiTabBinding.nonCurrentRvTv.setOnClickListener {
-                            setCurrentCarpoolData()
-                        }
-
-                        if (currentTaxiAllData.isEmpty()) {
-                            taxiTabBinding.currentRv.visibility = View.GONE
-                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
-                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
-
-                        } else {
-                            taxiTabBinding.currentRv.visibility = View.VISIBLE
-                            taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
-                            taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
-                        }
-                    }
-                }
-
-                override fun onFailure(call: Call<List<Content>>, t: Throwable) {
-                    Log.d("error", t.toString())
-                }
-            })
-        }
-        /*val call = RetrofitServerConnect.service
-        CoroutineScope(Dispatchers.IO).launch {
-            call.getCurrentServerPostData("createDate,desc").enqueue(object : Callback<PostReadAllResponse> {
-                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                    if (response.isSuccessful) {
-                        val temp = kotlin.collections.ArrayList<PostData>()
-                        //데이터 청소
-                        currentTaxiAllData.clear()
-
-                        for (i in response.body()!!.content.indices) {
-                            //탑승자 null체크
-                            var part = 0
-                            var location = ""
-                            var title = ""
-                            var content = ""
-                            var targetDate = ""
-                            var targetTime = ""
-                            var categoryName = ""
-                            var cost = 0
-                            var verifyGoReturn = false
-                            if (response.isSuccessful) {
-                                part = try {
-                                    response.body()!!.content[i].participants.isEmpty()
-                                    response.body()!!.content[i].participants.size
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                location = try {
-                                    response.body()!!.content[i].location.isEmpty()
-                                    response.body()!!.content[i].location
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "수락산역 3번 출구"
-                                }
-                                title = try {
-                                    response.body()!!.content[i].title.isEmpty()
-                                    response.body()!!.content[i].title
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                content = try {
-                                    response.body()!!.content[i].content.isEmpty()
-                                    response.body()!!.content[i].content
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetDate = try {
-                                    response.body()!!.content[i].targetDate.isEmpty()
-                                    response.body()!!.content[i].targetDate
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetTime = try {
-                                    response.body()!!.content[i].targetTime.isEmpty()
-                                    response.body()!!.content[i].targetTime
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                categoryName = try {
-                                    response.body()!!.content[i].category.categoryName.isEmpty()
-                                    response.body()!!.content[i].category.categoryName
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                cost = try {
-                                    response.body()!!.content[i].cost
-                                    response.body()!!.content[i].cost
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                verifyGoReturn = try {
-                                    response.body()!!.content[i].verifyGoReturn
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    false
-                                }
-                            }
-
-                            //println(response!!.body()!!.content[i].user.studentId)
-                            temp.add(PostData(
-                                response.body()!!.content[i].user.studentId,
-                                response.body()!!.content[i].postId,
-                                title,
-                                content,
-                                targetDate,
-                                targetTime,
-                                categoryName,
-                                location,
-                                //participantscount가 현재 참여하는 인원들
-                                part,
-                                //numberOfPassengers은 총 탑승자 수
-                                response.body()!!.content[i].numberOfPassengers,
-                                cost,
-                                verifyGoReturn,
-                                response.body()!!.content[i].user
-                            ))
-                        }
-                        val now = System.currentTimeMillis()
-                        val date = Date(now)
-                        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA)
-                        val currentDate = sdf.format(date)
-                        val selectFormattedDate = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).format(
-                            DateTimeFormatter.ISO_DATE)
-                        val currentTempData = temp.filter { it.postTargetDate == selectFormattedDate}
-                        for (j in currentTempData.indices) {
-                            currentTaxiAllData.add(currentTempData[j])
-                        }
-                        currentNoticeBoardAdapter!!.notifyDataSetChanged()
-
-
-                        if (currentTaxiAllData.isEmpty()) {
-                            taxiTabBinding.currentRv.visibility = View.GONE
-                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
-                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
-                        } else {
-                            taxiTabBinding.currentRv.visibility = View.VISIBLE
-                            taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
-                            taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
-                        }
-
-                        loadingDialog.dismiss()
                     } else {
-                        Log.d("f", response.code().toString())
+                        taxiTabBinding.currentRv.visibility = View.VISIBLE
+                        taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
+                        taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
+                    }
+
+                    loadingDialog.dismiss()
+
+                } else {
+                    println(response.errorBody().toString())
+                    println(response.message().toString())
+                    println("실패")
+                    println("faafa")
+                    Log.d("add", response.errorBody()?.string()!!)
+                    Log.d("message", call.request().toString())
+                    Log.d("f", response.code().toString())
+
+                    taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                    taxiTabBinding.nonCurrentRvTv.text = "예상치 못한 오류가 발생했습니다"
+                    taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+                    taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
+
+                    taxiTabBinding.nonCurrentRvTv2.setOnClickListener {
+                        setCurrentCarpoolData()
+                    }
+
+                    if (currentTaxiAllData.isEmpty()) {
+                        taxiTabBinding.currentRv.visibility = View.GONE
+                        taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                        taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+
+                    } else {
+                        taxiTabBinding.currentRv.visibility = View.VISIBLE
+                        taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
+                        taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
                     }
                 }
+            }
 
-                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.d("error", t.toString())
-                }
-            })
-        }*/
+            override fun onFailure(call: Call<List<Content>>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
     }
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->

@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Model.PostData
 import com.example.mio.databinding.ActivityNoticeBoardBinding
-import jp.wasabeef.recyclerview.animators.SlideInUpAnimator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -65,14 +64,6 @@ class NoticeBoardActivity : AppCompatActivity() {
         //manager.stackFromEnd = true
         nbBinding.noticeBoardRV.setHasFixedSize(true)
         nbBinding.noticeBoardRV.layoutManager = manager
-
-        nbBinding.noticeBoardRV.itemAnimator =  SlideInUpAnimator(OvershootInterpolator(1f))
-        nbBinding.noticeBoardRV.itemAnimator?.apply {
-            addDuration = 1000
-            removeDuration = 100
-            moveDuration = 1000
-            changeDuration = 100
-        }
 
     }
 

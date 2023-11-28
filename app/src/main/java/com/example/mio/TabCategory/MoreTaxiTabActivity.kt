@@ -92,7 +92,9 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             myViewModel.postCheckFilter(getBottomData)
                             mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_gray_8))
                             mttBinding.moreFilterBtn.setBackgroundResource(R.drawable.filter_icon)
-                            setSelectData()
+                            CoroutineScope(Dispatchers.IO).launch {
+                                setSelectData()
+                            }
                         } else {
                             getBottomData = value
                             myViewModel.postCheckFilter(getBottomData)

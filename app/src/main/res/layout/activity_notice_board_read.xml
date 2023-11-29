@@ -503,7 +503,9 @@
                 android:textSize="14sp"
                 android:hint="댓글을 작성해보세요."
                 android:padding="8dp"
-                android:inputType="textMultiLine"
+                android:focusable="true"
+                android:clickable="true"
+                android:inputType="none"
                 android:scrollHorizontally="false"
                 android:textColorHint="@color/mio_gray_6"
                 android:visibility="visible" />

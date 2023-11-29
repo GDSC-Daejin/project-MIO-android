@@ -718,9 +718,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         nbrBinding.readCommentTv.setOnClickListener {
             nbrBinding.readCommentLl.visibility = View.VISIBLE
-
             //자동으로 포커스 줘서 댓글 달게 하기
             nbrBinding.readCommentEt.requestFocus()
+            nbrBinding.readCommentEt.text = null
+            commentEditText = ""
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
         }
@@ -760,6 +761,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             //댓글 수정 및 삭제할 때
             override fun onLongClick(view: View, position: Int, itemId: Int) {
                 if (email == temp!!.user.email) {
+                    nbrBinding.readCommentEt.clearFocus()
                     //수정용
                     commentPosition = itemId
                     val bottomSheet = ReadSettingBottomSheetFragment()
@@ -772,20 +774,15 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 //댓글 부분 고치기 Todo
                                 when(value) {
                                     "수정" -> {
-                                        println(realCommentAllData)
+                                        //자동으로 포커스 줘서 대댓글 달게 하기
                                         val filterCommentText = realCommentAllData.find { it!!.commentId == commentPosition }
                                         nbrBinding.readCommentLl.visibility = View.VISIBLE
                                         nbrBinding.readCommentEt.setText(filterCommentText?.content)
+                                        nbrBinding.readCommentEt.requestFocus()
+                                        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                                        imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
                                         println(filterCommentText)
                                         println(commentPosition)
-                                        //자동으로 포커스 줘서 대댓글 달게 하기
-
-                                        nbrBinding.readCommentEt.post {
-                                            nbrBinding.readCommentEt.isFocusableInTouchMode = true
-                                            nbrBinding.readCommentEt.requestFocus()
-                                            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                                            imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
-                                        }
                                     }
 
                                     "삭제" -> {
@@ -842,20 +839,23 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             override fun onReplyClicked(status: String?, commentId: Int?, commentData: CommentData?) {
                 if (status == "수정") {
                     println(status)
+
                     getBottomSheetCommentData = "수정"
                     nbrBinding.readCommentLl.visibility = View.VISIBLE
                     nbrBinding.readCommentEt.setText(commentData?.content)
                     commentEditText = commentData?.content.toString()
-                    println(commentId) //이건 부모 댓글 id
-                    println(commentData?.content.toString()) //이건 수정할 대댓글의 정보
-
                     //자동으로 포커스 줘서 대댓글 달게 하기
                     nbrBinding.readCommentEt.post {
+                        Log.d("POST Comment", "edittext keyboard")
                         nbrBinding.readCommentEt.isFocusableInTouchMode = true
                         nbrBinding.readCommentEt.requestFocus()
                         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                         imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
                     }
+                    println(commentId) //이건 부모 댓글 id
+                    println(commentData?.content.toString()) //이건 수정할 대댓글의 정보
+
+
 
                 } else {
                     if (commentId != null) {
@@ -933,7 +933,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             }
             override fun afterTextChanged(editable: Editable) {
                 commentEditText = editable.toString()
-                if (editable.isEmpty() && getBottomSheetCommentData != "수정") {
+                if (editable.isEmpty() && getBottomSheetCommentData != "수정") { //아무것도 아닐때
                     println("비어있고 수정아닐때")
                     nbrBinding.readSendComment.visibility = View.GONE
                     nbrBinding.readEditSendComment.visibility = View.GONE
@@ -1874,8 +1874,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 if (visible) {
                     Log.d("READ Keyboard test", "키보드 올리기")
                 } else {
+                    Log.d("READ Keyboard test", "키보드 내리기")
                     //키보드가 숨겨졌을 때
                     nbrBinding.readCommentLl.visibility = View.GONE
+                    nbrBinding.readCommentEt.clearFocus()
                     nbrBinding.readCommentEt.text = null
                     commentEditText = ""
                     getBottomSheetCommentData = ""

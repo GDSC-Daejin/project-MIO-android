@@ -38,7 +38,9 @@
         tools:targetApi="33">
         <activity
             android:name=".OpenSourceManagementActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <!-- nohistory = stack에 저장 불가 시켜 뒤로가기해도 해당창은 뜨지않음 -->
         <!--
 android:screenOrientation="portrait"

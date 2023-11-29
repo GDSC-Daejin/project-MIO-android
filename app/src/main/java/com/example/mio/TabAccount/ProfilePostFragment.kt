@@ -145,7 +145,7 @@ class ProfilePostFragment : Fragment() {
         val call = RetrofitServerConnect.service
 
         CoroutineScope(Dispatchers.IO).launch {
-            call.getMyPostData(profileUserId,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            api.getMyPostData(profileUserId,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
 

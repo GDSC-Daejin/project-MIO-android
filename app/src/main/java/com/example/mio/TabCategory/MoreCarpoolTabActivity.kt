@@ -89,8 +89,8 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     override fun sendValue(value: String) {
                         Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                         //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
-                        if (value.split(" ")[6].toString() == "true") {
-                            println(value.split(" ").map { it })
+                        if (value.split(" ")[6] == "true") {
+                            println("filter reset")
                             //getBottomData = value
                             myViewModel.postCheckFilter(getBottomData)
                             mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_gray_8))
@@ -443,7 +443,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                 "낮은 가격 순" -> {
                     mttBinding.moreSearchTv.text = "낮은 가격 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    moreCarpoolAllData.sortByDescending { it?.postCost }
+                    moreCarpoolAllData.sortBy { it?.postCost }
                     mtAdapter?.notifyDataSetChanged()
                 }
             }
@@ -546,10 +546,9 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     when(temp[i]) {
                         temp[0] -> { //날짜
                             if (temp[0].isNotEmpty()) {
+                                //println(moreCarpoolAllData)
                                 //null 값을 제외한 List를 반환
                                 tempFilterPostData.addAll(moreCarpoolAllData.toList().filter { it?.postTargetDate == temp[0] })
-
-
                                 println("testestet" + moreCarpoolAllData.toList().filter { it?.postTargetDate == temp[0] })
                                 println("sadffsdfds" + tempFilterPostData)
                             } else {
@@ -908,7 +907,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                         println(time)*/
                         /*val s : ArrayList<PostReadAllResponse> = ArrayList()
                         s.add(PostReadAllResponse())*/
-
                         moreCarpoolAllData.clear()
                         totalPages = response.body()!!.totalPages
                         for (i in response.body()!!.content.indices) {
@@ -1006,9 +1004,10 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 response.body()!!.content[i].user
                             ))
                         }
+                        mtAdapter!!.moreTaxiData = moreCarpoolAllData
                         mtAdapter!!.notifyDataSetChanged()
 
-                        tempFilterPostData = moreCarpoolAllData
+                        //tempFilterPostData = moreCarpoolAllData
 
                         //moreTempCarpoolAllData.addAll(moreCarpoolAllData)
                         if (moreCarpoolAllData.isEmpty()) {

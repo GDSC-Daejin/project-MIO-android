@@ -42,7 +42,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     private var selectTargetDate = ""
     //선택한 시간
     private var selectTime = ""
-
+    private var sendSelectTime = ""
     //필터로 선택한 데이터들을 외부로 전송하기 위한 리스너
     private var listener: OnSendFromBottomSheetDialog? = null
 
@@ -58,7 +58,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     //참여 인원 수
     private var participateNumberOfPeople = 1
     //초기화 체크
-    private var isReset = false
+    private var isReset = "false"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,12 +82,11 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 selectTargetDate = "${year}-${month+1}-${day}"
                 bsBinding.selectDateTv.text = "${year}년/${month+1}월/${day}일"
                 bsBinding.selectDateTv.setTextColor(Color.BLACK)
+                bsBinding.filterCalendar.setImageResource(R.drawable.filter_calendar_update_icon)
             }
             DatePickerDialog(requireActivity(),
                 R.style.MySpinnerDatePickerStyle, data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(
                 Calendar.DAY_OF_MONTH)).show()
-
-            bsBinding.filterCalendar.setImageResource(R.drawable.filter_calendar_update_icon)
         }
 
         bsBinding.filterTime.setOnClickListener {
@@ -112,7 +111,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             timePickerDialog.setTitle("Choose hour:")
             timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
             timePickerDialog.show()*/
-            bsBinding.filterTime.setImageResource(R.drawable.filter_time_update_icon)
+
         }
 
         bsBinding.filterChecklistIv.setOnClickListener {
@@ -242,7 +241,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         bsBinding.filterResetTvBtn.setOnClickListener {
-            isReset = true
+            isReset = "true"
             //뷰 초기화
             CoroutineScope(Dispatchers.Main).launch {
                 bsBinding.gtschoolBtn.apply {
@@ -302,7 +301,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.filterSearchBtn.setOnClickListener {
             if (listener == null) return@setOnClickListener
-            listener?.sendValue("${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset")
+            listener?.sendValue("${selectTargetDate} ${sendSelectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset")
             dismiss()
         }
 
@@ -320,6 +319,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 if (view.isShown) {
                     myCalender[Calendar.HOUR_OF_DAY] = hourOfDay
                     myCalender[Calendar.MINUTE] = minute
+                    sendSelectTime = requireActivity().getString(R.string.setSendFilterTimeText, hourOfDay.toString(), minute.toString())
                     selectTime = if (hourOfDay > 12) {
                         val pm = hourOfDay - 12;
                         "오후 " + pm + "시 " + minute + "분 선택"
@@ -329,7 +329,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                     //selectTime = "${hourOfDay} 시 ${minute} 분"
 
                     bsBinding.selectTime.text = selectTime
-                    bsBinding.selectDateTv.setTextColor(Color.BLACK)
+                    bsBinding.selectTime.setTextColor(Color.BLACK)
+                    bsBinding.filterTime.setImageResource(R.drawable.filter_time_update_icon)
                 }
             }
         val timePickerDialog = TimePickerDialog(
@@ -455,7 +456,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
     private fun resetViews() {
         // 뷰 초기화 로직 작성
-        isReset = true
+        isReset = "true"
         //뷰 초기화
         CoroutineScope(Dispatchers.IO).launch {
             bsBinding.gtschoolBtn.apply {

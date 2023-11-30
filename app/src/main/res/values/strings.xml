@@ -8,6 +8,8 @@
     <string name="setReservationNotificationText">%1$s님과의 %2$s이/가 예약되었어요</string>
     <string name="setCancelNotificationText">%1$s님과의 %2$s 예약이 취소되었어요</string>
     <string name="setCommentNotificationText">%1$s님이 게시글에 댓글을 달았어요</string>
+
+    <string name="setSendFilterTimeText">%1$s:%2$s:00</string>
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>
     <string name="sync_header">Sync</string>

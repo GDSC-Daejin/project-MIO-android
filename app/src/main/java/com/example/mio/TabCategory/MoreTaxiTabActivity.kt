@@ -444,7 +444,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 "낮은 가격 순" -> {
                     mttBinding.moreSearchTv.text = "낮은 가격 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    moreTaxiAllData.sortByDescending { it?.postCost }
+                    moreTaxiAllData.sortBy { it?.postCost }
                     mtAdapter?.notifyDataSetChanged()
                 }
             }
@@ -1014,8 +1014,20 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                 response.body()!!.content[i].user
                             ))
 
-                            mtAdapter!!.notifyDataSetChanged()
                         }
+                        mtAdapter!!.moreTaxiData = moreTaxiAllData
+                        mtAdapter!!.notifyDataSetChanged()
+
+                        if (moreTaxiAllData.isEmpty()) {
+                            mttBinding.moreNonfilterTv.text = "카풀 게시글이 존재하지 않습니다"
+                            mttBinding.moreNonfilterTv.visibility = View.VISIBLE
+                            mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
+                        } else {
+                            mttBinding.moreNonfilterTv.text = "검색된 게시글이 없습니다"
+                            mttBinding.moreNonfilterTv.visibility = View.GONE
+                            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+                        }
+
                     } else {
                         Log.d("f", response.code().toString())
                     }

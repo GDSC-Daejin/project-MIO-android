@@ -7,6 +7,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -26,6 +27,7 @@ import com.google.android.material.chip.Chip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -44,6 +46,8 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
     //private var moreTempCarpoolAllData =  ArrayList<PostData?>()
     private var dataPosition = 0
     private var date = ""
+    //var tempFilterPostData : ArrayList<PostData?> = ArrayList()
+    private var tempFilterPostData : ArrayList<PostData?> = ArrayList()
 
     //칩 생성
     private var chipList = kotlin.collections.ArrayList<Chip>()
@@ -85,11 +89,14 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     override fun sendValue(value: String) {
                         Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                         //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
-                        if (value.split(" ")[6].toBoolean()) {
+                        if (value.split(" ")[6].toString() == "true") {
                             println(value.split(" ").map { it })
+                            //getBottomData = value
                             myViewModel.postCheckFilter(getBottomData)
                             mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_gray_8))
                             mttBinding.moreFilterBtn.setBackgroundResource(R.drawable.filter_icon)
+                            mttBinding.moreNonfilterTv.visibility = View.GONE
+                            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
                             CoroutineScope(Dispatchers.IO).launch {
                                 setSelectData()
                             }
@@ -444,7 +451,9 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
 
         myViewModel.checkFilter.observe(this) { it ->
             //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
+            println("it$it")
             val temp = it.split(" ")
+            tempFilterPostData.clear()
             when (temp[6]) {
                 "true" -> {
                     println("true")
@@ -514,14 +523,14 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
             }
 
             when (temp[5]) {
-                "흡연여부 O" -> {
+                "흡연O" -> {
                     chipList.add(createNewChip(
-                        text = "흡연여부 O"
+                        text = "흡연O"
                     ))
                 }
-                "흡연여부 X" -> {
+                "흡연x" -> {
                     chipList.add(createNewChip(
-                        text = "흡연여부 O"
+                        text = "흡연X"
                     ))
                 }
                 else -> {
@@ -529,31 +538,38 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                 }
             }
 
-            var tempFilterPostData : List<PostData?> = ArrayList()
+
             CoroutineScope(Dispatchers.IO).launch {
                 //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
                 for (i in temp.indices) {
+                    println("tempetm" + temp[i])
                     when(temp[i]) {
                         temp[0] -> { //날짜
                             if (temp[0].isNotEmpty()) {
                                 //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreCarpoolAllData.filterNotNull().filter { it.postTargetDate == temp[0] }
+                                tempFilterPostData.addAll(moreCarpoolAllData.toList().filter { it?.postTargetDate == temp[0] })
+
+
+                                println("testestet" + moreCarpoolAllData.toList().filter { it?.postTargetDate == temp[0] })
+                                println("sadffsdfds" + tempFilterPostData)
+                            } else {
+                                println("empty")
                             }
                         }
                         temp[1] -> { //시간
                             if (temp[1].isNotEmpty() && tempFilterPostData.isEmpty()) {
                                 //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreCarpoolAllData.filterNotNull().filter { it.postTargetTime == temp[1] }
+                                tempFilterPostData.addAll(moreCarpoolAllData.toList().filter { it?.postTargetTime == temp[1] })
                             } else if (temp[1].isNotEmpty()) {
-                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.postTargetTime == temp[1] }
+                                tempFilterPostData.addAll(moreCarpoolAllData.toList().filter { it?.postTargetTime == temp[1] })
                             }
                         }
                         temp[2] -> { //인원수
                             if (temp[2].isNotEmpty() && tempFilterPostData.isEmpty()) {
                                 //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreCarpoolAllData.filterNotNull().filter { it.postParticipation == temp[2].toInt() }
+                                tempFilterPostData.addAll(moreCarpoolAllData.toList().filter { it?.postParticipation == temp[2].toInt() })
                             } else if (temp[2].isNotEmpty()) {
-                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.postParticipation == temp[2].toInt() }
+                                tempFilterPostData.addAll(tempFilterPostData.toList().filter { it?.postParticipation == temp[2].toInt() })
                             }
                         }
                         temp[3] -> { //등하교
@@ -562,12 +578,12 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 postVerifyGoReturn = temp[3] == "등교"
 
                                 //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreCarpoolAllData.filterNotNull().filter { it.postVerifyGoReturn == postVerifyGoReturn }
+                                tempFilterPostData.addAll(moreCarpoolAllData.filterNotNull().filter { it.postVerifyGoReturn == postVerifyGoReturn })
                             } else if (temp[3].isNotEmpty()) {
                                 var postVerifyGoReturn: Boolean?
                                 postVerifyGoReturn = temp[3] == "등교"
 
-                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.postVerifyGoReturn == postVerifyGoReturn }
+                                tempFilterPostData.addAll(tempFilterPostData.filterNotNull().filter { it.postVerifyGoReturn == postVerifyGoReturn })
                             }
                         }
                         temp[4] -> { //성별
@@ -576,12 +592,12 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 isGender = temp[4] == "여성"
 
                                 //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreCarpoolAllData.filterNotNull().filter { it.user.gender == isGender }
+                                tempFilterPostData.addAll(moreCarpoolAllData.filterNotNull().filter { it.user.gender == isGender })
                             } else if (temp[4].isNotEmpty()) {
                                 var isGender: Boolean?
                                 isGender = temp[4] == "여성"
 
-                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.user.gender == isGender }
+                                tempFilterPostData.addAll(tempFilterPostData.filterNotNull().filter { it.user.gender == isGender })
                             }
                         }
                         temp[5] -> { //흡연여부
@@ -590,52 +606,48 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 isSmoke = temp[5] == "흡연O"
 
                                 //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreCarpoolAllData.filterNotNull().filter { it.user.verifySmoker == isSmoke }
+                                tempFilterPostData.addAll(moreCarpoolAllData.filterNotNull().filter { it.user.verifySmoker == isSmoke })
                             } else if (temp[5].isNotEmpty()) {
                                 var isSmoke: Boolean?
                                 isSmoke = temp[5] == "흡연O"
 
-                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.user.verifySmoker == isSmoke }
+                                tempFilterPostData.addAll(tempFilterPostData.filterNotNull().filter { it.user.verifySmoker == isSmoke })
                             }
                         }
                     }
                 }
 
-                moreCarpoolAllData.clear()
-
-                tempFilterPostData.forEach {
-                    moreCarpoolAllData.add(PostData(
-                        it?.accountID!!,
-                        it.postID,
-                        it.postTitle,
-                        it.postContent,
-                        it.postTargetDate,
-                        it.postTargetTime,
-                        it.postCategory,
-                        it.postLocation,
-                        it.postParticipation,
-                        it.postParticipationTotal,
-                        it.postCost,
-                        it.postVerifyGoReturn,
-                        it.user
-                    ))
+                //moreCarpoolAllData.clear()
+                println("filter" + tempFilterPostData)
+                mtAdapter!!.moreTaxiData = tempFilterPostData
+                withContext(Dispatchers.Main) {
+                   if (tempFilterPostData.isEmpty()) {
+                       mttBinding.moreNonfilterTv.visibility = View.VISIBLE
+                       mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
+                   } else {
+                       mttBinding.moreNonfilterTv.visibility = View.GONE
+                       mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+                       // UI 조작
+                       mtAdapter!!.notifyDataSetChanged()
+                   }
                 }
-
-                mtAdapter?.notifyDataSetChanged()
             }
 
-            for (i in chipList.indices) {
-                // 마지막 Chip 뷰의 인덱스를 계산
-                val lastChildIndex = mttBinding.moreAddFilterBtnSg.childCount - 1
-
-                // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
-                // 현재 Chip을 바로 그 앞에 추가
-                if (lastChildIndex >= 0) {
-                    mttBinding.moreAddFilterBtnSg.addView(chipList[i], lastChildIndex)
-                } else {
-                    // ChipGroup에 자식이 없는 경우, 그냥 추가
-                    mttBinding.moreAddFilterBtnSg.addView(chipList[i])
+            if (chipList.isNotEmpty()) {
+                mttBinding.moreAddFilterBtnSg.removeAllViewsInLayout()
+                for (i in chipList.indices) {
+                    // 마지막 Chip 뷰의 인덱스를 계산
+                    val lastChildIndex = mttBinding.moreAddFilterBtnSg.childCount - 1
+                    // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
+                    // 현재 Chip을 바로 그 앞에 추가
+                    if (lastChildIndex >= 0) {
+                        mttBinding.moreAddFilterBtnSg.addView(chipList[i], lastChildIndex)
+                    } else {
+                        // ChipGroup에 자식이 없는 경우, 그냥 추가
+                        mttBinding.moreAddFilterBtnSg.addView(chipList[i])
+                    }
                 }
+                chipList.clear()
             }
         }
 
@@ -830,9 +842,8 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                             verifyGoReturn,
                                             response.body()!!.content[i].user
                                         ))
-
-                                    mtAdapter!!.notifyDataSetChanged()
                                 }
+                                mtAdapter!!.notifyDataSetChanged()
                             } else {
                                 Log.d("f", response.code().toString())
                             }
@@ -997,7 +1008,18 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                         }
                         mtAdapter!!.notifyDataSetChanged()
 
+                        tempFilterPostData = moreCarpoolAllData
+
                         //moreTempCarpoolAllData.addAll(moreCarpoolAllData)
+                        if (moreCarpoolAllData.isEmpty()) {
+                            mttBinding.moreNonfilterTv.text = "카풀 게시글이 존재하지 않습니다"
+                            mttBinding.moreNonfilterTv.visibility = View.VISIBLE
+                            mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
+                        } else {
+                            mttBinding.moreNonfilterTv.text = "검색된 게시글이 없습니다"
+                            mttBinding.moreNonfilterTv.visibility = View.GONE
+                            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+                        }
 
                     } else {
                         Log.d("f", response.code().toString())

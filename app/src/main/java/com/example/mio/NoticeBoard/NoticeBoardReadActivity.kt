@@ -778,11 +778,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         val filterCommentText = realCommentAllData.find { it!!.commentId == commentPosition }
                                         nbrBinding.readCommentLl.visibility = View.VISIBLE
                                         nbrBinding.readCommentEt.setText(filterCommentText?.content)
-                                        nbrBinding.readCommentEt.requestFocus()
+                                        /*nbrBinding.readCommentEt.requestFocus()
                                         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                                         imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
                                         println(filterCommentText)
-                                        println(commentPosition)
+                                        println(commentPosition)*/
                                     }
 
                                     "삭제" -> {
@@ -845,13 +845,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     nbrBinding.readCommentEt.setText(commentData?.content)
                     commentEditText = commentData?.content.toString()
                     //자동으로 포커스 줘서 대댓글 달게 하기
-                    nbrBinding.readCommentEt.post {
+                    /*nbrBinding.readCommentEt.post {
                         Log.d("POST Comment", "edittext keyboard")
                         nbrBinding.readCommentEt.isFocusableInTouchMode = true
                         nbrBinding.readCommentEt.requestFocus()
                         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                         imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
-                    }
+                    }*/
                     println(commentId) //이건 부모 댓글 id
                     println(commentData?.content.toString()) //이건 수정할 대댓글의 정보
 

@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.app.Dialog
 import android.app.TimePickerDialog
 import android.app.TimePickerDialog.OnTimeSetListener
+import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -49,11 +50,11 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     //체크리스트 펴기 체크
     private var isCheckListClicked = false
     //등하교 버튼 체크
-    private var isCheckSchool = ""
+    private var isCheckSchool = " "
     //흡연여부 체크
-    private var isCheckSmoke = ""
+    private var isCheckSmoke = " "
     //성별 체크
-    private var isCheckGender = ""
+    private var isCheckGender = " "
     //참여 인원 수
     private var participateNumberOfPeople = 1
     //초기화 체크
@@ -73,13 +74,13 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     ): View? {
         bsBinding = FragmentBottomSheetBinding.inflate(inflater, container, false)
 
-        initSetting()
+        //initSetting()
 
         bsBinding.filterCalendar.setOnClickListener {
             val cal = Calendar.getInstance()
             val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
-                selectTargetDate = "${year}년/${month+1}월/${day}일"
-                bsBinding.selectDateTv.text = selectTargetDate
+                selectTargetDate = "${year}-${month+1}-${day}"
+                bsBinding.selectDateTv.text = "${year}년/${month+1}월/${day}일"
                 bsBinding.selectDateTv.setTextColor(Color.BLACK)
             }
             DatePickerDialog(requireActivity(),
@@ -270,14 +271,16 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 }
             }
 
+
+
             /*값 초기화*/
 
             //등하교 버튼 체크
-            isCheckSchool = ""
+            isCheckSchool = " "
             //흡연여부 체크
-            isCheckSmoke = ""
+            isCheckSmoke = " "
             //성별 체크
-            isCheckGender = ""
+            isCheckGender = " "
             //참여 인원 수
             participateNumberOfPeople = 1
             bsBinding.filterParticipateTv.text = "1"
@@ -444,6 +447,66 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             }
         }
     }
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+        // 여기서 초기화 로직을 수행
+        resetViews()
+    }
 
+    private fun resetViews() {
+        // 뷰 초기화 로직 작성
+        isReset = true
+        //뷰 초기화
+        CoroutineScope(Dispatchers.IO).launch {
+            bsBinding.gtschoolBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
+            }
+            bsBinding.aschoolBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
+            }
+            bsBinding.manBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
+            }
+            bsBinding.womanBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
+            }
+            bsBinding.smokerBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
+            }
+            bsBinding.nsmokerBtn.apply {
+                setBackgroundResource(R.drawable.round_btn_layout)
+                setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
+            }
+        }
+
+
+
+        /*값 초기화*/
+
+        //등하교 버튼 체크
+        isCheckSchool = " "
+        //흡연여부 체크
+        isCheckSmoke = " "
+        //성별 체크
+        isCheckGender = " "
+        //참여 인원 수
+        participateNumberOfPeople = 1
+        bsBinding.filterParticipateTv.text = "1"
+
+        bsBinding.selectDateTv.text = "yyyy/mm/dd"
+        bsBinding.selectDateTv.setTextColor(ContextCompat.getColor(requireActivity() ,
+            R.color.mio_gray_7
+        ))
+
+        bsBinding.selectTime.text = "오전 00:00"
+        bsBinding.selectTime.setTextColor(ContextCompat.getColor(requireActivity() ,
+            R.color.mio_gray_7
+        ))
+    }
 
 }

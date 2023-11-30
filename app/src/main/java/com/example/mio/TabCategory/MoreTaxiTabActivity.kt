@@ -30,6 +30,7 @@ import com.google.android.material.chip.Chip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -92,6 +93,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             myViewModel.postCheckFilter(getBottomData)
                             mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_gray_8))
                             mttBinding.moreFilterBtn.setBackgroundResource(R.drawable.filter_icon)
+                            mttBinding.moreNonfilterTv.visibility = View.GONE
+                            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
                             CoroutineScope(Dispatchers.IO).launch {
                                 setSelectData()
                             }
@@ -100,6 +103,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             myViewModel.postCheckFilter(getBottomData)
                             mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
                             mttBinding.moreFilterBtn.setImageResource(R.drawable.filter_update_icon)
+                            println(moreTaxiAllData.filter { it?.postTargetDate == "2023-11-21" })
                         }
                     }
                 })
@@ -449,6 +453,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         myViewModel.checkFilter.observe(this) { it ->
             //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
             val temp = it.split(" ")
+            println("temp"+ temp)
             when (temp[6]) {
                 "true" -> {
                     println("true")
@@ -518,14 +523,14 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             }
 
             when (temp[5]) {
-                "흡연여부 O" -> {
+                "흡연O" -> {
                     chipList.add(createNewChip(
                         text = "흡연여부 O"
                     ))
                 }
-                "흡연여부 X" -> {
+                "흡연x" -> {
                     chipList.add(createNewChip(
-                        text = "흡연여부 O"
+                        text = "흡연여부 X"
                     ))
                 }
                 else -> {
@@ -542,6 +547,10 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                             if (temp[0].isNotEmpty()) {
                                 //null 값을 제외한 List를 반환
                                 tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.postTargetDate == temp[0] }
+                                println("testestet" + moreTaxiAllData.filterNotNull().filter { it.postTargetDate == temp[0] })
+                                println("sadffsdfds" + temp[0])
+                            } else {
+                                println("empty")
                             }
                         }
                         temp[1] -> { //시간
@@ -606,24 +615,19 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 }
                 moreTaxiAllData.clear()
 
-                tempFilterPostData.forEach {
-                    moreTaxiAllData.add(PostData(
-                        it?.accountID!!,
-                        it.postID,
-                        it.postTitle,
-                        it.postContent,
-                        it.postTargetDate,
-                        it.postTargetTime,
-                        it.postCategory,
-                        it.postLocation,
-                        it.postParticipation,
-                        it.postParticipationTotal,
-                        it.postCost,
-                        it.postVerifyGoReturn,
-                        it.user
-                    ))
+                println("filter" + tempFilterPostData)
+                mtAdapter!!.moreTaxiData = tempFilterPostData as ArrayList<PostData?>
+                withContext(Dispatchers.Main) {
+                    if (tempFilterPostData.isEmpty()) {
+                        mttBinding.moreNonfilterTv.visibility = View.VISIBLE
+                        mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
+                    } else {
+                        mttBinding.moreNonfilterTv.visibility = View.GONE
+                        mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+                        // UI 조작
+                        mtAdapter!!.notifyDataSetChanged()
+                    }
                 }
-                mtAdapter?.notifyDataSetChanged()
             }
 
             for (i in chipList.indices) {
@@ -828,8 +832,16 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                             verifyGoReturn,
                                             response.body()!!.content[i].user
                                         ))
-
                                     mtAdapter!!.notifyDataSetChanged()
+                                }
+                                if (moreTaxiAllData.isEmpty()) {
+                                    mttBinding.moreNonfilterTv.text = "카풀 게시글이 존재하지 않습니다"
+                                    mttBinding.moreNonfilterTv.visibility = View.VISIBLE
+                                    mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
+                                } else {
+                                    mttBinding.moreNonfilterTv.text = "검색된 게시글이 없습니다"
+                                    mttBinding.moreNonfilterTv.visibility = View.GONE
+                                    mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
                                 }
                             } else {
                                 Log.d("f", response.code().toString())

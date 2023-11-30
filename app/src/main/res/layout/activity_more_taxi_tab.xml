@@ -116,7 +116,6 @@
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/more_refresh_swipe_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout5">
@@ -170,5 +169,18 @@
             tools:listitem="@layout/post_item" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
+    <TextView
+        android:id="@+id/more_nonfilter_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/pretendard_bold"
+        android:gravity="center"
+        android:text="검색된 게시글이 없습니다"
+        android:textSize="16sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

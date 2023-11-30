@@ -187,57 +187,55 @@ class CarpoolTabFragment : Fragment() {
                     if (calendarTaxiAllData.isNotEmpty()) {
                         try {
                             val selectDateData = calendarTaxiAllData.filter { it.postTargetDate == itemId }
-                            val mainHandler = Handler(Looper.getMainLooper())
-                            mainHandler.post {
-                                if (selectDateData.isNotEmpty()) {
-                                    noticeBoardAdapter = NoticeBoardAdapter()
-                                    noticeBoardAdapter!!.postItemData = selectCalendarCarpoolData
-                                    taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
-                                    //레이아웃 뒤집기 안씀
-                                    //manager.reverseLayout = true
-                                    //manager.stackFromEnd = true
-                                    taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
-                                    taxiTabBinding.noticeBoardRV.layoutManager = manager
+                            if (selectDateData.isNotEmpty()) {
+                                noticeBoardAdapter = NoticeBoardAdapter()
+                                noticeBoardAdapter!!.postItemData = selectCalendarCarpoolData
+                                taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
+                                //레이아웃 뒤집기 안씀
+                                //manager.reverseLayout = true
+                                //manager.stackFromEnd = true
+                                taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
+                                taxiTabBinding.noticeBoardRV.layoutManager = manager
 
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
-                                        taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
-                                    }
-                                    selectCalendarCarpoolData.clear()
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                                    taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
+                                }
+                                selectCalendarCarpoolData.clear()
 
-                                    /* for (i in selectDateData.indices) {
-                                         calendarTaxiAllData.add(selectDateData[i])
-                                     }*/
-                                    for (select in selectDateData) {
-                                        selectCalendarCarpoolData.add(select)
-                                    }
+                                /* for (i in selectDateData.indices) {
+                                     calendarTaxiAllData.add(selectDateData[i])
+                                 }*/
+                                for (select in selectDateData) {
+                                    selectCalendarCarpoolData.add(select)
+                                }
 
 
-                                    noticeBoardAdapter!!.notifyDataSetChanged()
+                                noticeBoardAdapter!!.notifyDataSetChanged()
 
-                                    //recyclerview item클릭 시
-                                    noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
-                                        override fun onClick(view: View, position: Int, itemId: Int) {
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                val temp = carpoolAllData[position]
-                                                dataPosition = position
-                                                val intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
-                                                    putExtra("type", "READ")
-                                                    putExtra("postItem", temp)
-                                                    putExtra("uri", temp.user.profileImageUrl)
-                                                }
-                                                requestActivity.launch(intent)
+                                //recyclerview item클릭 시
+                                noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
+                                    override fun onClick(view: View, position: Int, itemId: Int) {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            val temp = carpoolAllData[position]
+                                            dataPosition = position
+                                            val intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
+                                                putExtra("type", "READ")
+                                                putExtra("postItem", temp)
+                                                putExtra("uri", temp.user.profileImageUrl)
                                             }
+                                            requestActivity.launch(intent)
                                         }
-                                    })
-
-                                } else {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
-                                        taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                                     }
+                                })
+
+                            } else {
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                                    taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                                 }
                             }
+
                         } catch (e: java.lang.IndexOutOfBoundsException) {
                             println("tesetstes")
                         }
@@ -1065,7 +1063,7 @@ class CarpoolTabFragment : Fragment() {
     //오늘날짜에 선택되게
     private fun triggerFirstItemOfCalendarAdapter(currentDatePos : Int) {
         taxiTabBinding.calendarRV.post {
-            taxiTabBinding.calendarRV.findViewHolderForAdapterPosition(currentDatePos)?.itemView?.performClick()
+            taxiTabBinding.calendarRV.findViewHolderForAdapterPosition(0)?.itemView?.performClick()
         }
     }
 

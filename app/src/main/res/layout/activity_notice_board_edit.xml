@@ -499,7 +499,7 @@
                 app:layout_constraintStart_toStartOf="parent">
 
 
-                <!-- <net.daum.mf.map.api.MapView
+                 <!--<net.daum.mf.map.api.MapView
                      android:id="@+id/mapView"
                      android:layout_width="match_parent"
                      android:layout_height="wrap_content"

@@ -47,7 +47,9 @@ class NearbypostActivity  : AppCompatActivity() {
                 postParticipationTotal = post.numberOfPassengers,
                 postCost = post.cost,
                 postVerifyGoReturn = post.verifyGoReturn,
-                user = post.user
+                user = post.user,
+                postlatitude = post.latitude,
+                postlongitude = post.longitude
             )
 
             // Intent를 통해 NoticeBoardReadActivity로 전달

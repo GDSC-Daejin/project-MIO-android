@@ -168,6 +168,8 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         //뷰의 이벤트 리스너
         myViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
+
+
         mapView = MapView(this)
         mapView.setMapViewEventListener(this)
         mBinding.mapView.addView(mapView)

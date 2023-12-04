@@ -179,7 +179,9 @@ class PostSearchFragment : Fragment() {
                                 response.body()!!.content[i].numberOfPassengers,
                                 cost,
                                 response.body()!!.content[i].verifyGoReturn,
-                                response.body()!!.content[i].user
+                                response.body()!!.content[i].user,
+                                response.body()!!.content[i].latitude,
+                                response.body()!!.content[i].longitude
                             ))
                             sAdapter!!.notifyDataSetChanged()
                         }

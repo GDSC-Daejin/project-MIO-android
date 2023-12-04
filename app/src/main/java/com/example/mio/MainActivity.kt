@@ -81,7 +81,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             actionSetting.isVisible = !isSettingClicked
         }
-
         return true
     }
 
@@ -135,7 +134,6 @@ class MainActivity : AppCompatActivity() {
                     setToolbarView(toolbarType)
                     isClicked = false
                     isSettingClicked = false
-
                 }
 
                 R.id.navigation_search -> {

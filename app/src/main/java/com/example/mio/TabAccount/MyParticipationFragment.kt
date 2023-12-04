@@ -171,7 +171,9 @@ class MyParticipationFragment : Fragment() {
                                 response.body()!![i].numberOfPassengers,
                                 response.body()!![i].cost,
                                 response.body()!![i].verifyGoReturn,
-                                response.body()!![i].user
+                                response.body()!![i].user,
+                                response.body()!![i].latitude,
+                                response.body()!![i].longitude
                             ))
                             myAdapter!!.notifyDataSetChanged()
                         }

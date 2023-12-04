@@ -284,7 +284,9 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                                 response.body()!!.content[i].numberOfPassengers,
                                                 cost,
                                                 verifyGoReturn,
-                                                response.body()!!.content[i].user
+                                                response.body()!!.content[i].user,
+                                                response.body()!!.content[i].latitude,
+                                                response.body()!!.content[i].longitude
                                             )
                                         }?.let { moreTaxiAllData.add(it) }
 
@@ -416,7 +418,9 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                                 response.body()!!.content[i].numberOfPassengers,
                                                 cost,
                                                 verifyGoReturn,
-                                                response.body()!!.content[i].user
+                                                response.body()!!.content[i].user,
+                                                response.body()!!.content[i].latitude,
+                                                response.body()!!.content[i].longitude
                                             )
                                         }?.let { moreTaxiAllData.add(it) }
 
@@ -548,7 +552,9 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                                 response.body()!!.content[i].numberOfPassengers,
                                                 cost,
                                                 verifyGoReturn,
-                                                response.body()!!.content[i].user
+                                                response.body()!!.content[i].user,
+                                                response.body()!!.content[i].latitude,
+                                                response.body()!!.content[i].longitude
                                             )
                                         }?.let { moreTaxiAllData.add(it) }
                                         println(moreTaxiAllData)
@@ -863,7 +869,9 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                             response.body()!!.content[i].numberOfPassengers,
                                             cost,
                                             verifyGoReturn,
-                                            response.body()!!.content[i].user
+                                            response.body()!!.content[i].user,
+                                            response.body()!!.content[i].latitude,
+                                            response.body()!!.content[i].longitude
                                         ))
 
                                     mtAdapter!!.notifyDataSetChanged()
@@ -1036,7 +1044,9 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                 response.body()!!.content[i].numberOfPassengers,
                                 cost,
                                 verifyGoReturn,
-                                response.body()!!.content[i].user
+                                response.body()!!.content[i].user,
+                                response.body()!!.content[i].latitude,
+                                response.body()!!.content[i].longitude
                             ))
 
                             mtAdapter!!.notifyDataSetChanged()

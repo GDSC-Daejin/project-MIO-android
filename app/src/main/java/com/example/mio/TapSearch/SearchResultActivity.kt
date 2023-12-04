@@ -60,7 +60,7 @@ class SearchResultActivity : AppCompatActivity() {
                     SharedPrefManager.removeRecentSearch(this@SearchResultActivity, locationJson)
 
                     // 최근 검색어 목록을 다시 로드하여 UI를 업데이트 합니다.
-                    loadRecentSearch()
+                    //loadRecentSearch()
                 }
             })
         }

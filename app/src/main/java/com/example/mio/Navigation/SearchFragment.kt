@@ -55,6 +55,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         (activity?.application as FragSharedViewModel2).sharedViewModel
     }
 
+    private var onlythispage = 0
     //private lateinit var horizontalAdapter: HorizontalAdapter
 
     //private lateinit var searchResultAdapter: SearchResultAdapter
@@ -91,39 +92,42 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         // test 했는데 됨 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         //getPostsByLocation(37.870684661337016, 127.15612168310325)
 
-        val resources = context?.resources
-        val resourceId = resources?.getIdentifier("navigation_bar_height", "dimen", "android")
-        if (resourceId != null && resourceId > 0) {
-            val navigationBarHeight = resources.getDimensionPixelSize(resourceId)
+        if (onlythispage == 0 ) {
+            val resources = context?.resources
+            val resourceId = resources?.getIdentifier("navigation_bar_height", "dimen", "android")
+            if (resourceId != null && resourceId > 0) {
+                val navigationBarHeight = resources.getDimensionPixelSize(resourceId)
 
-            // 아래쪽 네비게이션 뷰에 마진 추가
-            val activity = activity as AppCompatActivity
-            val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
-            val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
-            layoutParams.bottomMargin = 0
-            layoutParams.bottomMargin += navigationBarHeight
-            bottomNavigationView.layoutParams = layoutParams
+                // 아래쪽 네비게이션 뷰에 마진 추가
+                val activity = activity as AppCompatActivity
+                val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
+                val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
+                layoutParams.bottomMargin = 0
+                layoutParams.bottomMargin += navigationBarHeight
+                bottomNavigationView.layoutParams = layoutParams
+            }
+            (activity as? AppCompatActivity)?.supportActionBar?.hide()
+            activity?.window?.apply {
+                clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+                addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    statusBarColor = Color.TRANSPARENT
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                    activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    activity?.window?.setFlags(
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                        WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                    )
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                }
+            }
         }
-        (activity as? AppCompatActivity)?.supportActionBar?.hide()
-        activity?.window?.apply {
-            clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                statusBarColor = Color.TRANSPARENT
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-                activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                activity?.window?.setFlags(
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-                )
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            }
-        }
+
 
         sBinding?.btSearchField?.setOnClickListener {
 /*            val transaction = parentFragmentManager.beginTransaction()
@@ -221,7 +225,9 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
                     postParticipationTotal = location.numberOfPassengers,
                     postCost = location.cost,
                     postVerifyGoReturn = location.verifyGoReturn,
-                    user = location.user
+                    user = location.user,
+                    postlatitude = location.latitude,
+                    postlongitude = location.longitude
                 )
 
                 // Intent를 통해 NoticeBoardReadActivity로 전달
@@ -367,6 +373,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         sBinding!!.searchRV.setHasFixedSize(true)
     }*/
 
+
 /*    override fun onPause() {
         super.onPause()
 
@@ -397,11 +404,13 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
 
     override fun onDestroyView() {
         Log.d("GGGGGGGGGGGGGGGGG", "gggggggggggggggggggggggggggg")
+
         super.onDestroyView()
         mapView.removeAllPOIItems()
         mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
         mapView.setMapViewEventListener(null as MapView.MapViewEventListener?)
         sBinding?.editFirstVf?.removeView(mapView)
+
 /*        mapView.removeAllPOIItems() // 모든 마커 제거
         mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // 현재 위치 추적 비활성화
         mapView.mapType = MapView.MapType.Standard // 지도 타입을 기본값으로 설정

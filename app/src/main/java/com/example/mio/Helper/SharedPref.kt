@@ -12,7 +12,8 @@ import org.json.JSONException
 
 private const val PREFS_NAME = "MyAppPrefs"
 private const val KEY_BEFORE_NOTIFICATION_DATA = "beforeNotificationData"
-class SharedPref(context: Context) {
+class
+SharedPref(context: Context) {
     var mySharedPref: SharedPreferences //
     var storeSharedPref : SharedPreferences
     init {

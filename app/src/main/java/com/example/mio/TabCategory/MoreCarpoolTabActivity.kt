@@ -293,7 +293,9 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                                 response.body()!!.content[i].numberOfPassengers,
                                                 cost,
                                                 verifyGoReturn,
-                                                response.body()!!.content[i].user
+                                                response.body()!!.content[i].user,
+                                                response.body()!!.content[i].latitude,
+                                                response.body()!!.content[i].longitude
                                             ))
 
                                         mtAdapter!!.notifyDataSetChanged()
@@ -424,7 +426,9 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                                 response.body()!!.content[i].numberOfPassengers,
                                                 cost,
                                                 verifyGoReturn,
-                                                response.body()!!.content[i].user
+                                                response.body()!!.content[i].user,
+                                                response.body()!!.content[i].latitude,
+                                                response.body()!!.content[i].longitude
                                             ))
 
                                         mtAdapter!!.notifyDataSetChanged()
@@ -839,7 +843,9 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                             response.body()!!.content[i].numberOfPassengers,
                                             cost,
                                             verifyGoReturn,
-                                            response.body()!!.content[i].user
+                                            response.body()!!.content[i].user,
+                                            response.body()!!.content[i].latitude,
+                                            response.body()!!.content[i].longitude
                                         ))
                                 }
                                 mtAdapter!!.notifyDataSetChanged()
@@ -1001,7 +1007,9 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 response.body()!!.content[i].numberOfPassengers,
                                 cost,
                                 verifyGoReturn,
-                                response.body()!!.content[i].user
+                                response.body()!!.content[i].user,
+                                response.body()!!.content[i].latitude,
+                                response.body()!!.content[i].longitude
                             ))
                         }
                         mtAdapter!!.moreTaxiData = moreCarpoolAllData

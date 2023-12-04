@@ -13,7 +13,9 @@ data class PostData(
     var postParticipationTotal : Int, //총 받을 손님 인원수
     var postCost : Int,
     var postVerifyGoReturn: Boolean, //등/하교 -> true 등, false 하
-    var user : User
+    var user : User,
+    var postlatitude : Double,
+    var postlongitude : Double
 
     ) : java.io.Serializable {
 

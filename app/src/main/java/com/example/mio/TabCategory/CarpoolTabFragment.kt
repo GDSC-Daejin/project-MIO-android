@@ -603,7 +603,9 @@ class CarpoolTabFragment : Fragment() {
                                     response.body()!!.content[i].numberOfPassengers,
                                     cost,
                                     verifyGoReturn,
-                                    response.body()!!.content[i].user
+                                    response.body()!!.content[i].user,
+                                    response.body()!!.content[i].latitude,
+                                    response.body()!!.content[i].longitude
                             ))
 
                             //println(response!!.body()!!.content[i].user.studentId)
@@ -772,7 +774,9 @@ class CarpoolTabFragment : Fragment() {
                                     response.body()!!.content[i].numberOfPassengers,
                                     cost,
                                     verifyGoReturn,
-                                    response.body()!!.content[i].user
+                                    response.body()!!.content[i].user,
+                                    response.body()!!.content[i].latitude,
+                                    response.body()!!.content[i].longitude
                                 ))
 
                             noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
@@ -848,7 +852,9 @@ class CarpoolTabFragment : Fragment() {
                             response.body()!![i].numberOfPassengers,
                             response.body()!![i].cost,
                             response.body()!![i].verifyGoReturn,
-                            response.body()!![i].user
+                            response.body()!![i].user,
+                            response.body()!![i].latitude,
+                            response.body()!![i].longitude
                         ))
                     }
                     currentNoticeBoardAdapter!!.notifyDataSetChanged()

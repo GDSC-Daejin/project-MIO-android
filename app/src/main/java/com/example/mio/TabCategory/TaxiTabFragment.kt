@@ -644,7 +644,9 @@ class TaxiTabFragment : Fragment() {
                                     response.body()!!.content[i].numberOfPassengers,
                                     cost,
                                     verifyGoReturn,
-                                    response.body()!!.content[i].user
+                                    response.body()!!.content[i].user,
+                                    response.body()!!.content[i].latitude,
+                                    response.body()!!.content[i].longitude
                                 ))
 
                             noticeBoardAdapter!!.notifyDataSetChanged()
@@ -792,7 +794,9 @@ class TaxiTabFragment : Fragment() {
                                     response.body()!!.content[i].numberOfPassengers,
                                     cost,
                                     verifyGoReturn,
-                                    response.body()!!.content[i].user
+                                    response.body()!!.content[i].user,
+                                    response.body()!!.content[i].latitude,
+                                    response.body()!!.content[i].longitude
                                 ))
 
                             noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
@@ -872,7 +876,9 @@ class TaxiTabFragment : Fragment() {
                                 response.body()!![i].numberOfPassengers,
                                 response.body()!![i].cost,
                                 response.body()!![i].verifyGoReturn,
-                                response.body()!![i].user
+                                response.body()!![i].user,
+                                response.body()!![i].latitude,
+                                response.body()!![i].longitude
                             ))
                         }
                         currentNoticeBoardAdapter!!.notifyDataSetChanged()

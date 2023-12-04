@@ -507,6 +507,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         //setCommentData()
         initCommentRecyclerView()
 
+        nbrBinding.goLocation.setOnClickListener {
+            val intent = Intent(this, LocationActivity::class.java)
+            intent.putExtra("latitude", temp!!.postlatitude)
+            intent.putExtra("longitude", temp!!.postlongitude)
+            startActivity(intent)
+        }
         nbrBinding.readSetting.setOnClickListener {
             if (email == temp!!.user.email) {
                /* val popUpMenu = PopupMenu(this, nbrBinding.readSetting)
@@ -1492,7 +1498,9 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 response.body()!![i].numberOfPassengers,
                                 response.body()!![i].cost,
                                 response.body()!![i].verifyGoReturn,
-                                response.body()!![i].user
+                                response.body()!![i].user,
+                                response.body()!![i].latitude,
+                                response.body()!![i].longitude
                             ))
                         }
 

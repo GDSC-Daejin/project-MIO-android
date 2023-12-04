@@ -221,7 +221,9 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
                     postParticipationTotal = location.numberOfPassengers,
                     postCost = location.cost,
                     postVerifyGoReturn = location.verifyGoReturn,
-                    user = location.user
+                    user = location.user,
+                    postlatitude = location.latitude,
+                    postlongitude = location.longitude
                 )
 
                 // Intent를 통해 NoticeBoardReadActivity로 전달

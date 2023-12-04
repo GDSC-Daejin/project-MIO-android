@@ -250,7 +250,9 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
                     return@Interceptor chain.proceed(newRequest)
                 }
-            } else newRequest = chain.request()
+            } else {
+                newRequest = chain.request()
+            }
             chain.proceed(newRequest)
         }
         val builder = OkHttpClient.Builder()
@@ -389,11 +391,11 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
+
+        //.client(clientBuilder)
         val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
-        //.client(clientBuilder)
-
         //Authorization jwt토큰 로그인
         val interceptor = Interceptor { chain ->
 

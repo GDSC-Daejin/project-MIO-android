@@ -7,12 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mio.*
 import com.example.mio.Adapter.MyReviewAdapter
-import com.example.mio.BuildConfig
-import com.example.mio.MioInterface
 import com.example.mio.Model.MyAccountReviewData
-import com.example.mio.R
-import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentMyReviewReadBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -606,7 +606,7 @@ class CarpoolTabFragment : Fragment() {
                                     response.body()!!.content[i].user,
                                     response.body()!!.content[i].latitude,
                                     response.body()!!.content[i].longitude
-                            ))
+                                ))
 
                             //println(response!!.body()!!.content[i].user.studentId)
                             /*part?.let {
@@ -1200,9 +1200,6 @@ class CarpoolTabFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        val localDate = LocalDate.now().toString()
-        val currentDate = localDate.substring(8..9).toInt()
-        triggerFirstItemOfCalendarAdapter(currentDate)
     }
 
     companion object {

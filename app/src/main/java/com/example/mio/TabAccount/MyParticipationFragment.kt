@@ -13,14 +13,11 @@ import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mio.*
 import com.example.mio.Adapter.MyAccountParticipationAdapter
 import com.example.mio.Adapter.MyAccountPostAdapter
-import com.example.mio.BuildConfig
-import com.example.mio.MioInterface
 import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
-import com.example.mio.R
-import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentMyParticipationBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

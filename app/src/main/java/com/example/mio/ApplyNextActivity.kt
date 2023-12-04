@@ -316,7 +316,7 @@ class ApplyNextActivity : AppCompatActivity() {
             val temp = ParticipateData(applyEditContent)
 
             CoroutineScope(Dispatchers.IO).launch {
-                api.addParticipate(postId, temp).enqueue(object : Callback<String?> {
+               api.addParticipate(postId, temp).enqueue(object : Callback<String?> {
                     override fun onResponse(
                         call: Call<String?>,
                         response: Response<String?>

@@ -126,12 +126,12 @@ class MyWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
                         for (i in response.body()!!.indices) {
                             notificationAllData.add(
                                 AddAlarmResponseData(
-                                response.body()!![i].id,
-                                response.body()!![i].createDate,
-                                response.body()!![i].content,
-                                response.body()!![i].post,
-                                response.body()!![i].userEntity
-                            ))
+                                    response.body()!![i].id,
+                                    response.body()!![i].createDate,
+                                    response.body()!![i].content,
+                                    response.body()!![i].post,
+                                    response.body()!![i].userEntity
+                                ))
 
                             notificationPostAllData.add(
                                 AlarmPost(

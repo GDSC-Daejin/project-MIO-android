@@ -1,5 +1,7 @@
 package com.example.mio
 
+import android.content.Context
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -9,6 +11,23 @@ object RetrofitServerConnect {
         .addConverterFactory(GsonConverterFactory.create())
         .build()
     val service: MioInterface = retrofit.create(MioInterface::class.java)
+
+
+    /*private const val BASE_URL = BuildConfig.server_URL
+
+    fun create(context: Context): MioInterface {
+        val okHttpClient = OkHttpClient.Builder()
+            .addInterceptor(AuthInterceptor(context))
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        return retrofit.create(MioInterface::class.java)
+    }*/
 }
 
 /*

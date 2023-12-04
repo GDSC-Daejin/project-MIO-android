@@ -92,8 +92,6 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     //현재 페이지
     private var currentPage = 1
     private var countPage = 0 // 2번째 페이지 때문에 추가
-    //retrofit2
-    val call = RetrofitServerConnect.service
 
     //add type
     private var type : String? = null
@@ -782,6 +780,8 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             /*val loggingInterceptor = HttpLoggingInterceptor()
             loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
             val clientBuilder = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()*/
+
+
             //통신
             val SERVER_URL = BuildConfig.server_URL
             val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)

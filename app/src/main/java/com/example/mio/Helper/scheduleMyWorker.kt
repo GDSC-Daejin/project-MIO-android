@@ -24,8 +24,8 @@ fun scheduleMyWorker(context: Context) {
         it.enqueue(workRequest)
 
         *//** WorkManager의 getStatusById()에 WorkRequest의 UUID 객체를 인자로 전달 하면
-         *  인자값으로 주어진 ID에 해당하는 작업을 추적할 수 있도록 LiveData 객체를 반환한다
-         *//*
+     *  인자값으로 주어진 ID에 해당하는 작업을 추적할 수 있도록 LiveData 객체를 반환한다
+     *//*
         val statusLiveData = it.getStatusById(workRequest.id)
         *//* statusLiveData에 Observer를 걸어서 작업의 상태를 추적 *//*
         statusLiveData.observe(this, Observer { workState ->

@@ -65,9 +65,9 @@ class LoginActivity : AppCompatActivity() {
         .build()
     val service = retrofit.create(MioInterface::class.java)
     val interceptor = HttpLoggingInterceptor()*/
-   /* interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-    val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
-*/
+    /* interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
+     val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
+ */
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -195,8 +195,8 @@ class LoginActivity : AppCompatActivity() {
                             putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
                             putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
                         }
-                       builder.build()
-                       println(response.body()!!.accessTokenExpiresIn.toString())
+                        builder.build()
+                        println(response.body()!!.accessTokenExpiresIn.toString())
 
 
                     } else {

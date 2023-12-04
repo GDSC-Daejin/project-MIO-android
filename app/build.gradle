@@ -98,7 +98,7 @@ dependencies {
     implementation 'com.airbnb.android:lottie:3.0.7'
 
     //work
-    implementation "androidx.work:work-runtime-ktx:2.8.1"
+    implementation "androidx.work:work-runtime-ktx:2.7.1"
 
     //license library추가
     // library 추가

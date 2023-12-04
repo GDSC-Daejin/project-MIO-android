@@ -10,15 +10,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mio.*
 import com.example.mio.Adapter.ProfilePostAdapter
 import com.example.mio.Adapter.ProfileReviewAdapter
-import com.example.mio.BuildConfig
-import com.example.mio.MioInterface
 import com.example.mio.Model.MyAccountReviewData
 import com.example.mio.Model.PostData
 import com.example.mio.Model.PostReadAllResponse
-import com.example.mio.R
-import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentProfilePostBinding
 import com.example.mio.databinding.FragmentProfileReviewBinding
 import kotlinx.coroutines.CoroutineScope

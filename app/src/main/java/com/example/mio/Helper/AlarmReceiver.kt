@@ -17,6 +17,9 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.work.Configuration
+import androidx.work.WorkManager
+import androidx.work.WorkManagerInitializer
 import com.example.mio.BuildConfig
 import com.example.mio.MioInterface
 import com.example.mio.Model.AddAlarmData
@@ -42,6 +45,17 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class AlarmReceiver : BroadcastReceiver() {
+    object WorkManagerInitializer {
+        private var initialized = false
+
+        fun isInitialized(): Boolean {
+            return initialized
+        }
+
+        fun setInitialized(value: Boolean) {
+            initialized = value
+        }
+    }
 
 
     private var alarmContext : Context? = null
@@ -50,7 +64,9 @@ class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent != null && intent.action == Intent.ACTION_BOOT_COMPLETED) {
             alarmContext = context
-            scheduleMyWorker(context!!)
+            initializeWorkManager(context!!)
+            scheduleMyWorker(context)
+
             /*// 폴링 주기 설정 (예: 1분마다 폴링)
             val pollingInterval = 60000 * 5 // 밀리초 단위, 5분
             val handler = Handler(Looper.getMainLooper())
@@ -67,6 +83,14 @@ class AlarmReceiver : BroadcastReceiver() {
                     handler.postDelayed(this, pollingInterval.toLong())
                 }
             }, pollingInterval.toLong())*/
+        }
+    }
+
+    private fun initializeWorkManager(context: Context) {
+        if (!WorkManagerInitializer.isInitialized()) {
+            WorkManager.initialize(context, Configuration.Builder().build())
+            WorkManagerInitializer.setInitialized(true)
+
         }
     }
 }

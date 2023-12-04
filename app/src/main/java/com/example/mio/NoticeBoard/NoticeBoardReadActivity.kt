@@ -515,50 +515,50 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
         nbrBinding.readSetting.setOnClickListener {
             if (email == temp!!.user.email) {
-               /* val popUpMenu = PopupMenu(this, nbrBinding.readSetting)
-                popUpMenu.menuInflater.inflate(R.menu.noticeboard_option_menu, popUpMenu.menu)
-                popUpMenu.setOnMenuItemClickListener {
-                    when (it.itemId) {
-                        R.id.read_menu_edit -> {
-                            Toast.makeText(this, "수정", Toast.LENGTH_SHORT).show()
-                            val intent = Intent(this, NoticeBoardEditActivity::class.java).apply {
-                                putExtra("type", "EDIT")
-                                putExtra("editPostData", temp)
-                            }
-                            startActivity(intent)
-                        }
+                /* val popUpMenu = PopupMenu(this, nbrBinding.readSetting)
+                 popUpMenu.menuInflater.inflate(R.menu.noticeboard_option_menu, popUpMenu.menu)
+                 popUpMenu.setOnMenuItemClickListener {
+                     when (it.itemId) {
+                         R.id.read_menu_edit -> {
+                             Toast.makeText(this, "수정", Toast.LENGTH_SHORT).show()
+                             val intent = Intent(this, NoticeBoardEditActivity::class.java).apply {
+                                 putExtra("type", "EDIT")
+                                 putExtra("editPostData", temp)
+                             }
+                             startActivity(intent)
+                         }
 
-                        R.id.read_menu_delete -> {
-                            Toast.makeText(this, "삭제", Toast.LENGTH_SHORT).show()
-                            val builder : AlertDialog.Builder = AlertDialog.Builder(this)
-                            val ad : AlertDialog = builder.create()
-                            val deleteData = temp
-                            builder.setMessage("정말로 삭제하시겠습니까?")
-                            builder.setNegativeButton("예",
-                                DialogInterface.OnClickListener { dialog, which ->
-                                    ad.dismiss()
-                                    //temp = listData[holder.adapterPosition]!!
-                                    //extraditeData()
-                                    //testData.add(temp)
-                                    //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
+                         R.id.read_menu_delete -> {
+                             Toast.makeText(this, "삭제", Toast.LENGTH_SHORT).show()
+                             val builder : AlertDialog.Builder = AlertDialog.Builder(this)
+                             val ad : AlertDialog = builder.create()
+                             val deleteData = temp
+                             builder.setMessage("정말로 삭제하시겠습니까?")
+                             builder.setNegativeButton("예",
+                                 DialogInterface.OnClickListener { dialog, which ->
+                                     ad.dismiss()
+                                     //temp = listData[holder.adapterPosition]!!
+                                     //extraditeData()
+                                     //testData.add(temp)
+                                     //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
 
 
 
-                                    //removeServerData(deleteServerData!!)
-                                    //println(deleteServerData)
-                                    deletePostData()
-                                })
+                                     //removeServerData(deleteServerData!!)
+                                     //println(deleteServerData)
+                                     deletePostData()
+                                 })
 
-                            builder.setPositiveButton("아니오",
-                                DialogInterface.OnClickListener { dialog, which ->
-                                    ad.dismiss()
-                                })
-                            builder.show()
-                        }
-                    }
-                    return@setOnMenuItemClickListener true
-                }
-                popUpMenu.show()*/
+                             builder.setPositiveButton("아니오",
+                                 DialogInterface.OnClickListener { dialog, which ->
+                                     ad.dismiss()
+                                 })
+                             builder.show()
+                         }
+                     }
+                     return@setOnMenuItemClickListener true
+                 }
+                 popUpMenu.show()*/
 
                 //이건 내 게시글 눌렀을 때
                 val bottomSheet = ReadSettingBottomSheetFragment()
@@ -643,26 +643,26 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         })
                                     }*/
 
-                                   /* val builder : AlertDialog.Builder = AlertDialog.Builder(this@NoticeBoardReadActivity)
-                                    val ad : AlertDialog = builder.create()
-                                    val view = LayoutInflater.from(this@NoticeBoardReadActivity).inflate(
-                                        R.layout.dialog_layout, null
-                                    )
-                                    builder.setView(view)
-                                    view.findViewById<TextView>(R.id.dialog_tv).text = "삭제하시겠습니까?"
+                                    /* val builder : AlertDialog.Builder = AlertDialog.Builder(this@NoticeBoardReadActivity)
+                                     val ad : AlertDialog = builder.create()
+                                     val view = LayoutInflater.from(this@NoticeBoardReadActivity).inflate(
+                                         R.layout.dialog_layout, null
+                                     )
+                                     builder.setView(view)
+                                     view.findViewById<TextView>(R.id.dialog_tv).text = "삭제하시겠습니까?"
 
-                                    //아니요
-                                    view.findViewById<Button>(R.id.dialog_left_btn).setOnClickListener {
-                                        ad.dismiss()
-                                    }
-                                    //예
-                                    view.findViewById<Button>(R.id.dialog_right_btn).setOnClickListener {
-                                        ad.dismiss()
-                                        deletePostData()
-                                        this@NoticeBoardReadActivity.finish()
-                                    }
+                                     //아니요
+                                     view.findViewById<Button>(R.id.dialog_left_btn).setOnClickListener {
+                                         ad.dismiss()
+                                     }
+                                     //예
+                                     view.findViewById<Button>(R.id.dialog_right_btn).setOnClickListener {
+                                         ad.dismiss()
+                                         deletePostData()
+                                         this@NoticeBoardReadActivity.finish()
+                                     }
 
-                                    builder.show()*/
+                                     builder.show()*/
 
                                     //사용할 곳
                                     val layoutInflater = LayoutInflater.from(context)
@@ -1218,16 +1218,16 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         nbrBinding.readCommentLl.visibility = View.GONE
                         for (i in response.body()!!.indices) {
                             val commentResponse = response.body()!![i]
-                           /* commentAllData.add(
-                                CommentData(
-                                    response.body()!![i].commentId,
-                                    response.body()!![i].content,
-                                    response.body()!![i].createDate,
-                                    response.body()!![i].postId,
-                                    response.body()!![i].user,
-                                    response.body()!![i].childComments
-                                ))
-                            noticeBoardReadAdapter!!.notifyDataSetChanged()*/
+                            /* commentAllData.add(
+                                 CommentData(
+                                     response.body()!![i].commentId,
+                                     response.body()!![i].content,
+                                     response.body()!![i].createDate,
+                                     response.body()!![i].postId,
+                                     response.body()!![i].user,
+                                     response.body()!![i].childComments
+                                 ))
+                             noticeBoardReadAdapter!!.notifyDataSetChanged()*/
 
                             val commentData = CommentData(
                                 commentResponse.commentId,
@@ -1780,7 +1780,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(channelID, channelName,
                 NotificationManager.IMPORTANCE_DEFAULT).apply {
-                    description = "참여 알림"
+                description = "참여 알림"
             }
             //이 채널에 게시된 알림이 해당 기능을 지원하는 장치에서 알림 표시등을 표시할지 여부를 설정합니다.
             channel.enableLights(true)
@@ -1828,7 +1828,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             //PendingIntent.FLAG_UPDATE_CURRENT,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
 
-        )
+            )
 
         val notificationCreate = NotificationCompat.Builder(this@NoticeBoardReadActivity, channelID)
             .setContentTitle("알람")

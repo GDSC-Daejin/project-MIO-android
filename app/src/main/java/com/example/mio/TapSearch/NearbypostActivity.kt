@@ -1,4 +1,4 @@
-package com.example.mio.SearchTap
+package com.example.mio.TapSearch
 
 import android.content.Intent
 import android.os.Bundle

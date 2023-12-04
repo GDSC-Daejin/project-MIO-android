@@ -15,8 +15,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.mio.*
 import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
-import com.example.mio.SearchTap.NearbypostActivity
-import com.example.mio.SearchTap.SearchResultActivity
+import com.example.mio.TapSearch.NearbypostActivity
+import com.example.mio.TapSearch.SearchResultActivity
 import com.example.mio.databinding.FragmentSearchBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.CoroutineScope

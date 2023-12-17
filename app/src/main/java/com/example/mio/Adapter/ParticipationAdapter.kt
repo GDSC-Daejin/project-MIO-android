@@ -1,5 +1,6 @@
 package com.example.mio.Adapter
 import android.content.Context
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Handler
 import android.os.Looper
@@ -8,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.*
 import com.example.mio.Model.*
@@ -243,11 +245,12 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 newRequest =
                     chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
                 val expireDate: Long = getExpireDate.toLong()
-                //여기에 refresh 추가하기 Todo
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(context, LoginActivity::class.java)
+                    context.startActivity(intent)
                     return@Interceptor chain.proceed(newRequest)
                 }
             } else {
@@ -352,8 +355,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    val intent = Intent(context, LoginActivity::class.java)
+                    context.startActivity(intent)
                     return@Interceptor chain.proceed(newRequest)
                 }
             } else newRequest = chain.request()
@@ -407,8 +410,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    val intent = Intent(context, LoginActivity::class.java)
+                    context.startActivity(intent)
                     return@Interceptor chain.proceed(newRequest)
                 }
             } else newRequest = chain.request()

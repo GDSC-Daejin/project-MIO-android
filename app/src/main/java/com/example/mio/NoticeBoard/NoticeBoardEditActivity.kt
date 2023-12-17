@@ -799,10 +799,14 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     val expireDate: Long = getExpireDate.toLong()
                     if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                         //refresh 들어갈 곳
-                        newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                        /*newRequest =
+                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                        val intent = Intent(this@NoticeBoardEditActivity, LoginActivity::class.java)
+                        startActivity(intent)
+                        finish()
                         return@Interceptor chain.proceed(newRequest)
                     }
+
                 } else newRequest = chain.request()
                 chain.proceed(newRequest)
             }

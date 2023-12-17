@@ -130,16 +130,19 @@ class AccountSettingActivity : AppCompatActivity() {
         val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
 
         val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
+            val newRequest: Request
+            if (token != null && token != "") { // 토큰이 없지 않은 경우
                 // Authorization 헤더에 토큰 추가
                 newRequest =
                     chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(this@AccountSettingActivity, LoginActivity::class.java)
+                    startActivity(intent)
+                    finish()
                     return@Interceptor chain.proceed(newRequest)
                 }
             } else newRequest = chain.request()

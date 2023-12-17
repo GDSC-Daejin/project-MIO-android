@@ -48,7 +48,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
     private var sBinding : FragmentSearchBinding? = null
 
     private lateinit var geocoder: Geocoder
-    private lateinit var mapView: MapView
+    private var mapView: MapView? = null
 
 
     val sharedViewModel: FragSharedViewModel by lazy {
@@ -84,8 +84,8 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
     ): View {
         sBinding = FragmentSearchBinding.inflate(inflater, container, false)
 
-        mapView = sBinding!!.searchMapView
-        mapView.setMapViewEventListener(this)
+        mapView = sBinding?.searchMapView
+        mapView?.setMapViewEventListener(this)
         //geocoder = Geocoder(this)
 
         // test 했는데 됨 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -145,7 +145,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             }
         }
 
-        mapView.setPOIItemEventListener(object : MapView.POIItemEventListener {
+        mapView?.setPOIItemEventListener(object : MapView.POIItemEventListener {
             override fun onPOIItemSelected(mapView: MapView, poiItem: MapPOIItem) {
                 val selectedPost = poiItem.userObject as? LocationReadAllResponse
                 if (selectedPost == null) {
@@ -182,11 +182,11 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             isShowCalloutBalloonOnTouch = false
         }
 
-        mapView.addPOIItem(Marker)
+        mapView?.addPOIItem(Marker)
 
 
         // 지도의 중심을 선택된 위치로 이동
-        mapView.setMapCenterPointAndZoomLevel(selectedLatLng, 2, true)
+        mapView?.setMapCenterPointAndZoomLevel(selectedLatLng, 2, true)
 
         sBinding?.btSearchField?.hint = location.location
 
@@ -289,7 +289,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             isShowCalloutBalloonOnTouch = true
             userObject = location
         }
-        mapView.addPOIItem(marker)
+        mapView?.addPOIItem(marker)
 
         // 마커 클릭시
 /*        mapView.setPOIItemEventListener(object : MapView.POIItemEventListener {
@@ -400,10 +400,17 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
     override fun onDestroyView() {
         Log.d("GGGGGGGGGGGGGGGGG", "gggggggggggggggggggggggggggg")
         super.onDestroyView()
-        mapView.removeAllPOIItems()
-        mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
-        mapView.setMapViewEventListener(null as MapView.MapViewEventListener?)
-        sBinding?.editFirstVf?.removeView(mapView)
+
+        if (mapView != null) {
+            mapView?.removeAllPOIItems()
+            mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
+            mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
+            sBinding?.editFirstVf?.removeView(mapView)
+            mapView?.onSurfaceDestroyed()
+
+            mapView = null
+        }
+
 /*        mapView.removeAllPOIItems() // 모든 마커 제거
         mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // 현재 위치 추적 비활성화
         mapView.mapType = MapView.MapType.Standard // 지도 타입을 기본값으로 설정

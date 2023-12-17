@@ -272,19 +272,6 @@
 
 
             </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-            <!--            <androidx.recyclerview.widget.RecyclerView
-                            android:layout_width="match_parent"
-                            android:layout_height="100dp"
-                            android:layout_marginBottom="32dp"
-                            android:orientation="horizontal"
-                            android:scrollbars="horizontal"
-                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintStart_toStartOf="parent" />-->
-
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>

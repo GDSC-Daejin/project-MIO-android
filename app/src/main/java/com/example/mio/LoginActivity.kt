@@ -411,5 +411,4 @@ class LoginActivity : AppCompatActivity() {
         super.onDestroy()
         this@LoginActivity.finish()
     }
-
 }

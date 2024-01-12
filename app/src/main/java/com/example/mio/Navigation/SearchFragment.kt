@@ -397,6 +397,45 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             bottomNavigationView.layoutParams = layoutParams
     }*/
 
+    override fun onStop() {
+        super.onStop()
+        Log.d("SearchFragment onStop", "STOP")
+        if (mapView != null) {
+            mapView?.removeAllPOIItems()
+            mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
+            mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
+            sBinding?.editFirstVf?.removeView(mapView)
+            mapView?.onPause()
+            mapView?.onSurfaceDestroyed()
+//            mapView.onStop()
+//            mapView.onDestroy()
+            mapView = null
+        }
+
+        // 상태바와 하단 네비게이션 바를 원래대로 복원
+        (activity as? AppCompatActivity)?.supportActionBar?.show()
+
+        activity?.window?.apply {
+            // 원래의 상태바 색상을 복원.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                statusBarColor = resources.getColor(R.color.white, null)
+            }
+            clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+            // 원래의 UI 플래그를 설정
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+            }
+        }
+
+        // 네비게이션 바 마진 복원.
+        val activity = activity as AppCompatActivity
+        val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
+        val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
+        layoutParams.bottomMargin = 0
+        bottomNavigationView.layoutParams = layoutParams
+    }
+
     override fun onDestroyView() {
         Log.d("GGGGGGGGGGGGGGGGG", "gggggggggggggggggggggggggggg")
         super.onDestroyView()
@@ -406,8 +445,10 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
             mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
             sBinding?.editFirstVf?.removeView(mapView)
+            mapView?.onPause()
             mapView?.onSurfaceDestroyed()
-
+//            mapView.onStop()
+//            mapView.onDestroy()
             mapView = null
         }
 

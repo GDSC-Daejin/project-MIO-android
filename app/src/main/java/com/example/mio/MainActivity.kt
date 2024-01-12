@@ -40,7 +40,7 @@ class MainActivity : AppCompatActivity() {
     private var isClicked = false
     private var isSettingClicked = false
     //notification에서 뒤로가기 구현할 때 그 전에 어느 fragment에 있었는 지 알기위한 변수
-    private var oldFragment : Fragment? = null
+    private var oldFragment : androidx.fragment.app.Fragment? = null
     private var oldTAG = ""
     // private lateinit var loadingDialog : LoadingProgressDialog
     private var backPressedTime = 0L
@@ -330,8 +330,17 @@ class MainActivity : AppCompatActivity() {
         val manager : FragmentManager = supportFragmentManager
         val bt = manager.beginTransaction()
 
-        if (manager.findFragmentByTag(tag) == null) {
+        /*if (manager.findFragmentByTag(tag) == null) {
             bt.add(R.id.fragment_content, fragment, tag).addToBackStack(null)
+        }*/
+        val existingFragment = manager.findFragmentByTag(tag)
+
+        if (existingFragment == null) {
+            // Fragment가 스택에 없으면 add를 사용하여 추가하고 백 스택에 추가
+            bt.add(R.id.fragment_content, fragment, tag).addToBackStack(null)
+        } else {
+            // Fragment가 스택에 있으면 replace를 사용하여 교체
+            bt.replace(R.id.fragment_content, fragment, tag)
         }
 
         val home = manager.findFragmentByTag(TAG_HOME)

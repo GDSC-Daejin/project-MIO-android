@@ -16,6 +16,7 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
+        <item name="android:colorEdgeEffect">@color/white</item>
     </style>
 
     <style name="SwitchTheme" parent="Theme.AppCompat.Light.DarkActionBar">

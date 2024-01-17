@@ -1,5 +1,6 @@
 package com.example.mio.TabCategory
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -9,9 +10,12 @@ import android.os.Looper
 import android.service.autofill.Validators.or
 import android.util.Log
 import android.view.*
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -101,6 +105,9 @@ class CarpoolTabFragment : Fragment() {
     //로딩창
     private lateinit var loadingDialog : LoadingProgressDialog
 
+    //처음 시작 시 계정 수정요청용
+    private var isFirstAccountEdit : String? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,7 +120,7 @@ class CarpoolTabFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         taxiTabBinding = FragmentCarpoolTabBinding.inflate(inflater, container, false)
 
@@ -328,6 +335,8 @@ class CarpoolTabFragment : Fragment() {
         return taxiTabBinding.root
     }
 
+
+
     private fun initNoticeBoardRecyclerView() {
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         //저장된 거 가져옴
@@ -368,6 +377,29 @@ class CarpoolTabFragment : Fragment() {
             moveDuration = 1000
             changeDuration = 100
         }*/
+        val sharedPref = requireActivity().getSharedPreferences("saveSetting", Context.MODE_PRIVATE)
+        isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", null)
+        if (isFirstAccountEdit == "true") {
+            initSettingDialog()
+        }
+    }
+
+    private fun initSettingDialog() {
+        //사용할 곳
+        val layoutInflater = LayoutInflater.from(requireActivity())
+        val view = layoutInflater.inflate(R.layout.beginning_dialog_layout, null)
+        val alertDialog = AlertDialog.Builder(requireActivity(), R.style.CustomAlertDialog)
+            .setView(view)
+            .create()
+        val dialogMoveBtn = view.findViewById<Button>(R.id.beginning_btn)
+
+        dialogMoveBtn.setOnClickListener {
+            val bottomNavigationView = requireActivity().findViewById<View>(R.id.bottom_navigation_view)
+            // 바텀 네비게이션의 다른 메뉴를 선택하도록 설정
+            bottomNavigationView.findViewById<View>(R.id.navigation_account).performClick()
+        }
+
+        alertDialog.show()
     }
 
     private fun initMyAreaRecyclerView() {

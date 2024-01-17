@@ -1,17 +1,18 @@
 package com.example.mio
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.graphics.alpha
 import androidx.core.view.isVisible
@@ -48,6 +49,9 @@ class MainActivity : AppCompatActivity() {
     private var sharedViewModel: SharedViewModel? = null
 
     private var toolbarType = "기본"
+
+    private var isFirstAccountEdit : String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -61,6 +65,7 @@ class MainActivity : AppCompatActivity() {
         setFragment(TAG_HOME, HomeFragment())
         setToolbarView(toolbarType)
         initNavigationBar()
+        saveSettingData()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -118,6 +123,24 @@ class MainActivity : AppCompatActivity() {
                 super.onOptionsItemSelected(item)
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun saveSettingData() { //처음 앱 사용 시 저장한 isFirstAccountEdit가 없어서 null이니 true로 저장 후 dialog를 실행토록함
+        //다음에는 true가 저장되어있었으니 false로 저장내용을 바꾸고 다시 저장하여 dialog가 나오지 않도록 함
+        val sharedPref = this.getSharedPreferences("saveSetting", Context.MODE_PRIVATE)
+        isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", null)
+
+        if (isFirstAccountEdit == null) {
+            with(sharedPref.edit()) {
+                putString("isFirstAccountEdit", "true")
+                apply() // 비동기적으로 데이터를 저장
+            }
+        } else {
+            with(sharedPref.edit()) {
+                putString("isFirstAccountEdit", "false")
+                apply() // 비동기적으로 데이터를 저장
+            }
         }
     }
 
@@ -431,6 +454,8 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.fragment_content, fragment)
             .commit()
     }
+
+
 
     private val callback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {

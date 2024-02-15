@@ -1224,6 +1224,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         }
     }
 
+
     override fun onMapViewInitialized(p0: MapView?) {
 
     }

@@ -378,9 +378,11 @@ class CarpoolTabFragment : Fragment() {
             changeDuration = 100
         }*/
         val sharedPref = requireActivity().getSharedPreferences("saveSetting", Context.MODE_PRIVATE)
-        isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", null)
+        isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", "") ?: ""
+        Log.e("shaerdPref", isFirstAccountEdit.toString())
         if (isFirstAccountEdit == "true") {
             initSettingDialog()
+            //println("setting")
         }
     }
 
@@ -963,6 +965,8 @@ class CarpoolTabFragment : Fragment() {
 
                     if (currentTaxiAllData.isEmpty()) {
                         taxiTabBinding.currentRv.visibility = View.GONE
+                        taxiTabBinding.nonCurrentRvTv.text = "오늘 예약된 카풀이 없습니다"
+                        taxiTabBinding.nonCurrentRvTv2.text = "미오에서 카풀을 구해보세요!"
                         taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
                         taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
                     } else {

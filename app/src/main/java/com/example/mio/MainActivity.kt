@@ -129,14 +129,18 @@ class MainActivity : AppCompatActivity() {
     private fun saveSettingData() { //처음 앱 사용 시 저장한 isFirstAccountEdit가 없어서 null이니 true로 저장 후 dialog를 실행토록함
         //다음에는 true가 저장되어있었으니 false로 저장내용을 바꾸고 다시 저장하여 dialog가 나오지 않도록 함
         val sharedPref = this.getSharedPreferences("saveSetting", Context.MODE_PRIVATE)
-        isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", null)
+        isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", "") ?: ""
 
-        if (isFirstAccountEdit == null) {
+        if (isFirstAccountEdit?.isEmpty() == true) {
+            Log.d("MainActivity", isFirstAccountEdit.toString())
+
             with(sharedPref.edit()) {
                 putString("isFirstAccountEdit", "true")
                 apply() // 비동기적으로 데이터를 저장
             }
         } else {
+            Log.d("MainActivity", isFirstAccountEdit.toString())
+
             with(sharedPref.edit()) {
                 putString("isFirstAccountEdit", "false")
                 apply() // 비동기적으로 데이터를 저장

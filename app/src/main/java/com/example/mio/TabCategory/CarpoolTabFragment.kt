@@ -103,7 +103,7 @@ class CarpoolTabFragment : Fragment() {
     var backPressedTime : Long = 0
 
     //로딩창
-    private lateinit var loadingDialog : LoadingProgressDialog
+    private var loadingDialog : LoadingProgressDialog? = null
 
     //처음 시작 시 계정 수정요청용
     private var isFirstAccountEdit : String? = null
@@ -348,17 +348,19 @@ class CarpoolTabFragment : Fragment() {
         loadingDialog = LoadingProgressDialog(activity)
         //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
         //로딩창
-        loadingDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        loadingDialog.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-
-
-        loadingDialog.window!!.setLayout(
+        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
+        loadingDialog?.window!!.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
-        loadingDialog.show()
+        loadingDialog?.show()
 
         setData()
+        if (loadingDialog != null && loadingDialog!!.isShowing) {
+            loadingDialog?.dismiss()
+            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+        }
 
 
         noticeBoardAdapter = NoticeBoardAdapter()
@@ -390,18 +392,33 @@ class CarpoolTabFragment : Fragment() {
         //사용할 곳
         val layoutInflater = LayoutInflater.from(requireActivity())
         val view = layoutInflater.inflate(R.layout.beginning_dialog_layout, null)
-        val alertDialog = AlertDialog.Builder(requireActivity(), R.style.CustomAlertDialog)
+        val alertDialog = AlertDialog.Builder(requireActivity())
             .setView(view)
             .create()
         val dialogMoveBtn = view.findViewById<Button>(R.id.beginning_btn)
+        // 다이얼로그 창 배경색 설정
+        alertDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        alertDialog.window?.setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
+
+        alertDialog.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
+        alertDialog.window!!.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        //취소 불가능
+        alertDialog.setCancelable(false)
+        // 다이얼로그 창 투명도 설정
+        val window = alertDialog.window
+        window?.setDimAmount(1f) // 0에서 1 사이의 값을 사용하여 투명도 설정 (0이 완전 투명, 1이 완전 불투명)
+
+        alertDialog.show()
 
         dialogMoveBtn.setOnClickListener {
             val bottomNavigationView = requireActivity().findViewById<View>(R.id.bottom_navigation_view)
             // 바텀 네비게이션의 다른 메뉴를 선택하도록 설정
             bottomNavigationView.findViewById<View>(R.id.navigation_account).performClick()
+            alertDialog.dismiss()
         }
-
-        alertDialog.show()
     }
 
     private fun initMyAreaRecyclerView() {
@@ -679,7 +696,7 @@ class CarpoolTabFragment : Fragment() {
 
                         calendarAdapter!!.notifyDataSetChanged()
 
-                        loadingDialog.dismiss()
+                        loadingDialog?.dismiss()
 
                     } else {
                         Log.d("f", response.code().toString())
@@ -815,7 +832,7 @@ class CarpoolTabFragment : Fragment() {
 
                             noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
                         }
-                        loadingDialog.dismiss()
+                        loadingDialog?.dismiss()
 
                     } else {
                         Log.d("f", response.code().toString())
@@ -940,27 +957,6 @@ class CarpoolTabFragment : Fragment() {
                                 }
                             }*/
                         }
-                        /*CoroutineScope(Dispatchers.IO).launch {
-                                for (i in response.body()?.indices!!) { //List<content>
-                                    for (j in response.body()?.get(i)?.participants?.indices!!) {
-                                        list.add(Participants(
-                                            response.body()!![i].participants!![j].id,
-                                            response.body()!![i].participants!![j].email,
-                                            response.body()!![i].participants!![j].studentId,
-                                            response.body()!![i].participants!![j].profileImageUrl,
-                                            response.body()!![i].participants!![j].name,
-                                            response.body()!![i].participants!![j].accountNumber,
-                                            response.body()!![i].participants!![j].gender,
-                                            response.body()!![i].participants!![j].verifySmoker,
-                                            response.body()!![i].participants!![j].roleType,
-                                            response.body()!![i].participants!![j].status,
-                                            response.body()!![i].participants!![j].mannerCount,
-                                            response.body()!![i].participants!![j].grade,
-                                        ))
-                                    }
-                                    carpoolParticipantsData.add()
-                                }
-                            }*/
                     }
 
                     if (currentTaxiAllData.isEmpty()) {
@@ -975,7 +971,7 @@ class CarpoolTabFragment : Fragment() {
                         taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
                     }
 
-                    loadingDialog.dismiss()
+                    loadingDialog?.dismiss()
 
                 } else {
                     println(response.errorBody().toString())
@@ -1242,6 +1238,15 @@ class CarpoolTabFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        //다이얼로그가 띄워져 있는 상태(showing)인 경우 dismiss() 호출
+        if (loadingDialog != null && loadingDialog!!.isShowing) {
+            loadingDialog!!.dismiss()
+        }
     }
 
     companion object {

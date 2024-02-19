@@ -133,6 +133,7 @@ class MainActivity : AppCompatActivity() {
 
         if (isFirstAccountEdit?.isEmpty() == true) {
             Log.d("MainActivity", isFirstAccountEdit.toString())
+            Log.d("MainActivity", "비었으니까 처음실행한듯 ")
 
             with(sharedPref.edit()) {
                 putString("isFirstAccountEdit", "true")
@@ -140,6 +141,7 @@ class MainActivity : AppCompatActivity() {
             }
         } else {
             Log.d("MainActivity", isFirstAccountEdit.toString())
+            Log.d("MainActivity", "안 비었으니까 처음실행x")
 
             with(sharedPref.edit()) {
                 putString("isFirstAccountEdit", "false")

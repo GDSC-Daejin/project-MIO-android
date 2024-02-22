@@ -38,10 +38,10 @@ class ProfileReviewAdapter : RecyclerView.Adapter<ProfileReviewAdapter.ProfileRe
             this.position = position
             //accountId.text = accountData.accountID
             when (reviewData.manner) {
-                "good" -> {
+                "GOOD" -> {
                     reviewSatisfactionIcon.setImageResource(R.drawable.review_satisfaction_update_icon)
                 }
-                "bad" -> {
+                "BAD" -> {
                     reviewDissatisfaction.setImageResource(R.drawable.review_dissatisfaction_update_icon)
                 }
                 else -> {

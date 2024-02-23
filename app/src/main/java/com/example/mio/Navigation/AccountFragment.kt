@@ -167,7 +167,7 @@ class AccountFragment : Fragment() {
                         }
 
 
-                        //나중에 response.body()!!.mannerCount 다시 체크하기 TODO
+                        //나중에 response.body()!!.mannerCount 다시 체크하기  TODO
                         println("ss")
                         saveSharedPreferenceGoogleLogin.setUserId(activity, response.body()!!.id)
                         myAccountData = response.body()

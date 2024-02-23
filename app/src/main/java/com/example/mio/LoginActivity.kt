@@ -38,6 +38,7 @@ import kotlinx.coroutines.launch
 import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
+import retrofit2.http.POST
 import java.io.IOException
 import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
@@ -191,12 +192,17 @@ class LoginActivity : AppCompatActivity() {
                             .readTimeout(30, TimeUnit.SECONDS)
                             .writeTimeout(15, TimeUnit.SECONDS)
                             .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
-                        intent.apply {
+                        /*intent.apply {
                             putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
                             putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
-                        }
+                        }*/
+                        saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString()
+                        saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString())
+                        saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, response.body()!!.refreshToken).toString()
+
                         builder.build()
                         println(response.body()!!.accessTokenExpiresIn.toString())
+                        Log.d("LoginActivity" ,saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity).toString())
 
 
                     } else {
@@ -259,17 +265,26 @@ class LoginActivity : AppCompatActivity() {
 
             //회원가입과 함께 새로운 계정 정보 저장
             if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity)!!.isEmpty()) {
-                intent.apply {
-                    putExtra("email", saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email).toString())
-                }
-
-                startActivity(intent)
-                finish()
-
-            } else { //현재 로그인, 또는 로그인했던 정보가 저장되어있으면 home으로
+                saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
+                Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
                 val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 startActivity(intent)
                 this@LoginActivity.finish()
+            } else { //현재 로그인, 또는 로그인했던 정보가 저장되어있으면 home으로
+                if (saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity)!!.isNotEmpty()) {
+                    if (saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity)!!.toLong() <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                        println("refreshToken use")
+                        refreshAccessToken(saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity).toString())
+                    //refresh 들어갈 곳
+                        /*newRequest =
+                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    } else {
+                        Log.d("LoginActivity", "refreshtoken업음, ${saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity).toString()}")
+                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                        startActivity(intent)
+                        this@LoginActivity.finish()
+                    }
+                }
             }
 
             Toast.makeText(this, "tjd", Toast.LENGTH_SHORT).show()
@@ -343,7 +358,7 @@ class LoginActivity : AppCompatActivity() {
                         println(message)
                         println(user_info[0].id_token)
                         //createClipData(user_info[0].id_token)
-                        signInCheck(TokenRequest(currentUser.id_token))
+                        signInCheck(TokenRequest(currentUser.id_token, "/auth/google", "POST"))
                         tempKey.clear()
                         tempValue.clear()
                     } catch (e: JSONException) {
@@ -382,12 +397,45 @@ class LoginActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
-                    val jsonResponse = JSONObject(response.body!!.string())
+                    /*val jsonResponse = JSONObject(response.body!!.string())
                     val newAccessToken = jsonResponse.getString("access_token")
 
                     // TODO: 새로운 액세스 토큰을 저장하고 사용
                     // 여기에서 새로운 액세스 토큰을 저장하고 필요한 요청에 사용합니다.
-                    println(newAccessToken)
+                    println(newAccessToken)*/
+                    try {
+                        val jsonObject = JSONObject(response.body!!.string())
+                        val message = jsonObject.keys() //.toString(5)
+
+                        //json파일 키와 벨류를 잠시담는 변수
+                        val tempKey = ArrayList<String>()
+                        val tempValue = ArrayList<String>()
+                        //정리한번
+                        user_info.clear()
+
+                        while (message.hasNext()) {
+                            val s = message.next().toString()
+                            tempKey.add(s)
+
+                        }
+
+                        for (i in tempKey.indices) {
+                            //fruitValueList.add(fruitObject.getString(fruitKeyList.get(j)));
+                            tempValue.add(jsonObject.getString(tempKey[i]))
+                            println(tempKey[i] + "/" + jsonObject.getString(tempKey[i]))
+                        }
+
+                        user_info.add(LoginGoogleResponse(tempValue[0], tempValue[1].toInt(), tempValue[2], tempValue[3], tempValue[4]))
+                        currentUser = user_info[0]
+                        println(message)
+                        println(user_info[0].id_token)
+                        //createClipData(user_info[0].id_token)
+                        signInCheck(TokenRequest(currentUser.id_token, "/auth/google", "POST"))
+                        tempKey.clear()
+                        tempValue.clear()
+                    } catch (e: JSONException) {
+                        e.printStackTrace()
+                    }
                 } else {
                     // 실패 시 처리
                     Log.e("Refresh Token", "Failed to refresh access token")

@@ -103,7 +103,8 @@
 
 
     <style name="CustomAlertDialog">
-
+        <!-- 다이얼로그가 전체 화면을 덮지 않도록 함 -->
+        <item name="android:windowIsFloating">false</item>
         <!-- 꽉 채운 화면에 배경 없이 (custom view 영역만 보일 것이다.) -->
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowMinWidthMajor">100%</item>
@@ -115,7 +116,7 @@
         <item name="android:windowCloseOnTouchOutside">true</item>
 
         <!-- Dialog가 센터에 나오도록 -->
-        <item name="android:windowIsFloating">true</item>
+        <!--<item name="android:windowIsFloating">true</item>-->
     </style>
 
     <style name="FullScreenDialog" parent="Theme.AppCompat.Dialog">

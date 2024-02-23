@@ -440,10 +440,10 @@ class TaxiTabFragment : Fragment() {
         horizonManager.orientation = LinearLayoutManager.HORIZONTAL
         taxiTabBinding.calendarRV.layoutManager = horizonManager
 
-        if (calendarItemData.isNotEmpty()) {
+        /*if (calendarItemData.isNotEmpty()) {
             val s = calendarItemData.indexOf(calendarItemData.find { it?.day == "오늘" })
             triggerFirstItemOfCalendarAdapter(s)
-        }
+        }*/
     }
 
     private fun initSwipeRefresh() {

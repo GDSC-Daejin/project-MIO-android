@@ -11,6 +11,7 @@ public class SaveSharedPreferenceGoogleLogin {
     private val acctoken = "token"
     private val expireDate = "expireDate"
     private val privateUserId = "userId"
+    private val refreshToken = "refreshToken"
 
     private val privateProfileUserId = "profileUserId"
 
@@ -74,6 +75,15 @@ public class SaveSharedPreferenceGoogleLogin {
     }
     fun getToken(ctx: Context?): String? {
         return getSharedPreferences(ctx).getString(acctoken, "")
+    }
+
+    fun setRefreshToken(ctx: Context?, refreshToken: String?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putString(refreshToken, refreshToken)
+        editor.apply()
+    }
+    fun getRefreshToken(ctx: Context?): String? {
+        return getSharedPreferences(ctx).getString(refreshToken, "")
     }
 
     fun setExpireDate(ctx: Context?, expire: String?) {

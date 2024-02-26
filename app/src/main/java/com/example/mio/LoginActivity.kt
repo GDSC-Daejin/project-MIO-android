@@ -23,6 +23,7 @@ import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.mio.Model.LoginResponsesData
 import com.example.mio.Model.LoginGoogleResponse
+import com.example.mio.Model.RefreshTokenRequest
 import com.example.mio.Model.TokenRequest
 import com.example.mio.databinding.ActivityLoginBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -270,16 +271,22 @@ class LoginActivity : AppCompatActivity() {
                 val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 startActivity(intent)
                 this@LoginActivity.finish()
+
             } else { //현재 로그인, 또는 로그인했던 정보가 저장되어있으면 home으로
                 if (saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity)!!.isNotEmpty()) {
+                    //refresh 만료
                     if (saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity)!!.toLong() <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                         println("refreshToken use")
                         refreshAccessToken(saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity).toString())
                     //refresh 들어갈 곳
                         /*newRequest =
                             chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                    } else {
-                        Log.d("LoginActivity", "refreshtoken업음, ${saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity).toString()}")
+                        Toast.makeText(this, "refresh만료", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                        startActivity(intent)
+                        this@LoginActivity.finish()
+                    } else { //만료 x
+                        Log.d("LoginActivity", "refreshtoken살아잇음, ${saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity).toString()}")
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
                         startActivity(intent)
                         this@LoginActivity.finish()
@@ -287,13 +294,9 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
 
-            Toast.makeText(this, "tjd", Toast.LENGTH_SHORT).show()
             println(email)
             println(authCode.toString())
-
             getAccessToken(authCode!!)
-
-
 
         } catch (e : ApiException) {
             Log.w("failed", "signinresultfalied code = " + e.statusCode)
@@ -376,7 +379,44 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun refreshAccessToken(refreshToken: String) {
-        val client = OkHttpClient()
+        val call = RetrofitServerConnect.service
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val refreshTokenRequest = RefreshTokenRequest(refreshToken)
+        Log.e("LoginActivity", "${refreshToken}")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            call.refreshTokenProcess(refreshTokenRequest).enqueue(object : retrofit2.Callback<LoginResponsesData> {
+                override fun onResponse(
+                    call: retrofit2.Call<LoginResponsesData>,
+                    response: retrofit2.Response<LoginResponsesData?>
+                ) {
+                    if (response.isSuccessful) {
+                        val builder =  OkHttpClient.Builder()
+                            .connectTimeout(1, TimeUnit.SECONDS)
+                            .readTimeout(30, TimeUnit.SECONDS)
+                            .writeTimeout(15, TimeUnit.SECONDS)
+                            .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
+                        /*intent.apply {
+                            putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
+                            putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
+                        }*/
+                        saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString()
+                        saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString())
+                        saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, response.body()!!.refreshToken).toString()
+
+                        builder.build()
+                        println(response.body()!!.accessTokenExpiresIn.toString())
+                        Log.d("LoginActivity" ,saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity).toString())
+                    } else {
+                        Log.e("LoginActivity", "RefreshToken response fail")
+                    }
+                }
+                override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
+                    println("실패" + t.message.toString())
+                }
+            })
+        }
+        /*val client = OkHttpClient()
         val requestBody = FormBody.Builder()
             .add("grant_type", "refresh_token")
             .add("refresh_token", refreshToken)
@@ -397,12 +437,12 @@ class LoginActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
-                    /*val jsonResponse = JSONObject(response.body!!.string())
+                    *//*val jsonResponse = JSONObject(response.body!!.string())
                     val newAccessToken = jsonResponse.getString("access_token")
 
                     // TODO: 새로운 액세스 토큰을 저장하고 사용
                     // 여기에서 새로운 액세스 토큰을 저장하고 필요한 요청에 사용합니다.
-                    println(newAccessToken)*/
+                    println(newAccessToken)*//*
                     try {
                         val jsonObject = JSONObject(response.body!!.string())
                         val message = jsonObject.keys() //.toString(5)
@@ -441,7 +481,7 @@ class LoginActivity : AppCompatActivity() {
                     Log.e("Refresh Token", "Failed to refresh access token")
                 }
             }
-        })
+        })*/
     }
 
     //클립보드에 복사하기
@@ -454,6 +494,21 @@ class LoginActivity : AppCompatActivity() {
 
         //Toast.makeText(this, "복사되었습니다.", Toast.LENGTH_SHORT).show()
     }*/
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("LoginActivity", "start")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("LoginActivity", "onresume")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("LoginActivity", "stop")
+    }
 
     override fun onDestroy() {
         super.onDestroy()

@@ -862,6 +862,7 @@ class CarpoolTabFragment : Fragment() {
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Toast.makeText(requireActivity(), "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     startActivity(intent)
                     requireActivity().finish()

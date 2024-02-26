@@ -17,9 +17,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.contains
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
@@ -35,6 +37,7 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import okhttp3.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -77,6 +80,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     private var keyword = ""
     private lateinit var geocoder: Geocoder
     private lateinit var mapView: MapView
+    var mapViewContainer: RelativeLayout? = null
     private var marker: MapPOIItem? = null
     private val PREFS_NAME = "recent_search"
     private val KEY_RECENT_SEARCH = "search_items"
@@ -166,9 +170,14 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         //뷰의 이벤트 리스너
         myViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
-        mapView = MapView(this)
+        /*mapView = MapView(this)
+
+        val mapViewContainer = mBinding.mapView
+        mapViewContainer.addView(mapView)*/
+        initMapView()
+
         mapView.setMapViewEventListener(this)
-        mBinding.mapView.addView(mapView)
+        //mBinding.mapView.addView(mapView)
         geocoder = Geocoder(this)
 
         type = intent.getStringExtra("type")
@@ -368,8 +377,16 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 }
             }
         }
+    }
 
-
+    private fun initMapView() {
+        // 맵뷰 초기화 및 컨테이너 레이아웃에 추가
+        mapView = MapView(this).also {
+            mapViewContainer = RelativeLayout(this)
+            mapViewContainer?.layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            mBinding.mapView.addView(mapViewContainer)
+            mapViewContainer?.addView(it)
+        }
     }
 
     private fun firstVF() {
@@ -530,6 +547,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             recentSearchItems.addAll(items)
         }
         recentSearchAdapter.notifyDataSetChanged()
+
         placeAdapter.setItemClickListener(object : PlaceAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
                 mBinding.editViewflipper.showNext()
@@ -592,7 +610,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
         mBinding.btnSearch.setOnClickListener {
             keyword = mBinding.etSearchField.text.toString()
-            mBinding.recentSearch.setText("관련 검색어")
+            mBinding.recentSearch.text = "관련 검색어"
             searchKeyword(keyword)
             mBinding.rvRecentSearchList.visibility = View.INVISIBLE
         }
@@ -1161,9 +1179,21 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         val api = retrofit.create(KakaoAPI::class.java)
         val call = api.getSearchKeyword(API_KEY, keyword)
 
-        call.enqueue(object: Callback<ResultSearchKeyword> {
+        val kakaoApiService = retrofit.create(KakaoAPI::class.java)
+
+        api.getSearchKeyword(API_KEY, keyword).enqueue(object: Callback<ResultSearchKeyword> {
             override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
-                addItemsAndMarkers(response.body())
+                if (response.isSuccessful) {
+                    println("Edit Search" + response.body()?.documents)
+                    addItemsAndMarkers(response.body())
+                } else {
+                    //401 error Todo
+                    Log.e("EDIT Search", response.code().toString())
+                    Log.e("EDIT Search", response.errorBody().toString())
+                    Log.e("EDIT Search", response.errorBody()?.string()!!)
+                    Log.e("EDIT Search", call.request().toString())
+                    Log.e("EDIT Search", response.message().toString())
+                }
             }
 
             override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
@@ -1303,6 +1333,28 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
     }
 
+    override fun onRestart() {
+        super.onRestart()
+        // 액티비티 재시작 시 (B 액티비티가 종료되고 다시 시작될 때)
+        // MapView가 포함되어 있지 않다면 추가
+        if (mapViewContainer?.contains(mapView)!!) {
+            try {
+                // 다시 맵뷰 초기화 및 추가
+                initMapView()
+            } catch (re: RuntimeException) {
+                Log.e("EDIT", re.toString())
+            }
+        }
+    }
 
+    override fun onPause() {
+        super.onPause()
+        mBinding.mapContainer1.removeAllViews()
+    }
 
+    override fun finish() {
+        // 종료할 때 맵뷰 제거 (맵뷰 2개 이상 동시에 불가)
+        mBinding.mapView.removeView(mapView)
+        super.finish()
+    }
 }

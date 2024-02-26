@@ -1,17 +1,20 @@
 package com.example.mio.Navigation
 
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.*
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.view.contains
+import androidx.fragment.app.Fragment
 import com.example.mio.*
 import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
@@ -29,6 +32,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
+
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
@@ -44,6 +48,14 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+
+    private val permissionRequestCode1 = 20
+    private val permissionRequestCode2 = 21
+
+    private var PERMISSIONS = arrayOf(
+        android.Manifest.permission.ACCESS_FINE_LOCATION,
+        android.Manifest.permission.ACCESS_COARSE_LOCATION
+    )
 
     private var sBinding : FragmentSearchBinding? = null
 
@@ -78,15 +90,17 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         sBinding = FragmentSearchBinding.inflate(inflater, container, false)
 
-        mapView = sBinding?.searchMapView
-        mapView?.setMapViewEventListener(this)
-        //geocoder = Geocoder(this)
+        multiplePermissionsLauncher.launch(PERMISSIONS)
+
+
+        geocoder = Geocoder(requireContext())
 
         // test 했는데 됨 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         //getPostsByLocation(37.870684661337016, 127.15612168310325)
@@ -108,21 +122,26 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         activity?.window?.apply {
             clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
             addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                statusBarColor = Color.TRANSPARENT
+            statusBarColor = Color.TRANSPARENT
+            //activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            activity?.window?.setFlags(
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+            )
+            // 새로운 시스템UI 비헤이비어를 가져옵니다.
+            val windowInsetsController = activity?.window?.insetsController
+
+            // 시스템UI를 변경하기 전에 null 체크를 합니다.
+            windowInsetsController?.let { controller ->
+                // 상태 표시줄을 투명하게 만듭니다.
+                controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+
+                // 상태 표시줄의 색상을 라이트 모드로 변경합니다.
+                activity?.window?.decorView?.apply {
+                    systemUiVisibility = systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                }
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-                activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                activity?.window?.setFlags(
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-                )
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            }
+            //activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
 
         sBinding?.btSearchField?.setOnClickListener {
@@ -309,6 +328,80 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         })*/
     }
 
+    //안드로이드 13 이상 PostNotification 대응
+    /*private fun checkPostNotificationPermission() {
+        //Android 13 이상 && 푸시권한 없음
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+            && PackageManager.PERMISSION_DENIED == ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION)
+            && PackageManager.PERMISSION_DENIED == ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION)
+        ) {
+            val permissionCheck1 = ContextCompat.checkSelfPermission(
+                requireContext(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            )
+
+            val permissionCheck2 = ContextCompat.checkSelfPermission(
+                requireContext(),
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+
+            if (permissionCheck1 != PackageManager.PERMISSION_GRANTED && permissionCheck2 != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION, android.Manifest.permission.ACCESS_COARSE_LOCATION),
+                    permissionRequestCode1
+                )
+            }
+        }
+    }*/
+
+
+    private val multiplePermissionsLauncher  =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            permissions.entries.forEach { (permission, isGranted) ->
+                when {
+                    isGranted -> {
+                        // 권한이 승인된 경우 처리할 작업
+                        //mapView = MapView(requireActivity())
+                        val mapViewContainer = sBinding?.mapView
+                        if (mapView != null && mapViewContainer?.contains(mapView!!) == true) {
+                            try {
+                                // 다시 맵뷰 초기화 및 추가
+                                mapViewContainer.addView(mapView)
+                                mapView?.setMapViewEventListener(this)
+                            } catch (re: RuntimeException) {
+                                Log.e("EDIT", re.toString())
+                            }
+                        } else {
+                            Log.e("SearchFragment", "mapview null")
+                        }
+                        //val mapViewContainer = sBinding?.mapView
+
+                        //mapView = sBinding?.searchMapView
+                        Log.d("SearchFragment", "permission 완료")
+                    }
+                    !isGranted -> {
+                        // 권한이 거부된 경우 처리할 작업
+                        Log.d("SearchFragment", "permission 거부")
+                    }
+                    else -> {
+                        // 사용자가 "다시 묻지 않음"을 선택한 경우 처리할 작업
+                        Log.d("SearchFragment", "permission 다시묻지않음")
+                    }
+                }
+            }
+            // multiple permission 처리에 대한 선택적 작업
+            // - 모두 허용되었을 경우에 대한 code
+            // - 허용되지 않은 Permission에 대한 재요청 code
+        }
+
+
+    // util method
+    private fun hasPermissions(context: Context, permissions: Array<String>): Boolean = permissions.all {
+        ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+
 /*    private fun updatePostData(selectedLocation: LocationReadAllResponse?) {
         selectedLocation?.let {
             sBinding?.postData?.apply {
@@ -397,6 +490,12 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             bottomNavigationView.layoutParams = layoutParams
     }*/
 
+    override fun onPause() {
+        super.onPause()
+        sBinding?.mapContainer?.removeAllViews()
+    }
+
+
     override fun onStop() {
         super.onStop()
         Log.d("SearchFragment onStop", "STOP")
@@ -434,15 +533,13 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             layoutParams.bottomMargin = 0
             bottomNavigationView.layoutParams = layoutParams
         }
-
-
     }
 
     override fun onDestroyView() {
-        Log.d("GGGGGGGGGGGGGGGGG", "gggggggggggggggggggggggggggg")
+        Log.d("GGGGGGGGGGGGGGGGG", "destroy")
         super.onDestroyView()
-
         if (mapView != null) {
+
             mapView?.removeAllPOIItems()
             mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
             mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
@@ -483,9 +580,6 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         //sBinding?.mapContainer?.removeAllViews() // 지도를 포함하는 컨테이너의 모든 뷰를 제거
         sBinding?.mapContainer?.removeView(mapView)
         //mapView.onDestroy() // 지도의 리소스를 해제*/
-
-
-
         sBinding = null
     }
 

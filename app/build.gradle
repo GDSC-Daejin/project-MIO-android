@@ -9,7 +9,7 @@ plugins {
 
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
-def kakao_Sdk_Appkey = properties.getProperty('kakao.sdk.appkey')
+def kakaoNativeAppKey = properties.getProperty('kakao_native_app_key')
 
 android {
     namespace 'com.example.mio'
@@ -29,7 +29,7 @@ android {
         buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
         buildConfigField "String", "server_URL", properties['server_URL']
         buildConfigField "String", "map_api_key", properties['map_api_key']
-        manifestPlaceholders = [kakaoSdkAppkey: kakao_Sdk_Appkey]
+        manifestPlaceholders = [kakaoNativeAppKey: kakaoNativeAppKey]
     }
 
     buildTypes {
@@ -38,6 +38,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    splits {
+        abi {
+            enable true
+            reset()
+            include 'x86', 'x86_64', 'armeabi-v7a', 'armeabi'
+            universalApk false
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8

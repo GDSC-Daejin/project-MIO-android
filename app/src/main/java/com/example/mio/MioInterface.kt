@@ -65,6 +65,10 @@ interface MioInterface {
     /////////////////////////////////
 
 
+    //refreshToken
+    @POST("/token")
+    fun refreshTokenProcess(@Body refreshToken: RefreshTokenRequest) : Call<LoginResponsesData>
+
     //회원가입
     @POST("/auth/google")
     fun addUserInfoData(@Body token: TokenRequest) : Call<LoginResponsesData>

@@ -11,6 +11,6 @@ interface ReverseGeocodingAPI {
     fun getReverseGeocode(
         @Header("Authorization") apiKey: String,
         @Query("x") longitude: Double,
-        @Query("y") latitude: Double
+        @Query("y") latitude: Double,
     ): Call<ResultReverseGeocode>
 }

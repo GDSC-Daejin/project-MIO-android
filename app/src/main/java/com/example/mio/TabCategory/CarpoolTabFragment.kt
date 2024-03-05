@@ -356,7 +356,7 @@ class CarpoolTabFragment : Fragment() {
         )
         loadingDialog?.show()
 
-        setData()
+        //setData()
         if (loadingDialog != null && loadingDialog!!.isShowing) {
             loadingDialog?.dismiss()
             loadingDialog = null // 다이얼로그 인스턴스 참조 해제
@@ -848,8 +848,8 @@ class CarpoolTabFragment : Fragment() {
 
     private fun setCurrentCarpoolData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
+        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
 
         val interceptor = Interceptor { chain ->
             var newRequest: Request
@@ -858,19 +858,29 @@ class CarpoolTabFragment : Fragment() {
                 newRequest =
                     chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
                 val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+
+                if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                    Toast.makeText(requireActivity(), "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                    Log.d("CarpoolFragment", expireDate.toString())
+
+                    // UI 스레드에서 Toast 실행
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireActivity(), "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                    }
+
+                    Log.e("CarpoolFragment", "순서체크")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
                 }
+
             } else newRequest = chain.request()
             chain.proceed(newRequest)
         }
+
         val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -1239,6 +1249,8 @@ class CarpoolTabFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        Log.d("CarpoolTabFragment", "start")
+        setData()
     }
 
     override fun onDestroy() {

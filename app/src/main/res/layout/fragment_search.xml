@@ -20,20 +20,13 @@
             android:id="@+id/map_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
             <RelativeLayout
-                android:orientation="vertical"
+                android:id="@+id/map_my_mapcontainer"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
-                <RelativeLayout
-                    android:id="@+id/map_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-
-            </RelativeLayout>
+                android:layout_height="match_parent" />
 
            <!-- <net.daum.mf.map.api.MapView
                 android:id="@+id/search_mapView"

@@ -9,12 +9,14 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.contains
 import androidx.fragment.app.Fragment
+
 import com.example.mio.*
 import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
@@ -98,6 +100,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         sBinding = FragmentSearchBinding.inflate(inflater, container, false)
 
         multiplePermissionsLauncher.launch(PERMISSIONS)
+
 
 
         geocoder = Geocoder(requireContext())
@@ -363,26 +366,29 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
                     isGranted -> {
                         // 권한이 승인된 경우 처리할 작업
                         //mapView = MapView(requireActivity())
-                        val mapViewContainer = sBinding?.mapView
-                        if (mapView != null && mapViewContainer?.contains(mapView!!) == true) {
+                        //val mapViewContainer = sBinding?.mapView
+                        if (mapView == null/* && mapViewContainer?.contains(mapView!!) == true*/) {
                             try {
                                 // 다시 맵뷰 초기화 및 추가
-                                mapViewContainer.addView(mapView)
-                                mapView?.setMapViewEventListener(this)
+                                /*mapViewContainer.addView(mapView)
+                                mapView?.setMapViewEventListener(this)*/
+                                //initMapView()
+
                             } catch (re: RuntimeException) {
-                                Log.e("EDIT", re.toString())
+                                Log.e("SERACHFRAGMENT", re.toString())
                             }
                         } else {
-                            Log.e("SearchFragment", "mapview null")
+                            //initMapView()
+                            Log.e("SearchFragment", "mapview is not null")
                         }
                         //val mapViewContainer = sBinding?.mapView
 
                         //mapView = sBinding?.searchMapView
-                        Log.d("SearchFragment", "permission 완료")
+                        Toast.makeText(requireContext(), "권한이 승인되었습니다.", Toast.LENGTH_SHORT).show()
                     }
                     !isGranted -> {
                         // 권한이 거부된 경우 처리할 작업
-                        Log.d("SearchFragment", "permission 거부")
+                        Toast.makeText(requireContext(), "권한이 거부되었습니다. 설정에서 권한을 승인해주세요.", Toast.LENGTH_SHORT).show()
                     }
                     else -> {
                         // 사용자가 "다시 묻지 않음"을 선택한 경우 처리할 작업
@@ -401,6 +407,12 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         ActivityCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
     }
 
+    private fun initMapView() {
+        Log.d("SearchFragment", "지도 세팅")
+        mapView = MapView(requireActivity())
+        mapView?.setMapViewEventListener(this)
+        sBinding?.mapMyMapcontainer?.addView(mapView)
+    }
 
 /*    private fun updatePostData(selectedLocation: LocationReadAllResponse?) {
         selectedLocation?.let {
@@ -492,20 +504,64 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
 
     override fun onPause() {
         super.onPause()
-        sBinding?.mapContainer?.removeAllViews()
+        if (mapView != null) {
+            sBinding?.mapMyMapcontainer?.removeAllViews()
+            sBinding?.mapMyMapcontainer?.removeAllViewsInLayout()
+            mapView = null
+
+           /* mapView?.removeAllPOIItems()
+            mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
+            mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
+            sBinding?.editFirstVf?.removeView(mapView)
+            mapView?.onPause()
+            mapView?.onSurfaceDestroyed()
+//            mapView.onStop()
+//            mapView.onDestroy()
+            mapView = null*/
+
+            /*// 상태바와 하단 네비게이션 바를 원래대로 복원
+            (activity as? AppCompatActivity)?.supportActionBar?.show()
+
+            activity?.window?.apply {
+                // 원래의 상태바 색상을 복원.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    statusBarColor = resources.getColor(R.color.white, null)
+                }
+                clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+                // 원래의 UI 플래그를 설정
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                    decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+                }
+            }
+
+            // 네비게이션 바 마진 복원.
+            val activity = activity as AppCompatActivity
+            val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
+            val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
+            layoutParams.bottomMargin = 0
+            bottomNavigationView.layoutParams = layoutParams*/
+        }
+    }
+
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("searchFragment1", "start")
+        if (mapView == null) {
+            initMapView()
+        }
     }
 
 
     override fun onStop() {
         super.onStop()
         Log.d("SearchFragment onStop", "STOP")
-        if (mapView != null) {
+        if (mapView == null) {
             mapView?.removeAllPOIItems()
             mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
             mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
             sBinding?.editFirstVf?.removeView(mapView)
-            mapView?.onPause()
-            mapView?.onSurfaceDestroyed()
 //            mapView.onStop()
 //            mapView.onDestroy()
             mapView = null
@@ -544,10 +600,6 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
             mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
             sBinding?.editFirstVf?.removeView(mapView)
-            mapView?.onPause()
-            mapView?.onSurfaceDestroyed()
-//            mapView.onStop()
-//            mapView.onDestroy()
             mapView = null
 
             // 상태바와 하단 네비게이션 바를 원래대로 복원
@@ -573,13 +625,12 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             layoutParams.bottomMargin = 0
             bottomNavigationView.layoutParams = layoutParams
         }
-
-/*        mapView.removeAllPOIItems() // 모든 마커 제거
-        mapView.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // 현재 위치 추적 비활성화
-        mapView.mapType = MapView.MapType.Standard // 지도 타입을 기본값으로 설정
+        mapView?.removeAllPOIItems() // 모든 마커 제거
+        mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // 현재 위치 추적 비활성화
+        mapView?.mapType = MapView.MapType.Standard // 지도 타입을 기본값으로 설정
         //sBinding?.mapContainer?.removeAllViews() // 지도를 포함하는 컨테이너의 모든 뷰를 제거
         sBinding?.mapContainer?.removeView(mapView)
-        //mapView.onDestroy() // 지도의 리소스를 해제*/
+        //mapView.onDestroy() // 지도의 리소스를 해제*//*
         sBinding = null
     }
 

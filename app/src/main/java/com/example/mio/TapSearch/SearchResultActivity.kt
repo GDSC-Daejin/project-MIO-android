@@ -6,6 +6,7 @@ import android.text.InputFilter
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,6 +31,7 @@ class SearchResultActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySearchResultBinding
     private lateinit var adapter: SearchResultAdapter
     private lateinit var recentSearchAdapter: RecentSearchAdapter
+    private var searchWord : String? = null
 
     val sharedViewModel: FragSharedViewModel by lazy {
         (application as FragSharedViewModel2).sharedViewModel
@@ -82,8 +84,9 @@ class SearchResultActivity : AppCompatActivity() {
 
         binding.etSearchField2.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                filterAndHighlightText(s.toString())
+                //filterAndHighlightText(s.toString())
                 if (s?.isNotEmpty() == true) {
+                    searchWord = s.toString()
                     binding.rvSearchList.visibility = View.VISIBLE
                     binding.rvRecentSearchList.visibility = View.GONE
                     binding.textView2.visibility = View.GONE
@@ -99,8 +102,25 @@ class SearchResultActivity : AppCompatActivity() {
             }
 
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+            }
         })
+
+        binding.etSearchField2.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                // 완료 키가 눌렸을 때 수행할 작업을 여기에 작성합니다.
+                // 예를 들어, 키보드를 숨기거나 입력을 처리할 수 있습니다.
+                // true를 반환하여 이벤트를 소비하고 더 이상 처리하지 않도록 합니다.
+                if (searchWord != null) {
+                    filterAndHighlightText(searchWord.toString())
+                }
+                true
+            } else {
+                // 다른 키 입력 이벤트에 대한 기본 동작을 유지합니다.
+                false
+            }
+        }
 
         binding.etSearchField2.filters = arrayOf(InputFilter { source, _, _, _, _, _ ->
             if (source == "\n") {
@@ -241,6 +261,11 @@ class SearchResultActivity : AppCompatActivity() {
             // Handle exception
             Log.e("SearchResultActivity", "Error loading recent searches: ${e.localizedMessage}")
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("SearchResultActivity", "start")
     }
 
 /*    private fun getAllPosts(): List<PostReadAllResponse> {

@@ -11,7 +11,6 @@ data class FirstVF(
     var isTitle : Boolean,
     var isCalendar : Boolean,
     var isTime : Boolean,
-    var isParticipants : Boolean,
     var isFirst : Boolean,
 )
 

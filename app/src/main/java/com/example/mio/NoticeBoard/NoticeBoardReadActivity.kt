@@ -843,8 +843,9 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         nbrBinding.backArrow.setOnClickListener {
             val intent = Intent(this@NoticeBoardReadActivity, MainActivity::class.java).apply {
                 //flag넣고 resultok
+                putExtra("flag", 9)
             }
-            setResult(8, intent)
+            setResult(RESULT_OK, intent)
             finish()
         }
 

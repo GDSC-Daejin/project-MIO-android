@@ -1,12 +1,12 @@
 package com.example.mio.NoticeBoard
 
-import com.example.mio.Adapter.PlaceAdapter
 import android.animation.ObjectAnimator
 import android.app.DatePickerDialog
-import android.content.Context
 import android.app.TimePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
@@ -19,16 +19,16 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.contains
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.airbnb.lottie.model.Marker
 import com.example.mio.*
-import com.example.mio.Model.PlaceData
-import com.example.mio.Model.PostData
-import com.example.mio.Model.ResultSearchKeyword
-import com.example.mio.Model.SharedViewModel
+import com.example.mio.Adapter.PlaceAdapter
 import com.example.mio.Model.*
 import com.example.mio.TabCategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
@@ -37,22 +37,22 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import net.daum.mf.map.api.MapPOIItem
+import net.daum.mf.map.api.MapPoint
+import net.daum.mf.map.api.MapView
 import okhttp3.*
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
-import net.daum.mf.map.api.MapPOIItem
-import net.daum.mf.map.api.MapPoint
-import net.daum.mf.map.api.MapView
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.HashMap
+import kotlin.math.*
 
 
 class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListener {
@@ -62,6 +62,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     }
 
     private lateinit var mBinding : ActivityNoticeBoardEditBinding
+
     //클릭한 포스트(게시글)의 데이터 임시저장
     private var temp : AddPostData? = null
     //edit용 임시저장 데이터
@@ -79,7 +80,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     private val recentSearchAdapter = PlaceAdapter(recentSearchItems)
     private var keyword = ""
     private lateinit var geocoder: Geocoder
-    private lateinit var mapView: MapView
+    private var mapView: MapView? = null
     var mapViewContainer: RelativeLayout? = null
     private var marker: MapPOIItem? = null
     private val PREFS_NAME = "recent_search"
@@ -90,7 +91,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     private var selectCalendarDataNoticeBoard : HashMap<String, ArrayList<PostData>> = HashMap()
 
     //콜백 리스너
-    private var variableChangeListener: VariableChangeListener? = null
+    //private var variableChangeListener: VariableChangeListener? = null
     //모든 데이터 값
     private var isComplete = false
     //현재 페이지
@@ -138,7 +139,6 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         isTitle = false,
         isCalendar = false,
         isTime = false,
-        isParticipants = false,
         isFirst = false
         ), SecondVF(
             isPlaceName = false,
@@ -162,6 +162,11 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     )
     private lateinit var myViewModel : SharedViewModel
     val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+    private var markers: MutableList<Marker> = mutableListOf()
+    //뒤로가기
+    // private lateinit var loadingDialog : LoadingProgressDialog
+    private var backPressedTime = 0L
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -169,14 +174,15 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         setContentView(mBinding.root)
         //뷰의 이벤트 리스너
         myViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
-
+        //기기의 뒤로가기 콜백
+        this.onBackPressedDispatcher.addCallback(this, callback)
         /*mapView = MapView(this)
 
         val mapViewContainer = mBinding.mapView
         mapViewContainer.addView(mapView)*/
-        initMapView()
 
-        mapView.setMapViewEventListener(this)
+        //initMapView()
+
         //mBinding.mapView.addView(mapView)
         geocoder = Geocoder(this)
 
@@ -285,7 +291,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
 
         myViewModel.allCheck.observe(this) {
-            if (it.isFirstVF.isTitle && it.isFirstVF.isParticipants && it.isFirstVF.isTime && it.isFirstVF.isCalendar) {
+            if (it.isFirstVF.isTitle && it.isFirstVF.isTime && it.isFirstVF.isCalendar) {
                 it.isFirstVF.isFirst = true
                 isFirst = true
                 println("ff")
@@ -387,6 +393,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             mBinding.mapView.addView(mapViewContainer)
             mapViewContainer?.addView(it)
         }
+        mapView?.setMapViewEventListener(this)
     }
 
     private fun firstVF() {
@@ -504,12 +511,10 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             participateNumberOfPeople -= 1
             if (participateNumberOfPeople > 0) {
                 mBinding.editParticipateTv.text = participateNumberOfPeople.toString()
-                isAllCheck.isFirstVF.isParticipants = true
                 myViewModel.postCheckValue(isAllCheck)
             } else {
                 mBinding.editParticipateTv.text = "1"
                 participateNumberOfPeople = 1
-                isAllCheck.isFirstVF.isParticipants = true
                 myViewModel.postCheckValue(isAllCheck)
             }
         }
@@ -518,12 +523,10 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             participateNumberOfPeople += 1
             if (participateNumberOfPeople < 11) {
                 mBinding.editParticipateTv.text = participateNumberOfPeople.toString()
-                isAllCheck.isFirstVF.isParticipants = true
                 myViewModel.postCheckValue(isAllCheck)
             } else {
                 mBinding.editParticipateTv.text = "1"
                 participateNumberOfPeople = 1
-                isAllCheck.isFirstVF.isParticipants = true
                 myViewModel.postCheckValue(isAllCheck)
             }
 
@@ -559,7 +562,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 latitude = listItems[position].y
                 longitude = listItems[position].x
 
-                mapView.setMapCenterPointAndZoomLevel(mapPoint, 1, true)
+                mapView?.setMapCenterPointAndZoomLevel(mapPoint, 1, true)
                 mBinding.placeName.text = listItems[position].name
                 mBinding.placeRoad.text = listItems[position].road
                 addToRecentSearch(listItems[position])
@@ -582,10 +585,10 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 latitude = recentSearchItems[position].y
                 longitude = recentSearchItems[position].x
 
-                mapView.setMapCenterPointAndZoomLevel(mapPoint, 1, true)
+                mapView?.setMapCenterPointAndZoomLevel(mapPoint, 1, true)
 
                 if (marker != null) {
-                    mapView.removePOIItem(marker)
+                    mapView?.removePOIItem(marker)
                 }
                 marker = MapPOIItem().apply {
                     itemName = recentSearchItems[position].name
@@ -596,8 +599,9 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     isCustomImageAutoscale = false
                     setCustomImageAnchor(0.5f, 1.0f)
                 }
-                mapView.addPOIItem(marker)
+                mapView?.addPOIItem(marker)
 
+                //여기서 name고정됨
                 mBinding.placeName.text = recentSearchItems[position].name
                 mBinding.placeRoad.text = recentSearchItems[position].road
                 location = recentSearchItems[position].name
@@ -1049,10 +1053,11 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             if (currentPage <= 1) {
                 //뒤로가기
                 val intent = Intent(this@NoticeBoardEditActivity, MainActivity::class.java).apply {
-
+                    putExtra("flag", 9)
                 }
-                setResult(8, intent)
+                setResult(RESULT_OK, intent)
                 finish()
+
             } else if (currentPage == 2 && countPage == 1) {
                 countPage -= 1
                 myViewModel.postCheckComplete(false)
@@ -1086,13 +1091,11 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     val tempS = hourOfDay.toString() + "시 " + minute + "분"
                     selectFormattedTime = LocalTime.parse(tempS, DateTimeFormatter.ofPattern("H시 m분")).format(DateTimeFormatter.ofPattern("HH:mm"))
 
-                    selectTime = if (hourOfDay > 12) {
-                        val pm = hourOfDay - 12;
+                    selectTime = if (hourOfDay >= 12) {
+                        val pm = if (hourOfDay == 12) hourOfDay else hourOfDay - 12
                         "오후 " + pm + "시 " + minute + "분"
                     } else {
-                        hour1 = hourOfDay
-                        minute1 = minute
-                        "오전 " + hour + "시 " + minute + "분"
+                        "오전 " + hourOfDay + "시 " + minute + "분"
                     }
                     //selectTime = "${hourOfDay} 시 ${minute} 분"
 
@@ -1118,12 +1121,12 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         timePickerDialog.show()
     }
 
-    interface VariableChangeListener {
-        fun onVariableChanged(isFirstVF: FirstVF, isThirdVF: ThirdVF)
-    }
-    fun setVariableChangeListener(variableChangeListener: VariableChangeListener) {
-        this.variableChangeListener = variableChangeListener
-    }
+//    interface VariableChangeListener {
+//        fun onVariableChanged(isFirstVF: FirstVF, isThirdVF: ThirdVF)
+//    }
+//    fun setVariableChangeListener(variableChangeListener: VariableChangeListener) {
+//        this.variableChangeListener = variableChangeListener
+//    }
 
     /*private fun signalChanged() {
         variableChangeListener?.onVariableChanged(isF)
@@ -1179,9 +1182,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         val api = retrofit.create(KakaoAPI::class.java)
         val call = api.getSearchKeyword(API_KEY, keyword)
 
-        val kakaoApiService = retrofit.create(KakaoAPI::class.java)
-
-        api.getSearchKeyword(API_KEY, keyword).enqueue(object: Callback<ResultSearchKeyword> {
+        call.enqueue(object: Callback<ResultSearchKeyword> {
             override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
                 if (response.isSuccessful) {
                     println("Edit Search" + response.body()?.documents)
@@ -1226,7 +1227,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         if (!searchResult?.documents.isNullOrEmpty()) {
 
             listItems.clear()
-            mapView.removeAllPOIItems()
+            mapView?.removeAllPOIItems()
             for (document in searchResult!!.documents) {
                 val item = PlaceData(document.place_name,
                     document.road_address_name,
@@ -1246,13 +1247,105 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     isCustomImageAutoscale = true
                     setCustomImageAnchor(0.5f, 1.0f)
                 }
-                mapView.addPOIItem(point)
+                mapView?.addPOIItem(point)
             }
             placeAdapter.notifyDataSetChanged()
         } else {
             Toast.makeText(this, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
         }
     }
+
+    // 좌표를 주소로 변환하여 가져오는 함수
+    /*private fun getAddressFromCoordinates(longitude : Double, latitude : Double) {
+val service = retrofit.create(ReverseGeocodingAPI::class.java)
+    val apiKey = "YOUR_API_KEY_HERE" // Kakao API 키 입력
+    val call = service.getReverseGeocode(apiKey, longitude, latitude)
+
+    call.enqueue(object : Callback<ResultReverseGeocode> {
+        override fun onResponse(
+            call: Call<ResultReverseGeocode>,
+            response: Response<ResultReverseGeocode>
+        ) {
+            if (response.isSuccessful) {
+                val result = response.body()
+                if (result != null && result.documents.isNotEmpty()) {
+                    val address = result.documents[0].address
+                    // 주소 정보를 사용하여 원하는 작업 수행
+                    Log.d("ReverseGeocode", "주소: $address")
+                } else {
+                    Log.d("ReverseGeocode", "주소를 찾을 수 없습니다.")
+                }
+            } else {
+                Log.e("ReverseGeocode", "API 요청 실패: ${response.code()}")
+            }
+        }
+
+        override fun onFailure(call: Call<ResultReverseGeocode>, t: Throwable) {
+            Log.e("ReverseGeocode", "API 요청 실패: ${t.message}")
+        }
+    })
+
+    }*/
+
+    private fun getAddressFromCoordinates(latitude: Double, longitude: Double, apiKey: String, callback: (String?) -> Unit) {
+        val url = "https://dapi.kakao.com/v2/local/geo/coord2address.json?x=$longitude&y=$latitude"
+        val httpClient = OkHttpClient()
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", apiKey)
+            .build()
+
+        httpClient.newCall(request).enqueue(object : okhttp3.Callback {
+            override fun onFailure(call: okhttp3.Call, e: IOException) {
+                callback(null)
+            }
+
+            override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+                val responseBody = response.body?.string()
+                val address = parseAddressFromResponse(responseBody)
+                callback(address)
+            }
+        })
+    }
+    private fun parseAddressFromResponse(responseBody: String?): String? {
+        if (responseBody.isNullOrBlank()) return null
+
+        val json = JSONObject(responseBody)
+        val documents = json.getJSONArray("documents")
+
+        if (documents.length() > 0) {
+            val firstDocument = documents.getJSONObject(0)
+            //Log.d("Document", documents.toString())
+            val address = firstDocument.getJSONObject("address")
+            val addressName = address.getString("address_name")
+            // road_address 필드가 있는지 확인하고 처리합니다.
+            val roadAddress = if (!firstDocument.isNull("road_address")) {
+                firstDocument.getJSONObject("road_address")
+            } else {
+                JSONObject() // "road_address" 필드가 없을 경우 빈 JSONObject 생성
+            }
+            // roadAddress가 null이 아니라면 해당 필드를 가져옵니다.
+            val buildName = if (!roadAddress.isNull("building_name")) {
+                roadAddress?.getString("building_name")
+            } else {
+                null
+            }
+
+
+            return "$addressName $buildName"
+        }
+
+        return null
+    }
+
+    // 맵뷰 이벤트 리스너
+    /*private val mapViewEventListener: MapViewEventListener = object : MapViewEventListenerAdapter() {
+        override fun onMapViewSingleTapped(mapView: MapView?, point: LatLng?) {
+            point?.let {
+                getAddressFromCoordinates(it)
+            }
+        }
+    }*/
 
 
     override fun onMapViewInitialized(p0: MapView?) {
@@ -1266,9 +1359,14 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     override fun onMapViewZoomLevelChanged(p0: MapView?, p1: Int) {
 
     }
+
     override fun onMapViewSingleTapped(mapView: MapView?, mapPoint: MapPoint?) {
         latitude = mapPoint?.mapPointGeoCoord?.latitude ?: return
         longitude = mapPoint.mapPointGeoCoord.longitude
+
+        val geocoder = Geocoder(this, Locale.KOREA)
+        var address: Address? = null
+
 
         isAllCheck.isSecondVF.isPlaceName = true
         isAllCheck.isSecondVF.isPlaceRode = true
@@ -1285,33 +1383,356 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             markerType = MapPOIItem.MarkerType.CustomImage
             customImageResourceId = R.drawable.map_poi_icon
             isCustomImageAutoscale = false
-            isDraggable = true
+            isDraggable = false
             setCustomImageAnchor(0.5f, 1.0f)
         }
         mapView?.addPOIItem(marker)
 
-        val addresses = geocoder.getFromLocation(latitude, longitude, 1)
-        if (addresses != null) {
-/*            if (addresses.isNotEmpty()) {
-                val address = addresses[0].getAddressLine(0)
-                mBinding.placeRoad.text = "$address"
-            }*/
-            if (addresses.isNotEmpty()) {
-                val address = addresses[0]
+        if (Build.VERSION.SDK_INT < 33) { // SDK 버전이 33보다 큰 경우에만 아래 함수를 씁니다.
+            val addresses = geocoder.getFromLocation(latitude, longitude, 1)!![0]
 
-                val adminArea = address.adminArea ?: ""
-                val subAdminArea = address.subAdminArea ?: ""
-                val locality = address.locality ?: ""
-                val subLocality = address.subLocality ?: ""
-                val thoroughfare = address.thoroughfare ?: ""
-                val featureName = address.featureName ?: ""
+            address?.let {
+                if (addresses != null) {
+                    val adminArea = addresses.adminArea ?: ""
+                    val subAdminArea = addresses.subAdminArea ?: ""
+                    val locality = addresses.locality ?: ""
+                    val subLocality = addresses.subLocality ?: ""
+                    val thoroughfare = addresses.thoroughfare ?: ""
+                    val featureName = addresses.featureName ?: ""
 
-                val detailedAddress = "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
+                    val detailedAddress = "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
 
-                mBinding.placeRoad.text = detailedAddress
+                    mBinding.placeRoad.text = "현재 마커 주소 : " + detailedAddress // 텍스트뷰에 주소 정보 표시
+                    //getAddressFromCoordinates(longitude, latitude)
+                }
+            }
+        } else {
+            val geocodeListener = @RequiresApi(33) object : Geocoder.GeocodeListener {
+                override fun onGeocode(addresses: MutableList<Address>) {
+                    // 주소 리스트를 가지고 할 것을 적어주면 됩니다.
+                    address = addresses.firstOrNull()
+                    address?.let {
+                        val adminArea = it.adminArea ?: ""
+                        val subAdminArea = it.subAdminArea ?: ""
+                        val locality = it.locality ?: ""
+                        val subLocality = it.subLocality ?: ""
+                        val thoroughfare = it.thoroughfare ?: ""
+                        val featureName = it.featureName ?: ""
+
+                        val detailedAddress =
+                            "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
+
+                        //mBinding.placeName.text =
+                        //mBinding.placeRoad.text = "현재 마커 주소 : " + detailedAddress // 텍스트뷰에 주소 정보 표시
+                        //getAddressFromCoordinates(longitude, latitude)
+                       /* val latitude = latitude
+                        val longitude = longitude
+                        val apiKey = API_KEY*/
+
+                        /*getAddressFromCoordinates(latitude, longitude, apiKey) { address ->
+                            if (address != null) {
+                                *//*val address = address[0].*//*
+                                //val name = address.split(" ").map { it.toString() }
+
+                                println("주소: $address") //buildingName포함
+                            } else {
+                                println("주소를 가져올 수 없습니다.")
+                            }
+                        }*/
+                        // 도로명 주소 검색
+
+                        if (addresses.isNotEmpty()) {
+                            address = addresses[0]
+                            val roadAddress = address?.getAddressLine(0) ?: ""
+                            Log.d("Address", "도로명 주소: $roadAddress")
+                            Log.d("detail", "$detailedAddress")
+
+                            // Kakao Map API를 호출하여 해당 주소 주변의 빌딩 정보 검색
+                            searchNearbyBuildings(detailedAddress,latitude, longitude) { buildingNames ->
+                                buildingNames?.let {
+                                    Log.d("BuildingNames", "빌딩 이름들: $buildingNames")
+                                    // 여기에서 UI 업데이트 또는 다른 작업을 수행할 수 있습니다.
+                                }
+                            }
+                        } else {
+                            Log.e("Address", "주소를 가져올 수 없습니다.")
+                            //Toast.makeText(this, "주소를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                        }
+
+                        Log.d("NoticeEdit Map Test", detailedAddress)
+                        Log.d("NoticeEdit Map Test", "${address?.featureName}") //빌딩이름?
+                        Log.d("NoticeEdit Map Test", "$address")
+                        Log.d("NoticeEdit Map Test", address?.getAddressLine(0).toString())
+                        Log.d("NoticeEdit Map Test", addresses.toString())
+                    }
+                }
+
+                override fun onError(errorMessage: String?) {
+                    address = null
+                    Toast.makeText(
+                        this@NoticeBoardEditActivity,
+                        "주소가 발견되지 않았습니다.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+            geocoder.getFromLocation(latitude, longitude, 1, geocodeListener)
+        }
+
+
+    }
+    // Kakao Map API를 호출하여 주변 빌딩 정보를 검색하는 함수
+    private fun searchNearbyBuildings(query : String, latitude: Double, longitude: Double, callback: (List<PlaceDocument>?) -> Unit) {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://dapi.kakao.com")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val service = retrofit.create(KakaoApiService::class.java)
+        val apiKey = API_KEY // 본인의 Kakao API 키 입력
+        val call = service.searchAddress("대진대학교", longitude, latitude, radius = 100, sort = "accuracy", apiKey = apiKey)
+
+        call.enqueue(object : Callback<SearchResult> {
+            override fun onResponse(call: Call<SearchResult>, response: Response<SearchResult>) {
+                if (response.isSuccessful) {
+                    val result = response.body()?.documents?.toList()
+                    //val buildingNames = result?.documents?.map { it.road_address.building_name!! }
+                    callback(result)
+                } else {
+                    callback(null)
+                }
+            }
+
+            override fun onFailure(call: Call<SearchResult>, t: Throwable) {
+                callback(null)
+            }
+        })
+    }
+
+
+    private fun updateMarker(mapPoint: MapPoint?) {
+        // 이전 마커 제거
+        marker?.let {
+            mapView?.removePOIItem(it)
+        }
+
+        // 새로운 마커 추가
+        marker = MapPOIItem().apply {
+            itemName = "선택 위치"
+            this.mapPoint = mapPoint
+            markerType = MapPOIItem.MarkerType.CustomImage
+            customImageResourceId = R.drawable.map_poi_icon
+            isCustomImageAutoscale = false
+            isDraggable = false
+            setCustomImageAnchor(0.5f, 1.0f)
+        }
+        mapView?.addPOIItem(marker)
+    }
+
+    private val callback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            // 뒤로가기 클릭 시 실행시킬 코드 입력
+            val transaction = supportFragmentManager.beginTransaction()
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_content)
+
+            val fragmentManager = supportFragmentManager
+
+            if (System.currentTimeMillis() > backPressedTime + 2000) {
+                backPressedTime = System.currentTimeMillis()
+                Toast.makeText(this@NoticeBoardEditActivity, "뒤로 버튼을 한 번 더 누르시면 홈으로 이동합니다.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            if (System.currentTimeMillis() <= backPressedTime + 2000) {
+                if (fragmentManager.backStackEntryCount > 0) {
+                    fragmentManager.popBackStack()
+
+                } else {
+                    this@NoticeBoardEditActivity.finishAffinity()
+                }
+
+                if (currentFragment != null) {
+                    transaction.remove(currentFragment)
+
+                    transaction.commit()
+                }
+
+                this@NoticeBoardEditActivity.finishAffinity()
             }
         }
     }
+
+   /* private fun addMarker(latitude: Double, longitude: Double) {
+        // 이전 마커들 제거
+        marker?.let {
+            mapView?.removePOIItem(it)
+        }
+        markers.clear()
+
+        // 주변 위치 정보 요청
+        kakaoApiService.getAddress(latitude, longitude).enqueue(object : Callback<AddressResponse> {
+            override fun onResponse(call: Call<AddressResponse>, response: Response<AddressResponse>) {
+                if (response.isSuccessful) {
+                    val places = response.body()?.documents
+                    places?.let { sortAndAddMarkers(it) }
+                } else {
+                    Log.e("KakaoMap", "Failed to fetch nearby places: ${response.errorBody()}")
+                }
+            }
+
+            override fun onFailure(call: Call<AddressResponse>, t: Throwable) {
+                Log.e("KakaoMap", "Error fetching nearby places: ${t.message}", t)
+            }
+        })
+    }
+
+    private fun sortAndAddMarkers(places: List<Document>) {
+        // 정확도를 기준으로 위치 정보 정렬
+        val sortedPlaces = places.sortedByDescending { it.address.address_name }
+
+        Log.d("sortAndAddMarkers", sortedPlaces.toString())
+    }*/
+   /*override fun onMapViewSingleTapped(mapView: MapView?, mapPoint: MapPoint?) {
+       latitude = mapPoint?.mapPointGeoCoord?.latitude ?: return
+       longitude = mapPoint.mapPointGeoCoord.longitude
+
+       var address: Address? = null
+
+       // POI 검색 반경 (미터)
+       val searchRadius = 100
+
+       // POI 검색 이벤트 리스너
+       val poiItemEventListener = object : MapPOIItemEventListener {
+           override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
+               // 선택한 POI 처리
+           }
+
+           override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
+               // POI 말풍선 터치 시 처리
+           }
+
+           override fun onCalloutBalloonOfPOIItemTouched(
+               mapView: MapView?,
+               poiItem: MapPOIItem?,
+               buttonType: MapPOIItem.CalloutBalloonButtonType?
+           ) {
+               // POI 말풍선의 버튼 터치 시 처리
+           }
+       }
+
+       // POI 검색
+       val poiSearcher = MapPOIItem.Searcher()
+       poiSearcher.searchKeyword(
+           mapPoint.mapPointGeoCoord.longitude,
+           mapPoint.mapPointGeoCoord.latitude,
+           searchRadius,
+           poiItemEventListener
+       )
+
+       val geocoder = Geocoder(this, Locale.getDefault())
+
+       isAllCheck.isSecondVF.isPlaceName = true
+       isAllCheck.isSecondVF.isPlaceRode = true
+       myViewModel.postCheckValue(isAllCheck)
+
+       if (marker != null) {
+           mapView?.removePOIItem(marker)
+           marker!!.markerType = MapPOIItem.MarkerType.BluePin
+       }
+
+       marker = MapPOIItem().apply {
+           itemName = "선택 위치"
+           this.mapPoint = mapPoint
+           markerType = MapPOIItem.MarkerType.CustomImage
+           customImageResourceId = R.drawable.map_poi_icon
+           isCustomImageAutoscale = false
+           isDraggable = true
+           setCustomImageAnchor(0.5f, 1.0f)
+       }
+       mapView?.addPOIItem(marker)
+
+       // 지오코딩 서비스를 이용하여 마커 위치의 POI 정보 가져오기
+       *//*val geocodeListener = @RequiresApi(33) object : Geocoder.GeocodeListener {
+           override fun onGeocode(addresses: MutableList<Address>) {
+               val address = addresses.firstOrNull()
+               address?.let {
+                   val poiName = it.featureName ?: "Unknown"
+                   val adminArea = it.adminArea ?: ""
+                   val subAdminArea = it.subAdminArea ?: ""
+                   val locality = it.locality ?: ""
+                   val subLocality = it.subLocality ?: ""
+                   val thoroughfare = it.thoroughfare ?: ""
+                   val featureName = it.featureName ?: ""
+
+                   val detailedAddress = "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
+
+                   mBinding.placeName.text = poiName
+                   mBinding.placeRoad.text = detailedAddress // 텍스트뷰에 주소 정보 표시
+               }
+           }
+
+           override fun onError(errorMessage: String?) {
+               // 에러 처리
+               Toast.makeText(this@NoticeBoardEditActivity, "주소가 발견되지 않았습니다.", Toast.LENGTH_LONG).show()
+           }
+       }
+
+       geocoder.getFromLocation(latitude, longitude, 1, geocodeListener)*//*
+       if (Build.VERSION.SDK_INT < 33) { // SDK 버전이 33보다 큰 경우에만 아래 함수를 씁니다.
+           val addresses = geocoder.getFromLocation(latitude, longitude, 1)!!.first()
+
+           address?.let {
+               if (addresses != null) {
+                   val adminArea = addresses.adminArea ?: ""
+                   val subAdminArea = addresses.subAdminArea ?: ""
+                   val locality = addresses.locality ?: ""
+                   val subLocality = addresses.subLocality ?: ""
+                   val thoroughfare = addresses.thoroughfare ?: ""
+                   val featureName = addresses.featureName ?: ""
+
+                   val detailedAddress = "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
+
+                   mBinding.placeName.text = addresses.featureName
+                   mBinding.placeRoad.text = detailedAddress // 텍스트뷰에 주소 정보 표시
+               }
+           }
+       } else {
+           val geocodeListener = @RequiresApi(33) object : Geocoder.GeocodeListener {
+               override fun onGeocode(addresses: MutableList<Address>) {
+                   // 주소 리스트를 가지고 할 것을 적어주면 됩니다.
+                   address = addresses[0];
+                   address?.let {
+                       val adminArea = it.adminArea ?: ""
+                       val subAdminArea = it.subAdminArea ?: ""
+                       val locality = it.locality ?: ""
+                       val subLocality = it.subLocality ?: ""
+                       val thoroughfare = it.thoroughfare ?: ""
+                       val featureName = it.featureName ?: ""
+
+                       val detailedAddress =
+                           "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
+
+                       mBinding.placeName.text = poiName
+                       mBinding.placeRoad.text = detailedAddress // 텍스트뷰에 주소 정보 표시
+                       Log.d("NoticeEdit Map Test", "${detailedAddress}")
+                       Log.d("NoticeEdit Map Test", "${address?.featureName}")
+                       Log.d("NoticeEdit Map Test", "${address}")
+                       Log.d("NoticeEdit Map Test", address?.getAddressLine(0).toString())
+                   }
+               }
+
+               override fun onError(errorMessage: String?) {
+                   address = null
+                   Toast.makeText(
+                       this@NoticeBoardEditActivity,
+                       "주소가 발견되지 않았습니다.",
+                       Toast.LENGTH_LONG
+                   ).show()
+               }
+           }
+           geocoder.getFromLocation(latitude, longitude, 1, geocodeListener)
+       }
+   }*/
 
     override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {
 
@@ -1333,28 +1754,70 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
     }
 
+    override fun onStart() {
+        super.onStart()
+        Log.e("NoticeBoardEdit", "start")
+        if (mapView == null) {
+            initMapView()
+        }
+    }
+
     override fun onRestart() {
         super.onRestart()
+        Log.e("NoticeBoardEdit", "restart")
         // 액티비티 재시작 시 (B 액티비티가 종료되고 다시 시작될 때)
         // MapView가 포함되어 있지 않다면 추가
-        if (mapViewContainer?.contains(mapView)!!) {
-            try {
-                // 다시 맵뷰 초기화 및 추가
-                initMapView()
-            } catch (re: RuntimeException) {
-                Log.e("EDIT", re.toString())
+        if (mapView != null) {
+            Log.e("Notice Restart", "mapview not null")
+            if (mapViewContainer?.contains(mapView!!)!!) {
+                try {
+                    // 다시 맵뷰 초기화 및 추가
+                    initMapView()
+                } catch (re: RuntimeException) {
+                    Log.e("EDIT", re.toString())
+                }
             }
+        } else {
+            Log.e("Notice Restart", "mapview null")
+            mapView = null
+            mBinding.mapView.removeAllViews()
+            mBinding.mapView.removeView(mapView)
+            initMapView()
         }
     }
 
     override fun onPause() {
         super.onPause()
-        mBinding.mapContainer1.removeAllViews()
+        Log.e("NoticeBoardEdit", "pause")
+        if (mapView != null) {
+            mBinding.mapContainer1.removeAllViews()
+        } else {
+            initMapView()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.e("NoticeBoardEdit", "resume")
+        if (mapView == null) {
+            initMapView()
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.e("NoticeBoardEdit", "stop")
+        if (mapView != null) {
+            mapView = null
+            mBinding.mapView.removeAllViews()
+            mBinding.mapView.removeView(mapView)
+        }
     }
 
     override fun finish() {
         // 종료할 때 맵뷰 제거 (맵뷰 2개 이상 동시에 불가)
         mBinding.mapView.removeView(mapView)
+        Log.e("NoticeBoardEdit", "finish")
         super.finish()
     }
 }

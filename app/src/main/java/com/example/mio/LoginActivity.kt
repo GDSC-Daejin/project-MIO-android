@@ -60,6 +60,9 @@ class LoginActivity : AppCompatActivity() {
     private var userEmail = ""
     //데이터 받아오기 준비
     private var isReady = false
+    //
+    private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+
 
     //init 벡엔드 연결
     /*val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
@@ -169,55 +172,55 @@ class LoginActivity : AppCompatActivity() {
 
     private fun signInCheck(userInfoToken : TokenRequest) {
         println("signInCheck")
-        /*var interceptor = HttpLoggingInterceptor()
-        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-        val client = OkHttpClient.Builder().addInterceptor(interceptor).build()*/
-
-        /*val retrofit = Retrofit.Builder().baseUrl("url 주소")
-            .addConverterFactory(GsonConverterFactory.create())
-            //.client(client) 이걸 통해 통신 오류 log찍기 가능
-            .build()
-        val service = retrofit.create(MioInterface::class.java)*/
         val call = RetrofitServerConnect.service
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
 
-        CoroutineScope(Dispatchers.IO).launch {
-            call.addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
-                override fun onResponse(
-                    call: retrofit2.Call<LoginResponsesData>,
-                    response: retrofit2.Response<LoginResponsesData?>
-                ) {
-                    if (response.isSuccessful) {
-                        val builder =  OkHttpClient.Builder()
-                            .connectTimeout(1, TimeUnit.SECONDS)
-                            .readTimeout(30, TimeUnit.SECONDS)
-                            .writeTimeout(15, TimeUnit.SECONDS)
-                            .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
-                        /*intent.apply {
-                            putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
-                            putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
-                        }*/
-                        saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString()
-                        saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString())
-                        saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, response.body()!!.refreshToken).toString()
+        call.addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
+            override fun onResponse(
+                call: retrofit2.Call<LoginResponsesData>,
+                response: retrofit2.Response<LoginResponsesData?>
+            ) {
+                if (response.isSuccessful) {
+                    Log.d("Login success", "success")
+                    val loginResponse = response.body()
+                    if (loginResponse != null) {
+                        Log.d("Login success", "is not null")
+                        val accessToken = loginResponse.accessToken
+                        val accessTokenExpiresIn = loginResponse.accessTokenExpiresIn
+                        val refreshToken = loginResponse.refreshToken
 
-                        builder.build()
-                        println(response.body()!!.accessTokenExpiresIn.toString())
-                        Log.d("LoginActivity" ,saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity).toString())
+                        // AccessToken, ExpireDate, RefreshToken 저장
+                        saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, accessToken)
+                        saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, accessTokenExpiresIn.toString())
+                        saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, refreshToken)
 
-
-                    } else {
-                        println("fail")
+                        Log.d("Login accessTokenExpiresIn check", accessTokenExpiresIn.toString())
+                        Log.d("Login RefreshToken check", refreshToken)
+                        // AccessToken 만료 시간 확인
+                        if (accessTokenExpiresIn <= System.currentTimeMillis()) {
+                            Log.d("Login accessTokenExpiresIn", accessTokenExpiresIn.toString())
+                            // AccessToken 만료된 경우 refreshToken을 사용하여 갱신
+                            Log.d("Login RefreshToken", refreshToken)
+                            refreshAccessToken(refreshToken)
+                        } else {
+                            // AccessToken 유효한 경우 MainActivity로 이동
+                            Log.d("Login accessTokenExpiresIn 유효", accessTokenExpiresIn.toString())
+                            Log.d("Login RefreshToken 유효", refreshToken)
+                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                            startActivity(intent)
+                            this@LoginActivity.finish()
+                        }
                     }
+                } else {
+                    println("fail")
+                    Log.e("LoginTestResponseError", response.errorBody()?.string()!!)
+                    Log.e("LoginTestResponseError", response.code().toString())
+                    Log.e("LoginTestResponseError", response.message().toString())
                 }
-                override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
-                    println("실패" + t.message.toString())
-                }
-            })
-        }
-
-        /*val s = service.addUserInfoData(userInfoToken).execute().code()
-        println(s)*/
+            }
+            override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
+                println("실패" + t.message.toString())
+            }
+        })
     }
 
     class HeaderInterceptor constructor(private val token: String) : Interceptor {
@@ -238,17 +241,6 @@ class LoginActivity : AppCompatActivity() {
             if (result.resultCode == Activity.RESULT_OK) {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 handleSignInResult(task)
-
-                if (userEmail.substring(9..20).toString() == "daejin.ac.kr") {
-                    Toast.makeText(this, "성공", Toast.LENGTH_SHORT).show()
-
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    startActivity(intent)
-                    this@LoginActivity.finish()
-                } else {
-                    Toast.makeText(this, "대진대학교 학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
-                }
-
             }
         }
     }
@@ -260,37 +252,25 @@ class LoginActivity : AppCompatActivity() {
             val account = completedTask.getResult(ApiException::class.java)
             val email = account?.email.toString()
             val authCode = account.serverAuthCode
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
 
             userEmail = email
 
             //회원가입과 함께 새로운 계정 정보 저장
             if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity)!!.isEmpty()) {
-                saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
-                Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
-                val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                startActivity(intent)
-                this@LoginActivity.finish()
 
-            } else { //현재 로그인, 또는 로그인했던 정보가 저장되어있으면 home으로
-                if (saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity)!!.isNotEmpty()) {
-                    //refresh 만료
-                    if (saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity)!!.toLong() <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                        println("refreshToken use")
-                        refreshAccessToken(saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity).toString())
-                    //refresh 들어갈 곳
-                        /*newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                        Toast.makeText(this, "refresh만료", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                        startActivity(intent)
-                        this@LoginActivity.finish()
-                    } else { //만료 x
-                        Log.d("LoginActivity", "refreshtoken살아잇음, ${saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity).toString()}")
-                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                        startActivity(intent)
-                        this@LoginActivity.finish()
-                    }
+                if (userEmail.substring(9..20).toString() == "daejin.ac.kr") {
+                    Toast.makeText(this, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                    saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
+
+                    Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    this@LoginActivity.finish()
+                    /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    this@LoginActivity.finish()*/
+                } else {
+                    Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -380,42 +360,44 @@ class LoginActivity : AppCompatActivity() {
 
     private fun refreshAccessToken(refreshToken: String) {
         val call = RetrofitServerConnect.service
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val refreshTokenRequest = RefreshTokenRequest(refreshToken)
+        Log.e("LoginActivity", "순서체크refresh")
         Log.e("LoginActivity", "${refreshToken}")
 
-        CoroutineScope(Dispatchers.IO).launch {
-            call.refreshTokenProcess(refreshTokenRequest).enqueue(object : retrofit2.Callback<LoginResponsesData> {
-                override fun onResponse(
-                    call: retrofit2.Call<LoginResponsesData>,
-                    response: retrofit2.Response<LoginResponsesData?>
-                ) {
-                    if (response.isSuccessful) {
-                        val builder =  OkHttpClient.Builder()
-                            .connectTimeout(1, TimeUnit.SECONDS)
-                            .readTimeout(30, TimeUnit.SECONDS)
-                            .writeTimeout(15, TimeUnit.SECONDS)
-                            .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
-                        /*intent.apply {
-                            putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
-                            putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
-                        }*/
-                        saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString()
-                        saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString())
-                        saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, response.body()!!.refreshToken).toString()
+        call.refreshTokenProcess(refreshTokenRequest).enqueue(object : retrofit2.Callback<LoginResponsesData> {
+            override fun onResponse(
+                call: retrofit2.Call<LoginResponsesData>,
+                response: retrofit2.Response<LoginResponsesData?>
+            ) {
+                if (response.isSuccessful) {
+                    val builder =  OkHttpClient.Builder()
+                        .connectTimeout(1, TimeUnit.SECONDS)
+                        .readTimeout(30, TimeUnit.SECONDS)
+                        .writeTimeout(15, TimeUnit.SECONDS)
+                        .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
+                    /*intent.apply {
+                        putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
+                        putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
+                    }*/
+                    builder.build()
 
-                        builder.build()
-                        println(response.body()!!.accessTokenExpiresIn.toString())
-                        Log.d("LoginActivity" ,saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity).toString())
-                    } else {
-                        Log.e("LoginActivity", "RefreshToken response fail")
-                    }
+                    saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString()
+                    saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString())
+                    saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, response.body()!!.refreshToken).toString()
+
+                    Log.d("LoginActivity RefreshTokenRequest" ,saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity).toString())
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    this@LoginActivity.finish()
+
+                } else {
+                    Log.e("LoginActivity", "RefreshToken response fail")
                 }
-                override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
-                    println("실패" + t.message.toString())
-                }
-            })
-        }
+            }
+            override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
+                println("실패" + t.message.toString())
+            }
+        })
         /*val client = OkHttpClient()
         val requestBody = FormBody.Builder()
             .add("grant_type", "refresh_token")
@@ -498,6 +480,16 @@ class LoginActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         Log.d("LoginActivity", "start")
+        if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity) != null) {
+            if (saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity) != null) {
+                val expireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity)?.toLong()
+
+                if (expireDate != null && expireDate <= System.currentTimeMillis()) {
+                    //여기서 accessToken의
+                    Log.e("ERROR", "EXPIRED")
+                }
+            }
+        }
     }
 
     override fun onResume() {

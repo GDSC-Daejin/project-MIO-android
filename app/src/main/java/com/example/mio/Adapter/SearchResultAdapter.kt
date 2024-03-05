@@ -13,8 +13,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.Content
 import com.example.mio.Model.LocationReadAllResponse
-import com.example.mio.R
-import com.example.mio.RetrofitClient
+/*import com.example.mio.R
+import com.example.mio.RetrofitClient*/
 import com.example.mio.databinding.ListLayoutBinding
 import com.example.mio.databinding.SearchListLayoutBinding
 import kotlinx.coroutines.CoroutineScope

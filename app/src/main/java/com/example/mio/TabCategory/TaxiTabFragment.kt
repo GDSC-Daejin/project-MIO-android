@@ -1412,9 +1412,9 @@ class TaxiTabFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        val localDate = LocalDate.now().toString()
+        /*val localDate = LocalDate.now().toString()
         val currentDate = localDate.substring(8..9).toInt()
-        triggerFirstItemOfCalendarAdapter(currentDate)
+        triggerFirstItemOfCalendarAdapter(currentDate)*/
     }
 
     companion object {

@@ -39,7 +39,7 @@
 
         <meta-data
             android:name="com.kakao.sdk.AppKey"
-            android:value="${kakaoNativeAppKey}" />
+            android:value="bfc60190519cd01cd9ca8f84f9e890d8" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

@@ -10,6 +10,7 @@ class RequirementData(
 data class FirstVF(
     var isTitle : Boolean,
     var isCalendar : Boolean,
+    var isParticipants : Boolean,
     var isTime : Boolean,
     var isFirst : Boolean,
 )

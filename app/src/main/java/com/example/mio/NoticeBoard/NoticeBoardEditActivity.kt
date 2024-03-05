@@ -81,7 +81,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     private var keyword = ""
     private lateinit var geocoder: Geocoder
     private var mapView: MapView? = null
-    var mapViewContainer: RelativeLayout? = null
+    //var mapViewContainer: RelativeLayout? = null
     private var marker: MapPOIItem? = null
     private val PREFS_NAME = "recent_search"
     private val KEY_RECENT_SEARCH = "search_items"
@@ -117,7 +117,9 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     private var minute1 = 0
 
     //선택한 탑승인원
-    private var participateNumberOfPeople = 1
+    private var participateNumberOfPeople = 0
+
+
     /*두 번째 vf*/
     private var latitude = 0.0
     private var longitude = 0.0
@@ -138,6 +140,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         FirstVF(
         isTitle = false,
         isCalendar = false,
+        isParticipants = false,
         isTime = false,
         isFirst = false
         ), SecondVF(
@@ -176,7 +179,9 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         myViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
         //기기의 뒤로가기 콜백
         this.onBackPressedDispatcher.addCallback(this, callback)
+        //initMapView()
         /*mapView = MapView(this)
+
 
         val mapViewContainer = mBinding.mapView
         mapViewContainer.addView(mapView)*/
@@ -286,14 +291,18 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 putExtra("flag", 9)
             }
             setResult(RESULT_OK, intent)
-            finish()
+            this@NoticeBoardEditActivity.finish()
         }
 
 
         myViewModel.allCheck.observe(this) {
             if (it.isFirstVF.isTitle && it.isFirstVF.isTime && it.isFirstVF.isCalendar) {
                 it.isFirstVF.isFirst = true
-                isFirst = true
+                Log.d("Allcheck", it.isFirstVF.isTitle.toString())
+                Log.d("Allcheck", it.isFirstVF.isTime.toString())
+                Log.d("Allcheck", it.isFirstVF.isCalendar.toString())
+                Log.d("Allcheck", it.isFirstVF.isParticipants.toString())
+
                 println("ff")
             }
 
@@ -387,13 +396,9 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
     private fun initMapView() {
         // 맵뷰 초기화 및 컨테이너 레이아웃에 추가
-        mapView = MapView(this).also {
-            mapViewContainer = RelativeLayout(this)
-            mapViewContainer?.layoutParams = RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            mBinding.mapView.addView(mapViewContainer)
-            mapViewContainer?.addView(it)
-        }
+        mapView = MapView(this)
         mapView?.setMapViewEventListener(this)
+        mBinding.mapView.addView(mapView)
     }
 
     private fun firstVF() {
@@ -411,6 +416,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
                 isAllCheck.isFirstVF.isTitle = true
                 //myViewModel.postCheckValue(isAllCheck.isFirstVF.isTitle)
+                isAllCheck.isFirstVF.isParticipants = true
                 myViewModel.postCheckValue(isAllCheck)
 
             }
@@ -513,8 +519,8 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 mBinding.editParticipateTv.text = participateNumberOfPeople.toString()
                 myViewModel.postCheckValue(isAllCheck)
             } else {
-                mBinding.editParticipateTv.text = "1"
-                participateNumberOfPeople = 1
+                mBinding.editParticipateTv.text = "0"
+                participateNumberOfPeople = 0
                 myViewModel.postCheckValue(isAllCheck)
             }
         }
@@ -525,8 +531,8 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 mBinding.editParticipateTv.text = participateNumberOfPeople.toString()
                 myViewModel.postCheckValue(isAllCheck)
             } else {
-                mBinding.editParticipateTv.text = "1"
-                participateNumberOfPeople = 1
+                mBinding.editParticipateTv.text = "0"
+                participateNumberOfPeople = 0
                 myViewModel.postCheckValue(isAllCheck)
             }
 
@@ -1057,7 +1063,6 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 }
                 setResult(RESULT_OK, intent)
                 finish()
-
             } else if (currentPage == 2 && countPage == 1) {
                 countPage -= 1
                 myViewModel.postCheckComplete(false)
@@ -1303,6 +1308,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
             override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
                 val responseBody = response.body?.string()
                 val address = parseAddressFromResponse(responseBody)
+                Log.d("getAddressFromCoordinates", address.toString())
                 callback(address)
             }
         })
@@ -1459,11 +1465,19 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                             //Toast.makeText(this, "주소를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
                         }
 
+                        getAddressFromCoordinates(latitude, longitude, API_KEY) { addressCoordinates ->
+                            addressCoordinates.let {
+                                Log.d("test", addressCoordinates.toString())
+                            }
+                        }
+
                         Log.d("NoticeEdit Map Test", detailedAddress)
                         Log.d("NoticeEdit Map Test", "${address?.featureName}") //빌딩이름?
                         Log.d("NoticeEdit Map Test", "$address")
                         Log.d("NoticeEdit Map Test", address?.getAddressLine(0).toString())
                         Log.d("NoticeEdit Map Test", addresses.toString())
+                        Log.d("NoticeEdit Map Test", longitude.toString())
+                        Log.d("NoticeEdit Map Test", latitude.toString())
                     }
                 }
 
@@ -1476,7 +1490,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                     ).show()
                 }
             }
-            geocoder.getFromLocation(latitude, longitude, 1, geocodeListener)
+            geocoder.getFromLocation(latitude, longitude, 10, geocodeListener)
         }
 
 
@@ -1490,7 +1504,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
 
         val service = retrofit.create(KakaoApiService::class.java)
         val apiKey = API_KEY // 본인의 Kakao API 키 입력
-        val call = service.searchAddress("대진대학교", longitude, latitude, radius = 100, sort = "accuracy", apiKey = apiKey)
+        val call = service.searchAddress(query, longitude, latitude, radius = 100, sort = "accuracy", apiKey = apiKey)
 
         call.enqueue(object : Callback<SearchResult> {
             override fun onResponse(call: Call<SearchResult>, response: Response<SearchResult>) {
@@ -1532,6 +1546,27 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
     private val callback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
             // 뒤로가기 클릭 시 실행시킬 코드 입력
+            val fragmentManager = supportFragmentManager
+
+            if (System.currentTimeMillis() > backPressedTime + 2000) {
+                backPressedTime = System.currentTimeMillis()
+                Toast.makeText(this@NoticeBoardEditActivity, "뒤로 버튼을 한 번 더 누르시면 홈으로 이동합니다.", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            if (fragmentManager.backStackEntryCount > 0) {
+                fragmentManager.popBackStack()
+            } else {
+                // AActivity를 종료하고 HomeActivity로 이동
+                val intent = Intent(this@NoticeBoardEditActivity, MainActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+        }
+    }
+    /*private val callback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            // 뒤로가기 클릭 시 실행시킬 코드 입력
             val transaction = supportFragmentManager.beginTransaction()
             val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_content)
 
@@ -1560,7 +1595,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                 this@NoticeBoardEditActivity.finishAffinity()
             }
         }
-    }
+    }*/
 
    /* private fun addMarker(latitude: Double, longitude: Double) {
         // 이전 마커들 제거
@@ -1759,65 +1794,91 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
         Log.e("NoticeBoardEdit", "start")
         if (mapView == null) {
             initMapView()
-        }
+        } /*else {
+            mapView = null
+            mBinding.mapView.removeAllViews()
+            mBinding.mapView.removeAllViewsInLayout()
+
+            mBinding.mapView.removeView(mapView)
+
+            mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
+        }*/
     }
 
-    override fun onRestart() {
+    /*override fun onRestart() {
         super.onRestart()
         Log.e("NoticeBoardEdit", "restart")
         // 액티비티 재시작 시 (B 액티비티가 종료되고 다시 시작될 때)
         // MapView가 포함되어 있지 않다면 추가
         if (mapView != null) {
             Log.e("Notice Restart", "mapview not null")
-            if (mapViewContainer?.contains(mapView!!)!!) {
-                try {
-                    // 다시 맵뷰 초기화 및 추가
-                    initMapView()
-                } catch (re: RuntimeException) {
-                    Log.e("EDIT", re.toString())
-                }
+            try {
+                // 다시 맵뷰 초기화 및 추가
+                initMapView()
+            } catch (re: RuntimeException) {
+                Log.e("EDIT", re.toString())
             }
         } else {
             Log.e("Notice Restart", "mapview null")
             mapView = null
             mBinding.mapView.removeAllViews()
-            mBinding.mapView.removeView(mapView)
+            mBinding.mapView.removeAllViewsInLayout()
             initMapView()
         }
-    }
+    }*/
 
     override fun onPause() {
         super.onPause()
         Log.e("NoticeBoardEdit", "pause")
-        if (mapView != null) {
+        /*if (mapView != null) {
             mBinding.mapContainer1.removeAllViews()
         } else {
             initMapView()
-        }
+        }*/
+        if (mapView != null) {
+            mBinding.mapView.removeAllViews()
+            mBinding.mapView.removeAllViewsInLayout()
+
+            mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
+
+            mapView = null
+        }/* else {
+            initMapView()
+        }*/
     }
 
-    override fun onResume() {
+    /*override fun onResume() {
         super.onResume()
         Log.e("NoticeBoardEdit", "resume")
         if (mapView == null) {
             initMapView()
-        }
-    }
+        } else {
+            mapView = null
 
-    override fun onStop() {
+            mBinding.mapView.removeAllViews()
+            mBinding.mapView.removeView(mapView)
+        }
+    }*/
+
+    /*override fun onStop() {
         super.onStop()
         Log.e("NoticeBoardEdit", "stop")
         if (mapView != null) {
             mapView = null
+            mBinding.mapView.removeAllViewsInLayout()
             mBinding.mapView.removeAllViews()
-            mBinding.mapView.removeView(mapView)
         }
     }
 
     override fun finish() {
         // 종료할 때 맵뷰 제거 (맵뷰 2개 이상 동시에 불가)
-        mBinding.mapView.removeView(mapView)
+        if (mapView != null) {
+            mapView = null
+
+            mBinding.mapView.removeAllViews()
+            mBinding.mapView.removeView(mapView)
+        }
         Log.e("NoticeBoardEdit", "finish")
         super.finish()
-    }
+    }*/
 }

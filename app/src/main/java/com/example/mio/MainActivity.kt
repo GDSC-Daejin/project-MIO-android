@@ -60,9 +60,14 @@ class MainActivity : AppCompatActivity() {
         /*sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
         sharedViewModel!!.getCalendarLiveData().observe(this)
         */
-        oldFragment = HomeFragment()
-        oldTAG = TAG_HOME
-        setFragment(TAG_HOME, HomeFragment())
+        if (oldFragment != null && oldTAG != "") {
+            setFragment(oldTAG, oldFragment!!)
+        } else {
+            oldFragment = HomeFragment()
+            oldTAG = TAG_HOME
+            setFragment(TAG_HOME, HomeFragment())
+        }
+
         setToolbarView(toolbarType)
         initNavigationBar()
         saveSettingData()
@@ -72,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.top_menu, menu)
 
         val actionNotification = menu!!.findItem(R.id.action_notification)
-        val actionSetting = menu!!.findItem(R.id.action_main_setting)
+        val actionSetting = menu.findItem(R.id.action_main_setting)
 
         if (isClicked) {
             actionNotification.isVisible = !isClicked
@@ -164,7 +169,6 @@ class MainActivity : AppCompatActivity() {
                         setToolbarView(toolbarType)
                         isClicked = false
                         isSettingClicked = false
-
                     }
 
                     R.id.navigation_search -> {
@@ -176,7 +180,6 @@ class MainActivity : AppCompatActivity() {
                         setToolbarView(toolbarType)
                         isClicked = false
                         isSettingClicked = false
-
                     }
 
                     R.id.navigation_writing -> {
@@ -244,7 +247,6 @@ class MainActivity : AppCompatActivity() {
                                 .replace(R.id.fragment_content, HomeFragment())
                                 .commit()
                         }
-
                         //finish()
                     }
                     //수정 테스트 해보기 todo//edit
@@ -261,8 +263,6 @@ class MainActivity : AppCompatActivity() {
                                 .replace(R.id.fragment_content, HomeFragment())
                                 .commit()
                         }
-
-                        //finish()
                     }
 
                     7 -> {

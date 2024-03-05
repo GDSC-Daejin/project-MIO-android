@@ -507,7 +507,30 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         if (mapView != null) {
             sBinding?.mapMyMapcontainer?.removeAllViews()
             sBinding?.mapMyMapcontainer?.removeAllViewsInLayout()
+            mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
             mapView = null
+
+            (activity as? AppCompatActivity)?.supportActionBar?.show()
+
+            activity?.window?.apply {
+                // 원래의 상태바 색상을 복원.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    statusBarColor = resources.getColor(R.color.white, null)
+                }
+                clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+                // 원래의 UI 플래그를 설정
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                    decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+                }
+            }
+
+            // 네비게이션 바 마진 복원.
+            val activity = activity as AppCompatActivity
+            val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
+            val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
+            layoutParams.bottomMargin = 0
+            bottomNavigationView.layoutParams = layoutParams
 
            /* mapView?.removeAllPOIItems()
             mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
@@ -554,7 +577,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
     }
 
 
-    override fun onStop() {
+    /*override fun onStop() {
         super.onStop()
         Log.d("SearchFragment onStop", "STOP")
         if (mapView == null) {
@@ -589,9 +612,9 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             layoutParams.bottomMargin = 0
             bottomNavigationView.layoutParams = layoutParams
         }
-    }
+    }*/
 
-    override fun onDestroyView() {
+    /*override fun onDestroyView() {
         Log.d("GGGGGGGGGGGGGGGGG", "destroy")
         super.onDestroyView()
         if (mapView != null) {
@@ -629,10 +652,10 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff // 현재 위치 추적 비활성화
         mapView?.mapType = MapView.MapType.Standard // 지도 타입을 기본값으로 설정
         //sBinding?.mapContainer?.removeAllViews() // 지도를 포함하는 컨테이너의 모든 뷰를 제거
-        sBinding?.mapContainer?.removeView(mapView)
-        //mapView.onDestroy() // 지도의 리소스를 해제*//*
+        //sBinding?.mapContainer?.removeView(mapView)
+        //mapView.onDestroy() // 지도의 리소스를 해제
         sBinding = null
-    }
+    }*/
 
 
 /*    private fun getHistory() {

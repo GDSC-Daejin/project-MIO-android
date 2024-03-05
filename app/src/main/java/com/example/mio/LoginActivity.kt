@@ -485,7 +485,12 @@ class LoginActivity : AppCompatActivity() {
                 val expireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity)?.toLong()
 
                 if (expireDate != null && expireDate <= System.currentTimeMillis()) {
-                    //여기서 accessToken의
+                    //여기서 accessToken 토큰 만료 시 refreshToken으로 다시 처리
+                    val refreshToken = saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity)
+                    Log.d("LoginActivity Start", refreshToken.toString())
+                    if (refreshToken != null) {
+                        refreshAccessToken(refreshToken.toString())
+                    }
                     Log.e("ERROR", "EXPIRED")
                 }
             }

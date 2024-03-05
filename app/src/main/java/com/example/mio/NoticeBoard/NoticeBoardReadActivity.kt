@@ -267,10 +267,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 }
             }
 
-            email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.toString()
+
 
             // 글쓴이가 자기자신 이라면
-            if (email == temp!!.user.email) {
+            if (isParticipation && email == temp!!.user.email) {
                 val typeface = resources.getFont(R.font.pretendard_medium)
                 nbrBinding.readApplyBtn.text = "받은 신청 보러가기"
                 CoroutineScope(Dispatchers.Main).launch {
@@ -417,7 +417,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         })
                     }
                 }
-            } else {
+            } else if (email != temp?.user?.email){
                 val typeface = resources.getFont(com.example.mio.R.font.pretendard_medium)
                 nbrBinding.readApplyBtn.text = "신청 취소하기"
                 CoroutineScope(Dispatchers.Main).launch {
@@ -1907,6 +1907,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 onKeyboardVisibilityListener.onVisibilityChanged(isShown)
             }
         })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.toString()
+        Log.d("NoticeRead", email)
     }
 
     override fun onResume() {

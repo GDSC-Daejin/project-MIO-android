@@ -23,7 +23,7 @@ interface KakaoApiService {
         @Query("y") latitude: Double,
         @Query("radius") radius: Int = 1000, // 반경 설정 (미터)
         @Query("sort") sort: String = "accuracy", // 정확도 기준으로 정렬
-        @Query("page") page: Int = 1,
+        @Query("page") page: Int = 10,
         @Query("size") size: Int = 10,
         @Header("Authorization") apiKey: String
     ): Call<SearchResult>

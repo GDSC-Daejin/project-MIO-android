@@ -1,5 +1,6 @@
 package com.example.mio.TapSearch
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
@@ -12,21 +13,26 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.RecentSearchAdapter
 import com.example.mio.Adapter.SearchResultAdapter
+import com.example.mio.BuildConfig
 import com.example.mio.Helper.SharedPrefManager
 import com.example.mio.Helper.SharedPrefManager.convertLocationToJSON
-import com.example.mio.Model.FragSharedViewModel
-import com.example.mio.Model.FragSharedViewModel2
-import com.example.mio.Model.LocationReadAllResponse
+import com.example.mio.KakaoAPI
+import com.example.mio.Model.*
 import com.example.mio.RetrofitServerConnect
+import com.example.mio.TabAccount.AccountSettingActivity
 import com.example.mio.databinding.ActivitySearchResultBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class SearchResultActivity : AppCompatActivity() {
+
+    companion object {
+        const val BASE_URL = "https://dapi.kakao.com/"
+        private const val API_KEY = BuildConfig.map_api_key
+    }
 
     private lateinit var binding: ActivitySearchResultBinding
     private lateinit var adapter: SearchResultAdapter
@@ -37,10 +43,16 @@ class SearchResultActivity : AppCompatActivity() {
         (application as FragSharedViewModel2).sharedViewModel
     }
 
+    //검색창에서 이동된건지, 계정설정에서 이동된 건지 타입 확인
+    private var type : String? = null
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySearchResultBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        type = intent.getStringExtra("type") //account 받음
 
         val layoutManager = LinearLayoutManager(this)
         binding.rvSearchList.layoutManager = layoutManager
@@ -112,8 +124,14 @@ class SearchResultActivity : AppCompatActivity() {
                 // 완료 키가 눌렸을 때 수행할 작업을 여기에 작성합니다.
                 // 예를 들어, 키보드를 숨기거나 입력을 처리할 수 있습니다.
                 // true를 반환하여 이벤트를 소비하고 더 이상 처리하지 않도록 합니다.
-                if (searchWord != null) {
-                    filterAndHighlightText(searchWord.toString())
+                if (type != "account") {
+                    if (searchWord != null) {
+                        filterAndHighlightText(searchWord.toString())
+                    }
+                } else {
+                    if (searchWord != null) {
+                        searchKeyword(searchWord.toString())
+                    }
                 }
                 true
             } else {
@@ -142,46 +160,134 @@ class SearchResultActivity : AppCompatActivity() {
                 finish() // 액티비티 종료
             }
         })
+    }
 
+    private fun searchKeyword(keyword: String) {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val api = retrofit.create(KakaoAPI::class.java)
+        val call = api.getSearchKeyword(API_KEY, keyword)
 
+        call.enqueue(object: Callback<ResultSearchKeyword> {
+            override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
+                if (response.isSuccessful) {
+                    val responseData = response.body()?.documents
+                    println("search Result" + response.body()?.documents)
+                    if (responseData?.isEmpty() == true) {
+                        binding.textView4.visibility = View.VISIBLE
+                        binding.textView5.visibility = View.VISIBLE
+                        binding.rvSearchList.visibility = View.GONE
+                    }
+                    else {
+                        if (responseData != null) {
+                            val tempList = arrayListOf<LocationReadAllResponse>()
+                            for (i in responseData.indices) {
+                                /*val postId: Int,
+                                    val title: String,
+                                    val content: String,
+                                    val createDate: String,
+                                    val targetDate: String,
+                                    val targetTime: String,
+                                    val category: LocationCategory,
+                                    val verifyGoReturn: Boolean,
+                                    val numberOfPassengers: Int,
+                                    val user: User,
+                                    val viewCount: Int,
+                                    val verifyFinish: Boolean,
+                                    val participants: ArrayList<LocationParticipants>,
+                                    val latitude: Double,
+                                    val longitude: Double,
+                                    val bookMarkCount: Int,
+                                    val participantsCount: Int,
+                                    val location: String,
+                                    val cost: Int*/
+                                tempList.add( //더미데이터의 location부분만 쓸거
+                                    LocationReadAllResponse(
+                                        -1,
+                                        "",
+                                        "",
+                                        "",
+                                        "",
+                                        "",
+                                        LocationCategory(
+                                            -2,""
+                                        ),
+                                        false,
+                                        -1,
+                                        null,
+                                        -1,
+                                        false,
+                                        null,
+                                        responseData[i].x.toDouble(),
+                                        responseData[i].y.toDouble(),
+                                        -1,
+                                        -1,
+                                        responseData[i].road_address_name + " " + responseData[i].place_name,
+                                        -1
+                                    )
+                                )
+                            }
+
+                            adapter.updateData(tempList, keyword)
+                            binding.textView4.visibility = View.GONE
+                            binding.textView5.visibility = View.GONE
+                            binding.rvSearchList.visibility = View.VISIBLE
+                        }
+                    }
+                } else {
+                    Log.e("search Result", response.code().toString())
+                    Log.e("search Result", response.errorBody().toString())
+                    Log.e("search Result", response.errorBody()?.string()!!)
+                    Log.e("search Result", call.request().toString())
+                    Log.e("search Result", response.message().toString())
+                }
+            }
+
+            override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
+                Log.w("LocalSearch", "통신 실패: ${t.message}")
+            }
+        })
     }
 
     private fun filterAndHighlightText(query: String) {
         val call = RetrofitServerConnect.service
-        CoroutineScope(Dispatchers.IO).launch {
-            call.getLocationPostData(query).enqueue(object :
-                Callback<List<LocationReadAllResponse>> {
-                override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
-                    if (response.isSuccessful) {
-                        response.body()?.let { items ->
-                            CoroutineScope(Dispatchers.Main).launch {
-                                adapter.updateData(items, query)
+        call.getLocationPostData(query).enqueue(object :
+            Callback<List<LocationReadAllResponse>> {
+            override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
+                if (response.isSuccessful) {
+                    val responseData = response.body()
+                    /*response.body()?.let { items ->
 
-                                if (items.isEmpty()) {
-                                    binding.textView4.visibility = View.VISIBLE
-                                    binding.textView5.visibility = View.VISIBLE
-                                }
-                                else {
-                                    binding.textView4.visibility = View.GONE
-                                    binding.textView5.visibility = View.GONE
-                                }
-                            }
-                        }
+                    }*/
+                    Log.d("searchResultActivity filterhigh", responseData.toString())
+                    if (responseData?.isEmpty() == true) {
+                        binding.textView4.visibility = View.VISIBLE
+                        binding.textView5.visibility = View.VISIBLE
+                        binding.rvSearchList.visibility = View.GONE
                     }
                     else {
-                        println("faafa")
-                        Log.d("comment", response.errorBody()?.string()!!)
-                        Log.d("message", call.request().toString())
-                        println(response.code())
+                        if (responseData != null) {
+                            adapter.updateData(responseData, query)
+                            binding.textView4.visibility = View.GONE
+                            binding.textView5.visibility = View.GONE
+                            binding.rvSearchList.visibility = View.VISIBLE
+                        }
                     }
                 }
-
-                override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
-                    Log.d("error", t.toString())
+                else {
+                    println("faafa")
+                    Log.d("comment", response.errorBody()?.string()!!)
+                    Log.d("message", call.request().toString())
+                    println(response.code())
                 }
-            })
-        }
+            }
 
+            override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
     }
 
 /*    private fun loadRecentSearch() {
@@ -223,8 +329,9 @@ class SearchResultActivity : AppCompatActivity() {
         adapter = SearchResultAdapter(items).apply {
             setOnItemClickListener(object : SearchResultAdapter.OnItemClickListener {
                 override fun onItemClicked(location: LocationReadAllResponse) {
-                    //sharedViewModel.selectedLocation.value = location
-                    moveToSearchFragment(location)
+                    if (type != "account") {
+                        //sharedViewModel.selectedLocation.value = location
+                        moveToSearchFragment(location)
 /*
                     // Convert the location object to a JSON string
                     val locationJson = convertLocationToJSON(location)
@@ -232,7 +339,15 @@ class SearchResultActivity : AppCompatActivity() {
                     // Save the JSON string representing the location object
                     SharedPrefManager.saveRecentSearch(this@SearchResultActivity, locationJson)
 */
-                    finish() // 액티비티 종료와 함께 SearchFragment로 돌아갑니다.
+                        finish() // 액티비티 종료와 함께 SearchFragment로 돌아갑니다.
+                    } else {
+                        val intent = Intent(this@SearchResultActivity, AccountSettingActivity::class.java).apply {
+                            putExtra("flag", 0)
+                            putExtra("data", location.location)
+                        }
+                        setResult(RESULT_OK, intent)
+                        finish()
+                    }
                 }
 
             })
@@ -254,8 +369,11 @@ class SearchResultActivity : AppCompatActivity() {
 
             if (recentSearchList.isEmpty()) {
                 binding.textView4.visibility = View.VISIBLE
+                binding.textView2.visibility = View.VISIBLE
+                binding.textView3.visibility = View.VISIBLE
             } else {
                 binding.textView4.visibility = View.GONE
+                binding.textView2.visibility = View.GONE
             }
         } catch (e: Exception) {
             // Handle exception

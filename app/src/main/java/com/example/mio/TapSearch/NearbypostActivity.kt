@@ -35,7 +35,7 @@ class NearbypostActivity  : AppCompatActivity() {
         nbinding.rvNearbypostList.layoutManager = LinearLayoutManager(this)
         adapter = NearbyPostAdapter { post ->
             val postData = PostData(
-                accountID = post.user.studentId,
+                accountID = post.user?.studentId!!,
                 postID = post.postId,
                 postTitle = post.title,
                 postContent = post.content,
@@ -47,7 +47,7 @@ class NearbypostActivity  : AppCompatActivity() {
                 postParticipationTotal = post.numberOfPassengers,
                 postCost = post.cost,
                 postVerifyGoReturn = post.verifyGoReturn,
-                user = post.user,
+                user = post.user!!,
                 postlatitude = post.latitude,
                 postlongitude = post.longitude
             )
@@ -114,4 +114,8 @@ class NearbypostActivity  : AppCompatActivity() {
         return earthRadiusKm * c
     }
 
+    override fun onStart() {
+        super.onStart()
+        Log.d("nearbyPostActivity", "start")
+    }
 }

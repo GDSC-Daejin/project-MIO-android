@@ -572,7 +572,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 mBinding.placeName.text = listItems[position].name
                 mBinding.placeRoad.text = listItems[position].road
                 addToRecentSearch(listItems[position])
-                location = listItems[position].name
+                location = listItems[position].road + " " + listItems[position].name
 
                 isAllCheck.isSecondVF.isPlaceName = true
                 isAllCheck.isSecondVF.isPlaceRode = true
@@ -610,7 +610,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 //여기서 name고정됨
                 mBinding.placeName.text = recentSearchItems[position].name
                 mBinding.placeRoad.text = recentSearchItems[position].road
-                location = recentSearchItems[position].name
+                location = recentSearchItems[position].road + " " + recentSearchItems[position].name
 
                 isAllCheck.isSecondVF.isPlaceName = true
                 isAllCheck.isSecondVF.isPlaceRode = true
@@ -1193,7 +1193,6 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     println("Edit Search" + response.body()?.documents)
                     addItemsAndMarkers(response.body())
                 } else {
-                    //401 error Todo
                     Log.e("EDIT Search", response.code().toString())
                     Log.e("EDIT Search", response.errorBody().toString())
                     Log.e("EDIT Search", response.errorBody()?.string()!!)

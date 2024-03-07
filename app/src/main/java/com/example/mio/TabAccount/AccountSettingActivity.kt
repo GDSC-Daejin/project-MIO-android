@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import com.example.mio.*
 import com.example.mio.Model.Content
 import com.example.mio.Model.EditAccountData
@@ -12,6 +13,7 @@ import com.example.mio.Model.PostData
 import com.example.mio.Model.User
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.TabCategory.TaxiTabFragment
+import com.example.mio.TapSearch.SearchResultActivity
 import com.example.mio.databinding.ActivityAccountSettingBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +35,7 @@ class AccountSettingActivity : AppCompatActivity() {
     private var sendAccountData : EditAccountData? = null
     private var isGender = false
     private var isSmoker = false
+    private var setLocation : String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +45,6 @@ class AccountSettingActivity : AppCompatActivity() {
 
         if (type.equals("ACCOUNT")) {
             email = intent.getStringExtra("accountData").toString()
-
         }
 
         aBinding!!.asGenderLl.setOnClickListener {
@@ -92,8 +94,10 @@ class AccountSettingActivity : AppCompatActivity() {
         }
 
         aBinding!!.accountActivityLocationBtn.setOnClickListener {
-            //Todo 여긴 검색창 넣기
-
+            val intent = Intent(this@AccountSettingActivity, SearchResultActivity::class.java).apply {
+                putExtra("type", "account")
+            }
+            requestActivity.launch(intent)
         }
 
 
@@ -159,7 +163,9 @@ class AccountSettingActivity : AppCompatActivity() {
         val api = retrofit2.create(MioInterface::class.java)
 
         //println(userId)
-        //sendAccountData = EditAccountData(isGender, isSmoker, )
+
+        //여기 계좌까지 추가하면 활성화하기 Todo
+        //sendAccountData = EditAccountData(isGender, isSmoker, setLocation)
 
         CoroutineScope(Dispatchers.IO).launch {
             api.editMyAccountData(userId, sendAccountData!!).enqueue(object : Callback<User> {
@@ -177,6 +183,23 @@ class AccountSettingActivity : AppCompatActivity() {
                     Log.d("error", t.toString())
                 }
             })
+        }
+    }
+
+
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+        when (it.resultCode) {
+            AppCompatActivity.RESULT_OK -> {
+                val locationData = it.data?.getSerializableExtra("data") as String
+                when(it.data?.getIntExtra("flag", -1)) {
+                    //add
+                    0 -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            setLocation = locationData
+                        }
+                    }
+                }
+            }
         }
     }
 }

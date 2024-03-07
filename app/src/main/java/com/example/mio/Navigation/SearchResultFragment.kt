@@ -200,6 +200,11 @@ class SearchResultFragment : Fragment() {
 
     }*/
 
+    override fun onStart() {
+        super.onStart()
+        Log.d("searchResultFragment", "start")
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         srbinding = null

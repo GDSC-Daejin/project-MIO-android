@@ -4,43 +4,43 @@ import com.google.gson.annotations.SerializedName
 
 data class LocationReadAllResponse(
     @SerializedName("postId")
-    var postId : Int,
+    var postId: Int,
     @SerializedName("title")
-    var title : String,
+    var title: String,
     @SerializedName("content")
-    var content : String,
+    var content: String,
     @SerializedName("createDate")
-    var createDate : String,
+    var createDate: String,
     @SerializedName("targetDate")
-    var targetDate : String,
+    var targetDate: String,
     @SerializedName("targetTime")
-    var targetTime : String,
+    var targetTime: String,
     @SerializedName("category")
-    var category : LocationCategory,
+    var category: LocationCategory,
     @SerializedName("verifyGoReturn")
-    var verifyGoReturn : Boolean,
+    var verifyGoReturn: Boolean,
     @SerializedName("numberOfPassengers")
-    var numberOfPassengers : Int,
+    var numberOfPassengers: Int,
     @SerializedName("user")
-    var user : User,
+    var user: User?,
     @SerializedName("viewCount")
-    var viewCount : Int,
+    var viewCount: Int,
     @SerializedName("verifyFinish")
-    var verifyFinish : Boolean,
+    var verifyFinish: Boolean,
     @SerializedName("participants")
-    var participants : ArrayList<LocationParticipants>,
+    var participants: ArrayList<LocationParticipants>?,
     @SerializedName("latitude")
-    var latitude : Double,
+    var latitude: Double,
     @SerializedName("longitude")
-    var longitude : Double,
+    var longitude: Double,
     @SerializedName("bookMarkCount")
-    var bookMarkCount : Int,
+    var bookMarkCount: Int,
     @SerializedName("participantsCount")
-    var participantsCount : Int,
+    var participantsCount: Int,
     @SerializedName("location")
-    var location : String,
+    var location: String,
     @SerializedName("cost")
-    var cost : Int
+    var cost: Int
 
 )
 

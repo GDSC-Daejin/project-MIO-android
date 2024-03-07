@@ -138,7 +138,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         nbrBinding = ActivityNoticeBoardReadBinding.inflate(layoutInflater)
         sharedPref = SharedPref(this)
         sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
-
+        email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.toString()
 
         createChannel()
         //sendComment()
@@ -152,7 +152,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         if (type.equals("READ")) {
             temp = intent.getSerializableExtra("postItem") as PostData?
             writerEmail = temp!!.user.email
-            tempProfile = intent.getSerializableExtra("uri") as String
+            //tempProfile = intent.getSerializableExtra("uri") as String
+            tempProfile = temp?.user?.profileImageUrl.toString()
             isCategory = temp!!.postCategory == "carpool"
 
             if (temp?.user?.gender != null && temp?.user?.verifySmoker != null && temp?.postVerifyGoReturn != null) {
@@ -222,6 +223,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             }
 
             initParticipationCheck()
+
             nbrBinding.readContent.text = temp!!.postContent
             nbrBinding.readUserId.text = temp!!.accountID
             nbrBinding.readCost.text = temp!!.postCost.toString()
@@ -269,9 +271,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
 
 
-            // 글쓴이가 자기자신 이라면
+            // 글쓴이가 자기자신 이라면 , 게시글 참가 + 글쓴이가 자기 자신이라면 받은 신청 보러가기고
             if (isParticipation && email == temp!!.user.email) {
                 val typeface = resources.getFont(R.font.pretendard_medium)
+                Log.e("NoticeRead", isParticipation.toString())
+                Log.e("NoticeRead", email)
+                Log.e("NoticeRead", temp!!.user.email)
+                Log.e("NoticeRead", "first")
                 nbrBinding.readApplyBtn.text = "받은 신청 보러가기"
                 CoroutineScope(Dispatchers.Main).launch {
                     nbrBinding.readApplyBtn.apply {
@@ -287,7 +293,23 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     }
                     startActivity(intent)
                 }
-            } else if (!isParticipation) {
+            } else if (!isParticipation && email != temp!!.user.email) { //게시글에 참여하지도 않았고 글쓴이도 아니라면? 신청하기
+                Log.e("NoticeRead", isParticipation.toString())
+                Log.e("NoticeRead", email)
+                Log.e("NoticeRead", temp!!.user.email)
+                Log.e("NoticeRead", "second")
+                val typeface = resources.getFont(R.font.pretendard_medium)
+
+                nbrBinding.readApplyBtn.text = "신청하기"
+                nbrBinding.readApplyBtn.setTextColor(ContextCompat.getColor(this@NoticeBoardReadActivity ,R.color.mio_gray_3))
+
+                CoroutineScope(Dispatchers.Main).launch {
+                    nbrBinding.readApplyBtn.apply {
+                        setBackgroundResource(R.drawable.read_apply_btn_layout)
+                        setTypeface(typeface)
+                        nbrBinding.readApplyBtn.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@NoticeBoardReadActivity, R.color.mio_blue_5))
+                    }
+                }
                 nbrBinding.readApplyBtn.setOnClickListener {
                     val now = System.currentTimeMillis()
                     val date = Date(now)
@@ -417,7 +439,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         })
                     }
                 }
-            } else if (email != temp?.user?.email){
+            } else if (isParticipation && email != temp?.user?.email) { //신청은 되있으나 글쓴이가 아닐 때는 신청취소쪽으로
+                Log.e("NoticeRead", isParticipation.toString())
+                Log.e("NoticeRead", email)
+                Log.e("NoticeRead", temp!!.user.email)
+                Log.e("NoticeRead", "third")
                 val typeface = resources.getFont(com.example.mio.R.font.pretendard_medium)
                 nbrBinding.readApplyBtn.text = "신청 취소하기"
                 CoroutineScope(Dispatchers.Main).launch {

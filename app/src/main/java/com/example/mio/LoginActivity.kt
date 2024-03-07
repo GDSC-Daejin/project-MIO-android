@@ -7,6 +7,8 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import android.os.Build
 import android.os.Bundle
@@ -32,10 +34,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import okhttp3.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -62,6 +61,8 @@ class LoginActivity : AppCompatActivity() {
     private var isReady = false
     //
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+    //로딩
+    private var loadingDialog : LoadingProgressDialog? = null
 
 
     //init 벡엔드 연결
@@ -103,9 +104,10 @@ class LoginActivity : AppCompatActivity() {
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        mBinding.signInButton.setOnClickListener {
+        mBinding.signInLl.setOnClickListener {
             signIn()
         }
+
         /*try {
             val information = packageManager.getPackageInfo(packageName, PackageManager.GET_SIGNING_CERTIFICATES)
             val signatures = information.signingInfo.apkContentsSigners
@@ -193,6 +195,17 @@ class LoginActivity : AppCompatActivity() {
                         saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, accessTokenExpiresIn.toString())
                         saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, refreshToken)
 
+                        val builder =  OkHttpClient.Builder()
+                            .connectTimeout(1, TimeUnit.SECONDS)
+                            .readTimeout(30, TimeUnit.SECONDS)
+                            .writeTimeout(15, TimeUnit.SECONDS)
+                            .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
+                        /*intent.apply {
+                            putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
+                            putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
+                        }*/
+                        builder.build()
+
                         Log.d("Login accessTokenExpiresIn check", accessTokenExpiresIn.toString())
                         Log.d("Login RefreshToken check", refreshToken)
                         // AccessToken 만료 시간 확인
@@ -205,6 +218,9 @@ class LoginActivity : AppCompatActivity() {
                             // AccessToken 유효한 경우 MainActivity로 이동
                             Log.d("Login accessTokenExpiresIn 유효", accessTokenExpiresIn.toString())
                             Log.d("Login RefreshToken 유효", refreshToken)
+                            loadingDialog?.dismiss()
+
+                            Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
                             val intent = Intent(this@LoginActivity, MainActivity::class.java)
                             startActivity(intent)
                             this@LoginActivity.finish()
@@ -257,15 +273,39 @@ class LoginActivity : AppCompatActivity() {
 
             //회원가입과 함께 새로운 계정 정보 저장
             if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity)!!.isEmpty()) {
-
                 if (userEmail.substring(9..20).toString() == "daejin.ac.kr") {
                     Toast.makeText(this, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
                     saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
 
                     Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
-                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
                     startActivity(intent)
-                    this@LoginActivity.finish()
+                    this@LoginActivity.finish()*/
+
+                    println(email)
+                    println(authCode.toString())
+                    getAccessToken(authCode!!)
+
+                    /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    this@LoginActivity.finish()*/
+                } else {
+                    Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                }
+            } else { //처음 아님
+                if (userEmail.substring(9..20).toString() == "daejin.ac.kr") {
+
+                    saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
+
+                    Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
+                    /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    this@LoginActivity.finish()*/
+
+                    println(email)
+                    println(authCode.toString())
+                    getAccessToken(authCode!!)
+
                     /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
                     startActivity(intent)
                     this@LoginActivity.finish()*/
@@ -273,17 +313,75 @@ class LoginActivity : AppCompatActivity() {
                     Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
-
-            println(email)
-            println(authCode.toString())
-            getAccessToken(authCode!!)
-
         } catch (e : ApiException) {
             Log.w("failed", "signinresultfalied code = " + e.statusCode)
         }
     }
 
-    private fun getAccessToken(authCode : String) {
+    private suspend fun getAccessTokenAsync(authCode: String): LoginGoogleResponse? {
+        val client = OkHttpClient()
+        val requestBody: RequestBody = FormBody.Builder()
+            .add("grant_type", "authorization_code")
+            .add("client_id", CLIENT_WEB_ID_KEY)
+            .add("client_secret", CLIENT_WEB_SECRET_KEY)
+            .add("redirect_uri", "")
+            .add("code", authCode)
+            .add("response_type", "code")
+            .add("access_type", "offline")
+            .add("approval_prompt", "force")
+            .build()
+
+        val request = Request.Builder()
+            .url("https://oauth2.googleapis.com/token")
+            .post(requestBody)
+            .build()
+
+        return withContext(Dispatchers.IO) {
+            val response = client.newCall(request).execute()
+            val body = response.body?.string()
+            Log.e("withContext", body.toString())
+            response.close()
+
+            if (!response.isSuccessful || body == null) {
+                Log.e("HTTP Error" , "${response.code.toString()}, ${response.message.toString()}, $response")
+                return@withContext null
+            }
+
+            try {
+                val jsonObject = JSONObject(body)
+                LoginGoogleResponse(
+                    jsonObject.getString("access_token"),
+                    jsonObject.getInt("expires_in"),
+                    jsonObject.getString("scope"),
+                    jsonObject.getString("token_type"),
+                    jsonObject.getString("id_token")
+                )
+            } catch (e: JSONException) {
+                e.printStackTrace()
+                null
+            }
+        }
+    }
+
+    private fun getAccessToken(authCode: String) {
+        println("getAccessToken")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val loginResponse = getAccessTokenAsync(authCode)
+            Log.e("LoginActivity", loginResponse.toString())
+            if (loginResponse != null) {
+                // 성공적으로 응답을 받았을 때의 처리
+                currentUser = loginResponse
+                signInCheck(TokenRequest(currentUser.id_token, "/auth/google", "POST"))
+            } else {
+                // 응답이 실패했을 때의 처리
+                Log.e("LoginActivity", "Failed to get access token")
+                /*Log.e("LoginActivity", )*/
+            }
+        }
+    }
+
+    /*private fun getAccessToken(authCode : String) {
         println("getAccessToken")
         val client = OkHttpClient()
         val requestBody: RequestBody = FormBody.Builder()
@@ -351,9 +449,27 @@ class LoginActivity : AppCompatActivity() {
 
             })
         }
-    }
+    }*/
     private fun signIn() {
         println("signIn")
+        //로딩창 실행
+        loadingDialog = LoadingProgressDialog(this@LoginActivity)
+        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        //로딩창
+        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
+        loadingDialog?.window!!.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        loadingDialog?.show()
+
+        //setData()
+        if (loadingDialog != null && loadingDialog!!.isShowing) {
+            loadingDialog?.dismiss()
+            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+        }
+
         val signIntent = mGoogleSignInClient.signInIntent
         resultLauncher.launch(signIntent)
     }
@@ -370,16 +486,16 @@ class LoginActivity : AppCompatActivity() {
                 response: retrofit2.Response<LoginResponsesData?>
             ) {
                 if (response.isSuccessful) {
-                    val builder =  OkHttpClient.Builder()
+                    /*val builder =  OkHttpClient.Builder()
                         .connectTimeout(1, TimeUnit.SECONDS)
                         .readTimeout(30, TimeUnit.SECONDS)
                         .writeTimeout(15, TimeUnit.SECONDS)
                         .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
-                    /*intent.apply {
+                    intent.apply {
                         putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
                         putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
-                    }*/
-                    builder.build()
+                    }
+                    builder.build()*/
 
                     saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString()
                     saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString())
@@ -480,7 +596,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         Log.d("LoginActivity", "start")
-        if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity) != null) {
+        /*if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity) != null) {
             if (saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity) != null) {
                 val expireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity)?.toLong()
 
@@ -494,7 +610,27 @@ class LoginActivity : AppCompatActivity() {
                     Log.e("ERROR", "EXPIRED")
                 }
             }
-        }
+        }*/
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("LoginActivity", "pause")
+        /*if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity) != null) {
+            if (saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity) != null) {
+                val expireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@LoginActivity)?.toLong()
+
+                if (expireDate != null && expireDate <= System.currentTimeMillis()) {
+                    //여기서 accessToken 토큰 만료 시 refreshToken으로 다시 처리
+                    val refreshToken = saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity)
+                    Log.d("LoginActivity Start", refreshToken.toString())
+                    if (refreshToken != null) {
+                        refreshAccessToken(refreshToken.toString())
+                    }
+                    Log.e("ERROR", "EXPIRED")
+                }
+            }
+        }*/
     }
 
     override fun onResume() {

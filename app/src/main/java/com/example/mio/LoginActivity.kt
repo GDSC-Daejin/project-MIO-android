@@ -219,6 +219,10 @@ class LoginActivity : AppCompatActivity() {
                             Log.d("Login accessTokenExpiresIn 유효", accessTokenExpiresIn.toString())
                             Log.d("Login RefreshToken 유효", refreshToken)
                             loadingDialog?.dismiss()
+                            if (loadingDialog != null && loadingDialog!!.isShowing) {
+                                loadingDialog?.dismiss()
+                                loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                            }
 
                             Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
                             val intent = Intent(this@LoginActivity, MainActivity::class.java)
@@ -274,7 +278,7 @@ class LoginActivity : AppCompatActivity() {
             //회원가입과 함께 새로운 계정 정보 저장
             if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity)!!.isEmpty()) {
                 if (userEmail.substring(9..20).toString() == "daejin.ac.kr") {
-                    Toast.makeText(this, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
                     saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
 
                     Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
@@ -294,10 +298,9 @@ class LoginActivity : AppCompatActivity() {
                 }
             } else { //처음 아님
                 if (userEmail.substring(9..20).toString() == "daejin.ac.kr") {
+                    //Toast.makeText(this, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
 
-                    saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
-
-                    Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
+                    Log.d("LoginActivity", "기존유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
                     /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
                     startActivity(intent)
                     this@LoginActivity.finish()*/
@@ -465,10 +468,7 @@ class LoginActivity : AppCompatActivity() {
         loadingDialog?.show()
 
         //setData()
-        if (loadingDialog != null && loadingDialog!!.isShowing) {
-            loadingDialog?.dismiss()
-            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-        }
+
 
         val signIntent = mGoogleSignInClient.signInIntent
         resultLauncher.launch(signIntent)

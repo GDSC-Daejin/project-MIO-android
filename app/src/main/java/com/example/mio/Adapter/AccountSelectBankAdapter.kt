@@ -47,7 +47,7 @@ class AccountSelectBankAdapter  : RecyclerView.Adapter<AccountSelectBankAdapter.
                         dataSource: DataSource?,
                         isFirstResource: Boolean
                     ): Boolean {
-                        println("glide")
+                        Log.d("Glide", "Image load Ready: {$isFirstResource}")
                         return false
                     }
                 })
@@ -65,6 +65,9 @@ class AccountSelectBankAdapter  : RecyclerView.Adapter<AccountSelectBankAdapter.
 
     override fun onBindViewHolder(holder: BankViewHolder, position: Int) {
         holder.bind(itemData[holder.adapterPosition], position)
+        holder.itemView.setOnClickListener {
+            itemClickListener.onClick(it, holder.adapterPosition, itemData[holder.adapterPosition].name.toString())
+        }
     }
 
     override fun getItemCount(): Int {

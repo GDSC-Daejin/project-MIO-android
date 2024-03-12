@@ -18,6 +18,11 @@
     <queries>
         <package android:name="viva.republica.toss" /> <!-- 토스뱅크 -->
         <package android:name="com.kakao.talk" /> <!-- 카카오페이 -->
+        <package android:name="com.kbstar.kbbank" /> <!--kb국민은행-->
+        <package android:name="com.kebhana.hanapush" /> <!--하나은행-->
+        <package android:name="com.shinhan.sbanking" /> <!-- 신한페이판 -->
+        <package android:name="com.ibk.android.ionebank"/> <!--ibk기업은행-->
+        <package android:name="com.kakaobank.channel"/>
     </queries>
 
     <application

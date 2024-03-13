@@ -500,6 +500,11 @@ class LoginActivity : AppCompatActivity() {
                     saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString()
                     saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString())
                     saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, response.body()!!.refreshToken).toString()
+                    loadingDialog?.dismiss()
+                    if (loadingDialog != null && loadingDialog!!.isShowing) {
+                        loadingDialog?.dismiss()
+                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                    }
 
                     Log.d("LoginActivity RefreshTokenRequest" ,saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity).toString())
                     val intent = Intent(this@LoginActivity, MainActivity::class.java)

@@ -128,11 +128,11 @@ class SearchResultActivity : AppCompatActivity() {
                     if (searchWord != null) {
                         filterAndHighlightText(searchWord.toString())
                     }
-                } else {
+                } /*else {
                     if (searchWord != null) {
                         searchKeyword(searchWord.toString())
                     }
-                }
+                }*/
                 true
             } else {
                 // 다른 키 입력 이벤트에 대한 기본 동작을 유지합니다.
@@ -149,6 +149,8 @@ class SearchResultActivity : AppCompatActivity() {
 
         binding.btnClear.setOnClickListener {
             binding.etSearchField2.text?.clear()
+            binding.textView4.visibility = View.GONE
+            binding.textView5.visibility = View.GONE
         }
 
         binding.backArrow.setOnClickListener {
@@ -162,94 +164,7 @@ class SearchResultActivity : AppCompatActivity() {
         })
     }
 
-    private fun searchKeyword(keyword: String) {
-        val retrofit = Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        val api = retrofit.create(KakaoAPI::class.java)
-        val call = api.getSearchKeyword(API_KEY, keyword)
 
-        call.enqueue(object: Callback<ResultSearchKeyword> {
-            override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
-                if (response.isSuccessful) {
-                    val responseData = response.body()?.documents
-                    println("search Result" + response.body()?.documents)
-                    if (responseData?.isEmpty() == true) {
-                        binding.textView4.visibility = View.VISIBLE
-                        binding.textView5.visibility = View.VISIBLE
-                        binding.rvSearchList.visibility = View.GONE
-                    }
-                    else {
-                        if (responseData != null) {
-                            val tempList = arrayListOf<LocationReadAllResponse>()
-                            for (i in responseData.indices) {
-                                /*val postId: Int,
-                                    val title: String,
-                                    val content: String,
-                                    val createDate: String,
-                                    val targetDate: String,
-                                    val targetTime: String,
-                                    val category: LocationCategory,
-                                    val verifyGoReturn: Boolean,
-                                    val numberOfPassengers: Int,
-                                    val user: User,
-                                    val viewCount: Int,
-                                    val verifyFinish: Boolean,
-                                    val participants: ArrayList<LocationParticipants>,
-                                    val latitude: Double,
-                                    val longitude: Double,
-                                    val bookMarkCount: Int,
-                                    val participantsCount: Int,
-                                    val location: String,
-                                    val cost: Int*/
-                                tempList.add( //더미데이터의 location부분만 쓸거
-                                    LocationReadAllResponse(
-                                        -1,
-                                        "",
-                                        "",
-                                        "",
-                                        "",
-                                        "",
-                                        LocationCategory(
-                                            -2,""
-                                        ),
-                                        false,
-                                        -1,
-                                        null,
-                                        -1,
-                                        false,
-                                        null,
-                                        responseData[i].x.toDouble(),
-                                        responseData[i].y.toDouble(),
-                                        -1,
-                                        -1,
-                                        responseData[i].road_address_name + " " + responseData[i].place_name,
-                                        -1
-                                    )
-                                )
-                            }
-
-                            adapter.updateData(tempList, keyword)
-                            binding.textView4.visibility = View.GONE
-                            binding.textView5.visibility = View.GONE
-                            binding.rvSearchList.visibility = View.VISIBLE
-                        }
-                    }
-                } else {
-                    Log.e("search Result", response.code().toString())
-                    Log.e("search Result", response.errorBody().toString())
-                    Log.e("search Result", response.errorBody()?.string()!!)
-                    Log.e("search Result", call.request().toString())
-                    Log.e("search Result", response.message().toString())
-                }
-            }
-
-            override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
-                Log.w("LocalSearch", "통신 실패: ${t.message}")
-            }
-        })
-    }
 
     private fun filterAndHighlightText(query: String) {
         val call = RetrofitServerConnect.service

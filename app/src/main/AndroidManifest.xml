@@ -18,11 +18,11 @@
     <queries>
         <package android:name="viva.republica.toss" /> <!-- 토스뱅크 -->
         <package android:name="com.kakao.talk" /> <!-- 카카오페이 -->
-        <package android:name="com.kbstar.kbbank" /> <!--kb국민은행-->
-        <package android:name="com.kebhana.hanapush" /> <!--하나은행-->
+        <package android:name="com.kbstar.kbbank" /> <!-- kb국민은행 -->
+        <package android:name="com.kebhana.hanapush" /> <!-- 하나은행 -->
         <package android:name="com.shinhan.sbanking" /> <!-- 신한페이판 -->
-        <package android:name="com.ibk.android.ionebank"/> <!--ibk기업은행-->
-        <package android:name="com.kakaobank.channel"/>
+        <package android:name="com.ibk.android.ionebank" /> <!-- ibk기업은행 -->
+        <package android:name="com.kakaobank.channel" />
     </queries>
 
     <application
@@ -49,6 +49,7 @@
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove" />
 
+
         <activity
             android:name=".CompleteActivity"
             android:exported="true"
@@ -67,6 +68,13 @@
                     android:scheme="miopay" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".TabAccount.AccountSearchLocationActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"
+            />
         <activity
             android:name=".TabAccount.AccountReviewActivity"
             android:exported="false"
@@ -96,8 +104,7 @@
             android:name=".TabAccount.AccountSelectBankActivity"
             android:exported="false"
             android:screenOrientation="portrait"
-            tools:ignore="LockedOrientationActivity"
-            />
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".TabCategory.MoreCarpoolTabActivity"
             android:exported="false"

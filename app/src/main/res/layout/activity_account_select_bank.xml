@@ -32,7 +32,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_marginEnd="120dp"
+                android:layout_marginEnd="110dp"
                 android:fontFamily="@font/pretendard_medium"
                 android:padding="8dp"
                 android:text="은행 선택 및 계좌 등록"
@@ -117,6 +117,7 @@
             </LinearLayout>
 
             <Button
+                android:id="@+id/account_select_bank_btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="20dp"

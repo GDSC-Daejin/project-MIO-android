@@ -7,13 +7,7 @@ import android.util.Log
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.mio.*
-import com.example.mio.Model.Content
-import com.example.mio.Model.EditAccountData
-import com.example.mio.Model.PostData
-import com.example.mio.Model.User
-import com.example.mio.NoticeBoard.NoticeBoardEditActivity
-import com.example.mio.TabCategory.TaxiTabFragment
-import com.example.mio.TapSearch.SearchResultActivity
+import com.example.mio.Model.*
 import com.example.mio.databinding.ActivityAccountSettingBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,14 +22,15 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class AccountSettingActivity : AppCompatActivity() {
-    private var aBinding : ActivityAccountSettingBinding? = null
-    private var type : String? = null
+    private var aBinding: ActivityAccountSettingBinding? = null
+    private var type: String? = null
     private var email = ""
 
-    private var sendAccountData : EditAccountData? = null
+    private var sendAccountData: EditAccountData? = null
     private var isGender = false
     private var isSmoker = false
-    private var setLocation : String? = null
+    private var setLocation: Place? = null
+    private var setAccountNumber : String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,10 +52,12 @@ class AccountSettingActivity : AppCompatActivity() {
                         when (value) {
                             "남성" -> { //false
                                 isGender = false
+                                aBinding?.asGenderTv?.text = "남성"
                             }
 
                             "여성" -> { //true
                                 isGender = true
+                                aBinding?.asGenderTv?.text = "여성"
                             }
                         }
                     }
@@ -78,10 +75,12 @@ class AccountSettingActivity : AppCompatActivity() {
                         when (value) {
                             "o" -> { //흡
                                 isSmoker = true
+                                aBinding?.asSmokeTv?.text = "O"
                             }
 
                             "x" -> { //비흡
                                 isSmoker = false
+                                aBinding?.asSmokeTv?.text = "X"
                             }
                         }
                     }
@@ -90,11 +89,16 @@ class AccountSettingActivity : AppCompatActivity() {
         }
 
         aBinding!!.accountAccountNumberBtn.setOnClickListener {
-            //Todo 은행 넣기
+            val intent =
+                Intent(this@AccountSettingActivity, AccountSelectBankActivity::class.java)
+            requestActivity.launch(intent)
         }
 
         aBinding!!.accountActivityLocationBtn.setOnClickListener {
-            val intent = Intent(this@AccountSettingActivity, SearchResultActivity::class.java).apply {
+            val intent = Intent(
+                this@AccountSettingActivity,
+                AccountSearchLocationActivity::class.java
+            ).apply {
                 putExtra("type", "account")
             }
             requestActivity.launch(intent)
@@ -165,13 +169,14 @@ class AccountSettingActivity : AppCompatActivity() {
         //println(userId)
 
         //여기 계좌까지 추가하면 활성화하기 Todo
-        //sendAccountData = EditAccountData(isGender, isSmoker, setLocation)
+        sendAccountData = EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation?.road_address_name.toString())
 
         CoroutineScope(Dispatchers.IO).launch {
             api.editMyAccountData(userId, sendAccountData!!).enqueue(object : Callback<User> {
                 override fun onResponse(call: Call<User>, response: Response<User>) {
                     if (response.isSuccessful) {
-                        println("patch 성공")
+                        Log.d("Success", response.code().toString())
+                        Log.d("Account Setting", "Account Setting Response Success")
                     } else {
                         Log.d("f", response.code().toString())
                         Log.d("error", response.errorBody().toString())
@@ -187,19 +192,35 @@ class AccountSettingActivity : AppCompatActivity() {
     }
 
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
-        when (it.resultCode) {
-            AppCompatActivity.RESULT_OK -> {
-                val locationData = it.data?.getSerializableExtra("data") as String
-                when(it.data?.getIntExtra("flag", -1)) {
-                    //add
-                    0 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            setLocation = locationData
+    private val requestActivity =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+            when (it.resultCode) {
+                AppCompatActivity.RESULT_OK -> {
+                    val locationData = it.data?.getSerializableExtra("locationData") as Place
+                    val accountNumber = it.data?.getStringExtra("AccountNumber") ?: ""
+                    when (it.data?.getIntExtra("flag", -1)) {
+                        //add
+                       /* 0 -> {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                setLocation = locationData
+                            }
+                        }*/
+                        2 -> {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                setAccountNumber = accountNumber
+                            }
+                        }
+
+
+                        //location 세팅
+                        3 -> {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                setLocation = locationData
+                                aBinding?.asLocationTv?.text = setLocation?.road_address_name
+                            }
                         }
                     }
                 }
             }
         }
-    }
 }

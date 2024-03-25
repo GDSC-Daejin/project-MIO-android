@@ -235,10 +235,16 @@ class LoginActivity : AppCompatActivity() {
                     Log.e("LoginTestResponseError", response.errorBody()?.string()!!)
                     Log.e("LoginTestResponseError", response.code().toString())
                     Log.e("LoginTestResponseError", response.message().toString())
+                    Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
             override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
                 println("실패" + t.message.toString())
+                if (loadingDialog != null && loadingDialog!!.isShowing) {
+                    loadingDialog?.dismiss()
+                    loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                }
+                Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -379,7 +385,11 @@ class LoginActivity : AppCompatActivity() {
             } else {
                 // 응답이 실패했을 때의 처리
                 Log.e("LoginActivity", "Failed to get access token")
-                /*Log.e("LoginActivity", )*/
+                if (loadingDialog != null && loadingDialog!!.isShowing) {
+                    loadingDialog?.dismiss()
+                    loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                }
+                Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -457,6 +467,7 @@ class LoginActivity : AppCompatActivity() {
         println("signIn")
         //로딩창 실행
         loadingDialog = LoadingProgressDialog(this@LoginActivity)
+        loadingDialog?.setCancelable(false)
         //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
         //로딩창
         loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -503,6 +514,7 @@ class LoginActivity : AppCompatActivity() {
                     loadingDialog?.dismiss()
                     if (loadingDialog != null && loadingDialog!!.isShowing) {
                         loadingDialog?.dismiss()
+                        loadingDialog?.setCancelable(true)
                         loadingDialog = null // 다이얼로그 인스턴스 참조 해제
                     }
 
@@ -513,10 +525,22 @@ class LoginActivity : AppCompatActivity() {
 
                 } else {
                     Log.e("LoginActivity", "RefreshToken response fail")
+                    if (loadingDialog != null && loadingDialog!!.isShowing) {
+                        loadingDialog?.dismiss()
+                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                    }
+                    Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
             override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
                 println("실패" + t.message.toString())
+                loadingDialog?.dismiss()
+                if (loadingDialog != null && loadingDialog!!.isShowing) {
+                    loadingDialog?.dismiss()
+                    loadingDialog?.setCancelable(true)
+                    loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                }
+                Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
             }
         })
         /*val client = OkHttpClient()

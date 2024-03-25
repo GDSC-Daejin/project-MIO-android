@@ -41,7 +41,7 @@ class NearbypostActivity  : AppCompatActivity() {
                 postContent = post.content,
                 postTargetDate = post.targetDate,
                 postTargetTime = post.targetTime,
-                postCategory = post.category.categoryName,
+                postCategory = post.category?.categoryName!!,
                 postLocation = post.location,
                 postParticipation = post.participantsCount,
                 postParticipationTotal = post.numberOfPassengers,

@@ -237,7 +237,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
                     postContent = location.content,
                     postTargetDate = location.targetDate,
                     postTargetTime = location.targetTime,
-                    postCategory = location.category.categoryName,
+                    postCategory = location.category?.categoryName!!,
                     postLocation = location.location,
                     postParticipation = location.participantsCount,
                     postParticipationTotal = location.numberOfPassengers,

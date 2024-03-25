@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import com.example.mio.Model.PostData
 import com.example.mio.Model.User
 import com.example.mio.databinding.ActivityCompleteBinding
 
@@ -24,8 +25,9 @@ class CompleteActivity : AppCompatActivity() {
     }
 
     private var type = ""
-    private var postCost = 0
+    private var postCost : Int? = null
     private var driverData : User? = null
+    private var postData : PostData? = null
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,8 +37,9 @@ class CompleteActivity : AppCompatActivity() {
         type = intent.getStringExtra("type") as String
 
         if (type == "PASSENGER") {
+            postData = intent.getSerializableExtra("postData") as PostData
             driverData = intent.getSerializableExtra("postDriver") as User
-            postCost = intent.getIntExtra("postCost", 0)
+            postCost = postData?.postCost
 
             var driverName = driverData?.name
             val sb = driverName?.let { it -> StringBuilder(it).also { it.setCharAt(1, '*') } }
@@ -58,13 +61,21 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.completeBankLl.visibility = View.VISIBLE
             cBinding.completeEntireLl.visibility = View.VISIBLE
             cBinding.completeEnd2MessageTv.text = "아래 계좌에 본인 학번으로 입금해주세요!"
-
+            cBinding.completeDivideView.visibility = View.VISIBLE
+            cBinding.completeDivideView2.visibility = View.VISIBLE
             cBinding.tossBankLl.setOnClickListener {
-                deepLink("viva.republica.toss", postCost)
+                createClipData(cBinding.completeDriverAccountNumber.text as String)
+                if (postCost != null) {
+                    deepLink("viva.republica.toss", postCost!!)
+                }
+
             }
 
             cBinding.kakaoPayLl.setOnClickListener {
-                deepLink("com.kakao.talk", postCost)
+                createClipData(cBinding.completeDriverAccountNumber.text as String)
+                if (postCost != null) {
+                    deepLink("com.kakao.talk", postCost!!)
+                }
             }
 
             cBinding.accountTransferLl.setOnClickListener {
@@ -73,16 +84,20 @@ class CompleteActivity : AppCompatActivity() {
 
 
         } else if (type == "DRIVER") {
-            val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            lp.topMargin = 150
-            cBinding.completeEntireLl.layoutParams = lp
-            cBinding.completeEntireLl.gravity = Gravity.CENTER
+            val layoutParams = cBinding.completeEntireLl.layoutParams as ViewGroup.MarginLayoutParams
+            val newMarginTop = 180
+            layoutParams.topMargin = newMarginTop
+            cBinding.completeEntireLl.layoutParams = layoutParams
+
+            postData = intent.getSerializableExtra("postData") as PostData
 
             cBinding.completeEntireLl.visibility = View.VISIBLE
             cBinding.completeEnd2MessageTv.text = "입금여부를 확인하고 후기를 작성하세요"
 
             cBinding.completeCostLl.visibility = View.GONE
             cBinding.completeBankLl.visibility = View.GONE
+            cBinding.completeDivideView.visibility = View.GONE
+            cBinding.completeDivideView2.visibility = View.GONE
         }
 
         cBinding.closeScreen.setOnClickListener {

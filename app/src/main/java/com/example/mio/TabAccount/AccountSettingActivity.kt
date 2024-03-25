@@ -1,8 +1,11 @@
 package com.example.mio.TabAccount
 
 import android.content.Intent
+import android.os.Build.VERSION_CODES.M
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
@@ -30,6 +33,7 @@ class AccountSettingActivity : AppCompatActivity() {
     private var isGender = false
     private var isSmoker = false
     private var setLocation: Place? = null
+    private var setLocation2: String? = null
     private var setAccountNumber : String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -169,7 +173,13 @@ class AccountSettingActivity : AppCompatActivity() {
         //println(userId)
 
         //여기 계좌까지 추가하면 활성화하기 Todo
-        sendAccountData = EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation?.road_address_name.toString())
+        sendAccountData = if (setLocation != null) {
+            EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation?.road_address_name.toString())
+        } else {
+            EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation2.toString())
+        }
+
+        Log.e("ACCountSEttingSENDTEST", sendAccountData.toString())
 
         CoroutineScope(Dispatchers.IO).launch {
             api.editMyAccountData(userId, sendAccountData!!).enqueue(object : Callback<User> {
@@ -177,6 +187,11 @@ class AccountSettingActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         Log.d("Success", response.code().toString())
                         Log.d("Account Setting", "Account Setting Response Success")
+                        val intent = Intent(this@AccountSettingActivity, MainActivity::class.java).apply {
+                            putExtra("flag", 6)
+                        }
+                        setResult(RESULT_OK, intent)
+                        finish()
                     } else {
                         Log.d("f", response.code().toString())
                         Log.d("error", response.errorBody().toString())
@@ -196,8 +211,14 @@ class AccountSettingActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
             when (it.resultCode) {
                 AppCompatActivity.RESULT_OK -> {
-                    val locationData = it.data?.getSerializableExtra("locationData") as Place
+                    val locationData : Place? = it.data?.getSerializableExtra("locationData") as Place?
+                    val locationData2 = it.data?.getStringExtra("locationData2")
+
+                    Log.e("AccountSettingREquestAc", locationData2.toString())
+                    Log.e("AccountSettingREquestAc", locationData.toString())
+
                     val accountNumber = it.data?.getStringExtra("AccountNumber") ?: ""
+                    val handler = Handler(Looper.getMainLooper())
                     when (it.data?.getIntExtra("flag", -1)) {
                         //add
                        /* 0 -> {
@@ -206,17 +227,29 @@ class AccountSettingActivity : AppCompatActivity() {
                             }
                         }*/
                         2 -> {
-                            CoroutineScope(Dispatchers.IO).launch {
+                            handler.post {
                                 setAccountNumber = accountNumber
+                                aBinding?.asAccountTv?.text = setAccountNumber.toString()
                             }
                         }
 
 
                         //location 세팅
                         3 -> {
-                            CoroutineScope(Dispatchers.IO).launch {
+                            handler.post {
                                 setLocation = locationData
-                                aBinding?.asLocationTv?.text = setLocation?.road_address_name
+                                aBinding?.asLocationTv?.text = setLocation?.road_address_name.toString() + " " + setLocation?.place_name.toString()
+                                Log.e("AccountSettingREquestAc3", locationData2.toString())
+                                Log.e("AccountSettingREquestAc3", locationData.toString())
+                            }
+                        }
+
+                        4 -> {
+                            handler.post {
+                                setLocation2 = locationData2.toString()
+                                aBinding?.asLocationTv?.text = setLocation2?.toString()
+                                Log.e("AccountSettingREquestAc4", locationData2.toString())
+                                Log.e("AccountSettingREquestAc4", locationData.toString())
                             }
                         }
                     }

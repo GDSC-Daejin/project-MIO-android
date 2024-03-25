@@ -55,8 +55,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
-                android:gravity="center"
                 android:background="@drawable/account_number_et_layout"
+                android:gravity="center"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/account_toolbar">
@@ -67,14 +67,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:padding="12dp"
                     android:background="@null"
                     android:hint="동/읍/면으로 검색해주세요"
                     android:imeOptions="actionDone"
                     android:inputType="text"
+                    android:padding="12dp"
                     android:textColor="@color/mio_gray_8"
-                    android:textSize="12sp"
-                    android:textColorHint="@color/mio_gray_6" />
+                    android:textColorHint="@color/mio_gray_6"
+                    android:textSize="12sp" />
 
                 <Space
                     android:layout_width="0dp"
@@ -208,7 +208,7 @@
                 android:id="@+id/textView3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="64dp"
+                android:layout_marginTop="6dp"
                 android:fontFamily="@font/pretendard_medium"
                 android:padding="13dp"
                 android:paddingStart="20dp"
@@ -220,7 +220,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toBottomOf="@+id/linearLayout9" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

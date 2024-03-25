@@ -16,7 +16,7 @@ data class LocationReadAllResponse(
     @SerializedName("targetTime")
     var targetTime: String,
     @SerializedName("category")
-    var category: LocationCategory,
+    var category: LocationCategory?,
     @SerializedName("verifyGoReturn")
     var verifyGoReturn: Boolean,
     @SerializedName("numberOfPassengers")
@@ -42,14 +42,14 @@ data class LocationReadAllResponse(
     @SerializedName("cost")
     var cost: Int
 
-)
+) : java.io.Serializable
 
 data class LocationCategory(
     @SerializedName("categoryId")
     var categoryId : Int,
     @SerializedName("categoryName")
     var categoryName : String,
-)
+): java.io.Serializable
 
 data class LocationUser(
     @SerializedName("id")
@@ -103,5 +103,5 @@ data class LocationParticipants(
     var mannerCount : Int,
     @SerializedName("grade")
     var grade : String,
-)
+): java.io.Serializable
 

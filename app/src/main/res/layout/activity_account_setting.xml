@@ -103,7 +103,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginBottom="20dp"
             android:fontFamily="@font/pretendard_medium"
-            android:text="남성"
+            android:text="이곳을 눌러 선택해주세요"
             android:textColor="@color/mio_gray_7"
             />
     </LinearLayout>
@@ -146,7 +146,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginBottom="20dp"
             android:fontFamily="@font/pretendard_medium"
-            android:text="x"
+            android:text="이곳을 눌러 선택해주세요"
             android:textColor="@color/mio_gray_7"
             />
     </LinearLayout>
@@ -194,7 +194,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginBottom="20dp"
                 android:fontFamily="@font/pretendard_medium"
-                android:text="서울특별시 노원구 공릉동"
+                android:text="화살표를 눌러 지역을 검색해주세요"
                 android:textColor="@color/mio_gray_7"
                 />
         </LinearLayout>
@@ -255,7 +255,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_marginStart="20dp"
                 android:fontFamily="@font/pretendard_medium"
-                android:text="12345767585 토스뱅크"
+                android:text="화살표를 눌러 계좌를 등록해주세요"
                 android:textColor="@color/mio_gray_7"
                 />
         </LinearLayout>

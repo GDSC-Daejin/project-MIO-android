@@ -70,9 +70,9 @@ class MyReviewAdapter : RecyclerView.Adapter<MyReviewAdapter.MyReviewViewHolder>
     override fun onBindViewHolder(holder: MyReviewViewHolder, position: Int) {
         holder.bind(myReviewData[holder.adapterPosition], position)
 
-        holder.itemView.setOnClickListener {
+        /*holder.itemView.setOnClickListener {
             itemClickListener.onClick(it, holder.adapterPosition, myReviewData[holder.adapterPosition].id)
-        }
+        }*/
 
     /*binding.homeRemoveIv.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)

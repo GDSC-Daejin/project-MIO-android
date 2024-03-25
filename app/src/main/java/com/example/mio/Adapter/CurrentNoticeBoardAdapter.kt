@@ -1,5 +1,6 @@
 package com.example.mio.Adapter
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,6 +33,7 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
         for (i in currentPostItemData.indices) {
             hashMapCurrentPostItemData[i] = PostStatus.Neither
         }
+
     }
 
     inner class CurrentNoticeBoardViewHolder(private val binding : CurrentPostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
@@ -63,7 +65,8 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
                 Calendar.SATURDAY -> "토"
                 else -> ""
             }
-
+            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+            identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
 
             val year = accountData.postTargetDate.substring(2..3)
             val month = accountData.postTargetDate.substring(5..6)
@@ -72,7 +75,11 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
             val minute = accountData.postTargetTime.substring(3..4)
 
             cPostDate.text = "${year}.${month}.${date1} ($dayOfWeek) ${hour}:${minute}"
-            cPostLocation.text = accountData.postLocation
+            cPostLocation.text = if (accountData.postLocation.split(" ").last().toString() == " ") {
+                accountData.postLocation.split(" ").dropLast(1).joinToString(" ")
+            } else {
+                accountData.postLocation.split(" ").last().toString()
+            }
             val now = System.currentTimeMillis()
             val date = Date(now)
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
@@ -97,11 +104,16 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
                 if (diffSeconds > 0) {
                     binding.currentCompleteFl.visibility = View.VISIBLE
                     binding.currentCompleteTv.text = "카풀 완료"
+
                     if (identification == currentPostItemData[position].user.email) {
+                        Log.d("identification Driver", currentPostItemData[position].user.email)
+                        Log.d("identification", identification)
                         hashMapCurrentPostItemData[position] = PostStatus.Driver
                     } else {
+                        Log.d("identification Passenger", currentPostItemData[position].user.email)
                         hashMapCurrentPostItemData[position] = PostStatus.Passenger
                     }
+
                 } else {
                     binding.currentCompleteFl.visibility = View.GONE
                 }
@@ -128,15 +140,16 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
         holder.bind(currentPostItemData[holder.adapterPosition], position)
 
 
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
+
 
         //본인이 작성자(운전자) 이면서 카풀이 완료
         if (identification == currentPostItemData[holder.adapterPosition].user.email && hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Driver) {
+            Log.d("current", "Driver")
             holder.itemView.setOnClickListener {
                 itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID, PostStatus.Driver)
             }
         } else if (hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Passenger) { //본인은 운전자가 아니고 손님
+            Log.d("current", "Passenger")
             holder.itemView.setOnClickListener {
                 itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID,  PostStatus.Passenger)
             }

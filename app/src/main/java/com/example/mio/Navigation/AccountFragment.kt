@@ -169,7 +169,9 @@ class AccountFragment : Fragment() {
 
                         //나중에 response.body()!!.mannerCount 다시 체크하기  TODO
                         println("ss")
-                        //saveSharedPreferenceGoogleLogin.setUserId(activity, response.body()!!.id)
+                        saveSharedPreferenceGoogleLogin.setUserId(activity, response.body()!!.id)
+                        println(response.body()!!.id)
+                        println(saveSharedPreferenceGoogleLogin.getUserId(activity))
                         myAccountData = response.body()
 
                         if (grade != null) {
@@ -185,9 +187,9 @@ class AccountFragment : Fragment() {
                                 //등급 글자의 색변경
                                 spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                                 aBinding.accountGradeTv.text = spannableString
-                            } else {
+                            } /*else {
 
-                            }
+                            }*/
 
                             CoroutineScope(Dispatchers.Main).launch {
                                 val animator = ObjectAnimator.ofInt(aBinding.accountGradePb, "progress", 0, mannerCount)
@@ -251,7 +253,7 @@ class AccountFragment : Fragment() {
                         }
 
                         if (activityLocation != null) {
-                            aBinding.accountAddress.text = activityLocation + "/"
+                            aBinding.accountAddress.text = activityLocation
                             aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
                         } else {
                             aBinding.accountAddress.text = "설정에서 개인정보를 입력해주세요"

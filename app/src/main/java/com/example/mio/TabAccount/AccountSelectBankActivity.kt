@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
@@ -27,6 +28,7 @@ class AccountSelectBankActivity : AppCompatActivity() {
     private lateinit var adapter : AccountSelectBankAdapter
     private var bankData = ArrayList<BankItemData>()
     private var userAccountNumber : String? = null
+    private var userBank : String? = null
     private var currentPage = 0
     private lateinit var myViewModel : SharedViewModel
 
@@ -46,21 +48,11 @@ class AccountSelectBankActivity : AppCompatActivity() {
 
             }
             override fun afterTextChanged(editable: Editable) {
-                if (editable.isEmpty()) {
-                    userAccountNumber = editable.toString()
+                val inputText = editable.toString()
+                if (inputText.isNotEmpty()) {
+                    userAccountNumber = inputText
                     myViewModel.postCheckComplete(complete = true)
-                    /*if (editable.isEmpty()) {
-                        nbrBinding.readSendComment.visibility = View.GONE
-                        nbrBinding.readEditSendComment.visibility = View.GONE
-                    } else if (getBottomSheetCommentData != "수정"){
-                        nbrBinding.readSendComment.visibility = View.VISIBLE
-                        nbrBinding.readEditSendComment.visibility = View.GONE
-                    } else {
-                        nbrBinding.readSendComment.visibility = View.GONE
-                        nbrBinding.readEditSendComment.visibility = View.VISIBLE
-                    }*/
                 } else {
-                    userAccountNumber = editable.toString()
                     myViewModel.postCheckComplete(complete = false)
                 }
             }
@@ -70,37 +62,37 @@ class AccountSelectBankActivity : AppCompatActivity() {
             override fun onClick(view: View, position: Int, itemId: String) {
                 when (itemId) {
                     "카카오뱅크" -> {
-                        userAccountNumber += " 카카오뱅크"
+                        userBank = " 카카오뱅크"
                         binding.accountVf.showNext()
                         currentPage += 1
                     }
 
                     "토스뱅크" -> {
-                        userAccountNumber += " 토스뱅크"
+                        userBank = " 토스뱅크"
                         binding.accountVf.showNext()
                         currentPage += 1
                     }
 
                     "국민은행" -> {
-                        userAccountNumber += " 국민은행"
+                        userBank = " 국민은행"
                         binding.accountVf.showNext()
                         currentPage += 1
                     }
 
                     "하나은행" -> {
-                        userAccountNumber += " 하나은행"
+                        userBank = " 하나은행"
                         binding.accountVf.showNext()
                         currentPage += 1
                     }
 
                     "신한은행" -> {
-                        userAccountNumber += " 신한은행"
+                        userBank = " 신한은행"
                         binding.accountVf.showNext()
                         currentPage += 1
                     }
 
                     "기업은행" -> {
-                        userAccountNumber += " 기업은행"
+                        userBank = " 기업은행"
                         binding.accountVf.showNext()
                         currentPage += 1
                     }
@@ -111,18 +103,25 @@ class AccountSelectBankActivity : AppCompatActivity() {
         binding.backArrow.setOnClickListener {
             if (currentPage > 0) {
                 binding.accountVf.showPrevious()
+                currentPage -= 1
             } else {
                 this@AccountSelectBankActivity.finish()
             }
         }
 
         binding.accountSelectBankBtn.setOnClickListener {
-            val intent = Intent(this@AccountSelectBankActivity, AccountSettingActivity::class.java).apply {
-                putExtra("flag", 2)
-                putExtra("AccountNumber", userAccountNumber)
+            if (userAccountNumber == null) {
+                Toast.makeText(this@AccountSelectBankActivity, "계좌번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                println("useran " + (userAccountNumber ?: "") + userBank)
+            } else {
+                val intent = Intent(this@AccountSelectBankActivity, AccountSettingActivity::class.java).apply {
+                    putExtra("flag", 2)
+                    putExtra("AccountNumber", (userAccountNumber ?: "") + userBank)
+                    //println("useran " + (userAccountNumber ?: "") + userBank)
+                }
+                setResult(RESULT_OK, intent)
+                finish()
             }
-            setResult(RESULT_OK, intent)
-            finish()
         }
 
 

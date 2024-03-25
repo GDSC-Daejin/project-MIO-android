@@ -12,9 +12,13 @@ import android.view.inputmethod.EditorInfo
 import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.AccountSearchLocationAdapter
+import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.RecentSearchAdapter
+import com.example.mio.Adapter.SearchResultAdapter
 import com.example.mio.BuildConfig
 import com.example.mio.Helper.SharedPrefManager
+import com.example.mio.Helper.SharedPrefManager.convertAccountLocationToJSON
+import com.example.mio.Helper.SharedPrefManager.loadRecentSearch
 import com.example.mio.KakaoAPI
 import com.example.mio.Model.*
 import com.example.mio.R
@@ -39,26 +43,36 @@ class AccountSearchLocationActivity : AppCompatActivity() {
     private val sharedViewModel: FragSharedViewModel by lazy {
         (application as FragSharedViewModel2).sharedViewModel
     }
-
+    private val layoutManager = LinearLayoutManager(this)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAccountSearchLocationBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        val layoutManager = LinearLayoutManager(this)
+
         binding.rvSearchList.layoutManager = layoutManager
+
+        adapter = AccountSearchLocationAdapter(emptyList())
+        initRecyclerView(emptyList())
         // 최근 검색 리스트의 설정
         recentSearchAdapter = RecentSearchAdapter(emptyList()).apply {
             setOnItemClickListener(object : RecentSearchAdapter.OnItemClickListener {
                 override fun onItemClicked(location: LocationReadAllResponse) {
-                    sharedViewModel.selectedLocation.value = location
-                    val locationJson = SharedPrefManager.convertLocationToJSON(location)
-                    SharedPrefManager.saveRecentSearch(this@AccountSearchLocationActivity, locationJson)
+                    sharedViewModel.selectedAccountLocation.value = location
+                    Log.e("searchAdapterTESTST", location.location)
+                    val locationJson = convertAccountLocationToJSON(location)
+                    SharedPrefManager.saveAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
+                    Log.e("searchAdapterTESTST", location.location)
+                    val intent = Intent(this@AccountSearchLocationActivity, AccountSettingActivity::class.java).apply {
+                        putExtra("flag", 4)
+                        putExtra("locationData2", location.location.split(",").first())
+                    }
+                    setResult(RESULT_OK, intent)
                     finish()
                 }
                 override fun onItemRemove(location: LocationReadAllResponse) {
                     // 선택된 위치를 SharedPref에서 제거합니다.
-                    val locationJson = SharedPrefManager.convertLocationToJSON(location)
-                    SharedPrefManager.removeRecentSearch(this@AccountSearchLocationActivity, locationJson)
+                    val locationJson = SharedPrefManager.convertAccountLocationToJSON(location)
+                    SharedPrefManager.removeAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
 
                     // 최근 검색어 목록을 다시 로드하여 UI를 업데이트 합니다.
                     loadRecentSearch()
@@ -69,18 +83,8 @@ class AccountSearchLocationActivity : AppCompatActivity() {
         binding.rvRecentSearchList.layoutManager = LinearLayoutManager(this)
         loadRecentSearch()
 
-        adapter.setOnItemClickListener(object : AccountSearchLocationAdapter.OnItemClickListener{
-            override fun onItemClicked(location: Place?) {
-                if (location != null) {
-                    val intent = Intent(this@AccountSearchLocationActivity, AccountSettingActivity::class.java).apply {
-                        putExtra("flag", 3)
-                        putExtra("locationData", location)
-                    }
-                    setResult(RESULT_OK, intent)
-                    finish()
-                }
-            }
-        })
+        binding.rvSearchList.adapter = adapter
+
 
         binding.etSearchField2.addTextChangedListener(object: TextWatcher {
             override fun afterTextChanged(s: Editable?) {
@@ -90,13 +94,15 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                     binding.rvSearchList.visibility = View.VISIBLE
                     binding.rvRecentSearchList.visibility = View.GONE
                     binding.textView2.visibility = View.GONE
-                    binding.textView3.visibility = View.GONE
+                    binding.textView3.visibility = View.VISIBLE
+                    binding.textView3.text = "검색된 내용"
                     binding.btnClear.visibility = View.VISIBLE
                 } else {
                     binding.rvSearchList.visibility = View.GONE
                     binding.rvRecentSearchList.visibility = View.VISIBLE
                     binding.textView2.visibility = View.VISIBLE
                     binding.textView3.visibility = View.VISIBLE
+                    binding.textView3.text = "최근 검색어"
                     binding.btnClear.visibility = View.INVISIBLE
                 }
             }
@@ -113,7 +119,9 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                 // 예를 들어, 키보드를 숨기거나 입력을 처리할 수 있습니다.
                 // true를 반환하여 이벤트를 소비하고 더 이상 처리하지 않도록 합니다.
                 if (searchWord != null) {
-                    searchKeyword(searchWord.toString())
+                    //검색한 텍스트의 모든 공백을 제거 ex) 노원 문화의 거리 -> 노원문화의거리
+                    val searchText = searchWord.toString().replace("\\s".toRegex(), "")
+                    searchKeyword(searchText)
                 }
                 true
             } else {
@@ -144,6 +152,92 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                 finish() // 액티비티 종료
             }
         })
+
+        adapter.setOnItemClickListener(object : AccountSearchLocationAdapter.OnItemClickListener{
+            override fun onItemClicked(location: Place?) {
+                if (location != null) {
+                    val setL = location.address_name + "," + location.place_name
+                    sharedViewModel.selectedAccountLocation.value = LocationReadAllResponse(
+                        location.id.toInt(),
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        null,
+                        false,
+                        -1,
+                        null,
+                        -1,
+                        false,
+                        null,
+                        location.x.toDouble(),
+                        location.y.toDouble(),
+                        -1,
+                        -1,
+                        setL,
+                        -1
+                    )
+                    val locationJson = SharedPrefManager.convertAccountLocationToJSON(LocationReadAllResponse(
+                        location.id.toInt(),
+                        "",
+                        "",
+                        "",
+                        "",
+                        "",
+                        null,
+                        false,
+                        -1,
+                        null,
+                        -1,
+                        false,
+                        null,
+                        location.x.toDouble(),
+                        location.y.toDouble(),
+                        -1,
+                        -1,
+                        setL,
+                        -1
+                    ))
+
+                    if (SharedPrefManager.isAccountLocationInRecentSearch(this@AccountSearchLocationActivity, locationJson)) {
+                        SharedPrefManager.removeAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
+                        Log.e("locationJsonX", locationJson)
+                    }
+
+                    // 최근 검색어 저장
+                    SharedPrefManager.saveAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
+                    Log.e("locationJson?", locationJson)
+
+                    if (!SharedPrefManager.isAccountLocationInRecentSearch(this@AccountSearchLocationActivity, locationJson)) {
+                        SharedPrefManager.saveAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
+                        Log.e("locationJson!", locationJson)
+                    }
+
+                    val intent = Intent(this@AccountSearchLocationActivity, AccountSettingActivity::class.java).apply {
+                        putExtra("flag", 3)
+                        putExtra("locationData", location)
+                    }
+                    setResult(RESULT_OK, intent)
+                    finish()
+                }
+            }
+        })
+    }
+
+    private fun initRecyclerView(items: List<Place>) {
+        adapter = AccountSearchLocationAdapter(items)
+        binding.rvSearchList.adapter = adapter
+        binding.rvSearchList.setHasFixedSize(true)
+        binding.rvSearchList.layoutManager = layoutManager
+       /* noticeBoardAdapter = NoticeBoardAdapter()
+        //noticeBoardAdapter!!.postItemData = data
+        nbBinding.noticeBoardRV.adapter = noticeBoardAdapter
+        //레이아웃 뒤집기 안씀
+        //manager.reverseLayout = true
+        //manager.stackFromEnd = true
+        nbBinding.noticeBoardRV.setHasFixedSize(true)
+        nbBinding.noticeBoardRV.layoutManager = manager*/
     }
 
 
@@ -197,12 +291,13 @@ class AccountSearchLocationActivity : AppCompatActivity() {
     private fun loadRecentSearch() {
         try {
             // Ensure the return type is List<String> or modify accordingly
-            val recentSearchListJson: List<String> = SharedPrefManager.loadRecentSearch(this) ?: listOf()
+            val recentSearchListJson: List<String> = SharedPrefManager.loadAccountLocationRecentSearch(this) ?: listOf()
 
             val recentSearchList = recentSearchListJson.map {
                 // Ensure `it` is a String type or modify accordingly
-                SharedPrefManager.convertJSONToLocation(it)
+                SharedPrefManager.convertJSONToAccountLocation(it)
             }
+            println("load "+ recentSearchListJson)
             //setupAdapter(recentSearchList)
             recentSearchAdapter.updateData(recentSearchList) // 여기에서 최근 검색 데이터를 업데이트
 

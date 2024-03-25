@@ -265,6 +265,20 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
+                    /*6 -> {
+                        oldFragment = AccountFragment()
+                        oldTAG = TAG_ACCOUNT
+                        //setToolbarView(TAG_HOME, oldTAG)
+                        setFragment(TAG_ACCOUNT, AccountFragment())
+
+                        mBinding.bottomNavigationView.selectedItemId = R.id.navigation_account
+                        CoroutineScope(Dispatchers.Main).launch {
+                            supportFragmentManager.beginTransaction()
+                                .replace(R.id.fragment_content, AccountFragment())
+                                .commit()
+                        }
+                    }*/
+
                     7 -> {
                         //이거 먼저 되는지 테스트
                         oldFragment = AccountFragment()
@@ -292,6 +306,8 @@ class MainActivity : AppCompatActivity() {
                         setFragment(TAG_HOME, HomeFragment())
                         mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
                     }
+
+
 
                 }
                 //getSerializableExtra = intent의 값을 보내고 받을때사용

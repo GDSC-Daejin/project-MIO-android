@@ -1394,7 +1394,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
         mapView?.addPOIItem(marker)
 
         if (Build.VERSION.SDK_INT < 33) { // SDK 버전이 33보다 큰 경우에만 아래 함수를 씁니다.
-            val addresses = geocoder.getFromLocation(latitude, longitude, 1)!![0]
+            val addresses = geocoder.getFromLocation(latitude, longitude, 1)?.first()
 
             address?.let {
                 if (addresses != null) {
@@ -1407,7 +1407,8 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
 
                     val detailedAddress = "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
 
-                    mBinding.placeRoad.text = "현재 마커 주소 : " + detailedAddress // 텍스트뷰에 주소 정보 표시
+                    mBinding.placeName.text = detailedAddress
+                    mBinding.placeRoad.text = detailedAddress // 텍스트뷰에 주소 정보 표시
                     //getAddressFromCoordinates(longitude, latitude)
                 }
             }
@@ -1449,34 +1450,52 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                         if (addresses.isNotEmpty()) {
                             address = addresses[0]
                             val roadAddress = address?.getAddressLine(0) ?: ""
+
+                            //대한민국 경기도 포천시 선단동 834-2
                             Log.d("Address", "도로명 주소: $roadAddress")
                             Log.d("detail", "$detailedAddress")
 
                             // Kakao Map API를 호출하여 해당 주소 주변의 빌딩 정보 검색
                             searchNearbyBuildings(detailedAddress,latitude, longitude) { buildingNames ->
-                                buildingNames?.let {
+                                buildingNames?.let { placeDocument ->
+                                    //PlaceDocument(road_address=RoadAddress(address_name=경기 포천시 송선로 285, building_name=))]
+                                    //1번 근데 빌딩이름은 없고 도로명만 나올때가있음
                                     Log.d("BuildingNames", "빌딩 이름들: $buildingNames")
                                     // 여기에서 UI 업데이트 또는 다른 작업을 수행할 수 있습니다.
+                                    if (placeDocument.isNotEmpty()) {
+                                        location = placeDocument.first().road_address.address_name + " " + placeDocument.first().road_address.building_name
+                                        mBinding.placeName.text = placeDocument.first().road_address.building_name
+                                        mBinding.placeRoad.text = placeDocument.first().road_address.address_name
+                                    } else {
+                                        getAddressFromCoordinates(latitude, longitude, API_KEY) { addressCoordinates ->
+                                            addressCoordinates.let {//2번
+                                                //경기 포천시 선단동 834-2
+                                                if (addressCoordinates != null) {
+                                                    location = addressCoordinates
+                                                    mBinding.placeName.text = ""
+                                                    mBinding.placeRoad.text = addressCoordinates
+                                                } else {
+                                                    //대한민국 경기도 포천시 선단동 834-2
+                                                    location = address?.getAddressLine(0).toString()
+                                                    mBinding.placeName.text = ""
+                                                    mBinding.placeRoad.text = address?.getAddressLine(0).toString()
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
+
+
+
+
+
                         } else {
                             Log.e("Address", "주소를 가져올 수 없습니다.")
                             //Toast.makeText(this, "주소를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
                         }
 
-                        getAddressFromCoordinates(latitude, longitude, API_KEY) { addressCoordinates ->
-                            addressCoordinates.let {
-                                Log.d("test", addressCoordinates.toString())
-                            }
-                        }
 
-                        Log.d("NoticeEdit Map Test", detailedAddress)
-                        Log.d("NoticeEdit Map Test", "${address?.featureName}") //빌딩이름?
-                        Log.d("NoticeEdit Map Test", "$address")
-                        Log.d("NoticeEdit Map Test", address?.getAddressLine(0).toString())
-                        Log.d("NoticeEdit Map Test", addresses.toString())
-                        Log.d("NoticeEdit Map Test", longitude.toString())
-                        Log.d("NoticeEdit Map Test", latitude.toString())
                     }
                 }
 

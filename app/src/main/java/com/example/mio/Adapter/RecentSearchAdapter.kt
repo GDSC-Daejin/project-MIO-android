@@ -56,9 +56,13 @@ class RecentSearchAdapter(private var items: List<LocationReadAllResponse>) : Re
         }*/
 
         fun bind(item: LocationReadAllResponse) {
-            binding.tvListName.text = item.location
+            binding.tvListName.text = item.location.split(",").last()
             CoroutineScope(Dispatchers.IO).launch {
-                val address = getAddressFromLatLng(item.latitude, item.longitude)
+                val address = if (item.cost == -1) {
+                    item.location.split(",").first()
+                } else {
+                    getAddressFromLatLng(item.latitude, item.longitude)
+                }
                 withContext(Dispatchers.Main) {
                     binding.tvListRoad.text = address
                 }
@@ -88,7 +92,7 @@ class RecentSearchAdapter(private var items: List<LocationReadAllResponse>) : Re
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(items[holder.adapterPosition])
     }
 
     override fun getItemCount() = items.size

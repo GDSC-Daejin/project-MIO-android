@@ -101,6 +101,7 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/pretendard_medium"
                     android:text="서울특별시 노원구"
+                    android:textSize="11sp"
                     android:textColor="@color/mio_gray_7" />
 
                 <TextView
@@ -116,6 +117,7 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/pretendard_medium"
                     android:text="1234567890101 토스뱅크"
+                    android:textSize="11sp"
                     android:textColor="@color/mio_gray_7" />
 
             </LinearLayout>

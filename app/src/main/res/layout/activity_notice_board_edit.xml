@@ -155,7 +155,6 @@
                     android:textColor="@color/mio_gray_11"
                     android:textSize="20sp" />
 
-                <!--//제목-->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -180,7 +179,6 @@
 
                 </LinearLayout>
 
-                <!--//날짜;-->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -218,7 +216,7 @@
                         android:contentDescription="캘린더 선택"
                         android:src="@drawable/filter_calendar_icon" />
                 </LinearLayout>
-                <!--시간-->
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -265,7 +263,7 @@
                     android:layout_marginTop="20dp"
                     android:background="@color/mio_gray_4" />
 
-                <!--카테고리-->
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -280,8 +278,8 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
                     android:layout_gravity="center"
                     android:orientation="horizontal">
 
@@ -298,6 +296,13 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/edit_category_taxi_btn"
+                        app:layout_constraintStart_toEndOf="@+id/edit_category_carpool_btn"
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <Button
                         android:id="@+id/edit_category_taxi_btn"
@@ -313,7 +318,7 @@
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <!--탑승인원-->
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -408,7 +413,7 @@
                     android:textSize="10sp" />
             </LinearLayout>
 
-            <!--장소입력-->
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -453,8 +458,7 @@
                     app:srcCompat="@drawable/search_btn_icon" />
             </LinearLayout>
 
-            <!--space는 투명해야함 따라서 색넣고 space 기능을 원하면 View를 사용하자-->
-            <View
+           <View
                 android:id="@+id/line2"
                 android:layout_width="match_parent"
                 android:layout_height="10dp"
@@ -490,8 +494,8 @@
                     android:layout_height="wrap_content"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-                <!--tools:listitem="@layout/search_word_layout"-->
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:listitem="@layout/search_word_layout"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>
@@ -546,7 +550,7 @@
                         android:layout_marginLeft="20dp"
                         android:textColor="@color/mio_gray_10"
                         android:textSize="20sp"
-                        android:textStyle="bold"
+                        android:fontFamily="@font/pretendard_bold"
                         app:layout_constraintBottom_toTopOf="@+id/place_road"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent" />
@@ -558,6 +562,7 @@
                         android:layout_marginLeft="20dp"
                         android:layout_marginBottom="20dp"
                         android:textColor="@color/mio_gray_8"
+                        android:fontFamily="@font/pretendard_bold"
                         android:textSize="20sp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -615,7 +620,7 @@
                     android:textSize="10sp" />
             </LinearLayout>
 
-            <!--금액입력-->
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -648,26 +653,35 @@
                     android:textColorHint="@color/mio_gray_6" />
             </LinearLayout>
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="27dp"
                 android:layout_marginEnd="27dp"
                 android:orientation="vertical"
                 android:visibility="visible">
-                <!--등하교-->
+
+
                 <TextView
+                    android:id="@+id/textView7"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
                     android:fontFamily="@font/pretendard_medium"
                     android:text="등/하교"
-                    android:textColor="@color/mio_gray_11" />
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/constraintLayout2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView7">
 
                     <Button
                         android:id="@+id/edit_gtschool_btn"
@@ -676,8 +690,10 @@
                         android:background="@drawable/edit_check_btn"
                         android:text="등교"
                         android:textColor="@color/mio_gray_11"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
+
 
                     <Button
                         android:id="@+id/edit_aschool_btn"
@@ -686,24 +702,33 @@
                         android:background="@drawable/edit_check_btn"
                         android:text="하교"
                         android:textColor="@color/mio_gray_11"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-                <!--성별-->
                 <TextView
+                    android:id="@+id/textView8"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginTop="30dp"
                     android:fontFamily="@font/pretendard_medium"
                     android:text="성별"
-                    android:textColor="@color/mio_gray_11" />
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout2" />
+
 
                 <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/constraintLayout4"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView8">
 
                     <Button
                         android:id="@+id/edit_man_btn"
@@ -728,17 +753,24 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <TextView
+                    android:id="@+id/textView9"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginTop="30dp"
                     android:fontFamily="@font/pretendard_medium"
                     android:text="흡연여부"
-                    android:textColor="@color/mio_gray_11" />
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/constraintLayout4" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView9">
 
                     <Button
                         android:id="@+id/edit_smoker_btn"
@@ -760,7 +792,9 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
-            </LinearLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
         </LinearLayout>
 
         <!--네번째 뷰플립-->
@@ -823,7 +857,7 @@
                 android:layout_marginStart="27dp"
                 android:layout_marginTop="15dp"
                 android:layout_marginEnd="27dp"
-                android:background="@drawable/round_layout">
+                android:background="@drawable/round_layout2">
 
                 <EditText
                     android:id="@+id/edit_detail_content"
@@ -839,7 +873,7 @@
                     android:inputType="textMultiLine"
                     android:scrollHorizontally="false"
                     android:textColorHint="@color/mio_gray_6"
-                    android:textSize="15sp" />
+                    android:textSize="18sp" />
             </LinearLayout>
         </LinearLayout>
 

@@ -158,32 +158,36 @@ class TaxiTabFragment : Fragment() {
                     val temp = currentTaxiAllData[position]
                     var intent : Intent? = null
                     dataPosition = position
-                    when(status!!) {
-                        //우선 완료 액티비티로 이동
-                        CurrentNoticeBoardAdapter.PostStatus.Passenger -> {
+                    when(status) {
+                        CurrentNoticeBoardAdapter.PostStatus.Passenger -> {//내가 손님으로 카풀이 완료되었을 떄
+                            Log.d("Carpool", "Passenger")
                             intent = Intent(activity, CompleteActivity::class.java).apply {
                                 putExtra("type", "PASSENGER")
-                                //운전자가 누군지 알기위해 데이터전송
                                 putExtra("postDriver", temp.user)
-                                putExtra("postCost", temp.postCost)
+                                putExtra("postData", currentTaxiAllData[position])
                             }
                             sendAlarmData("PASSENGER", position, currentTaxiAllData[position])
                         }
 
-                        CurrentNoticeBoardAdapter.PostStatus.Driver -> {
+                        CurrentNoticeBoardAdapter.PostStatus.Driver -> { //내가 운전자로 카풀이 완료되었을 떄
+                            Log.d("Carpool", "Driver")
                             intent = Intent(activity, CompleteActivity::class.java).apply {
                                 putExtra("type", "DRIVER")
-                                //putExtra("postPassengers", carpoolParticipantsData)
+                                putExtra("postData", currentTaxiAllData[position])
                             }
                             sendAlarmData("DRIVER", position, currentTaxiAllData[position])
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Neither -> {
+                            Log.d("Carpool", "Neither")
                             intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
                                 putExtra("type", "READ")
                                 putExtra("postItem", temp)
                                 putExtra("uri", temp.user.profileImageUrl)
                             }
+                        }
+                        else -> {
+
                         }
                     }
                     requestActivity.launch(intent)
@@ -1220,41 +1224,69 @@ class TaxiTabFragment : Fragment() {
         val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
         val nowDate = nowFormat?.toString()
 
+        var thisParticipationData : kotlin.collections.List<ParticipationData>? = null
+        api.getParticipationData(postData.postID).enqueue(object : Callback<List<ParticipationData>> {
+            override fun onResponse(
+                call: Call<List<ParticipationData>>,
+                response: Response<List<ParticipationData>>
+            ) {
+                if (response.isSuccessful) {
+                    //response.body()[1].
+                    response.body().let {
+                        thisParticipationData = it
+                    }
+                    /*Log.e("participants", "successssssssssssssssss")
+                    println(thisParticipationData)
+                    println(response.body())*/
+                } else {
+                    Log.e("participants", response.code().toString())
+
+                }
+            }
+
+            override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
+                Log.e("participants", t.message.toString())
+            }
+
+        })
 
 
-        //내가 운전자 일때 후기를 받을 사람들한테 알림 전송
+        //내가 운전자 일때 후기를 받을 손님들한테 알림 전송
         if (status == "DRIVER") {
-            for (i in taxiParticipantsData[dataPos]?.indices!!) {
-                //userId 가 알람 받는 사람
-                val temp = AddAlarmData(nowDate!!, "${taxiParticipantsData[dataPos]?.get(i)?.id!!}님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
+            if (thisParticipationData?.isNotEmpty() == true) {
+                val filterData = thisParticipationData?.filter { it.approvalOrReject == "APPROVAL" }
+                for (i in filterData?.indices!!) {
+                    //userId 가 알람 받는 사람
+                    val temp = AddAlarmData(nowDate!!, "운전자님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
 
-                //entity가 알람 받는 사람, user가 알람 전송한 사람
-                CoroutineScope(Dispatchers.IO).launch {
-                    api.addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
-                        override fun onResponse(
-                            call: Call<AddAlarmResponseData?>,
-                            response: Response<AddAlarmResponseData?>
-                        ) {
-                            if (response.isSuccessful) {
-                                println("succcc send alarm")
-                            } else {
-                                println("faafa alarm")
-                                Log.d("alarm", response.errorBody()?.string()!!)
-                                Log.d("message", call.request().toString())
-                                println(response.code())
+                    //entity가 알람 받는 사람, user가 알람 전송한 사람
+                    CoroutineScope(Dispatchers.IO).launch {
+                        api.addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
+                            override fun onResponse(
+                                call: Call<AddAlarmResponseData?>,
+                                response: Response<AddAlarmResponseData?>
+                            ) {
+                                if (response.isSuccessful) {
+                                    println("succcc send alarm")
+                                } else {
+                                    println("faafa alarm")
+                                    Log.d("alarm", response.errorBody()?.string()!!)
+                                    Log.d("message", call.request().toString())
+                                    println(response.code())
+                                }
                             }
-                        }
 
-                        override fun onFailure(call: Call<AddAlarmResponseData?>, t: Throwable) {
-                            Log.d("error", t.toString())
-                        }
+                            override fun onFailure(call: Call<AddAlarmResponseData?>, t: Throwable) {
+                                Log.d("error", t.toString())
+                            }
 
-                    })
+                        })
+                    }
                 }
             }
         } else {
             //내가 손님일 때 후기를 써주길 원하는 운전자에게 쓰도록 유도
-            val temp = AddAlarmData(nowDate!!, "${postData.user.studentId}님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
+            val temp = AddAlarmData(nowDate!!, "손님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
 
             //entity가 알람 받는 사람, user가 알람 전송한 사람
             CoroutineScope(Dispatchers.IO).launch {
@@ -1280,8 +1312,8 @@ class TaxiTabFragment : Fragment() {
                 })
             }
         }
-
     }
+
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {

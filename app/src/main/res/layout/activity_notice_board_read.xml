@@ -452,6 +452,7 @@
                     android:id="@+id/not_comment_tv"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_marginTop="50dp"
                     android:layout_marginBottom="4dp"
                     android:fontFamily="@font/pretendard_bold"
                     android:gravity="center"

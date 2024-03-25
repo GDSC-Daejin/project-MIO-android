@@ -244,9 +244,7 @@ class SearchResultActivity : AppCompatActivity() {
         adapter = SearchResultAdapter(items).apply {
             setOnItemClickListener(object : SearchResultAdapter.OnItemClickListener {
                 override fun onItemClicked(location: LocationReadAllResponse) {
-                    if (type != "account") {
-                        //sharedViewModel.selectedLocation.value = location
-                        moveToSearchFragment(location)
+                    moveToSearchFragment(location)
 /*
                     // Convert the location object to a JSON string
                     val locationJson = convertLocationToJSON(location)
@@ -254,17 +252,8 @@ class SearchResultActivity : AppCompatActivity() {
                     // Save the JSON string representing the location object
                     SharedPrefManager.saveRecentSearch(this@SearchResultActivity, locationJson)
 */
-                        finish() // 액티비티 종료와 함께 SearchFragment로 돌아갑니다.
-                    } else {
-                        val intent = Intent(this@SearchResultActivity, AccountSettingActivity::class.java).apply {
-                            putExtra("flag", 0)
-                            putExtra("data", location.location)
-                        }
-                        setResult(RESULT_OK, intent)
-                        finish()
-                    }
+                    finish() // 액티비티 종료와 함께 SearchFragment로 돌아갑니다.
                 }
-
             })
         }
         binding.rvSearchList.adapter = adapter
@@ -283,7 +272,7 @@ class SearchResultActivity : AppCompatActivity() {
             recentSearchAdapter.updateData(recentSearchList) // 여기에서 최근 검색 데이터를 업데이트
 
             if (recentSearchList.isEmpty()) {
-                binding.textView4.visibility = View.VISIBLE
+                //binding.textView4.visibility = View.VISIBLE
                 binding.textView2.visibility = View.VISIBLE
                 binding.textView3.visibility = View.VISIBLE
             } else {

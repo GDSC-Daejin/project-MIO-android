@@ -1,16 +1,20 @@
 package com.example.mio.Helper
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -35,14 +39,27 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.ArrayList
 
-class MyWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(appContext, params) {
+class MyWorker: CoroutineWorker {
+    private var beforeNotificationAllData = ArrayList<AddAlarmResponseData>()
+    private var notificationAllData = ArrayList<AddAlarmResponseData>()
+    private var notificationPostAllData = ArrayList<AlarmPost>()
+    private var workContext : Context
+    constructor(appContext: Context, params: WorkerParameters) : super(appContext, params) {
+        // 알람 데이터 및 기타 변수 초기화
+        beforeNotificationAllData = ArrayList()
+        notificationAllData = ArrayList()
+        notificationPostAllData = ArrayList()
+        workContext = appContext.applicationContext
 
-    //전에 받은 알람의 데이터 비교하기 위해 생성 -> 전에꺼 보다 이번에 받은 데이터 크기가 더 크다면 알람을 받은 것이니 갱신해줘야함
-    private var beforeNotificationAllData : ArrayList<AddAlarmResponseData> = ArrayList()
-    private var notificationAllData : ArrayList<AddAlarmResponseData> = ArrayList()
-    private var notificationPostAllData : ArrayList<AlarmPost> = ArrayList()
-    var workContext = appContext
-    var workParams = params
+        //전에 저장한 알람 체크
+        sharedPref = SharedPref(workContext)
+
+        //알람이 왔는지 체크
+        isSendCheck = false
+    }
+    // 알람 데이터 및 기타 변수 초기화
+
+    //var workParams = params
 
     //전에 저장한 알람 체크
     private var sharedPref : SharedPref? = null
@@ -53,32 +70,23 @@ class MyWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
     //알람
     private val channelID = "NOTIFICATION_CHANNEL"
     private val channelName = "NOTIFICATION"
-
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
-            sharedPref = SharedPref(workContext)
-
-            if (sharedPref != null) {
-                beforeNotificationAllData = sharedPref!!.getNotify(workContext) as ArrayList<AddAlarmResponseData>
-            }
-            //어차피 한 번만 실행됨
+            // 백그라운드 작업 수행
             createChannel()
-
-            // 백그라운드 작업을 여기에 정의
-
-            // 서버에 알림 요청 보내기
             setMyNotificationData()
 
+            // 알람 설정
             if (isSendCheck) {
                 setNotification("새로운 알람이 도착했습니다!", workContext)
             }
 
             Log.d("Success", "success")
-            return@withContext Result.success()
+            Result.success()
         } catch (e: Exception) {
             // 예외 처리
-            Log.d("ERROR", e.toString())
-            return@withContext Result.failure()
+            Log.e("ERROR", e.toString())
+            Result.failure()
         }
     }
 
@@ -251,11 +259,28 @@ class MyWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
             .build()
 
 
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
         getManager().notify(notificationChannelID, notificationCreate)
         //alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, setAlarmTime!!.timeInMillis, pendingIntent)
     }
 
-    private fun getManager() : NotificationManager {
+    /*private fun getManager() : NotificationManager {
         return workContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    }*/
+    private fun getManager(): NotificationManagerCompat {
+        return NotificationManagerCompat.from(workContext)
     }
 }

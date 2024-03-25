@@ -282,46 +282,26 @@ class LoginActivity : AppCompatActivity() {
             userEmail = email
 
             //회원가입과 함께 새로운 계정 정보 저장
-            if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity)!!.isEmpty()) {
-                if (userEmail.substring(9..20).toString() == "daejin.ac.kr") {
-                    //Toast.makeText(this, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
-                    saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
+            if (userEmail.substring(9..20).toString() == "daejin.ac.kr") {
+                //Toast.makeText(this, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
 
-                    Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
-                    /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    startActivity(intent)
-                    this@LoginActivity.finish()*/
+                Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
+                /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                startActivity(intent)
+                this@LoginActivity.finish()*/
 
-                    println(email)
-                    println(authCode.toString())
-                    getAccessToken(authCode!!)
+                println(email)
+                println(authCode.toString())
+                getAccessToken(authCode!!)
 
-                    /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    startActivity(intent)
-                    this@LoginActivity.finish()*/
-                } else {
-                    Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
-                }
-            } else { //처음 아님
-                if (userEmail.substring(9..20).toString() == "daejin.ac.kr") {
-                    //Toast.makeText(this, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
-
-                    Log.d("LoginActivity", "기존유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
-                    /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    startActivity(intent)
-                    this@LoginActivity.finish()*/
-
-                    println(email)
-                    println(authCode.toString())
-                    getAccessToken(authCode!!)
-
-                    /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                    startActivity(intent)
-                    this@LoginActivity.finish()*/
-                } else {
-                    Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
-                }
+                /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                startActivity(intent)
+                this@LoginActivity.finish()*/
+            } else {
+                Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
             }
+
         } catch (e : ApiException) {
             Log.w("failed", "signinresultfalied code = " + e.statusCode)
         }
@@ -467,7 +447,7 @@ class LoginActivity : AppCompatActivity() {
         println("signIn")
         //로딩창 실행
         loadingDialog = LoadingProgressDialog(this@LoginActivity)
-        loadingDialog?.setCancelable(false)
+        //loadingDialog?.setCancelable(false)
         //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
         //로딩창
         loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))

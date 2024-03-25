@@ -49,6 +49,14 @@
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove" />
 
+        <!--<service
+            android:name=".Helper.MyWorker"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE">
+            <intent-filter>
+                <action android:name="androidx.work.impl.background.systemjob.SystemJobService" />
+            </intent-filter>
+        </service>-->
 
         <activity
             android:name=".CompleteActivity"
@@ -187,14 +195,7 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".Helper.MyWorker"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE">
-            <intent-filter>
-                <action android:name="androidx.work.impl.background.systemjob.SystemJobService" />
-            </intent-filter>
-        </service>
+
     </application>
 
 </manifest>

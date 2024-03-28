@@ -2,6 +2,7 @@ package com.example.mio.NoticeBoard
 
 import android.app.*
 import android.content.Context
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -22,6 +23,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -147,12 +149,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val type = intent.getStringExtra("type")
         if (type.equals("READ")) {
             temp = intent.getSerializableExtra("postItem") as PostData?
-            initParticipationCheck()
             writerEmail = temp!!.user.email
             //tempProfile = intent.getSerializableExtra("uri") as String
             tempProfile = temp?.user?.profileImageUrl.toString()
             isCategory = temp!!.postCategory == "carpool"
-
+            initParticipationCheck()
             if (temp?.user?.gender != null && temp?.user?.verifySmoker != null && temp?.postVerifyGoReturn != null) {
                 chipList.add(createNewChip(text = if (temp?.user?.verifySmoker == true) {
                     "흡연 O"
@@ -283,6 +284,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         //setCommentData()
         initCommentRecyclerView()
+        participantApplyBtnSet(isParticipation!!)
 
         nbrBinding.goLocation.setOnClickListener {
             val intent = Intent(this, LocationActivity::class.java)
@@ -704,36 +706,34 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         //println(userId)
         Log.d("NoticeReadGetParticipation", userId.toString())
-        CoroutineScope(Dispatchers.IO).launch {
-            api.getParticipationData(postId = temp?.postID!!).enqueue(object : Callback<List<ParticipationData>> {
-                override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
-                    if (response.isSuccessful) {
-                        Log.d("NoticeReadGetParticipation", "suceessssssss")
-                        if (response.body()?.find { it.userId == userId} != null){
-                            isParticipation = true
-                            Log.d("NoticeReadGetParticipation", isParticipation.toString())
-                            participantApplyBtnSet(isParticipation!!)
-                        } else {
-                            isParticipation = false
-                            Log.d("NoticeReadGetParticipation", isParticipation.toString())
-                            participantApplyBtnSet(isParticipation!!)
-                        }
-                    } else {
-                        println(response.errorBody().toString())
-                        println(response.message().toString())
-                        println("실패")
-                        println("faafa")
-                        Log.d("add", response.errorBody()?.string()!!)
-                        Log.d("message", call.request().toString())
-                        Log.d("f", response.code().toString())
-                    }
-                }
+        api.getParticipationData(postId = temp?.postID!!).enqueue(object : Callback<List<ParticipationData>> {
+            override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
+                if (response.isSuccessful) {
+                    Log.d("NoticeReadGetParticipation", "suceessssssss")
+                    if (response.body()?.find { it.userId == userId} != null){
+                        isParticipation = true
+                        Log.d("NoticeReadGetParticipation", isParticipation.toString())
 
-                override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
-                    Log.d("error", t.toString())
+                    } else {
+                        isParticipation = false
+                        Log.d("NoticeReadGetParticipation", isParticipation.toString())
+                        //participantApplyBtnSet(isParticipation!!)
+                    }
+                } else {
+                    println(response.errorBody().toString())
+                    println(response.message().toString())
+                    println("실패")
+                    println("faafa")
+                    Log.d("add", response.errorBody()?.string()!!)
+                    Log.d("message", call.request().toString())
+                    Log.d("f", response.code().toString())
                 }
-            })
-        }
+            }
+
+            override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
     }
 
     private fun participantApplyBtnSet(isParticipation : Boolean) {
@@ -825,87 +825,85 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 val api = retrofit2.create(MioInterface::class.java)
                 /////////
 
-                CoroutineScope(Dispatchers.IO).launch {
-                    api.checkParticipate(postId = temp!!.postID).enqueue(object : Callback<Boolean> {
-                        override fun onResponse(call: Call<Boolean>, response: Response<Boolean>) {
-                            if (response.isSuccessful) {
-                                println("가져오기 성공")
-                                println(response.body()!!.toString())
-                                if (response.body()!!) {
-                                    //예약된 게 없음
-                                    checkResponseBody = "신청하시려는 게시글과 같은 날짜에 승인된 카풀이 없습니다. \n 계속하시겠습니까?"
+                api.checkParticipate(postId = temp!!.postID).enqueue(object : Callback<Boolean> {
+                    override fun onResponse(call: Call<Boolean>, response: Response<Boolean>) {
+                        if (response.isSuccessful) {
+                            println("가져오기 성공")
+                            println(response.body()!!.toString())
+                            if (response.body()!!) {
+                                //예약된 게 없음
+                                checkResponseBody = "신청하시려는 게시글과 같은 날짜에 승인된 카풀이 없습니다. \n 계속하시겠습니까?"
 
-                                    //사용할 곳
-                                    val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
-                                    val view = layoutInflater.inflate(R.layout.dialog_layout, null)
-                                    val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
-                                        .setView(view)
-                                        .create()
-                                    val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
-                                    val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
-                                    val dialogRightBtn =  view.findViewById<View>(R.id.dialog_right_btn)
+                                //사용할 곳
+                                val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
+                                val view = layoutInflater.inflate(R.layout.dialog_layout, null)
+                                val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
+                                    .setView(view)
+                                    .create()
+                                val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
+                                val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
+                                val dialogRightBtn =  view.findViewById<View>(R.id.dialog_right_btn)
 
-                                    dialogContent.text = checkResponseBody //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
-                                    //아니오
-                                    dialogLeftBtn.setOnClickListener {
-                                        alertDialog.dismiss()
-                                    }
-                                    //예
-                                    dialogRightBtn.setOnClickListener {
-                                        alertDialog.dismiss()
-                                        val intent = Intent(this@NoticeBoardReadActivity, ApplyNextActivity::class.java).apply {
-                                            putExtra("postId", temp!!.postID)
-                                            putExtra("postData", temp)
-                                        }
-                                        startActivity(intent)
-                                        //finish 해보기
-                                        //this@NoticeBoardReadActivity.finish()
-                                    }
-                                    alertDialog.show()
-                                } else {
-                                    //예약된 것이 있음
-                                    checkResponseBody = "이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
-
-                                    val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
-                                    val view = layoutInflater.inflate(R.layout.dialog_layout, null)
-                                    val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
-                                        .setView(view)
-                                        .create()
-                                    val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
-                                    val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
-                                    val dialogRightBtn =  view.findViewById<View>(R.id.dialog_right_btn)
-
-                                    dialogContent.text = checkResponseBody //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
-                                    //아니오
-                                    dialogLeftBtn.setOnClickListener {
-                                        alertDialog.dismiss()
-                                    }
-                                    //예
-                                    dialogRightBtn.setOnClickListener {
-                                        alertDialog.dismiss()
-                                        val intent = Intent(this@NoticeBoardReadActivity, ApplyNextActivity::class.java).apply {
-                                            putExtra("postId", temp!!.postID)
-                                        }
-                                        startActivity(intent)
-                                        //finish 해보기 Todo
-                                        //this@NoticeBoardReadActivity.finish()
-                                    }
-                                    alertDialog.show()
+                                dialogContent.text = checkResponseBody //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
+                                //아니오
+                                dialogLeftBtn.setOnClickListener {
+                                    alertDialog.dismiss()
                                 }
-
+                                //예
+                                dialogRightBtn.setOnClickListener {
+                                    alertDialog.dismiss()
+                                    val intent = Intent(this@NoticeBoardReadActivity, ApplyNextActivity::class.java).apply {
+                                        putExtra("postId", temp!!.postID)
+                                        putExtra("postData", temp)
+                                    }
+                                    startActivity(intent)
+                                    //finish 해보기
+                                    //this@NoticeBoardReadActivity.finish()
+                                }
+                                alertDialog.show()
                             } else {
-                                println("faafa")
-                                Log.d("comment", response.errorBody()?.string()!!)
-                                Log.d("message", call.request().toString())
-                                println(response.code())
-                            }
-                        }
+                                //예약된 것이 있음
+                                checkResponseBody = "이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
 
-                        override fun onFailure(call: Call<Boolean>, t: Throwable) {
-                            Log.d("error", t.toString())
+                                val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
+                                val view = layoutInflater.inflate(R.layout.dialog_layout, null)
+                                val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
+                                    .setView(view)
+                                    .create()
+                                val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
+                                val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
+                                val dialogRightBtn =  view.findViewById<View>(R.id.dialog_right_btn)
+
+                                dialogContent.text = checkResponseBody //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
+                                //아니오
+                                dialogLeftBtn.setOnClickListener {
+                                    alertDialog.dismiss()
+                                }
+                                //예
+                                dialogRightBtn.setOnClickListener {
+                                    alertDialog.dismiss()
+                                    val intent = Intent(this@NoticeBoardReadActivity, ApplyNextActivity::class.java).apply {
+                                        putExtra("postId", temp!!.postID)
+                                    }
+                                    startActivity(intent)
+                                    finish()
+                                    //this@NoticeBoardReadActivity.finish()
+                                }
+                                alertDialog.show()
+                            }
+
+                        } else {
+                            println("faafa")
+                            Log.d("comment", response.errorBody()?.string()!!)
+                            Log.d("message", call.request().toString())
+                            println(response.code())
                         }
-                    })
-                }
+                    }
+
+                    override fun onFailure(call: Call<Boolean>, t: Throwable) {
+                        Log.d("error", t.toString())
+                    }
+                })
             }
         } else if (isParticipation && email != temp?.user?.email) { //신청은 되있으나 글쓴이가 아닐 때는 신청취소쪽으로
             Log.e("NoticeRead", isParticipation.toString())
@@ -918,72 +916,77 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 nbrBinding.readApplyBtn.apply {
                     setBackgroundResource(R.drawable.read_apply_btn_update_layout)
                     setTypeface(typeface)
-                    nbrBinding.readApplyBtn.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@NoticeBoardReadActivity, R.color.mio_gray_11))
+                    nbrBinding.readApplyBtn.backgroundTintList = ColorStateList.valueOf(
+                        ContextCompat.getColor(
+                            this@NoticeBoardReadActivity,
+                            R.color.mio_gray_7
+                        )
+                    )
                 }
             }
 
-            val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
-            val view = layoutInflater.inflate(R.layout.dialog_layout, null)
-            val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
-                .setView(view)
-                .create()
-            val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
-            val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
-            val dialogRightBtn =  view.findViewById<View>(R.id.dialog_right_btn)
+            nbrBinding.readApplyBtn.setOnClickListener {
+                val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
+                val view = layoutInflater.inflate(R.layout.dialog_layout, null)
+                val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
+                    .setView(view)
+                    .create()
+                val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
+                val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
+                val dialogRightBtn =  view.findViewById<View>(R.id.dialog_right_btn)
 
-            dialogContent.text = "신청을 취소하시겠습니까?" //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
-            //아니오
-            dialogLeftBtn.setOnClickListener {
-                alertDialog.dismiss()
-            }
-            //예
-            dialogRightBtn.setOnClickListener {
-                val now = System.currentTimeMillis()
-                val date = Date(now)
-                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-                val currentDate = sdf.format(date)
-                val formatter = DateTimeFormatter
-                    .ofPattern("yyyy-MM-dd HH:mm:ss")
-                    .withZone(ZoneId.systemDefault())
-                val result: Instant = Instant.from(formatter.parse(currentDate))
-
-                val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-                val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-
-                /////////interceptor
-                val SERVER_URL = BuildConfig.server_URL
-                val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                //Authorization jwt토큰 로그인
-                val interceptor = Interceptor { chain ->
-                    var newRequest: Request
-                    if (token != null && token != "") { // 토큰이 없는 경우
-                        // Authorization 헤더에 토큰 추가
-                        newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                        val expireDate: Long = getExpireDate.toLong()
-                        if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                            //refresh 들어갈 곳
-                            /*newRequest =
-                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                            val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
-                            startActivity(intent)
-                            finish()
-                            return@Interceptor chain.proceed(newRequest)
-                        }
-
-                    } else newRequest = chain.request()
-                    chain.proceed(newRequest)
+                dialogContent.text = "신청을 취소하시겠습니까?" //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
+                //아니오
+                dialogLeftBtn.setOnClickListener {
+                    alertDialog.dismiss()
                 }
-                val builder = OkHttpClient.Builder()
-                builder.interceptors().add(interceptor)
-                val client: OkHttpClient = builder.build()
-                retrofit.client(client)
-                val retrofit2: Retrofit = retrofit.build()
-                val api = retrofit2.create(MioInterface::class.java)
-                /////////
-                CoroutineScope(Dispatchers.IO).launch {
+                //예
+                dialogRightBtn.setOnClickListener {
+                    val now = System.currentTimeMillis()
+                    val date = Date(now)
+                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+                    val currentDate = sdf.format(date)
+                    val formatter = DateTimeFormatter
+                        .ofPattern("yyyy-MM-dd HH:mm:ss")
+                        .withZone(ZoneId.systemDefault())
+                    val result: Instant = Instant.from(formatter.parse(currentDate))
+
+                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                    val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+                    val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+
+                    /////////interceptor
+                    val SERVER_URL = BuildConfig.server_URL
+                    val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                        .addConverterFactory(GsonConverterFactory.create())
+                    //Authorization jwt토큰 로그인
+                    val interceptor = Interceptor { chain ->
+                        var newRequest: Request
+                        if (token != null && token != "") { // 토큰이 없는 경우
+                            // Authorization 헤더에 토큰 추가
+                            newRequest =
+                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                            val expireDate: Long = getExpireDate.toLong()
+                            if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                                //refresh 들어갈 곳
+                                /*newRequest =
+                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                                startActivity(intent)
+                                finish()
+                                return@Interceptor chain.proceed(newRequest)
+                            }
+
+                        } else newRequest = chain.request()
+                        chain.proceed(newRequest)
+                    }
+                    val builder = OkHttpClient.Builder()
+                    builder.interceptors().add(interceptor)
+                    val client: OkHttpClient = builder.build()
+                    retrofit.client(client)
+                    val retrofit2: Retrofit = retrofit.build()
+                    val api = retrofit2.create(MioInterface::class.java)
+                    /////////
                     api.deleteParticipate(postId = temp!!.postID).enqueue(object : Callback<Void> {
                         override fun onResponse(call: Call<Void>, response: Response<Void>) {
                             if (response.isSuccessful) {
@@ -1001,8 +1004,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         }
                     })
                 }
+                alertDialog.show()
             }
-            alertDialog.show()
         }
     }
 

@@ -57,17 +57,26 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             //val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
             itemContent.text = partData.content
 
-            val gender = if (participantsUserData[position].gender == true) {
-                "여성"
+            val gender = if (participantsUserData[position].gender != null) {
+                if (participantsUserData[position].gender == true) {
+                    "여성"
+                } else {
+                    "남성"
+                }
             } else {
-                "남성"
+                "설정X"
             }
 
-            val smoke = if (participantsUserData[position].verifySmoker == true) {
-                "흡연 O"
+            val smoke = if (participantsUserData[position].verifySmoker != null) {
+                if (participantsUserData[position].verifySmoker == true) {
+                    "흡연 O"
+                } else {
+                    "흡연 X"
+                }
             } else {
-                "흡연 X"
+                "설정X"
             }
+
 
             itemFilter.text = "${participantsUserData[position].studentId} | $gender $smoke"
 

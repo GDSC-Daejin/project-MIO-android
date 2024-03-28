@@ -114,11 +114,11 @@ interface MioInterface {
 
 
 
-    //사용자 정보 가져오기
+    //사용자 정보 가져오기 - 이메일
     @GET("/user/email/{userEmail}")
     fun getAccountData(@Path("userEmail") userEmail : String) : Call<User>
 
-    //사용자 유저 정보 가져오기
+    //사용자 유저 정보 가져오기 - 유저id
     @GET("/user/id/{userId}")
     fun getUserProfileData(@Path("userId") userId : Int) : Call<User>
 

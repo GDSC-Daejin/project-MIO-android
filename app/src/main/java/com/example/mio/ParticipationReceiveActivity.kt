@@ -1,5 +1,6 @@
 package com.example.mio
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -35,7 +36,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
     private var participantsUserAllData = ArrayList<User>()
 
     //read에서 받아온 postId 저장
-    private var postId = 0
+    private var postId = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,7 +75,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
     }
 
     private fun setParticipationData() {
-        /*val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
 
@@ -92,10 +93,14 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(this@ParticipationReceiveActivity, LoginActivity::class.java)
+                    startActivity(intent)
+                    finish()
                     return@Interceptor chain.proceed(newRequest)
                 }
+
             } else newRequest = chain.request()
             chain.proceed(newRequest)
         }
@@ -104,11 +109,11 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        ///
-        val call = RetrofitServerConnect.service
+        val api = retrofit2.create(MioInterface::class.java)
+        /////////
+        //val call = RetrofitServerConnect.service
 
-        call.getParticipationData(postId).enqueue(object : Callback<List<ParticipationData>> {
+        api.getParticipationData(postId).enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                 if (response.isSuccessful) {
                     participationItemAllData.clear()
@@ -149,7 +154,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
     }
 
     private fun setParticipantsUserData() {
-        /*val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
 
@@ -179,12 +184,12 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
+        val api = retrofit2.create(MioInterface::class.java)
         ///
-        val call = RetrofitServerConnect.service
+        //val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
             for (i in participationItemAllData.indices) {
-                call.getUserProfileData(participationItemAllData[i].userId).enqueue(object : Callback<User>{
+                api.getUserProfileData(participationItemAllData[i].userId).enqueue(object : Callback<User>{
                     override fun onResponse(call: Call<User>, response: Response<User>) {
                         if (response.isSuccessful) {
                             Log.d("part response", "success ${response.code()}")
@@ -205,6 +210,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                             ))
 
                             loadingDialog.dismiss()
+
                         } else {
                             Log.e("PARTICIPATION RESPONSE ERROR", response.errorBody().toString())
                             Log.i("response code", response.code().toString())

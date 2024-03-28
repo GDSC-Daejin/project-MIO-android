@@ -298,12 +298,13 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         myViewModel.allCheck.observe(this) {
             if (it.isFirstVF.isTitle && it.isFirstVF.isTime && it.isFirstVF.isCalendar) {
                 it.isFirstVF.isFirst = true
-                Log.d("Allcheck", it.isFirstVF.isTitle.toString())
+                isFirst = true
+                /*Log.d("Allcheck", it.isFirstVF.isTitle.toString())
                 Log.d("Allcheck", it.isFirstVF.isTime.toString())
                 Log.d("Allcheck", it.isFirstVF.isCalendar.toString())
-                Log.d("Allcheck", it.isFirstVF.isParticipants.toString())
+                Log.d("Allcheck", it.isFirstVF.isParticipants.toString())*/
 
-                println("ff")
+                //println("ff")
             }
 
             if (it.isSecondVF.isPlaceName && it.isSecondVF.isPlaceRode) {
@@ -321,6 +322,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             if (it.isFirstVF.isFirst) {
                 myViewModel.postCheckComplete(complete = true)
                 it.isFirstVF.isFirst = false
+                isFirst = true
                 println("checkbool")
             }
 
@@ -845,7 +847,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             val retrofit2: Retrofit = retrofit.build()
             val api = retrofit2.create(MioInterface::class.java)
 
-            if (type!! == "ADD") {
+            if (type.equals("ADD")) {
                 if (isFirst) {
                     var school = false
                     var smoke = false

@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import com.example.mio.*
 import com.example.mio.Model.*
@@ -30,8 +31,8 @@ class AccountSettingActivity : AppCompatActivity() {
     private var email = ""
 
     private var sendAccountData: EditAccountData? = null
-    private var isGender = false
-    private var isSmoker = false
+    private var isGender = false //false남 true여
+    private var isSmoker = false //false비흡, true 흡
     private var setLocation: Place? = null
     private var setLocation2: String? = null
     private var setAccountNumber : String? = null
@@ -44,7 +45,9 @@ class AccountSettingActivity : AppCompatActivity() {
 
         if (type.equals("ACCOUNT")) {
             email = intent.getStringExtra("accountData").toString()
+            initAccountSet()
         }
+        aBinding?.asProfileUseridTv?.text = email.substring(0..8)
 
         aBinding!!.asGenderLl.setOnClickListener {
             val bottomSheet = AccountSettingBottomSheetFragment(true)
@@ -132,6 +135,91 @@ class AccountSettingActivity : AppCompatActivity() {
         }
 
         setContentView(aBinding!!.root)
+    }
+
+    private fun initAccountSet() {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+
+        val interceptor = Interceptor { chain ->
+            val newRequest: Request
+            if (token != null && token != "") { // 토큰이 없지 않은 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(this@AccountSettingActivity, LoginActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+
+        api.getAccountData(userEmail = email).enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    if (response.body()?.gender != null) {
+                        aBinding?.asGenderTv?.text = if (response.body()?.gender!!) {
+                            "여성"
+                        } else {
+                            "남성"
+                        }
+                    } else {
+                        aBinding?.asGenderTv?.text = "이곳을 눌러 선택해주세요"
+                    }
+
+                    if (response.body()?.verifySmoker != null) {
+                        aBinding?.asSmokeTv?.text = if (response.body()?.verifySmoker!!) {
+                            "O"
+                        } else {
+                            "X"
+                        }
+                    } else {
+                        aBinding?.asSmokeTv?.text = "이곳을 눌러 선택해주세요"
+                    }
+
+                    if (response.body()?.accountNumber.isNullOrEmpty()) {
+                        aBinding?.asAccountTv?.text = "화살표를 눌러 계좌를 등록해주세요"
+                    } else {
+                        aBinding?.asAccountTv?.text = response.body()?.accountNumber
+
+                    }
+
+                    if (response.body()?.activityLocation.isNullOrEmpty()) {
+                        aBinding?.asLocationTv?.text = "화살표를 눌러 지역을 검색해주세요"
+                    } else {
+                        aBinding?.asLocationTv?.text = response.body()?.activityLocation
+                    }
+
+                } else {
+                    Log.e("Account Set ERROR", response.errorBody().toString())
+                    Log.e("Account Set Error", response.code().toString())
+                    Log.e("Account Set Error", response.message().toString())
+                    Toast.makeText(this@AccountSettingActivity, "사용자 정보를 불러오지 못했습니다. 연결을 확인해주세요", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                Log.e("Account Failure", t.message.toString())
+                Toast.makeText(this@AccountSettingActivity, "사용자 정보를 불러오지 못했습니다. 연결을 확인해주세요", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun editAccountData() {

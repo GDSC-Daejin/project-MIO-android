@@ -24,29 +24,57 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         //key set
-        buildConfigField "String", "client_web_api_key", properties['client_web_api_key']
+        /*buildConfigField "String", "client_web_api_key", properties['client_web_api_key']
         buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
         buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
+
+        buildConfigField "String", "client_web_release_id_key", properties['client_web_release_id_key']
+        buildConfigField "String", "client_web_release_secret_key", properties['client_web_release_secret_key']*/
+        // 릴리즈 빌드 설정
+        /*buildConfigField "String", "client_web_id_key", properties['client_web_release_id_key']
+        buildConfigField "String", "client_web_secret_key", properties['client_web_release_secret_key']
+
+        buildConfigField "String", "client_release_id_key", properties['client_release_id_key']
+
         buildConfigField "String", "server_URL", properties['server_URL']
         buildConfigField "String", "map_api_key", properties['map_api_key']
-        manifestPlaceholders = [kakaoNativeAppKey: kakaoNativeAppKey]
+        manifestPlaceholders = [kakaoNativeAppKey: kakaoNativeAppKey]*/
     }
 
     buildTypes {
         release {
-            minifyEnabled true
+
+            // 릴리즈 빌드 설정
+            buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
+            buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
+            buildConfigField "String", "client_release_id_key", properties['client_release_id_key']
+            buildConfigField "String", "server_URL", properties['server_URL']
+            buildConfigField "String", "map_api_key", properties['map_api_key']
+            manifestPlaceholders = [kakaoNativeAppKey: kakaoNativeAppKey]
+            //debugger true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            //signingConfig signingConfigs.release
+        }
+
+        debug {
+            buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
+            buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
+            buildConfigField "String", "client_id_key", properties['client_id_key']
+            buildConfigField "String", "server_URL", properties['server_URL']
+            buildConfigField "String", "map_api_key", properties['map_api_key']
+            manifestPlaceholders = [kakaoNativeAppKey: kakaoNativeAppKey]
         }
     }
 
-    splits {
+    /*splits {
         abi {
             enable true
             reset()
             include 'x86', 'x86_64', 'armeabi-v7a', 'armeabi'
             universalApk false
         }
-    }
+    }*/
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -78,7 +106,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     //auth
-    implementation 'com.google.android.gms:play-services-auth:20.5.0'
+    implementation 'com.google.android.gms:play-services-auth:21.0.0'
     //okhttp
     // define a BOM and its version
     implementation(platform("com.squareup.okhttp3:okhttp-bom:4.11.0"))

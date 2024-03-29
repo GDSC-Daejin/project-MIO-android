@@ -177,18 +177,16 @@ class SearchResultActivity : AppCompatActivity() {
 
                     }*/
                     Log.d("searchResultActivity filterhigh", responseData.toString())
-                    if (responseData?.isEmpty() == true) {
+                    if (responseData.isNullOrEmpty()) {
                         binding.textView4.visibility = View.VISIBLE
                         binding.textView5.visibility = View.VISIBLE
                         binding.rvSearchList.visibility = View.GONE
                     }
                     else {
-                        if (responseData != null) {
-                            adapter.updateData(responseData, query)
-                            binding.textView4.visibility = View.GONE
-                            binding.textView5.visibility = View.GONE
-                            binding.rvSearchList.visibility = View.VISIBLE
-                        }
+                        adapter.updateData(responseData, query)
+                        binding.textView4.visibility = View.GONE
+                        binding.textView5.visibility = View.GONE
+                        binding.rvSearchList.visibility = View.VISIBLE
                     }
                 }
                 else {

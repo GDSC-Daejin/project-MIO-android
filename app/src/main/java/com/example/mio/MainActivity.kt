@@ -19,6 +19,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
+import com.example.mio.Model.AddAlarmResponseData
 import com.example.mio.Model.AddPostData
 import com.example.mio.Model.PostData
 import com.example.mio.Model.SharedViewModel
@@ -28,6 +29,14 @@ import com.example.mio.databinding.ActivityMainBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class MainActivity : AppCompatActivity() {
@@ -79,6 +88,8 @@ class MainActivity : AppCompatActivity() {
         val actionNotification = menu!!.findItem(R.id.action_notification)
         val actionSetting = menu.findItem(R.id.action_main_setting)
 
+        initNotification(actionNotification)
+
         if (isClicked) {
             actionNotification.isVisible = !isClicked
         } else {
@@ -114,7 +125,7 @@ class MainActivity : AppCompatActivity() {
                 toolbarType = "설정"
                 setToolbarView(toolbarType)
 
-                Toast.makeText(applicationContext, "세팅 이벤트 실행", Toast.LENGTH_LONG).show()
+                //Toast.makeText(applicationContext, "세팅 이벤트 실행", Toast.LENGTH_LONG).show()
                 super.onOptionsItemSelected(item)
             }
 
@@ -469,6 +480,77 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun initNotification(menuItem: MenuItem) {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+
+                if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.d("MainActivitu Notification", expireDate.toString())
+
+                    // UI 스레드에서 Toast 실행
+                    this@MainActivity.runOnUiThread {
+                        Toast.makeText(this@MainActivity, "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                    }
+
+                   // Log.d("MainActivitu Notification", expireDate.toString())
+                    val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        /////
+        api.getMyAlarm().enqueue(object : Callback<List<AddAlarmResponseData>> {
+            override fun onResponse(
+                call: Call<List<AddAlarmResponseData>>,
+                response: Response<List<AddAlarmResponseData>>
+            ) {
+                if (response.isSuccessful) {
+                    if (response.body().isNullOrEmpty()) {
+                        menuItem.setIcon(R.drawable.top_menu_notification)
+                    } else {
+                        menuItem.setIcon(R.drawable.notification_update_icon)
+                    }
+
+                } else {
+                    Log.e("MainActivitu Notification", response.code().toString())
+                    Log.e("MainActivitu Notification", response.errorBody().toString())
+                    Log.e("MainActivitu Notification", response.message().toString())
+                }
+            }
+
+            override fun onFailure(call: Call<List<AddAlarmResponseData>>, t: Throwable) {
+                Log.d("MainActivitu Notification", t.message.toString())
+            }
+
+        })
+    }
+
     fun changeFragment(fragment : Fragment) {
         //프래그먼트를 교체 하는 작업을 수행할 수 있게 해줍니다.
         supportFragmentManager
@@ -513,4 +595,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
 }

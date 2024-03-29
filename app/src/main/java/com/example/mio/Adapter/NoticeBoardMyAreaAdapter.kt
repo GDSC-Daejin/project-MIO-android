@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mio.Model.LocationReadAllResponse
 import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
@@ -13,7 +14,7 @@ import java.lang.ref.WeakReference
 
 class NoticeBoardMyAreaAdapter : RecyclerView.Adapter<NoticeBoardMyAreaAdapter.NoticeBoardMyAreaViewHolder>(){
     private lateinit var binding : PostItemBinding
-    var postAreaItemData = ArrayList<PostData>()
+    var postAreaItemData : List<LocationReadAllResponse>? = null
     private lateinit var context : Context
 
     init {
@@ -31,16 +32,16 @@ class NoticeBoardMyAreaAdapter : RecyclerView.Adapter<NoticeBoardMyAreaAdapter.N
         var postParticipantTotal = binding.postParticipationTotal
         var postCost = binding.postCost
 
-        fun bind(accountData: PostData, position : Int) {
+        fun bind(areaData: LocationReadAllResponse, position : Int) {
             this.position = position
             //accountId.text = accountData.accountID
-            val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
-            postTitle.text = accountData.postTitle
+            val s = context.getString(R.string.setText, areaData.targetDate, areaData.targetTime)
+            postTitle.text = areaData.title
             postDate.text = s
-            postLocation.text = accountData.postLocation
-            postParticipation.text = accountData.postParticipation.toString()
-            postParticipantTotal.text = accountData.postParticipationTotal.toString()
-            postCost.text = context.getString(R.string.setCost, accountData.postCost.toString())
+            postLocation.text = areaData.location
+            postParticipation.text = areaData.participants?.size.toString()
+            postParticipantTotal.text = areaData.numberOfPassengers.toString()
+            postCost.text = context.getString(R.string.setCost, areaData.cost.toString())
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
             //val listener = itemClickListener?.get()
@@ -54,10 +55,10 @@ class NoticeBoardMyAreaAdapter : RecyclerView.Adapter<NoticeBoardMyAreaAdapter.N
     }
 
     override fun onBindViewHolder(holder: NoticeBoardMyAreaViewHolder, position: Int) {
-        holder.bind(postAreaItemData[holder.adapterPosition], position)
+        holder.bind(postAreaItemData!![holder.adapterPosition], position)
 
         holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, postAreaItemData[holder.adapterPosition].postID)
+            itemClickListener.onClick(it, holder.adapterPosition, postAreaItemData!![holder.adapterPosition].postId)
         }
 
     /*binding.homeRemoveIv.setOnClickListener {
@@ -87,7 +88,7 @@ class NoticeBoardMyAreaAdapter : RecyclerView.Adapter<NoticeBoardMyAreaAdapter.N
     }
 
     override fun getItemCount(): Int {
-        return postAreaItemData.size
+        return postAreaItemData?.size!!
     }
 
     override fun getItemId(position: Int): Long {
@@ -95,11 +96,11 @@ class NoticeBoardMyAreaAdapter : RecyclerView.Adapter<NoticeBoardMyAreaAdapter.N
     }
 
     //데이터 Handle 함수
-    fun removeData(position: Int) {
+    /*fun removeData(position: Int) {
         postAreaItemData.removeAt(position)
         //temp = null
         notifyItemRemoved(position)
-    }
+    }*/
 
     interface ItemClickListener {
         fun onClick(view: View, position: Int, itemId: Int)

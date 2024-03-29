@@ -12,12 +12,25 @@ public class SaveSharedPreferenceGoogleLogin {
     private val expireDate = "expireDate"
     private val privateUserId = "userId"
     private val refreshTokenTag = "refreshToken"
+    private val myAreaTag = "myArea"
 
     private val privateProfileUserId = "profileUserId"
 
     private val isGender = "geneder"
     private val isSchool = "school"
     private val isSmoke = "smoke"
+
+
+    fun getSharedArea(ctx: Context?): String? {
+        return getSharedPreferences(ctx).getString(myAreaTag, "")
+    }
+
+    // 필터정보저장
+    fun setArea(ctx: Context?, area: String?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putString(myAreaTag, area)
+        editor.apply()
+    }
 
     fun getSharedGender(ctx: Context?): String? {
         return getSharedPreferences(ctx).getString(isGender, "")

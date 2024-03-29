@@ -79,7 +79,7 @@ class TaxiTabFragment : Fragment() {
     private var noticeBoardMyAreaAdapter : NoticeBoardMyAreaAdapter? = null
 
     //나의 활동 지역
-    private var myAreaItemData : kotlin.collections.ArrayList<PostData> = ArrayList()
+    private var myAreaItemData : List<LocationReadAllResponse>? = null
 
 
     //캘린더
@@ -716,12 +716,11 @@ class TaxiTabFragment : Fragment() {
         }
     }
 
-    private fun setMyAreaData() { //나중에 여기 위치 받아오면 데이터 변경하기 TODO //유저 계정에 activityLocation 이걸로 filter해서 넣기..
-        /*val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
+    private fun setMyAreaData() { //나중에 여기 위치 받아오면 데이터 변경하기 Todo
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
+        var myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity()).toString()
 
         val interceptor = Interceptor { chain ->
             var newRequest: Request
@@ -730,15 +729,29 @@ class TaxiTabFragment : Fragment() {
                 newRequest =
                     chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
                 val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+
+                if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.d("taxi myarea", expireDate.toString())
+
+                    // UI 스레드에서 Toast 실행
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireActivity(), "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                    }
+
+                    // Log.d("MainActivitu Notification", expireDate.toString())
+                    val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    startActivity(intent)
+                    requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
                 }
+
             } else newRequest = chain.request()
             chain.proceed(newRequest)
         }
+
         val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -747,13 +760,20 @@ class TaxiTabFragment : Fragment() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
+        val api = retrofit2.create(MioInterface::class.java)
+        /////
 
-        val call = RetrofitServerConnect.service
+        if (myAreaData.isEmpty()) {
+            taxiTabBinding.areaRvLl.visibility = View.GONE
+            taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+            taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
+        } else {
+            taxiTabBinding.areaRvLl.visibility = View.VISIBLE
+            taxiTabBinding.nonAreaRvTv.visibility = View.GONE
+            taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
 
-        CoroutineScope(Dispatchers.IO).launch {
-            call.getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
-                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+            api.getLocationPostData(myAreaData).enqueue(object : Callback<kotlin.collections.List<LocationReadAllResponse>> {
+                override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
                     if (response.isSuccessful) {
 
                         //println(response.body()!!.content)
@@ -769,117 +789,25 @@ class TaxiTabFragment : Fragment() {
                         s.add(PostReadAllResponse())*/
 
                         //데이터 청소
-                        myAreaItemData.clear()
+                        myAreaItemData = null
 
-                        for (i in response.body()!!.content.indices) {
-                            //탑승자 null체크
-                            var part = 0
-                            var location = ""
-                            var title = ""
-                            var content = ""
-                            var targetDate = ""
-                            var targetTime = ""
-                            var categoryName = ""
-                            var cost = 0
-                            var verifyGoReturn = false
-                            if (response.isSuccessful) {
-                                part = try {
-                                    response.body()!!.content[i].participants!!.isEmpty()
-                                    response.body()!!.content[i].participants!!.size
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                location = try {
-                                    response.body()!!.content[i].location.isEmpty()
-                                    response.body()!!.content[i].location
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "수락산역 3번 출구"
-                                }
-                                title = try {
-                                    response.body()!!.content[i].title.isEmpty()
-                                    response.body()!!.content[i].title
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                content = try {
-                                    response.body()!!.content[i].content.isEmpty()
-                                    response.body()!!.content[i].content
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetDate = try {
-                                    response.body()!!.content[i].targetDate.isEmpty()
-                                    response.body()!!.content[i].targetDate
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetTime = try {
-                                    response.body()!!.content[i].targetTime.isEmpty()
-                                    response.body()!!.content[i].targetTime
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                categoryName = try {
-                                    response.body()!!.content[i].category.categoryName.isEmpty()
-                                    response.body()!!.content[i].category.categoryName
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                cost = try {
-                                    response.body()!!.content[i].cost
-                                    response.body()!!.content[i].cost
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                verifyGoReturn = try {
-                                    response.body()!!.content[i].verifyGoReturn
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    false
-                                }
-                            }
-
-                            //println(response!!.body()!!.content[i].user.studentId)
-                            taxiAllData.add(
-                                PostData(
-                                    response.body()!!.content[i].user.studentId,
-                                    response.body()!!.content[i].postId,
-                                    title,
-                                    content,
-                                    targetDate,
-                                    targetTime,
-                                    categoryName,
-                                    location,
-                                    //participantscount가 현재 참여하는 인원들
-                                    part,
-                                    //numberOfPassengers은 총 탑승자 수
-                                    response.body()!!.content[i].numberOfPassengers,
-                                    cost,
-                                    verifyGoReturn,
-                                    response.body()!!.content[i].user,
-                                    response.body()!!.content[i].latitude,
-                                    response.body()!!.content[i].longitude
-                                ))
-
-                            noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
+                        response.body().let {
+                            myAreaItemData = it
                         }
+
+                        noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
+
                         loadingDialog.dismiss()
 
                     } else {
-                        Log.d("f", response.code().toString())
+                        Log.e("taxi areaeaerera", response.code().toString())
+                        Log.e("taxi areaeaerera", response.errorBody().toString())
+                        Log.e("taxi areaeaerera", response.message().toString())
                     }
                 }
 
-                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.d("error", t.toString())
+                override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
+                    Log.e("taxtiixixixx error", t.message.toString())
                 }
             })
         }

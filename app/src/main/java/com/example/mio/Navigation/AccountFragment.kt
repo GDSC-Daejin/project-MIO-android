@@ -255,6 +255,7 @@ class AccountFragment : Fragment() {
                         if (activityLocation != null) {
                             aBinding.accountAddress.text = activityLocation
                             aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
+                            saveSharedPreferenceGoogleLogin.setArea(requireActivity(), activityLocation)
                         } else {
                             aBinding.accountAddress.text = "설정에서 개인정보를 입력해주세요"
                             aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_6))

@@ -54,7 +54,7 @@ interface MioInterface {
     @PATCH("/post/verfiyFinish/{id}")
     fun patchVerifyFinish(@Body verifyFinish : Boolean, @Path("id") id : Int) : Call<AddPostResponse>
 
-    @GET("/post/location2")
+    @GET("/post/location2") //활동
     fun getLocationPostData(@Query("location") location : String) : Call<List<LocationReadAllResponse>>
 
     @GET("/post/distance/{postId}")

@@ -275,6 +275,9 @@ class AccountSettingActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         Log.d("Success", response.code().toString())
                         Log.d("Account Setting", "Account Setting Response Success")
+
+                        saveSharedPreferenceGoogleLogin.setArea(this@AccountSettingActivity, sendAccountData?.activityLocation)
+
                         val intent = Intent(this@AccountSettingActivity, MainActivity::class.java).apply {
                             putExtra("flag", 6)
                         }

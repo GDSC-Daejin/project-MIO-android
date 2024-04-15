@@ -10,6 +10,7 @@
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -101,78 +102,20 @@
                 android:id="@+id/linearLayout3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="15dp"
                 android:layout_marginTop="10dp"
-                android:layout_marginEnd="15dp"
                 android:orientation="vertical"
+                android:background="@color/white"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
-                <TextView
-                    android:id="@+id/read_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/pretendard_bold"
-                    android:text="택시 N빵할 대진인 구해요"
-                    android:textColor="@color/mio_gray_11" />
-
-                <TextView
-                    android:id="@+id/read_content"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/pretendard_medium"
-                    android:text="평내호평역 1번 출구 앞 신호등에서 같이 택시 타실 분 구합니다. 금액은 미리 받고 오버되면 제가 더 지불하겠습니다. 9시되면 기다리는거 없이 바로 출발합니다."
-                    android:textColor="@color/mio_gray_9" />
-
-                <!--필터 같은 거 동적으로 추가할 ll-->
-                <LinearLayout
-                    android:id="@+id/read_set_filter_ll"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    >
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/read_set_filter_cg"
-                        android:orientation="horizontal"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:visibility="visible"
-                        >
-
-                    </com.google.android.material.chip.ChipGroup>
-                    <Space
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        />
-                    <TextView
-                        android:id="@+id/read_time_check"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/pretendard_medium"
-                        android:text="10분 전"
-                        android:layout_gravity="center|end"
-                        android:gravity="end"
-                        android:textColor="@color/mio_gray_7" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <!--고정될 뷰-->
-            <LinearLayout
-                android:id="@+id/read_fix_detail_content"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="vertical"
-                android:background="@color/mio_gray_1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="20dp"
                     android:orientation="horizontal">
 
                     <FrameLayout
@@ -224,6 +167,77 @@
                             android:textColor="@color/mio_gray_10" />
                     </LinearLayout>
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/read_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="10dp"
+                    android:fontFamily="@font/pretendard_bold"
+                    android:text="택시 N빵할 대진인 구해요"
+                    android:textSize="18sp"
+                    android:textColor="@color/mio_gray_11" />
+
+                <TextView
+                    android:id="@+id/read_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:text="평내호평역 1번 출구 앞 신호등에서 같이 택시 타실 분 구합니다. 금액은 미리 받고 오버되면 제가 더 지불하겠습니다. 9시되면 기다리는거 없이 바로 출발합니다."
+                    android:textSize="14sp"
+                    android:textColor="@color/mio_gray_9" />
+
+                <!--필터 같은 거 동적으로 추가할 ll-->
+                <LinearLayout
+                    android:id="@+id/read_set_filter_ll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="20dp"
+                    android:orientation="horizontal"
+                    >
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/read_set_filter_cg"
+                        android:orientation="horizontal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="visible"
+                        >
+
+                    </com.google.android.material.chip.ChipGroup>
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        />
+                    <TextView
+                        android:id="@+id/read_time_check"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:text="10분 전"
+                        android:layout_gravity="center|end"
+                        android:gravity="end"
+                        android:textColor="@color/mio_gray_7" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!--고정될 뷰-->
+            <LinearLayout
+                android:id="@+id/read_fix_detail_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                android:background="@color/mio_gray_1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
+
+
 
                 <!--세부적인 내용을 보여줄 곳-->
                 <LinearLayout
@@ -402,8 +416,9 @@
 
                     <TextView
                         android:id="@+id/read_comment_total"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:paddingStart="3dp"
                         android:layout_marginStart="5dp"
                         android:fontFamily="@font/pretendard_medium"
                         android:text="17"
@@ -414,7 +429,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
-                    android:layout_marginTop="5dp"
+                    android:layout_marginTop="10dp"
                     android:layout_marginEnd="10dp"
                     android:layout_marginBottom="5dp"
                     android:gravity="center"
@@ -435,6 +450,7 @@
                         android:baselineAligned="true"
                         android:fontFamily="@font/pretendard_medium"
                         android:text="댓글을 작성해보세요."
+                        android:textSize="18sp"
                         android:scrollHorizontally="false"
                         android:textColorHint="@color/mio_gray_6" />
 
@@ -452,11 +468,12 @@
                     android:id="@+id/not_comment_tv"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="50dp"
+                    android:layout_marginTop="30dp"
                     android:layout_marginBottom="4dp"
                     android:fontFamily="@font/pretendard_bold"
                     android:gravity="center"
                     android:text="댓글이 없습니다. \n 처음으로 댓글을 남겨보세요!"
+                    android:textSize="16sp"
                     android:textColor="@color/mio_gray_9" />
 
             </LinearLayout>

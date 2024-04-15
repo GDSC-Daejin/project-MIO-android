@@ -29,6 +29,9 @@ class HomeFragment : Fragment() {
 
     private var homeBinding: FragmentHomeBinding? = null
     private val tabTextList = listOf("카풀", "택시")
+    // 선택된 탭을 저장할 변수
+    private var selectedTabPosition: Int? = null
+    private var selectedTab : String? = null
     //private val tabIconList = listOf(R.drawable.baseline_local_taxi_24, R.drawable.baseline_directions_car_24)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +46,13 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         homeBinding = FragmentHomeBinding.inflate(inflater, container, false)
+        // Bundle에서 데이터 추출
+        selectedTab = arguments?.getString("selectedTab") //택시
+
+        // 선택된 탭이 있다면 tabTextList에서 위치를 찾아 selectedTabPosition에 저장
+        if (selectedTab != null) {
+            selectedTabPosition = tabTextList.indexOf(selectedTab)
+        }
 
         homeBinding!!.viewpager.adapter = CategoryTabAdapter(requireActivity())
 
@@ -50,6 +60,10 @@ class HomeFragment : Fragment() {
             tab.text = tabTextList[pos]
             //val typeface = resources.getFont(com.example.mio.R.font.pretendard_medium)
             //tab.setIcon(tabIconList[pos])
+            // 선택된 탭이 있고 현재 탭이 선택된 탭과 같으면 선택된 탭으로 설정
+            if (selectedTabPosition != null && pos == selectedTabPosition) {
+                homeBinding!!.categoryTabLayout.selectTab(tab)
+            }
         }.attach()
 
         return homeBinding!!.root

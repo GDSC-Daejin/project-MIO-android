@@ -228,14 +228,21 @@ class NotificationFragment : Fragment() {
                             ))
                         }
 
+
+                        Log.d("Notification Fragment Data", notificationAllData.toString())
                         nAdapter.notifyDataSetChanged()
 
                         if (notificationAllData.isEmpty()) {
                             nfBinding.notNotificationLl.visibility = View.VISIBLE
-                            nfBinding.notificationRV.visibility = View.GONE
+                            nfBinding.nestedScrollView.visibility = View.GONE
                         } else {
+                            val dataSize = notificationAllData.size.toString().ifEmpty {
+                                "0"
+                            }
+
+                            saveSharedPreferenceGoogleLogin.setNotification(requireActivity(), dataSize)
                             nfBinding.notNotificationLl.visibility = View.GONE
-                            nfBinding.notificationRV.visibility = View.VISIBLE
+                            nfBinding.nestedScrollView.visibility = View.VISIBLE
                         }
 
                     } else {

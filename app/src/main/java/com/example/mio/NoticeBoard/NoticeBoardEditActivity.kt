@@ -13,10 +13,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.*
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -424,16 +421,21 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             }
             override fun afterTextChanged(editable: Editable) {
                 editTitle = editable.toString()
+                println(editable.toString())
                 /*if (editable.isEmpty()) {
                     Toast.makeText("")
                 }*/
                 //깜빡임 제거
-                mBinding.editTitle.clearFocus()
-                mBinding.editTitle.movementMethod = null
+                /*mBinding.editTitle.clearFocus()
+                mBinding.editTitle.movementMethod = null*/
+                mBinding.editTitle.isCursorVisible = false
                 isAllCheck.isFirstVF.isTitle = editable.isNotEmpty()
             }
         })
 
+        mBinding.editTitle.setOnClickListener {
+            mBinding.editTitle.isCursorVisible = true
+        }
 
         if (type == "EDIT") {
             mBinding.editSelectDateTv.text = eTemp!!.postTargetDate
@@ -574,7 +576,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 mBinding.placeName.text = listItems[position].name
                 mBinding.placeRoad.text = listItems[position].road
                 addToRecentSearch(listItems[position])
-                location = listItems[position].road + " " + listItems[position].name
+                location = listItems[position].road + "/" + listItems[position].name
 
                 isAllCheck.isSecondVF.isPlaceName = true
                 isAllCheck.isSecondVF.isPlaceRode = true
@@ -612,7 +614,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 //여기서 name고정됨
                 mBinding.placeName.text = recentSearchItems[position].name
                 mBinding.placeRoad.text = recentSearchItems[position].road
-                location = recentSearchItems[position].road + " " + recentSearchItems[position].name
+                location = recentSearchItems[position].road + "/" + recentSearchItems[position].name
 
                 isAllCheck.isSecondVF.isPlaceName = true
                 isAllCheck.isSecondVF.isPlaceRode = true
@@ -765,21 +767,6 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
             }
             override fun afterTextChanged(editable: Editable) {
-                /*if (editable.isNotEmpty()) {
-                    mBinding.editPre.visibility = View.GONE
-                    mBinding.editNext.visibility = View.GONE
-                    mBinding.editBottomSpace.visibility = View.GONE
-                    mBinding.completeBtn.visibility = View.VISIBLE
-                } else {
-                    mBinding.editPre.visibility = View.VISIBLE
-                    mBinding.editNext.visibility = View.VISIBLE
-                    mBinding.editBottomSpace.visibility = View.VISIBLE
-                    mBinding.completeBtn.visibility = View.GONE
-                }*/
-                /*mBinding.editSmokerBtn.apply {
-                    setBackgroundResource(R.drawable.round_btn_update_layout)
-                    setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
-                }*/
 
                 detailContent = editable.toString()
                 isAllCheck.isFourthVF.isContent = editable.isNotEmpty()
@@ -903,7 +890,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
 
                     temp = AddPostData(editTitle, detailContent, selectFormattedDate, selectFormattedTime, school, participateNumberOfPeople, 0, false, latitude, longitude, location, selectCost.toInt())
-                    println(temp)
+                    Log.d("NoticeBoardEditActivityTempTest ", temp.toString())
                     CoroutineScope(Dispatchers.IO).launch {
                         /*"application/json; charset=UTF-8",*/
                         api.addPostData(temp!!, selectCategoryId).enqueue(object : Callback<AddPostResponse> {
@@ -912,11 +899,11 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                                 response: Response<AddPostResponse>
                             ) {
                                 if (response.isSuccessful) {
-                                    println("succcc")
+                                    println("NoticeBoardEditActivityTempTest response succcc")
                                 } else {
-                                    println("faafa")
-                                    Log.d("add", response.errorBody()?.string()!!)
-                                    Log.d("message", call.request().toString())
+                                    println("NoticeBoardEditActivityTempTest fafafafaf")
+                                    Log.d("NoticeBoardEditActivityTempTest aa", response.errorBody()?.string()!!)
+                                    Log.d("NoticeBoardEditActivityTempTestaf meeage", call.request().toString())
                                     println(response.code())
                                 }
                             }
@@ -927,16 +914,16 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
                         })
                     }
+                    val intent = Intent(this, TaxiTabFragment::class.java).apply {
+                        putExtra("postData", temp)
+                        putExtra("flag", 0)
+                    }
+                    setResult(RESULT_OK, intent)
+                    finish()
+
                 } else {
                     Toast.makeText(this, "빈 칸이 존재합니다. 빈 칸을 채워주세요!", Toast.LENGTH_SHORT).show()
                 }
-
-                val intent = Intent(this, TaxiTabFragment::class.java).apply {
-                    putExtra("postData", temp)
-                    putExtra("flag", 0)
-                }
-                setResult(RESULT_OK, intent)
-                finish()
 
             } else if (type.equals("EDIT")) {
                 if (isFirst) {
@@ -1465,7 +1452,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                                     Log.d("BuildingNames", "빌딩 이름들: $buildingNames")
                                     // 여기에서 UI 업데이트 또는 다른 작업을 수행할 수 있습니다.
                                     if (placeDocument.isNotEmpty()) {
-                                        location = placeDocument.first().road_address.address_name + " " + placeDocument.first().road_address.building_name
+                                        location = placeDocument.first().road_address.address_name + "/" + placeDocument.first().road_address.building_name
                                         mBinding.placeName.text = placeDocument.first().road_address.building_name
                                         mBinding.placeRoad.text = placeDocument.first().road_address.address_name
                                     } else {
@@ -1487,11 +1474,6 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                                     }
                                 }
                             }
-
-
-
-
-
                         } else {
                             Log.e("Address", "주소를 가져올 수 없습니다.")
                             //Toast.makeText(this, "주소를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()

@@ -61,6 +61,8 @@ class MainActivity : AppCompatActivity() {
 
     private var isFirstAccountEdit : String? = null
 
+    private var selectedTab = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -318,6 +320,23 @@ class MainActivity : AppCompatActivity() {
                         mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
                     }
 
+                    22-> {
+                        toolbarType = "기본"
+                        setToolbarView(toolbarType)
+                        selectedTab = it.data?.getStringExtra("selectedTab").toString()
+
+                        // HomeFragment에 전달할 데이터를 포함한 Bundle 생성
+                        val bundle = Bundle().apply {
+                            putString("selectedTab", selectedTab)
+                        }
+                        val homeFragment = HomeFragment().apply {
+                            arguments = bundle
+                        }
+                        setFragment(TAG_HOME, homeFragment)
+
+                        mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
+                    }
+
 
 
                 }
@@ -484,6 +503,7 @@ class MainActivity : AppCompatActivity() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+        val notificationCheck = saveSharedPreferenceGoogleLogin.getSharedNotification(this).toString()
 
         val interceptor = Interceptor { chain ->
             var newRequest: Request
@@ -531,10 +551,20 @@ class MainActivity : AppCompatActivity() {
                 response: Response<List<AddAlarmResponseData>>
             ) {
                 if (response.isSuccessful) {
-                    if (response.body().isNullOrEmpty()) {
+                    if (response.body().isNullOrEmpty() && response.body()?.toString() == "") {
                         menuItem.setIcon(R.drawable.top_menu_notification)
+                        Log.e("MainActivitu Notification??", notificationCheck.toString())
                     } else {
-                        menuItem.setIcon(R.drawable.notification_update_icon)
+                       if (response.body()?.size!! > notificationCheck.toInt()) { //사이즈가 달라짐 = 데이터가 더 추가되었다
+                           menuItem.setIcon(R.drawable.notification_update_icon)
+                           Log.e("MainActivitu Notification??", notificationCheck.toString())
+                       } else { //달라진게없으면? 다시 원상태 즉 봣다는거니
+                           menuItem.setIcon(R.drawable.top_menu_notification)
+                           Log.e("MainActivitu Notification??", notificationCheck.toString())
+                       }
+                        /*Log.e("MainActivitu Notification", response.body()?.size.toString())
+                        Log.e("MainActivitu Notification", notificationCheck.toString())*/
+
                     }
 
                 } else {

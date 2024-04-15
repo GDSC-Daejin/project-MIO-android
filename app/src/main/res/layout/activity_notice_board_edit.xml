@@ -297,8 +297,9 @@
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <Space
-                        android:layout_width="0dp"
+                        android:layout_width="10dp"
                         android:layout_height="wrap_content"
+                        app:layout_constraintVertical_weight="1"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toStartOf="@+id/edit_category_taxi_btn"
                         app:layout_constraintStart_toEndOf="@+id/edit_category_carpool_btn"
@@ -680,6 +681,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
+                    android:layout_marginEnd="5dp"
                     android:background="@drawable/edit_check_btn"
                     android:text="등교"
                     android:textColor="@color/mio_gray_11"
@@ -692,6 +694,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
+                    android:layout_marginStart="5dp"
                     android:background="@drawable/edit_check_btn"
                     android:text="하교"
                     android:textColor="@color/mio_gray_11"
@@ -716,6 +719,7 @@
                     android:id="@+id/edit_man_btn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
                     android:layout_marginTop="10dp"
                     android:background="@drawable/edit_check_btn"
                     android:contentDescription="남성"
@@ -729,6 +733,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
+                    android:layout_marginStart="5dp"
                     android:background="@drawable/edit_check_btn"
                     android:text="여성"
                     android:textColor="@color/mio_gray_11"
@@ -751,6 +756,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
+                    android:layout_marginEnd="5dp"
                     android:background="@drawable/edit_check_btn"
                     android:text="O"
                     android:textColor="@color/mio_gray_11"
@@ -762,6 +768,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
+                    android:layout_marginStart="5dp"
                     android:background="@drawable/edit_check_btn"
                     android:text="X"
                     android:textColor="@color/mio_gray_11"
@@ -832,7 +839,8 @@
                 android:layout_marginStart="27dp"
                 android:layout_marginTop="15dp"
                 android:layout_marginEnd="27dp"
-                android:background="@drawable/round_layout2">
+                android:background="@drawable/round_layout2"
+                >
 
                 <EditText
                     android:id="@+id/edit_detail_content"
@@ -841,7 +849,6 @@
                     android:layout_marginStart="15dp"
                     android:layout_marginEnd="15dp"
                     android:autofillHints=""
-                    android:background="@android:color/transparent"
                     android:fontFamily="@font/pretendard_medium"
                     android:gravity="top"
                     android:hint="약속 시간 철저히 지키시는 분 좋아요"

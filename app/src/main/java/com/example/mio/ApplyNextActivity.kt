@@ -68,6 +68,7 @@ class ApplyNextActivity : AppCompatActivity() {
         //뷰의 이벤트 리스너
         myViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
+        //val s = savedInstanceState.pu
         postId = intent.getIntExtra("postId", 0) as Int
         postData = intent.getSerializableExtra("postData") as PostData
 

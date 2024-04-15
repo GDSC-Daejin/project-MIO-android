@@ -43,6 +43,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         pBinding = ActivityParticipationReceiveBinding.inflate(layoutInflater)
 
         postId = intent.getIntExtra("postId", 0) as Int
+        Log.d("ParticipationReceiveActivity PostId Test", postId.toString())
 
         initParticipationRecyclerView()
 
@@ -60,10 +61,13 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         loadingDialog.show()
 
         setParticipationData()
-        setParticipantsUserData()
+        //setParticipantsUserData()
 
         participationAdapter = ParticipationAdapter()
-        participationAdapter.participationItemData = participationItemAllData
+
+        val filteredList = participationItemAllData.filter { it.content != "작성자" }
+        participationAdapter.participationItemData = ArrayList(filteredList)
+        //participationAdapter.participationItemData = participationItemAllData
         participationAdapter.participantsUserData = participantsUserAllData
         pBinding.participationRv.adapter = participationAdapter
         //레이아웃 뒤집기 안씀
@@ -130,15 +134,17 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                         )
                     }
 
-                    if (participationItemAllData.isNotEmpty()) {
+                    if (participationItemAllData.any { it.content != "작성자" }) {
                         pBinding.participationRv.visibility = View.VISIBLE
                         pBinding.nonParticipation.visibility = View.GONE
                     } else {
                         pBinding.participationRv.visibility = View.GONE
                         pBinding.nonParticipation.visibility = View.VISIBLE
                     }
-                    println(participationItemAllData)
+                    Log.d("ParticipationReceiveActivity PostId Test", participationItemAllData.toString())
                     participationAdapter.notifyDataSetChanged()
+
+                    loadingDialog.dismiss()
 
                 } else {
                     println(response.errorBody().toString())
@@ -182,12 +188,12 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         val builder = OkHttpClient.Builder()
         builder.interceptors().add(interceptor)
         val client: OkHttpClient = builder.build()
-        retrofit.client(client)
+        //retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         ///
         //val call = RetrofitServerConnect.service
-        CoroutineScope(Dispatchers.IO).launch {
+        /*CoroutineScope(Dispatchers.IO).launch {
             for (i in participationItemAllData.indices) {
                 api.getUserProfileData(participationItemAllData[i].userId).enqueue(object : Callback<User>{
                     override fun onResponse(call: Call<User>, response: Response<User>) {
@@ -223,158 +229,6 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                     }
                 })
             }
-        }
-    }
-
-    /*private fun set() {
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-            val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
-            val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
-
-            val interceptor = Interceptor { chain ->
-                var newRequest: Request
-                if (token != null && token != "") { // 토큰이 없는 경우
-                    // Authorization 헤더에 토큰 추가
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                    val expireDate: Long = getExpireDate.toLong()
-                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                        //refresh 들어갈 곳
-                        newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                        return@Interceptor chain.proceed(newRequest)
-                    }
-                } else newRequest = chain.request()
-                chain.proceed(newRequest)
-            }
-            val SERVER_URL = BuildConfig.server_URL
-            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-            val builder = OkHttpClient.Builder()
-            builder.interceptors().add(interceptor)
-            val client: OkHttpClient = builder.build()
-            retrofit.client(client)
-            val retrofit2: Retrofit = retrofit.build()
-            val api = retrofit2.create(MioInterface::class.java)
-
-            //println(userId)
-
-            CoroutineScope(Dispatchers.IO).launch {
-                api.getMyPostData(userId,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
-                    override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                        if (response.isSuccessful) {
-
-                            //데이터 청소
-                            myAccountPostAllData.clear()
-
-                            for (i in response.body()!!.content.indices) {
-                                //탑승자 null체크
-                                var part = 0
-                                var location = ""
-                                var title = ""
-                                var content = ""
-                                var targetDate = ""
-                                var targetTime = ""
-                                var categoryName = ""
-                                var cost = 0
-                                var verifyGoReturn = false
-                                if (response.isSuccessful) {
-                                    part = try {
-                                        response.body()!!.content[i].participants.isEmpty()
-                                        response.body()!!.content[i].participants.size
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        0
-                                    }
-                                    location = try {
-                                        response.body()!!.content[i].location.isEmpty()
-                                        response.body()!!.content[i].location
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "수락산역 3번 출구"
-                                    }
-                                    title = try {
-                                        response.body()!!.content[i].title.isEmpty()
-                                        response.body()!!.content[i].title
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "null"
-                                    }
-                                    content = try {
-                                        response.body()!!.content[i].content.isEmpty()
-                                        response.body()!!.content[i].content
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "null"
-                                    }
-                                    targetDate = try {
-                                        response.body()!!.content[i].targetDate.isEmpty()
-                                        response.body()!!.content[i].targetDate
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "null"
-                                    }
-                                    targetTime = try {
-                                        response.body()!!.content[i].targetTime.isEmpty()
-                                        response.body()!!.content[i].targetTime
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "null"
-                                    }
-                                    categoryName = try {
-                                        response.body()!!.content[i].category.categoryName.isEmpty()
-                                        response.body()!!.content[i].category.categoryName
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "null"
-                                    }
-                                    cost = try {
-                                        response.body()!!.content[i].cost
-                                        response.body()!!.content[i].cost
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        0
-                                    }
-                                    verifyGoReturn = try {
-                                        response.body()!!.content[i].verifyGoReturn
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        false
-                                    }
-                                }
-
-                                //println(response!!.body()!!.content[i].user.studentId)
-                                myAccountPostAllData.add(PostData(
-                                    response.body()!!.content[i].user.studentId,
-                                    response.body()!!.content[i].postId,
-                                    title,
-                                    content,
-                                    targetDate,
-                                    targetTime,
-                                    categoryName,
-                                    location,
-                                    //participantscount가 현재 참여하는 인원들
-                                    part,
-                                    //numberOfPassengers은 총 탑승자 수
-                                    response.body()!!.content[i].numberOfPassengers,
-                                    cost,
-                                    verifyGoReturn,
-                                    response.body()!!.content[i].user
-                                ))
-                                myAdapter!!.notifyDataSetChanged()
-                            }
-
-                        } else {
-                            Log.d("f", response.code().toString())
-                        }
-                    }
-
-                    override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                        Log.d("error", t.toString())
-                    }
-                })
-            }
         }*/
+    }
 }

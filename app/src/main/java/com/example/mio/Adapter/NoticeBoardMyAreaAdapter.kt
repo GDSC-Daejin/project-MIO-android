@@ -88,7 +88,7 @@ class NoticeBoardMyAreaAdapter : RecyclerView.Adapter<NoticeBoardMyAreaAdapter.N
     }
 
     override fun getItemCount(): Int {
-        return postAreaItemData?.size!!
+        return postAreaItemData?.size ?: 0
     }
 
     override fun getItemId(position: Int): Long {

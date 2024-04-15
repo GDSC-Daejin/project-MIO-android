@@ -135,6 +135,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     private var checkResponseBody = ""
     //칩 생성
     private var chipList = kotlin.collections.ArrayList<Chip>()
+
+    //어디서 이동되었는지
+    private var tabType : String? = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nbrBinding = ActivityNoticeBoardReadBinding.inflate(layoutInflater)
@@ -147,6 +151,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
 
         val type = intent.getStringExtra("type")
+        tabType = intent.getStringExtra("tabType").toString()
+
         if (type.equals("READ")) {
             temp = intent.getSerializableExtra("postItem") as PostData?
             writerEmail = temp!!.user.email
@@ -229,12 +235,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             nbrBinding.readNumberOfPassengersTotal.text = temp!!.postParticipationTotal.toString()
             nbrBinding.readNumberOfPassengers.text = temp!!.postParticipation.toString()
             Log.e("READ", temp!!.postLocation.split(" ").toString())
-            nbrBinding.readLocation.text = if (temp!!.postLocation.split(" ").last().toString() == " ") {
-                temp!!.postLocation.split(" ").dropLast(1).joinToString(" ")
+            nbrBinding.readLocation.text = if (temp!!.postLocation.split("/").last().isEmpty()) {
+                temp!!.postLocation.split("/").first()
             } else {
-                temp!!.postLocation.split(" ").last().toString()
+                temp!!.postLocation.split("/").last().toString()
             }
-            nbrBinding.readDetailLocation.text = temp!!.postLocation.split(" ").dropLast(1).joinToString(" ")
+            nbrBinding.readDetailLocation.text = temp!!.postLocation.split("/").dropLast(1).joinToString(" ")
             nbrBinding.readDateTime.text = this.getString(R.string.setText, temp!!.postTargetDate, temp!!.postTargetTime)
 
 
@@ -284,7 +290,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         //setCommentData()
         initCommentRecyclerView()
-        participantApplyBtnSet(isParticipation!!)
+
 
         nbrBinding.goLocation.setOnClickListener {
             val intent = Intent(this, LocationActivity::class.java)
@@ -614,7 +620,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         nbrBinding.backArrow.setOnClickListener {
             val intent = Intent(this@NoticeBoardReadActivity, MainActivity::class.java).apply {
                 //flag넣고 resultok
-                putExtra("flag", 9)
+                putExtra("flag", 22)
+                putExtra("selectedTab", tabType)
             }
             setResult(RESULT_OK, intent)
             finish()
@@ -713,11 +720,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     if (response.body()?.find { it.userId == userId} != null){
                         isParticipation = true
                         Log.d("NoticeReadGetParticipation", isParticipation.toString())
-
+                        participantApplyBtnSet(isParticipation!!)
                     } else {
                         isParticipation = false
                         Log.d("NoticeReadGetParticipation", isParticipation.toString())
                         //participantApplyBtnSet(isParticipation!!)
+                        participantApplyBtnSet(isParticipation!!)
                     }
                 } else {
                     println(response.errorBody().toString())

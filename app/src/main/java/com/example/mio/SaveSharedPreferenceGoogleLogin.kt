@@ -14,11 +14,26 @@ public class SaveSharedPreferenceGoogleLogin {
     private val refreshTokenTag = "refreshToken"
     private val myAreaTag = "myArea"
 
+    private val notificationCheck = "notificationCheck"
+
     private val privateProfileUserId = "profileUserId"
 
     private val isGender = "geneder"
     private val isSchool = "school"
     private val isSmoke = "smoke"
+
+
+
+    //알람의 데이터 수가 달라지는 거 확인용
+    fun getSharedNotification(ctx: Context?): String? {
+        return getSharedPreferences(ctx).getString(notificationCheck, "0")
+    }
+    //알람의 데이터 수를 저장
+    fun setNotification(ctx: Context?, check: String?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putString(notificationCheck, check)
+        editor.apply()
+    }
 
 
     fun getSharedArea(ctx: Context?): String? {

@@ -360,11 +360,11 @@ class CarpoolTabFragment : Fragment() {
         )
         loadingDialog?.show()
 
-        //setData()
-        if (loadingDialog != null && loadingDialog!!.isShowing) {
+        setData()
+        /*if (loadingDialog != null && loadingDialog!!.isShowing) {
             loadingDialog?.dismiss()
             loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-        }
+        }*/
 
 
         noticeBoardAdapter = NoticeBoardAdapter()
@@ -761,54 +761,56 @@ class CarpoolTabFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
         /////
 
-        if (myAreaData.isEmpty()) {
-            taxiTabBinding.areaRvLl.visibility = View.GONE
-            taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
-            taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
-        } else {
-            taxiTabBinding.areaRvLl.visibility = View.VISIBLE
-            taxiTabBinding.nonAreaRvTv.visibility = View.GONE
-            taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+        api.getLocationPostData(myAreaData).enqueue(object : Callback<kotlin.collections.List<LocationReadAllResponse>> {
+            override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
+                if (response.isSuccessful) {
 
-            api.getLocationPostData(myAreaData).enqueue(object : Callback<kotlin.collections.List<LocationReadAllResponse>> {
-                override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
-                    if (response.isSuccessful) {
+                    //println(response.body()!!.content)
+                    /*val start = SystemClock.elapsedRealtime()
 
-                        //println(response.body()!!.content)
-                        /*val start = SystemClock.elapsedRealtime()
+                    // 함수 실행시간
+                    val date = Date(start)
+                    val mFormat = SimpleDateFormat("HH:mm:ss")
+                    val time = mFormat.format(date)
+                    println(start)
+                    println(time)*/
+                    /*val s : ArrayList<PostReadAllResponse> = ArrayList()
+                    s.add(PostReadAllResponse())*/
 
-                        // 함수 실행시간
-                        val date = Date(start)
-                        val mFormat = SimpleDateFormat("HH:mm:ss")
-                        val time = mFormat.format(date)
-                        println(start)
-                        println(time)*/
-                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                        s.add(PostReadAllResponse())*/
+                    //데이터 청소
+                    myAreaItemData = null
 
-                        //데이터 청소
-                        myAreaItemData = null
-
-                        response.body().let {
-                            myAreaItemData = it
-                        }
-
-                        noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
-
-                        loadingDialog?.dismiss()
-
-                    } else {
-                        Log.e("carpool areaeaerera", response.code().toString())
-                        Log.e("carpool areaeaerera", response.errorBody().toString())
-                        Log.e("carpool areaeaerera", response.message().toString())
+                    response.body().let {
+                        myAreaItemData = it
                     }
-                }
 
-                override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
-                    Log.d("error", t.toString())
+                    noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
+
+                    loadingDialog?.dismiss()
+
+                    if (myAreaItemData?.isEmpty() == true) {
+                        taxiTabBinding.areaRvLl.visibility = View.GONE
+                        taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+                        taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
+                    } else {
+                        taxiTabBinding.areaRvLl.visibility = View.VISIBLE
+                        taxiTabBinding.nonAreaRvTv.visibility = View.GONE
+                        taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                    }
+
+                } else {
+                    Log.e("carpool areaeaerera", response.code().toString())
+                    Log.e("carpool areaeaerera", response.errorBody().toString())
+                    Log.e("carpool areaeaerera", response.message().toString())
                 }
-            })
-        }
+            }
+
+            override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
+
+
     }
 
     private fun setCurrentCarpoolData() {

@@ -74,7 +74,7 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
             val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
             val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime) //위 두개는 알림이 온 시간체크용용
 
-            val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(notification.post.targetDate) //이건 게시글과의 차이를 계산해 카풀종료 알림인지 확인하기위함
+            val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(notification.post.targetDate + " " + notification.post.targetTime) //이건 게시글과의 차이를 계산해 카풀종료 알림인지 확인하기위함
             val diff = nowFormat?.time?.minus(format?.time!!)
 
             if (notification.content.substring(0..1) == "신청") {

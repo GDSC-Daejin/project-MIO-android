@@ -179,8 +179,8 @@ class LoginActivity : AppCompatActivity() {
 
                         val builder =  OkHttpClient.Builder()
                             .connectTimeout(1, TimeUnit.SECONDS)
-                            .readTimeout(30, TimeUnit.SECONDS)
-                            .writeTimeout(15, TimeUnit.SECONDS)
+                            .readTimeout(10, TimeUnit.SECONDS)
+                            .writeTimeout(10, TimeUnit.SECONDS)
                             .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
                         /*intent.apply {
                             putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
@@ -228,6 +228,7 @@ class LoginActivity : AppCompatActivity() {
             }
             override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
                 println("실패" + t.message.toString())
+                loadingDialog?.dismiss()
                 if (loadingDialog != null && loadingDialog!!.isShowing) {
                     loadingDialog?.dismiss()
                     loadingDialog = null // 다이얼로그 인스턴스 참조 해제

@@ -108,11 +108,11 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
             holder.itemView.setOnClickListener {
                 itemClickListener.onClick(it, holder.adapterPosition, moreTaxiData[holder.adapterPosition]!!.postID)
             }
-            val content : PostData = moreTaxiData[position]!!
+            //val content : PostData = moreTaxiData[position]!!
             //holder.searchWord_tv.text = content.searchWordText
-        } else {
+        } /*else {
 
-        }
+        }*/
 
 
     }

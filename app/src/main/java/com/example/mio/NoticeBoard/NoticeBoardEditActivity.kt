@@ -14,11 +14,13 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.core.view.contains
 import androidx.lifecycle.ViewModelProvider
@@ -27,6 +29,7 @@ import com.airbnb.lottie.model.Marker
 import com.example.mio.*
 import com.example.mio.Adapter.PlaceAdapter
 import com.example.mio.Model.*
+import com.example.mio.TabCategory.CarpoolTabFragment
 import com.example.mio.TabCategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
 import com.google.gson.Gson
@@ -442,6 +445,14 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             selectFormattedDate = eTemp!!.postTargetDate
         }
         mBinding.editCalendar.setOnClickListener {
+            // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+            val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+            if (inputMethodManager.isActive) {
+                // 가상 키보드가 올라가 있다면 내립니다.
+                inputMethodManager.hideSoftInputFromWindow(mBinding.editCalendar.windowToken, 0)
+            }
+
             val cal = Calendar.getInstance()
             val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
                 selectTargetDate = "${year}년/${month+1}월/${day}일"
@@ -663,7 +674,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 }
 
                 isAllCheck.isThirdVF.isAmount = editable.isNotEmpty()
-                mBinding.editDetailContent.clearFocus()
+                mBinding.editDetailContent.isCursorVisible = false
                // mBinding.editDetailContent.movementMethod = null
                 myViewModel.postCheckValue(isAllCheck)
             }
@@ -770,7 +781,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
                 detailContent = editable.toString()
                 isAllCheck.isFourthVF.isContent = editable.isNotEmpty()
-                mBinding.editDetailContent.clearFocus()
+                mBinding.editDetailContent.isCursorVisible = false
                 mBinding.editDetailContent.movementMethod = null
                 myViewModel.postCheckValue(isAllCheck)
             }
@@ -914,12 +925,22 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
                         })
                     }
-                    val intent = Intent(this, TaxiTabFragment::class.java).apply {
-                        putExtra("postData", temp)
-                        putExtra("flag", 0)
+                    if (selectCategoryId == 1) {
+                        val intent = Intent(this, CarpoolTabFragment::class.java).apply {
+                            putExtra("postData", temp)
+                            putExtra("flag", 0)
+                        }
+                        setResult(RESULT_OK, intent)
+                        finish()
+                    } else {
+                        val intent = Intent(this, TaxiTabFragment::class.java).apply {
+                            putExtra("postData", temp)
+                            putExtra("flag", 0)
+                        }
+                        setResult(RESULT_OK, intent)
+                        finish()
                     }
-                    setResult(RESULT_OK, intent)
-                    finish()
+
 
                 } else {
                     Toast.makeText(this, "빈 칸이 존재합니다. 빈 칸을 채워주세요!", Toast.LENGTH_SHORT).show()

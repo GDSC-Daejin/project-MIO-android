@@ -46,7 +46,7 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
         fun bind(accountData: PostData, position : Int) {
             this.position = position
             //accountId.text = accountData.accountID
-            val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime) //10-34.5.67.8.910 , 8-5
+            //val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime) //10-34.5.67.8.910 , 8-5
 
             //요일 구하기
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA)

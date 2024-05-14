@@ -1,22 +1,27 @@
 package com.example.mio.TabCategory
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.*
 import com.example.mio.Adapter.MoreTaxiTabAdapter
 import com.example.mio.BottomSheetFragment.AnotherBottomSheetFragment
+import com.example.mio.BottomSheetFragment.BottomAdFragment
 import com.example.mio.BottomSheetFragment.BottomSheetFragment
 import com.example.mio.Model.PostData
 import com.example.mio.Model.PostReadAllResponse
@@ -77,6 +82,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         initSwipeRefresh()
         initRecyclerView()
         initScrollListener()
+        //showBottomSheetAd(this@MoreCarpoolTabActivity)
 
         //이건 날짜, 탑승 수, 담배, 성별, 학교 순서 등 필터
         //필터 취소 기능 넣기 TODO
@@ -1057,5 +1063,55 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         chip.text = text
         //chip.isCloseIconVisible = false
         return chip
+    }
+
+    private fun showBottomSheetAd(context: Context, isScreenOn : Boolean) {
+        val sharedPreference = SaveSharedPreferenceGoogleLogin()
+        val lastBottomSheetTime = sharedPreference.getLastBottomSheetTime(context)
+        val currentTime = System.currentTimeMillis()
+
+        // 마지막으로 바텀시트가 띄워진 시간부터 24시간이 지났는지 확인
+        if (currentTime - lastBottomSheetTime >= 24 * 60 * 60 * 1000 && isScreenOn) {
+            // 24시간이 지났으므로 바텀시트를 띄웁니다.
+            // 여기에 바텀시트를 띄우는 코드를 추가합니다.
+            val bottomSheet = BottomAdFragment()
+            //bottomSheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.RoundCornerBottomSheetDialogTheme)
+            bottomSheet.show(this.supportFragmentManager, bottomSheet.tag)
+            bottomSheet.apply {
+                setCallback(object : BottomAdFragment.OnSendFromBottomSheetDialog{
+                    override fun sendValue(value: String) {
+                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
+                        Toast.makeText(this@MoreCarpoolTabActivity, "24시간 동안 끄기로 설정되었습니다", Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+            // 바텀시트가 띄워진 시간을 저장합니다.
+            sharedPreference.setLastBottomSheetTime(context, currentTime)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadAdIfNeeded()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopAdLoading()
+    }
+
+    private fun loadAdIfNeeded() {
+        if (isScreenOn()) {
+            showBottomSheetAd(this@MoreCarpoolTabActivity, true)
+        }
+    }
+
+    private fun stopAdLoading() {
+        showBottomSheetAd(this@MoreCarpoolTabActivity, false)
+    }
+
+    private fun isScreenOn(): Boolean {
+        val powerManager = this.getSystemService(Context.POWER_SERVICE) as PowerManager
+        return powerManager.isInteractive
     }
 }

@@ -47,7 +47,7 @@ class NotificationContentAdapter : RecyclerView.Adapter<NotificationContentAdapt
             val currentDate = sdf.format(date)
 
 
-            val postDateTime = context.getString(R.string.setText, notificationContentData!!.createDate.substring(0 .. 9), notificationContentData!!.createDate.substring(11 .. 18))
+            val postDateTime = context.getString(R.string.setText, notificationContentData.createDate.substring(0 .. 9), notificationContentData.createDate.substring(11 .. 18))
 
             val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
             val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)
@@ -87,7 +87,7 @@ class NotificationContentAdapter : RecyclerView.Adapter<NotificationContentAdapt
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationContentAdapter.NotificationContentViewHolder {
         context = parent.context
-        sharedPref = this.context?.let { SharedPref(it) }
+        sharedPref = SharedPref(this.context)
         binding = NotificationItemRvLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return NotificationContentViewHolder(binding)
     }

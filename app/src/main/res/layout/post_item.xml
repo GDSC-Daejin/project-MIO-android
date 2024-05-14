@@ -51,7 +51,9 @@
                     android:layout_weight="1"
                     android:fontFamily="@font/pretendard_medium"
                     android:text="택시 N빵 할 머진인 구해요"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/black"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
 
                 <ImageView
                     android:id="@+id/post_status"
@@ -80,7 +82,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
-
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     android:fontFamily="@font/pretendard_medium"
                     android:text="23.06.05 (월) 9:00"
                     android:textColor="@color/mio_gray_6" />
@@ -105,6 +108,8 @@
                     android:layout_height="match_parent"
                     android:layout_marginStart="4dp"
                     android:fontFamily="@font/pretendard_medium"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     android:text="수락산역 3번출구"
                     android:textColor="@color/mio_gray_6"
                     android:textSize="13sp" />
@@ -129,6 +134,8 @@
                     android:layout_marginStart="4dp"
                     android:fontFamily="@font/pretendard_medium"
                     android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     android:text="5000원"
                     android:textColor="@color/mio_gray_6"
                     android:textSize="13sp" />

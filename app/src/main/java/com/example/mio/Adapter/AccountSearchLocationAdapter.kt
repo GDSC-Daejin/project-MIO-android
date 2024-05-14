@@ -77,7 +77,6 @@ class AccountSearchLocationAdapter(private var items: List<Place>) : RecyclerVie
         fun bind(item: Place, highlightText: String) {
             CoroutineScope(Dispatchers.IO).launch {
                 //val address = getAddressFromLatLng(item.x.toDouble(), item.y.toDouble())
-                val address = item.place_name
                 withContext(Dispatchers.Main) {
                     if (highlightText.isNotEmpty() && item.place_name.contains(highlightText, true)) {
                         // 강조해야 하는 텍스트가 있고, 아이템의 location에 포함되어 있다면
@@ -103,7 +102,7 @@ class AccountSearchLocationAdapter(private var items: List<Place>) : RecyclerVie
 
         @RequiresApi(Build.VERSION_CODES.TIRAMISU)
         private fun getAddressFromLatLng(latitude: Double, longitude: Double) {
-            var address: Address? = null
+            var address: Address?
             //val addresses = geocoder.getFromLocation(latitude, longitude, 1)
             val geocodeListener = @RequiresApi(33) object : Geocoder.GeocodeListener {
                 override fun onGeocode(addresses: MutableList<Address>) {

@@ -9,7 +9,8 @@ plugins {
 
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
-def kakaoNativeAppKey = properties.getProperty('kakao_native_app_key')
+def kakao_native_app_key = properties.getProperty('kakao_native_app_key')
+def applicationKey = properties.getProperty('mio_application_id')
 
 android {
     namespace 'com.example.mio'
@@ -24,21 +25,24 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         //key set
-        /*buildConfigField "String", "client_web_api_key", properties['client_web_api_key']
+        buildConfigField "String", "client_web_api_key", properties['client_web_api_key']
         buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
         buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
 
         buildConfigField "String", "client_web_release_id_key", properties['client_web_release_id_key']
-        buildConfigField "String", "client_web_release_secret_key", properties['client_web_release_secret_key']*/
+        buildConfigField "String", "client_web_release_secret_key", properties['client_web_release_secret_key']
         // 릴리즈 빌드 설정
-        /*buildConfigField "String", "client_web_id_key", properties['client_web_release_id_key']
+        buildConfigField "String", "client_web_id_key", properties['client_web_release_id_key']
         buildConfigField "String", "client_web_secret_key", properties['client_web_release_secret_key']
 
         buildConfigField "String", "client_release_id_key", properties['client_release_id_key']
 
         buildConfigField "String", "server_URL", properties['server_URL']
         buildConfigField "String", "map_api_key", properties['map_api_key']
-        manifestPlaceholders = [kakaoNativeAppKey: kakaoNativeAppKey]*/
+        buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
+        buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
+
+        manifestPlaceholders = [kakaoNativeAppKey: kakao_native_app_key, applicationKey: applicationKey]
     }
 
     buildTypes {
@@ -50,9 +54,11 @@ android {
             buildConfigField "String", "client_release_id_key", properties['client_release_id_key']
             buildConfigField "String", "server_URL", properties['server_URL']
             buildConfigField "String", "map_api_key", properties['map_api_key']
-            manifestPlaceholders = [kakaoNativeAppKey: kakaoNativeAppKey]
+            buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
+            buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
+            manifestPlaceholders = [kakaoNativeAppKey: kakao_native_app_key, applicationKey: applicationKey]
             //debugger true
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             //signingConfig signingConfigs.release
         }
@@ -63,7 +69,9 @@ android {
             buildConfigField "String", "client_id_key", properties['client_id_key']
             buildConfigField "String", "server_URL", properties['server_URL']
             buildConfigField "String", "map_api_key", properties['map_api_key']
-            manifestPlaceholders = [kakaoNativeAppKey: kakaoNativeAppKey]
+            buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
+            buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
+            manifestPlaceholders = [kakaoNativeAppKey: kakao_native_app_key, applicationKey: applicationKey]
         }
     }
 
@@ -149,6 +157,9 @@ dependencies {
     //license library추가
     // library 추가
     implementation 'com.google.android.gms:play-services-oss-licenses:17.0.1'
+
+    //admob
+    implementation 'com.google.android.gms:play-services-ads:23.0.0'
 
     ////
     testImplementation 'junit:junit:4.13.2'

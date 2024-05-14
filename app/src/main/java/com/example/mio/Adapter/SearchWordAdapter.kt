@@ -29,13 +29,13 @@ class SearchWordAdapter : RecyclerView.Adapter<SearchWordAdapter.SearchWordViewH
             searchWord_tv.text = searchHistory.searchWordText
 
             binding.root.setOnClickListener {
-                itemClickListener.onClick(it,layoutPosition,searchWordData[layoutPosition]!!.id)
+                itemClickListener.onClick(it,layoutPosition,searchWordData[layoutPosition].id)
             }
 
             binding.searchwordRemoveIv.setOnClickListener {
                 val builder : AlertDialog.Builder = AlertDialog.Builder(context)
                 val ad : AlertDialog = builder.create()
-                var deleteData = searchWordData[this.layoutPosition]!!.searchWordText
+                var deleteData = searchWordData[this.layoutPosition].searchWordText
                 builder.setTitle(deleteData)
                 builder.setMessage("정말로 삭제하시겠습니까?")
 

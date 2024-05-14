@@ -4,19 +4,26 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
+import com.example.mio.databinding.RvLoadingBinding
 import kotlinx.coroutines.NonDisposableHandle.parent
 import java.lang.ref.WeakReference
 
 
-class MyAccountPostAdapter : RecyclerView.Adapter<MyAccountPostAdapter.AccountViewHolder>(){
+class MyAccountPostAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private lateinit var binding : PostItemBinding
-    var myPostItemData = ArrayList<PostData>()
+    var myPostItemData = ArrayList<PostData?>()
     private lateinit var context : Context
-
+    companion object {
+        //item을 표시할 때
+        private const val TAG_ITEM = 0
+        //loading을 표시할 때
+        private const val TAG_LOADING = 1
+    }
     init {
         setHasStableIds(true)
     }
@@ -47,44 +54,33 @@ class MyAccountPostAdapter : RecyclerView.Adapter<MyAccountPostAdapter.AccountVi
             //val listener = itemClickListener?.get()
         }
     }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountViewHolder {
+    inner class LoadingViewHolder(var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
+        val processBar : ProgressBar = loadingBinding.loadingPb
+    }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         context = parent.context
         binding = PostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return AccountViewHolder(binding)
+
+        return if (viewType == TAG_ITEM) {
+            return AccountViewHolder(binding)
+        } else {
+            val binding2 = RvLoadingBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            LoadingViewHolder(binding2)
+        }
     }
 
-    override fun onBindViewHolder(holder: AccountViewHolder, position: Int) {
-        holder.bind(myPostItemData[holder.adapterPosition], position)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        //holder.bind(myPostItemData[holder.adapterPosition]!!, position)
 
-        holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, myPostItemData[holder.adapterPosition].postID)
+        if (holder is AccountViewHolder) {
+            holder.bind(myPostItemData[holder.adapterPosition]!!, position)
+
+            holder.itemView.setOnClickListener {
+                itemClickListener.onClick(it, holder.adapterPosition, myPostItemData[holder.adapterPosition]!!.postID)
+            }
+            //val content : PostData = myPostItemData[position]!!
+            //holder.searchWord_tv.text = content.searchWordText
         }
-
-    /*binding.homeRemoveIv.setOnClickListener {
-            val builder : AlertDialog.Builder = AlertDialog.Builder(context)
-            val ad : AlertDialog = builder.create()
-            var deleteData = pillItemData[holder.adapterPosition]!!.pillName
-            builder.setTitle(deleteData)
-            builder.setMessage("정말로 삭제하시겠습니까?")
-            builder.setNegativeButton("예",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                    //temp = listData[holder.adapterPosition]!!
-                    //extraditeData()
-                    //testData.add(temp)
-                    //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
-                    removeData(holder.adapterPosition)
-                    //removeServerData(deleteServerData!!)
-                    //println(deleteServerData)
-                })
-
-            builder.setPositiveButton("아니오",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                })
-            builder.show()
-        }*/
     }
 
     override fun getItemCount(): Int {
@@ -93,6 +89,14 @@ class MyAccountPostAdapter : RecyclerView.Adapter<MyAccountPostAdapter.AccountVi
 
     override fun getItemId(position: Int): Long {
         return position.toLong()
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (myPostItemData[position] != null) {
+            TAG_ITEM
+        } else {
+            TAG_LOADING
+        }
     }
 
     //데이터 Handle 함수

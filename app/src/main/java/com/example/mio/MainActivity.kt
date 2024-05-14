@@ -26,6 +26,7 @@ import com.example.mio.Model.SharedViewModel
 import com.example.mio.Navigation.*
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.databinding.ActivityMainBinding
+import com.google.android.gms.ads.MobileAds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -67,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
+        MobileAds.initialize(this@MainActivity) {}
         this.onBackPressedDispatcher.addCallback(this, callback)
         /*sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
         sharedViewModel!!.getCalendarLiveData().observe(this)
@@ -211,10 +213,13 @@ class MainActivity : AppCompatActivity() {
 
 
                     R.id.navigation_account -> {
-                        oldFragment = AccountFragment()
+                        /*oldFragment = AccountFragment()
                         oldTAG = TAG_ACCOUNT
                         //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(TAG_ACCOUNT, AccountFragment())
+                        setFragment(TAG_ACCOUNT, AccountFragment())*/
+                        supportFragmentManager.beginTransaction()
+                            .replace(R.id.fragment_content, AccountFragment())
+                            .commit()
                         toolbarType = "기본"
                         setToolbarView(toolbarType)
                         isClicked = false

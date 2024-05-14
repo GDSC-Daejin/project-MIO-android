@@ -7,6 +7,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -31,6 +32,7 @@ import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentTaxiTabBinding
+import com.google.android.gms.ads.AdRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -109,7 +111,7 @@ class TaxiTabFragment : Fragment() {
 
     //로딩창
     private lateinit var loadingDialog : LoadingProgressDialog
-
+    private var adRequest : AdRequest? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -688,14 +690,15 @@ class TaxiTabFragment : Fragment() {
                                     response.body()!!.content[i].latitude,
                                     response.body()!!.content[i].longitude
                                 ))
-
-                            noticeBoardAdapter!!.notifyDataSetChanged()
                         }
-
+                        Log.e("TaxiTabDataCheck", taxiAllData.toString())
+                        noticeBoardAdapter!!.notifyDataSetChanged()
                         if (taxiAllData.isEmpty()) {
+                            Log.e("TaxiTabDataCheck", taxiAllData.toString())
                             taxiTabBinding.nonTaxiData.visibility = View.VISIBLE
                             taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
                         } else {
+                            Log.e("TaxiTabDataCheck", taxiAllData.toString())
                             taxiTabBinding.nonTaxiData.visibility = View.GONE
                             taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
                         }
@@ -708,12 +711,12 @@ class TaxiTabFragment : Fragment() {
                         loadingDialog.dismiss()
 
                     } else {
-                        Log.d("f", response.code().toString())
+                        Log.e("f", response.code().toString())
                     }
                 }
 
                 override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.d("error", t.toString())
+                    Log.e("error", t.toString())
                 }
             })
         }
@@ -766,54 +769,66 @@ class TaxiTabFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
         /////
 
-        api.getLocationPostData(myAreaData).enqueue(object : Callback<kotlin.collections.List<LocationReadAllResponse>> {
-            override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
-                if (response.isSuccessful) {
+        if (myAreaData.isEmpty() || myAreaData == "") {
+            CoroutineScope(Dispatchers.Main).launch {
+                taxiTabBinding.nonAreaRvTv.text = "계정에 등록된 활동 지역이 없습니다!"
+                taxiTabBinding.nonAreaRvTv2.text = "계정에서 활동 지역을 등록해 주세요!"
 
-                    //println(response.body()!!.content)
-                    /*val start = SystemClock.elapsedRealtime()
+                taxiTabBinding.areaRvLl.visibility = View.GONE
+                taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+                taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
+            }
 
-                    // 함수 실행시간
-                    val date = Date(start)
-                    val mFormat = SimpleDateFormat("HH:mm:ss")
-                    val time = mFormat.format(date)
-                    println(start)
-                    println(time)*/
-                    /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                    s.add(PostReadAllResponse())*/
+        } else {
+            api.getLocationPostData(myAreaData).enqueue(object : Callback<kotlin.collections.List<LocationReadAllResponse>> {
+                override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
+                    if (response.isSuccessful) {
 
-                    //데이터 청소
-                    myAreaItemData = null
+                        //println(response.body()!!.content)
+                        /*val start = SystemClock.elapsedRealtime()
 
-                    response.body().let {
-                        myAreaItemData = it
-                    }
+                        // 함수 실행시간
+                        val date = Date(start)
+                        val mFormat = SimpleDateFormat("HH:mm:ss")
+                        val time = mFormat.format(date)
+                        println(start)
+                        println(time)*/
+                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
+                        s.add(PostReadAllResponse())*/
 
-                    noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
+                        //데이터 청소
+                        myAreaItemData = null
 
-                    loadingDialog?.dismiss()
+                        response.body().let {
+                            myAreaItemData = it
+                        }
 
-                    if (myAreaItemData?.isEmpty() == true) {
-                        taxiTabBinding.areaRvLl.visibility = View.GONE
-                        taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
-                        taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
+                        noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
+
+                        loadingDialog.dismiss()
+
+                        if (myAreaItemData?.isEmpty() == true) {
+                            taxiTabBinding.areaRvLl.visibility = View.GONE
+                            taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
+                        } else {
+                            taxiTabBinding.areaRvLl.visibility = View.VISIBLE
+                            taxiTabBinding.nonAreaRvTv.visibility = View.GONE
+                            taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                        }
+
                     } else {
-                        taxiTabBinding.areaRvLl.visibility = View.VISIBLE
-                        taxiTabBinding.nonAreaRvTv.visibility = View.GONE
-                        taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                        Log.e("carpool areaeaerera", response.code().toString())
+                        Log.e("carpool areaeaerera", response.errorBody().toString())
+                        Log.e("carpool areaeaerera", response.message().toString())
                     }
-
-                } else {
-                    Log.e("carpool areaeaerera", response.code().toString())
-                    Log.e("carpool areaeaerera", response.errorBody().toString())
-                    Log.e("carpool areaeaerera", response.message().toString())
                 }
-            }
 
-            override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
-                Log.d("error", t.toString())
-            }
-        })
+                override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
+        }
 
 
     }
@@ -1264,6 +1279,7 @@ class TaxiTabFragment : Fragment() {
                             selectCalendarData[post.postTargetDate]!!.add(post)
 
                             println(selectCalendarData)*/
+                            setCurrentTaxiData()
                             setData()
                         }
                         //livemodel을 통해 저장
@@ -1354,6 +1370,10 @@ class TaxiTabFragment : Fragment() {
         activity?.onBackPressedDispatcher!!.addCallback(this, callback)
         //mainActivity = context as MainActivity
     }*/
+    private fun initAd() {
+        adRequest = AdRequest.Builder().build()
+        taxiTabBinding.taxiAd.loadAd(adRequest!!)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -1380,6 +1400,30 @@ class TaxiTabFragment : Fragment() {
         /*val localDate = LocalDate.now().toString()
         val currentDate = localDate.substring(8..9).toInt()
         triggerFirstItemOfCalendarAdapter(currentDate)*/
+    }
+    override fun onResume() {
+        super.onResume()
+        loadAdIfNeeded()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        stopAdLoading()
+    }
+
+    private fun loadAdIfNeeded() {
+        if (isScreenOn()) {
+            initAd()
+        }
+    }
+
+    private fun stopAdLoading() {
+        adRequest = null
+    }
+
+    private fun isScreenOn(): Boolean {
+        val powerManager = requireContext().getSystemService(Context.POWER_SERVICE) as PowerManager
+        return powerManager.isInteractive
     }
 
     companion object {

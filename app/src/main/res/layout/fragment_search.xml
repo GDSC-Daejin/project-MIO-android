@@ -67,6 +67,8 @@
                     android:layout_weight="1"
                     android:background="@null"
                     android:gravity="start|center_vertical"
+                    android:maxLines="1"
+                    android:ellipsize="end"
                     android:hint="장소를 입력해주세요"
                     android:textSize="18sp"
                     android:textColor="@color/mio_gray_8"

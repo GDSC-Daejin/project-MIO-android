@@ -114,13 +114,12 @@
                     android:id="@+id/non_carpool_data"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_bold"
+                    android:gravity="center"
                     android:text="예약된 카풀 게시글이 없습니다!"
                     android:textColor="@color/mio_gray_12"
-                    android:fontFamily="@font/pretendard_bold"
                     android:textSize="24sp"
-                    android:gravity="center"
-                    android:visibility="gone"
-                    />
+                    android:visibility="visible" />
 
                 <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                     android:id="@+id/refresh_swipe_layout"
@@ -130,6 +129,7 @@
                     android:layout_marginTop="20dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginBottom="10dp"
+                    android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -192,6 +192,18 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/refresh_swipe_layout" />
 
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/carpool_ad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@color/white"
+                android:layout_gravity="center"
+                android:layout_marginBottom="20dp"
+                app:adSize="BANNER"
+                app:adUnitId="@string/banner_ad"
+                />
+
 
             <ImageView
                 android:id="@+id/carpool_banner_iv"
@@ -199,7 +211,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="18dp"
                 android:layout_gravity="center"
-                android:layout_marginTop="20dp"
                 android:src="@drawable/home_banner_iv"
                 />
 

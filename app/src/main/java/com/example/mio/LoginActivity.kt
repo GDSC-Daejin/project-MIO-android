@@ -23,6 +23,7 @@ import com.example.mio.Model.LoginGoogleResponse
 import com.example.mio.Model.RefreshTokenRequest
 import com.example.mio.Model.TokenRequest
 import com.example.mio.databinding.ActivityLoginBinding
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -86,7 +87,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(mBinding.root)
-
+        MobileAds.initialize(this@LoginActivity) {}
         setResultSignUp()
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -133,21 +134,23 @@ class LoginActivity : AppCompatActivity() {
         )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            splashScreen.setOnExitAnimationListener {splashScreenView ->
-                val animScaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 8f)
-                val animScaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 8f)
-                val animAlpha = PropertyValuesHolder.ofFloat(View.ALPHA, 1f, 0f)
+            splashScreen.setOnExitAnimationListener { splashScreenView ->
+                splashScreenView.iconView?.let { iconView ->
+                    val animScaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 8f)
+                    val animScaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 8f)
+                    val animAlpha = PropertyValuesHolder.ofFloat(View.ALPHA, 1f, 0f)
 
-                ObjectAnimator.ofPropertyValuesHolder(
-                    splashScreenView.iconView,
-                    animAlpha,
-                    animScaleX,
-                    animScaleY
-                ).run {
-                    interpolator = AnticipateInterpolator()
-                    duration = 300L
-                    doOnEnd { splashScreenView.remove() }
-                    start()
+                    ObjectAnimator.ofPropertyValuesHolder(
+                        iconView,
+                        animAlpha,
+                        animScaleX,
+                        animScaleY
+                    ).apply {
+                        interpolator = AnticipateInterpolator()
+                        duration = 300L
+                        doOnEnd { splashScreenView.remove() }
+                        start()
+                    }
                 }
             }
         }
@@ -291,7 +294,7 @@ class LoginActivity : AppCompatActivity() {
                 /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 startActivity(intent)
                 this@LoginActivity.finish()*/
-            } else if (userEmail.contains("anes53027")){
+            } else if (userEmail.substring(0..8) == "anes53027"){
                 saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
 
                 Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")

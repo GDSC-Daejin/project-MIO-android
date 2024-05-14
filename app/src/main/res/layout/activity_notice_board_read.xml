@@ -383,6 +383,17 @@
 
             </LinearLayout>
 
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/read_ad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:layout_gravity="center"
+                android:layout_marginBottom="20dp"
+                app:adSize="BANNER"
+                app:adUnitId="@string/banner_ad"
+                />
+
             <!--댓글 전부-->
             <LinearLayout
                 android:id="@+id/linearLayout6"
@@ -468,7 +479,7 @@
                     android:id="@+id/not_comment_tv"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="30dp"
+                    android:layout_marginTop="10dp"
                     android:layout_marginBottom="4dp"
                     android:fontFamily="@font/pretendard_bold"
                     android:gravity="center"

@@ -12,7 +12,9 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat.canScrollVertically
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.*
 import com.example.mio.Adapter.MyAccountParticipationAdapter
 import com.example.mio.Adapter.MyAccountPostAdapter
@@ -50,10 +52,17 @@ class MyParticipationFragment : Fragment() {
     private lateinit var mpBinding : FragmentMyParticipationBinding
 
     private var myAdapter : MyAccountParticipationAdapter? = null
-    private var myParticipationAllData = ArrayList<PostData>()
+    private var myParticipationAllData = ArrayList<PostData?>()
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
 
     private var dataPosition = 0
+
+    //로딩 즉 item의 끝이며 스크롤의 끝인지
+    private var isLoading = false
+    //데이터의 현재 페이지 수
+    private var currentPage = 0
+    //데이터의 전체 페이지 수
+    private var totalPages = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,6 +80,7 @@ class MyParticipationFragment : Fragment() {
 
         initMyParticipationRecyclerView()
         initSwipeRefresh()
+        initScrollListener()
 
         myAdapter!!.setItemClickListener(object : MyAccountParticipationAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int) {
@@ -89,7 +99,17 @@ class MyParticipationFragment : Fragment() {
 
         return mpBinding.root
     }
-
+    private fun initMyParticipationRecyclerView() {
+        setMyParticipationData()
+        myAdapter = MyAccountParticipationAdapter()
+        myAdapter!!.myPostItemData = myParticipationAllData
+        mpBinding.participationPostRv.adapter = myAdapter
+        //레이아웃 뒤집기 안씀
+        //manager.reverseLayout = true
+        //manager.stackFromEnd = true
+        mpBinding.participationPostRv.setHasFixedSize(true)
+        mpBinding.participationPostRv.layoutManager = manager
+    }
     private fun initSwipeRefresh() {
         mpBinding.participationAccountSwipe.setOnRefreshListener {
             //새로고침 시 터치불가능하도록
@@ -147,11 +167,12 @@ class MyParticipationFragment : Fragment() {
         //println(userId)
 
         CoroutineScope(Dispatchers.IO).launch {
-            api.getMyParticipantsData(0, 20).enqueue(object : Callback<List<Content>> {
+            api.getMyParticipantsData(0, 5).enqueue(object : Callback<List<Content>> {
                 override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
                     if (response.isSuccessful) {
                         //데이터 청소
                         println("가져오기 참가 성공")
+                        totalPages = response.body()!!.size / 5
                         myParticipationAllData.clear()
 
                         for (i in response.body()!!.indices) {
@@ -175,8 +196,8 @@ class MyParticipationFragment : Fragment() {
                                 response.body()!![i].latitude,
                                 response.body()!![i].longitude
                             ))
-                            myAdapter!!.notifyDataSetChanged()
                         }
+                        myAdapter!!.notifyDataSetChanged()
 
                         if (myParticipationAllData.size > 0) {
                             mpBinding.accountParticipationNotDataLl.visibility = View.GONE
@@ -187,7 +208,7 @@ class MyParticipationFragment : Fragment() {
                             mpBinding.participationAccountSwipe.visibility = View.GONE
                             mpBinding.participationPostRv.visibility = View.GONE
                         }
-
+                        Log.d("mypartipationFragment", myParticipationAllData.toString())
                     } else {
                         Log.d("f", response.code().toString())
                     }
@@ -200,16 +221,151 @@ class MyParticipationFragment : Fragment() {
         }
     }
 
-    private fun initMyParticipationRecyclerView() {
-        setMyParticipationData()
-        myAdapter = MyAccountParticipationAdapter()
-        myAdapter!!.myPostItemData = myParticipationAllData
-        mpBinding.participationPostRv.adapter = myAdapter
-        //레이아웃 뒤집기 안씀
-        //manager.reverseLayout = true
-        //manager.stackFromEnd = true
-        mpBinding.participationPostRv.setHasFixedSize(true)
-        mpBinding.participationPostRv.layoutManager = manager
+
+
+    private fun initScrollListener(){
+        mpBinding.participationPostRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val layoutm =  mpBinding.participationPostRv.layoutManager as LinearLayoutManager
+                //화면에 보이는 마지막 아이템의 position
+                // 어댑터에 등록된 아이템의 총 개수 -1
+                //데이터의 마지막이 아이템의 화면에 뿌려졌는지
+                if (currentPage < totalPages - 1) {
+                    if (!isLoading) {
+                        if (!mpBinding.participationPostRv.canScrollVertically(1)) {
+                            //가져온 data의 크기가 5와 같을 경우 실행
+                            if (myParticipationAllData.size == 5) {
+                                isLoading = true
+                                getMoreItem()
+                            }
+                        }
+                    }
+                    if (!isLoading) {
+                        if (layoutm.findLastCompletelyVisibleItemPosition() == myParticipationAllData.size-1) {
+                            isLoading = true
+                            getMoreItem()
+                        }
+                    }
+                } else {
+                    isLoading = false
+                }
+            }
+        })
+    }
+
+    private fun getMoreItem() {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
+        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
+
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    startActivity(intent)
+                    requireActivity().finish()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        ////////////////////////////////////////////////////
+
+        myParticipationAllData.add(null)
+        //null을 감지 했으니
+        //이 부분에 프로그래스바가 들어올거라 알림
+        mpBinding.participationPostRv.adapter!!.notifyItemInserted(myParticipationAllData.size-1)
+        //성공//
+
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed({
+            //null추가한 거 삭제
+            myParticipationAllData.removeAt(myParticipationAllData.size - 1)
+
+            //data.clear()
+
+            //page수가 totalpages 보다 작거나 같다면 데이터 더 가져오기 가능
+            if (currentPage < totalPages - 1) {
+                currentPage += 1
+                CoroutineScope(Dispatchers.IO).launch {
+                    //page확인하고 수정 위에도 TODO //////////////////////////////////
+                    api.getMyParticipantsData(currentPage, 5).enqueue(object : Callback<List<Content>> {
+                        override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
+                            if (response.isSuccessful) {
+                                //데이터 청소
+                                println("가져오기 참가 성공")
+                                myParticipationAllData.clear()
+
+                                for (i in response.body()!!.indices) {
+                                    //println(response!!.body()!!.content[i].user.studentId)
+                                    myParticipationAllData.add(PostData(
+                                        response.body()!![i].user.studentId,
+                                        response.body()!![i].postId,
+                                        response.body()!![i].title,
+                                        response.body()!![i].content,
+                                        response.body()!![i].targetDate,
+                                        response.body()!![i].targetTime,
+                                        response.body()!![i].category.categoryName,
+                                        response.body()!![i].location,
+                                        //participantscount가 현재 참여하는 인원들
+                                        response.body()!![i].participantsCount,
+                                        //numberOfPassengers은 총 탑승자 수
+                                        response.body()!![i].numberOfPassengers,
+                                        response.body()!![i].cost,
+                                        response.body()!![i].verifyGoReturn,
+                                        response.body()!![i].user,
+                                        response.body()!![i].latitude,
+                                        response.body()!![i].longitude
+                                    ))
+                                    myAdapter!!.notifyDataSetChanged()
+                                }
+
+                                if (myParticipationAllData.size > 0) {
+                                    mpBinding.accountParticipationNotDataLl.visibility = View.GONE
+                                    mpBinding.participationAccountSwipe.visibility = View.VISIBLE
+                                    mpBinding.participationPostRv.visibility = View.VISIBLE
+                                } else {
+                                    mpBinding.accountParticipationNotDataLl.visibility = View.VISIBLE
+                                    mpBinding.participationAccountSwipe.visibility = View.GONE
+                                    mpBinding.participationPostRv.visibility = View.GONE
+                                }
+
+                            } else {
+                                Log.d("f", response.code().toString())
+                            }
+                        }
+
+                        override fun onFailure(call: Call<List<Content>>, t: Throwable) {
+                            Log.d("error", t.toString())
+                        }
+                    })
+                }
+            }
+
+            //println(moreTaxiAllData)
+            isLoading = false
+        }, 2000)
     }
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->

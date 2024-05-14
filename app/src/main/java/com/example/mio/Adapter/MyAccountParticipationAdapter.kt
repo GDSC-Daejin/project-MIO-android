@@ -4,10 +4,12 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
+import com.example.mio.databinding.RvLoadingBinding
 import kotlinx.coroutines.NonDisposableHandle.parent
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
@@ -15,11 +17,16 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class MyAccountParticipationAdapter : RecyclerView.Adapter<MyAccountParticipationAdapter.AccountViewHolder>(){
+class MyAccountParticipationAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     private lateinit var binding : PostItemBinding
-    var myPostItemData = ArrayList<PostData>()
+    var myPostItemData = ArrayList<PostData?>()
     private lateinit var context : Context
-
+    companion object {
+        //item을 표시할 때
+        private const val TAG_ITEM = 0
+        //loading을 표시할 때
+        private const val TAG_LOADING = 1
+    }
     init {
         setHasStableIds(true)
     }
@@ -102,18 +109,30 @@ class MyAccountParticipationAdapter : RecyclerView.Adapter<MyAccountParticipatio
             }
         }
     }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountViewHolder {
-        context = parent.context
-        binding = PostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return AccountViewHolder(binding)
+    inner class LoadingViewHolder(var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
+        val processBar : ProgressBar = loadingBinding.loadingPb
     }
 
-    override fun onBindViewHolder(holder: AccountViewHolder, position: Int) {
-        holder.bind(myPostItemData[holder.adapterPosition], position)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        context = parent.context
+        binding = PostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return if (viewType == TAG_ITEM) {
+            AccountViewHolder(binding)
+        } else {
+            val binding2 = RvLoadingBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            LoadingViewHolder(binding2)
+        }
+    }
 
-        holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, myPostItemData[holder.adapterPosition].postID)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is AccountViewHolder) {
+            holder.bind(myPostItemData[holder.adapterPosition]!!, position)
+
+            holder.itemView.setOnClickListener {
+                itemClickListener.onClick(it, holder.adapterPosition, myPostItemData[holder.adapterPosition]!!.postID)
+            }
+            //val content : PostData = myPostItemData[position]!!
+            //holder.searchWord_tv.text = content.searchWordText
         }
 
     }
@@ -124,6 +143,13 @@ class MyAccountParticipationAdapter : RecyclerView.Adapter<MyAccountParticipatio
 
     override fun getItemId(position: Int): Long {
         return position.toLong()
+    }
+    override fun getItemViewType(position: Int): Int {
+        return if (myPostItemData[position] != null) {
+            TAG_ITEM
+        } else {
+            TAG_LOADING
+        }
     }
 
     //데이터 Handle 함수

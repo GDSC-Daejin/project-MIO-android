@@ -849,6 +849,7 @@
                     android:layout_marginStart="15dp"
                     android:layout_marginEnd="15dp"
                     android:autofillHints=""
+                    android:background="@null"
                     android:fontFamily="@font/pretendard_medium"
                     android:gravity="top"
                     android:hint="약속 시간 철저히 지키시는 분 좋아요"

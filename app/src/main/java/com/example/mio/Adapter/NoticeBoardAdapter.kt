@@ -37,11 +37,12 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
             val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
             postTitle.text = accountData.postTitle
             postDate.text = s
-            postLocation.text = if (accountData.postLocation.split(" ").last().toString() == " ") {
+           /* postLocation.text = if (accountData.postLocation.split(" ").last().toString() == " ") {
                 accountData.postLocation.split(" ").dropLast(1).joinToString(" ")//마지막 빼고 세팅 ex) 경기 선단로 100011 - 1 무슨빌딩 -> 경기 선단로 100011 - 1
             } else {
                 accountData.postLocation.split(" ").last().toString()
-            }
+            }*/
+            postLocation.text = accountData.postLocation
             postParticipation.text = accountData.postParticipation.toString()
             postParticipantTotal.text = accountData.postParticipationTotal.toString()
             postCost.text = context.getString(R.string.setCost, accountData.postCost.toString())

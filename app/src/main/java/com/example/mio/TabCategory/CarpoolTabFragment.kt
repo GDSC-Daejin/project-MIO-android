@@ -7,6 +7,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.service.autofill.Validators.or
 import android.util.Log
 import android.view.*
@@ -17,6 +18,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,6 +31,7 @@ import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentCarpoolTabBinding
+import com.google.android.gms.ads.AdRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -107,6 +110,8 @@ class CarpoolTabFragment : Fragment() {
 
     //처음 시작 시 계정 수정요청용
     private var isFirstAccountEdit : String? = null
+
+    private var adRequest : AdRequest? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -418,6 +423,26 @@ class CarpoolTabFragment : Fragment() {
         alertDialog.show()
 
         dialogMoveBtn.setOnClickListener {
+            val sharedPref = requireContext().getSharedPreferences("saveSetting", Context.MODE_PRIVATE)
+            isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", "") ?: ""
+
+            if (isFirstAccountEdit?.isEmpty() == true) {
+                Log.d("Carpool", isFirstAccountEdit.toString())
+                Log.d("Carpool", "비었으니까 처음실행한듯 ")
+
+                with(sharedPref.edit()) {
+                    putString("isFirstAccountEdit", "true")
+                    apply() // 비동기적으로 데이터를 저장
+                }
+            } else {
+                Log.d("Carpool", isFirstAccountEdit.toString())
+                Log.d("Carpool", "안 비었으니까 처음실행x")
+
+                with(sharedPref.edit()) {
+                    putString("isFirstAccountEdit", "false")
+                    apply() // 비동기적으로 데이터를 저장
+                }
+            }
             val bottomNavigationView = requireActivity().findViewById<View>(R.id.bottom_navigation_view)
             // 바텀 네비게이션의 다른 메뉴를 선택하도록 설정
             bottomNavigationView.findViewById<View>(R.id.navigation_account).performClick()
@@ -683,8 +708,8 @@ class CarpoolTabFragment : Fragment() {
                                     response.body()!!.content[i].user
                                 )
                             }?.let { carpoolAllData.add(it) }*/
-                            println(carpoolAllData)
                         }
+                        Log.e("CarpoolTabDataCheck", carpoolAllData.toString())
                         noticeBoardAdapter!!.notifyDataSetChanged()
 
                         if (carpoolAllData.isEmpty()) {
@@ -703,18 +728,18 @@ class CarpoolTabFragment : Fragment() {
                         loadingDialog?.dismiss()
 
                     } else {
-                        Log.d("f", response.code().toString())
+                        Log.e("f", response.code().toString())
                     }
                 }
 
                 override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.d("error", t.toString())
+                    Log.e("error", t.toString())
                 }
             })
         }
     }
 
-    private fun setMyAreaData() { //나중에 여기 위치 받아오면 데이터 변경하기 Todo
+    private fun setMyAreaData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
@@ -761,54 +786,66 @@ class CarpoolTabFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
         /////
 
-        api.getLocationPostData(myAreaData).enqueue(object : Callback<kotlin.collections.List<LocationReadAllResponse>> {
-            override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
-                if (response.isSuccessful) {
+        if (myAreaData.isEmpty() || myAreaData == "") {
+            CoroutineScope(Dispatchers.Main).launch {
+                taxiTabBinding.nonAreaRvTv.text = "계정에 등록된 활동 지역이 없습니다!"
+                taxiTabBinding.nonAreaRvTv2.text = "계정에서 활동 지역을 등록해 주세요!"
 
-                    //println(response.body()!!.content)
-                    /*val start = SystemClock.elapsedRealtime()
+                taxiTabBinding.areaRvLl.visibility = View.GONE
+                taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+                taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
+            }
 
-                    // 함수 실행시간
-                    val date = Date(start)
-                    val mFormat = SimpleDateFormat("HH:mm:ss")
-                    val time = mFormat.format(date)
-                    println(start)
-                    println(time)*/
-                    /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                    s.add(PostReadAllResponse())*/
+        } else {
+            api.getLocationPostData(myAreaData).enqueue(object : Callback<kotlin.collections.List<LocationReadAllResponse>> {
+                override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
+                    if (response.isSuccessful) {
 
-                    //데이터 청소
-                    myAreaItemData = null
+                        //println(response.body()!!.content)
+                        /*val start = SystemClock.elapsedRealtime()
 
-                    response.body().let {
-                        myAreaItemData = it
-                    }
+                        // 함수 실행시간
+                        val date = Date(start)
+                        val mFormat = SimpleDateFormat("HH:mm:ss")
+                        val time = mFormat.format(date)
+                        println(start)
+                        println(time)*/
+                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
+                        s.add(PostReadAllResponse())*/
 
-                    noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
+                        //데이터 청소
+                        myAreaItemData = null
 
-                    loadingDialog?.dismiss()
+                        response.body().let {
+                            myAreaItemData = it
+                        }
 
-                    if (myAreaItemData?.isEmpty() == true) {
-                        taxiTabBinding.areaRvLl.visibility = View.GONE
-                        taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
-                        taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
+                        noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
+
+                        loadingDialog?.dismiss()
+
+                        if (myAreaItemData?.isEmpty() == true) {
+                            taxiTabBinding.areaRvLl.visibility = View.GONE
+                            taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
+                        } else {
+                            taxiTabBinding.areaRvLl.visibility = View.VISIBLE
+                            taxiTabBinding.nonAreaRvTv.visibility = View.GONE
+                            taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                        }
+
                     } else {
-                        taxiTabBinding.areaRvLl.visibility = View.VISIBLE
-                        taxiTabBinding.nonAreaRvTv.visibility = View.GONE
-                        taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                        Log.e("carpool areaeaerera", response.code().toString())
+                        Log.e("carpool areaeaerera", response.errorBody().toString())
+                        Log.e("carpool areaeaerera", response.message().toString())
                     }
-
-                } else {
-                    Log.e("carpool areaeaerera", response.code().toString())
-                    Log.e("carpool areaeaerera", response.errorBody().toString())
-                    Log.e("carpool areaeaerera", response.message().toString())
                 }
-            }
 
-            override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
-                Log.d("error", t.toString())
-            }
-        })
+                override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
+        }
 
 
     }
@@ -1003,6 +1040,7 @@ class CarpoolTabFragment : Fragment() {
                             selectCalendarData[post.postTargetDate]!!.add(post)
 
                             println(selectCalendarData)*/
+                            setCurrentCarpoolData()
                             setData()
                         }
                         //livemodel을 통해 저장
@@ -1222,6 +1260,11 @@ class CarpoolTabFragment : Fragment() {
         }
     }
 
+    private fun initAd() {
+        adRequest = AdRequest.Builder().build()
+        taxiTabBinding.carpoolAd.loadAd(adRequest!!)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         //저장된 livemodel들을 가져옴
@@ -1256,7 +1299,30 @@ class CarpoolTabFragment : Fragment() {
             loadingDialog!!.dismiss()
         }
     }
+    override fun onResume() {
+        super.onResume()
+        loadAdIfNeeded()
+    }
 
+    override fun onPause() {
+        super.onPause()
+        stopAdLoading()
+    }
+
+    private fun loadAdIfNeeded() {
+        if (isScreenOn()) {
+            initAd()
+        }
+    }
+
+    private fun stopAdLoading() {
+        adRequest = null
+    }
+
+    private fun isScreenOn(): Boolean {
+        val powerManager = requireContext().getSystemService(Context.POWER_SERVICE) as PowerManager
+        return powerManager.isInteractive
+    }
     companion object {
         /**
          * Use this factory method to create a new instance of

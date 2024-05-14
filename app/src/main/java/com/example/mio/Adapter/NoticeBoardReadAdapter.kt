@@ -80,7 +80,7 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
             val currentDate = sdf.format(date)
 
 
-            val postDateTime = context.getString(R.string.setText, comment!!.createDate.substring(0 .. 9), comment!!.createDate.substring(11 .. 18))
+            val postDateTime = context.getString(R.string.setText, comment.createDate.substring(0 .. 9), comment.createDate.substring(11 .. 18))
 
             val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
             val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)

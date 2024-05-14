@@ -53,7 +53,7 @@ class AccountFragment : Fragment() {
     private var param2: String? = null
 
     private lateinit var aBinding : FragmentAccountBinding
-    private val tabTextList = listOf("게시글", "예약", "스크랩")
+    private val tabTextList = listOf("게시글", "예약", "북마크")
     private var saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var email = ""
     private var myAccountData : User? = null
@@ -169,9 +169,9 @@ class AccountFragment : Fragment() {
 
                         //나중에 response.body()!!.mannerCount 다시 체크하기  TODO
                         println("ss")
-                        saveSharedPreferenceGoogleLogin.setUserId(activity, response.body()!!.id)
+                        saveSharedPreferenceGoogleLogin.setUserId(requireActivity(), response.body()!!.id)
                         println(response.body()!!.id)
-                        println(saveSharedPreferenceGoogleLogin.getUserId(activity))
+                        println(saveSharedPreferenceGoogleLogin.getUserId(requireActivity()))
                         myAccountData = response.body()
 
                         if (grade != null) {

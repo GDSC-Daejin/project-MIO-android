@@ -207,4 +207,12 @@ interface MioInterface {
     //기사 평가
     @POST("/post/{postId}/evaluation/driver")
     fun addDriversReview(@Path("postId") postId: Int, @Body driversReviewData : DriversReviewData) : Call<PassengersReviewData>
+    //---------------//
+
+    @POST("/bookmark/{postId}")
+    fun addBookmark(@Path("postId") postId: Int) : Call<Void>
+
+    @GET("/bookmark/read")
+    fun getBookmark() : Call<List<BookMarkResponseData>>
+
 }

@@ -69,7 +69,7 @@ class ApplyNextActivity : AppCompatActivity() {
         myViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
 
         //val s = savedInstanceState.pu
-        postId = intent.getIntExtra("postId", 0) as Int
+        postId = intent.getIntExtra("postId", 0)
         postData = intent.getSerializableExtra("postData") as PostData
 
         //뒤로가기

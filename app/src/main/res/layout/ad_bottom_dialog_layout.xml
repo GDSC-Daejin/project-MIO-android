@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@drawable/top_radius_dialog_shape">
+
+    <!-- 상단 부분의 코너에 radius를 적용한 뷰 -->
+    <LinearLayout
+        android:id="@+id/ad_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/top_radius_dialog_shape">
+
+        <!--<com.google.android.gms.ads.AdView
+            android:id="@+id/banner_ad"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            app:adSize="BANNER"
+            app:adUnitId="ca-app-pub-3940256099942544/9214589741"
+            />-->
+        <!-- 상단 부분의 내용을 추가하세요 -->
+        <!-- 예를 들어 제목이나 다른 컨텐츠를 여기에 추가할 수 있습니다. -->
+
+
+
+    </LinearLayout>
+
+    <!-- 하단 부분의 내용을 추가하세요 -->
+    <!-- 예를 들어 버튼 등의 컨텐츠를 여기에 추가할 수 있습니다. -->
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="닫기"
+        android:fontFamily="@font/pretendard_regular"
+        android:background="@color/white"
+        />
+
+</LinearLayout>

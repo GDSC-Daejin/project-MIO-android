@@ -2,7 +2,6 @@ package com.example.mio
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.icu.lang.UCharacter.GraphemeClusterBreak.L
 import androidx.preference.PreferenceManager
 
 
@@ -21,6 +20,9 @@ public class SaveSharedPreferenceGoogleLogin {
     private val isGender = "geneder"
     private val isSchool = "school"
     private val isSmoke = "smoke"
+
+    // SharedPreferences 키
+    private val PREF_LAST_BOTTOM_SHEET_TIME = "last_bottom_sheet_time"
 
 
 
@@ -147,5 +149,16 @@ public class SaveSharedPreferenceGoogleLogin {
         editor.clear()
         editor.apply()
     }
+
+    fun setLastBottomSheetTime(ctx: Context?, time: Long?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putLong(PREF_LAST_BOTTOM_SHEET_TIME, time!!)
+        editor.apply()
+    }
+
+    fun getLastBottomSheetTime(ctx: Context?): Long {
+        return getSharedPreferences(ctx).getLong(PREF_LAST_BOTTOM_SHEET_TIME, 0L)
+    }
+
 
 }

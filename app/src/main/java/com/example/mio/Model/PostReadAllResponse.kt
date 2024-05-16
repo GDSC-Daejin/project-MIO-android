@@ -93,7 +93,7 @@ data class User(
     @SerializedName("name")
     var name : String,
     @SerializedName("accountNumber")
-    var accountNumber : String,
+    var accountNumber : String?,
     @SerializedName("gender")
     var gender : Boolean?,
     @SerializedName("verifySmoker")
@@ -103,11 +103,11 @@ data class User(
     @SerializedName("status")
     var status : String,
     @SerializedName("mannerCount")
-    var mannerCount : Int,
+    var mannerCount : Int?,
     @SerializedName("grade")
-    var grade : String,
+    var grade : String?,
     @SerializedName("activityLocation")
-    var activityLocation : String
+    var activityLocation : String?
 ) : java.io.Serializable {
 
 }

@@ -27,6 +27,9 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -35,7 +38,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
     private lateinit var binding : ParticipationItemLayoutBinding
     var participationItemData = ArrayList<ParticipationData>()
     private lateinit var context : Context
-    var participantsUserData = ArrayList<User>()
+    var participantsUserData = ArrayList<User?>()
 
     //클릭된 아이템의 위치를 저장할 변수
     private var selectedItem = -1
@@ -57,8 +60,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             //val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
             itemContent.text = partData.content
 
-            val gender = if (participantsUserData[position].gender != null) {
-                if (participantsUserData[position].gender == true) {
+            val gender = if (participantsUserData[position]?.gender != null) {
+                if (participantsUserData[position]?.gender == true) {
                     "여성"
                 } else {
                     "남성"
@@ -67,8 +70,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 "설정X"
             }
 
-            val smoke = if (participantsUserData[position].verifySmoker != null) {
-                if (participantsUserData[position].verifySmoker == true) {
+            val smoke = if (participantsUserData[position]?.verifySmoker != null) {
+                if (participantsUserData[position]?.verifySmoker == true) {
                     "흡연 O"
                 } else {
                     "흡연 X"
@@ -78,7 +81,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             }
 
 
-            itemFilter.text = "${participantsUserData[position].studentId} | $gender $smoke"
+            itemFilter.text = "${participantsUserData[position]?.studentId} | $gender $smoke"
 
 
             if (partData.approvalOrReject == "APPROVAL") {
@@ -118,7 +121,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
     }
 
     override fun onBindViewHolder(holder: ParticipationAdapter.ParticipationViewHolder, position: Int) {
-        holder.bind(participationItemData[holder.adapterPosition], position)
+        holder.bind(participationItemData[position], position)
         /*holder.itemView.setOnClickListener {
             itemClickListener.onClick(it, holder.adapterPosition, participationItemData[holder.adapterPosition].postId)
             println(participationItemData[holder.adapterPosition].approvalOrReject)
@@ -128,38 +131,38 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
         binding.participationApproval.setOnClickListener {
             println("clclclclclclclclclclclclclclclappp")
-            val approvalPosition = holder.adapterPosition
-            val item = participationItemData[approvalPosition]
+            val approvalPosition = position
+            val item = participationItemData[position]
             // 아이템 정보를 사용하여 서버 요청 보내기
             fetchItemDetails(item.userId)
             cancelItem = -1
             selectedItem = approvalPosition
             notifyDataSetChanged()
-            sendAlarmData("예약", holder.adapterPosition, item)
+            sendAlarmData("예약", position, item)
         }
 
         binding.participationRefuse.setOnClickListener {
             //removeData(holder.adapterPosition)
             println("cancleellelelelelelelelee")
-            val cancelPosition = holder.adapterPosition
+            val cancelPosition = position
             selectedItem = -1
-            val item = participationItemData[cancelPosition]
+            val item = participationItemData[position]
             cancelItem = cancelPosition
             notifyDataSetChanged()
-            println(participationItemData[holder.adapterPosition].approvalOrReject)
-            removeData(participationItemData[cancelPosition].userId, holder.adapterPosition)
-            sendAlarmData("취소", holder.adapterPosition, item)
+            println(participationItemData[position].approvalOrReject)
+            removeData(participationItemData[position].userId, position)
+            sendAlarmData("취소", position, item)
         }
 
         binding.participationCancel.setOnClickListener {
             println("cancleellelelelelelelelee")
-            val cancelPosition = holder.adapterPosition
+            val cancelPosition = position
             selectedItem = -1
-            val item = participationItemData[cancelPosition]
+            val item = participationItemData[position]
             cancelItem = cancelPosition
             notifyDataSetChanged()
-            removeData(participationItemData[cancelPosition].userId, holder.adapterPosition)
-            sendAlarmData("취소", holder.adapterPosition, item)
+            removeData(participationItemData[position].userId, position)
+            sendAlarmData("취소", position, item)
         }
 
         when (position) {
@@ -437,11 +440,13 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         val date = Date(now)
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
         val currentDate = sdf.format(date)
-        val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
-        val nowDate = nowFormat?.toString()
+        val formatter = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd HH:mm:ss")
+            .withZone(ZoneId.systemDefault())
+        val result: Instant = Instant.from(formatter.parse(currentDate))
 
         //userId 가 알람 받는 사람
-        val temp = AddAlarmData(nowDate!!, "${status}${participantsUserData[dataPos].studentId}", data.postId, data.userId)
+        val temp = AddAlarmData(result.toString(), "${status}${participantsUserData[dataPos]?.studentId}", data.postId, data.userId)
 
         //entity가 알람 받는 사람, user가 알람 전송한 사람
         CoroutineScope(Dispatchers.IO).launch {

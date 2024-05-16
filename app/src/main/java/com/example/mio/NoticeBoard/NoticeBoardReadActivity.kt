@@ -1672,7 +1672,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         }
 
                         mannerCount = try {
-                            response.body()!!.mannerCount
+                            response.body()?.mannerCount!!.toInt()
                         } catch (e: java.lang.NullPointerException) {
                             Log.d("null", e.toString())
                             0
@@ -1788,11 +1788,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val date = Date(now)
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
         val currentDate = sdf.format(date)
-        val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
-        val nowDate = nowFormat?.toString()
+        val formatter = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd HH:mm:ss")
+            .withZone(ZoneId.systemDefault())
+        val result: Instant = Instant.from(formatter.parse(currentDate))
 
         //userId 가 알람 받는 사람
-        val temp = AddAlarmData(nowDate!!, "${status}${content}", data?.postID!!, data.user.id)
+        val temp = AddAlarmData(result.toString(), "${status}${content}", data?.postID!!, data.user.id)
 
         //entity가 알람 받는 사람, user가 알람 전송한 사람
         CoroutineScope(Dispatchers.IO).launch {

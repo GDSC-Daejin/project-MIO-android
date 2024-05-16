@@ -22,6 +22,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2
 import com.example.mio.*
 import com.example.mio.Adapter.CalendarAdapter
 import com.example.mio.Adapter.CurrentNoticeBoardAdapter
@@ -423,6 +425,17 @@ class TaxiTabFragment : Fragment() {
         CoroutineScope(Dispatchers.IO).launch {
             setCurrentTaxiData()
         }
+        val recyclerViewScrollListener = object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                // 리사이클러뷰가 스크롤되었을 때 뷰페이저의 스크롤을 막음
+                val viewpager = requireActivity().findViewById<ViewPager2>(R.id.viewpager)
+                viewpager.isUserInputEnabled = newState == RecyclerView.SCROLL_STATE_IDLE
+            }
+        }
+
+        // RecyclerView 스크롤 이벤트 리스너 등록
+        taxiTabBinding.currentRv.addOnScrollListener(recyclerViewScrollListener)
 
 
         currentNoticeBoardAdapter = CurrentNoticeBoardAdapter()
@@ -440,6 +453,17 @@ class TaxiTabFragment : Fragment() {
         calendarAdapter = CalendarAdapter()
         CalendarUtil.selectedDate = LocalDate.now()
         calendarAdapter!!.calendarItemData = calendarItemData
+        val recyclerViewScrollListener = object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                // 리사이클러뷰가 스크롤되었을 때 뷰페이저의 스크롤을 막음
+                val viewpager = requireActivity().findViewById<ViewPager2>(R.id.viewpager)
+                viewpager.isUserInputEnabled = newState == RecyclerView.SCROLL_STATE_IDLE
+                //println("vuewpager")
+            }
+        }
+        // RecyclerView 스크롤 이벤트 리스너 등록
+        taxiTabBinding.calendarRV.addOnScrollListener(recyclerViewScrollListener)
         taxiTabBinding.calendarRV.adapter = calendarAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true

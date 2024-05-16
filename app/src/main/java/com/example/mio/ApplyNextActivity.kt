@@ -35,6 +35,9 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class ApplyNextActivity : AppCompatActivity() {
@@ -434,11 +437,12 @@ class ApplyNextActivity : AppCompatActivity() {
         val date = Date(now)
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
         val currentDate = sdf.format(date)
-        val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
-        val nowDate = nowFormat?.toString()
-
+        val formatter = DateTimeFormatter
+            .ofPattern("yyyy-MM-dd HH:mm:ss")
+            .withZone(ZoneId.systemDefault())
+        val result: Instant = Instant.from(formatter.parse(currentDate))
         //userId 가 알람 받는 사람
-        val temp = AddAlarmData(nowDate!!, "신청${identification}${applyEditContent}", postId, postData!!.user.id)
+        val temp = AddAlarmData(result.toString(), "신청${identification}${applyEditContent}", postId, postData!!.user.id)
 
         //entity가 알람 받는 사람, user가 알람 전송한 사람
         CoroutineScope(Dispatchers.IO).launch {

@@ -99,7 +99,7 @@ class AccountFragment : Fragment() {
         }
 
         aBinding.accountBank.setOnClickListener {
-            createClipData(myAccountData!!.accountNumber)
+            createClipData(myAccountData?.accountNumber.toString())
         }
 
         aBinding.accountViewpager.adapter = AccountTabAdapter(requireActivity())
@@ -146,7 +146,7 @@ class AccountFragment : Fragment() {
                         }
 
                         mannerCount = try {
-                            response.body()!!.mannerCount
+                            response.body()?.mannerCount!!.toInt()
                         } catch (e : java.lang.NullPointerException) {
                             Log.d("null", e.toString())
                             0

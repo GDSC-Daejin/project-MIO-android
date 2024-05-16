@@ -2,27 +2,19 @@ package com.example.mio
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
-import android.view.*
-import android.widget.Button
-import android.widget.TextView
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.alpha
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.ViewModelProvider
 import com.example.mio.Model.AddAlarmResponseData
-import com.example.mio.Model.AddPostData
-import com.example.mio.Model.PostData
 import com.example.mio.Model.SharedViewModel
+import com.example.mio.Model.User
 import com.example.mio.Navigation.*
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.databinding.ActivityMainBinding
@@ -63,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     private var isFirstAccountEdit : String? = null
 
     private var selectedTab = ""
-
+    private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -83,6 +75,7 @@ class MainActivity : AppCompatActivity() {
 
         setToolbarView(toolbarType)
         initNavigationBar()
+        initUserSet()
         saveSettingData()
     }
 
@@ -504,8 +497,71 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun initUserSet() {
+        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+        val userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
+
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+
+                if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.d("MainActivitu Notification", expireDate.toString())
+
+                    // UI 스레드에서 Toast 실행
+                    this@MainActivity.runOnUiThread {
+                        Toast.makeText(this@MainActivity, "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                    }
+
+                    // Log.d("MainActivitu Notification", expireDate.toString())
+                    val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        /////
+        api.getAccountData(userEmail).enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    val responseData = response.body()
+                    saveSharedPreferenceGoogleLogin.setUserId(this@MainActivity, responseData?.id)
+                    saveSharedPreferenceGoogleLogin.setArea(this@MainActivity, responseData?.activityLocation)
+                } else {
+                    Log.e("MainActivity set user", response.message().toString())
+                    Log.e("MainActivity set user", response.code().toString())
+                    Log.e("MainActivity set user", response.errorBody().toString())
+                }
+            }
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                Log.e("MainActivity set user", t.message.toString())
+            }
+        })
+    }
+
     private fun initNotification(menuItem: MenuItem) {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
         val notificationCheck = saveSharedPreferenceGoogleLogin.getSharedNotification(this).toString()

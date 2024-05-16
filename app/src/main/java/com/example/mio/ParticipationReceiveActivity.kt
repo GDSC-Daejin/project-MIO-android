@@ -33,7 +33,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
     private var manager : LinearLayoutManager = LinearLayoutManager(this)
 
     private var participationItemAllData = ArrayList<ParticipationData>()
-    private var participantsUserAllData = ArrayList<User>()
+    private var participantsUserAllData = ArrayList<User?>()
 
     //read에서 받아온 postId 저장
     private var postId = -1
@@ -41,9 +41,9 @@ class ParticipationReceiveActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pBinding = ActivityParticipationReceiveBinding.inflate(layoutInflater)
-
+        setContentView(pBinding.root)
         postId = intent.getIntExtra("postId", 0) as Int
-        Log.d("ParticipationReceiveActivity PostId Test", postId.toString())
+        Log.d("ParticipationReceiveActivity PostId Test", postId.toString()) //ok완료
 
         initParticipationRecyclerView()
 
@@ -51,7 +51,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
             finish()
         }
 
-        setContentView(pBinding.root)
+
     }
 
     private fun initParticipationRecyclerView() {
@@ -65,8 +65,8 @@ class ParticipationReceiveActivity : AppCompatActivity() {
 
         participationAdapter = ParticipationAdapter()
 
-        val filteredList = participationItemAllData.filter { it.content != "작성자" }
-        participationAdapter.participationItemData = ArrayList(filteredList)
+        //val filteredList = participationItemAllData.filter { it.content != "작성자" }
+        participationAdapter.participationItemData = participationItemAllData
         //participationAdapter.participationItemData = participationItemAllData
         participationAdapter.participantsUserData = participantsUserAllData
         pBinding.participationRv.adapter = participationAdapter
@@ -121,30 +121,27 @@ class ParticipationReceiveActivity : AppCompatActivity() {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                 if (response.isSuccessful) {
                     participationItemAllData.clear()
-
                     for (i in response.body()!!.indices) {
-                        participationItemAllData.add(
-                            ParticipationData(
-                                response.body()!![i].postId,
-                                response.body()!![i].userId,
-                                response.body()!![i].postUserId,
-                                response.body()!![i].content,
-                                response.body()!![i].approvalOrReject
+                        if (response.body()!![i].content != "작성자") {
+                            participationItemAllData.add(
+                                ParticipationData(
+                                    response.body()!![i].postId,
+                                    response.body()!![i].userId,
+                                    response.body()!![i].postUserId,
+                                    response.body()!![i].content,
+                                    response.body()!![i].approvalOrReject
+                                )
                             )
-                        )
+                            CoroutineScope(Dispatchers.IO).launch {
+                                setParticipantsUserData(userId = response.body()!![i].userId)
+                            }
+                        }
                     }
 
-                    if (participationItemAllData.any { it.content != "작성자" }) {
-                        pBinding.participationRv.visibility = View.VISIBLE
-                        pBinding.nonParticipation.visibility = View.GONE
-                    } else {
-                        pBinding.participationRv.visibility = View.GONE
-                        pBinding.nonParticipation.visibility = View.VISIBLE
-                    }
-                    Log.d("ParticipationReceiveActivity PostId Test", participationItemAllData.toString())
-                    participationAdapter.notifyDataSetChanged()
+                    //participationItemAllData = participationItemAllData.filter { it.content != "작성자" }
 
-                    loadingDialog.dismiss()
+
+                    Log.e("ParticipationReceiveActivity PostId Test", participationItemAllData.toString())
 
                 } else {
                     println(response.errorBody().toString())
@@ -159,16 +156,14 @@ class ParticipationReceiveActivity : AppCompatActivity() {
 
     }
 
-    private fun setParticipantsUserData() {
+    private fun setParticipantsUserData(userId : Int) {
+        Log.e("ParticipationReceiveActivity PostId Test", "진입완료")
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+        /*val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.substring(0 until 8)
+        val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(this)!!*/
 
-        /////////interceptor
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //Authorization jwt토큰 로그인
         val interceptor = Interceptor { chain ->
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
@@ -178,57 +173,56 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(this, LoginActivity::class.java)
+                    startActivity(intent)
+                    finish()
                     return@Interceptor chain.proceed(newRequest)
                 }
             } else newRequest = chain.request()
             chain.proceed(newRequest)
         }
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
         val builder = OkHttpClient.Builder()
         builder.interceptors().add(interceptor)
         val client: OkHttpClient = builder.build()
-        //retrofit.client(client)
+        retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
+        ///////////////////////////////////////////////////
         ///
         //val call = RetrofitServerConnect.service
-        /*CoroutineScope(Dispatchers.IO).launch {
-            for (i in participationItemAllData.indices) {
-                api.getUserProfileData(participationItemAllData[i].userId).enqueue(object : Callback<User>{
-                    override fun onResponse(call: Call<User>, response: Response<User>) {
-                        if (response.isSuccessful) {
-                            Log.d("part response", "success ${response.code()}")
-                            participantsUserAllData.add(User(
-                                response.body()?.id!!,
-                                response.body()?.email!!,
-                                response.body()?.studentId!!,
-                                response.body()?.profileImageUrl!!,
-                                response.body()?.name!!,
-                                response.body()?.accountNumber!!,
-                                response.body()?.gender!!,
-                                response.body()?.verifySmoker!!,
-                                response.body()?.roleType!!,
-                                response.body()?.status!!,
-                                response.body()?.mannerCount!!,
-                                response.body()?.grade!!,
-                                response.body()?.activityLocation!!
-                            ))
-
-                            loadingDialog.dismiss()
-
-                        } else {
-                            Log.e("PARTICIPATION RESPONSE ERROR", response.errorBody().toString())
-                            Log.i("response code", response.code().toString())
-                            Log.d("part", response.message().toString())
-                        }
+        api.getUserProfileData(userId).enqueue(object : Callback<User>{
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    Log.d("part response", "success ${response.code()}")
+                    response.body().let {
+                        participantsUserAllData.add(it)
+                    }
+                    Log.e("PARTICIPATION RESPONSE DATA", participantsUserAllData.toString())
+                    if (participantsUserAllData.isNotEmpty()) {
+                        pBinding.participationRv.visibility = View.VISIBLE
+                        pBinding.nonParticipation.visibility = View.GONE
+                    } else {
+                        pBinding.participationRv.visibility = View.GONE
+                        pBinding.nonParticipation.visibility = View.VISIBLE
                     }
 
-                    override fun onFailure(call: Call<User>, t: Throwable) {
-                        Log.e("PARTICIPATION ERROR", t.message.toString())
-                    }
-                })
+                    participationAdapter.notifyDataSetChanged()
+                    loadingDialog.dismiss()
+                } else {
+                    Log.e("PARTICIPATION RESPONSE ERROR", response.errorBody().toString())
+                    Log.i("response code", response.code().toString())
+                    Log.d("part", response.message().toString())
+                }
             }
-        }*/
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                Log.e("PARTICIPATION ERROR", t.message.toString())
+            }
+        })
     }
 }

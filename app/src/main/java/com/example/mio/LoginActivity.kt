@@ -180,10 +180,12 @@ class LoginActivity : AppCompatActivity() {
                         saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, accessTokenExpiresIn.toString())
                         saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, refreshToken)
 
+
+                        //5초
                         val builder =  OkHttpClient.Builder()
-                            .connectTimeout(1, TimeUnit.SECONDS)
-                            .readTimeout(10, TimeUnit.SECONDS)
-                            .writeTimeout(10, TimeUnit.SECONDS)
+                            .connectTimeout(5, TimeUnit.SECONDS)
+                            .readTimeout(5, TimeUnit.SECONDS)
+                            .writeTimeout(5, TimeUnit.SECONDS)
                             .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
                         /*intent.apply {
                             putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
@@ -273,9 +275,10 @@ class LoginActivity : AppCompatActivity() {
             val idToken = account.idToken
 
             userEmail = email
+            val userEmailMap = userEmail.split("@").map { it.toString() }
 
             //회원가입과 함께 새로운 계정 정보 저장
-            if (userEmail.substring(9..20) == "daejin.ac.kr") {
+            if (userEmailMap.contains("daejin.ac.kr")) {
                 //Toast.makeText(this, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
                 saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
 
@@ -294,7 +297,7 @@ class LoginActivity : AppCompatActivity() {
                 /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 startActivity(intent)
                 this@LoginActivity.finish()*/
-            } else if (userEmail.substring(0..8) == "anes53027"){
+            } else if (userEmailMap.contains("anes53027")){
                 saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
 
                 Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")

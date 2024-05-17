@@ -125,11 +125,14 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                         if (response.body()!![i].content != "작성자") {
                             participationItemAllData.add(
                                 ParticipationData(
+                                    response.body()!![i].participantId,
                                     response.body()!![i].postId,
                                     response.body()!![i].userId,
                                     response.body()!![i].postUserId,
                                     response.body()!![i].content,
-                                    response.body()!![i].approvalOrReject
+                                    response.body()!![i].approvalOrReject,
+                                    response.body()!![i].driverMannerFinish,
+                                    response.body()!![i].passengerMannerFinish
                                 )
                             )
                             CoroutineScope(Dispatchers.IO).launch {

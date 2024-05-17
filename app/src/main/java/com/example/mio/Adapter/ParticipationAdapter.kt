@@ -134,7 +134,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             val approvalPosition = position
             val item = participationItemData[position]
             // 아이템 정보를 사용하여 서버 요청 보내기
-            fetchItemDetails(item.userId)
+            fetchItemDetails(item.participantId)
             cancelItem = -1
             selectedItem = approvalPosition
             notifyDataSetChanged()
@@ -161,7 +161,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             val item = participationItemData[position]
             cancelItem = cancelPosition
             notifyDataSetChanged()
-            removeData(participationItemData[position].userId, position)
+            removeData(participationItemData[position].participantId, position)
             sendAlarmData("취소", position, item)
         }
 
@@ -240,7 +240,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
     }
 
     //데이터 Handle 함수
-    fun removeData(userId: Int, position: Int) {
+    fun removeData(participantsId: Int, position: Int) {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
@@ -280,18 +280,19 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
         //삭제 테스트해보기 TODO
         CoroutineScope(Dispatchers.IO).launch {
-            api.deleteParticipants(userId).enqueue(object : Callback<Void> {
+            api.deleteParticipants(participantsId).enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
-                        println("PART Remove Success "+response.code())
+                        Log.d("PART Remove Success ", response.code().toString())
                     } else {
-                        println("error" + response.errorBody())
-                        println(response.code())
+                        Log.e("PART Remove ERROR ", response.code().toString())
+                        Log.e("PART Remove ERROR ", response.errorBody().toString())
+                        Log.e("PART Remove ERROR ", response.message().toString())
                     }
                 }
 
                 override fun onFailure(call: Call<Void>, t: Throwable) {
-                    Log.d("ERROR", t.toString())
+                    Log.e("PART Remove ERROR ", t.toString())
                 }
             })
         }

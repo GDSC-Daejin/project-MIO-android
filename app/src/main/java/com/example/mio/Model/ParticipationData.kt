@@ -4,6 +4,8 @@ import com.google.gson.annotations.SerializedName
 
 //참여자 데이터
 data class ParticipationData(
+    @SerializedName("participantId")
+    var participantId : Int,
     @SerializedName("postId")
     var postId : Int,
     @SerializedName("userId")
@@ -13,7 +15,12 @@ data class ParticipationData(
     @SerializedName("content")
     var content : String,
     @SerializedName("approvalOrReject")
-    var approvalOrReject : String
+    var approvalOrReject : String,
+    @SerializedName("driverMannerFinish")
+    var driverMannerFinish : Boolean,
+    @SerializedName("passengerMannerFinish")
+    var passengerMannerFinish : Boolean
+
 ) : java.io.Serializable {
 
 }

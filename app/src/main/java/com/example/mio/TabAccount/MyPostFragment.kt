@@ -182,8 +182,7 @@ class MyPostFragment : Fragment() {
                             var verifyGoReturn = false
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants!!.isEmpty()
-                                    response.body()!!.content[i].participants!!.size
+                                    response.body()!!.content[i].participantsCount
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0
@@ -309,24 +308,18 @@ class MyPostFragment : Fragment() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                val layoutm = pBinding.myAccountPostRv.layoutManager as LinearLayoutManager
+                //val layoutm = pBinding.myAccountPostRv.layoutManager as LinearLayoutManager
                 //화면에 보이는 마지막 아이템의 position
                 // 어댑터에 등록된 아이템의 총 개수 -1
                 //데이터의 마지막이 아이템의 화면에 뿌려졌는지
+
+
                 if (currentPage < totalPages - 1) {
-                    if (!isLoading) {
-                        if (!pBinding.myAccountPostRv.canScrollVertically(1)) {
-                            //가져온 data의 크기가 5와 같을 경우 실행
-                            if (myAccountPostAllData.size == 5) {
-                                isLoading = true
-                                getMoreItem()
-                            }
-                        }
-                    }
-                    if (!isLoading) {
-                        if (layoutm.findLastCompletelyVisibleItemPosition() == myAccountPostAllData.size-1) {
-                            isLoading = true
+                    if(!isLoading){
+                        if ((recyclerView.layoutManager as LinearLayoutManager?)!!.findLastCompletelyVisibleItemPosition() == myAccountPostAllData.size - 1){
+                            Log.e("true", "True")
                             getMoreItem()
+                            isLoading =  true
                         }
                     }
                 } else {
@@ -336,7 +329,7 @@ class MyPostFragment : Fragment() {
         })
     }
 
-    private fun getMoreItem() {
+    /*private fun getMoreItem() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
@@ -352,8 +345,8 @@ class MyPostFragment : Fragment() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     startActivity(intent)
                     requireActivity().finish()
@@ -521,6 +514,191 @@ class MyPostFragment : Fragment() {
             }
 
             //println(moreTaxiAllData)
+            isLoading = false
+        }, 2000)
+    }*/
+
+    private fun getMoreItem() {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
+        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
+
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    startActivity(intent)
+                    requireActivity().finish()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        ////////////////////////////////////////////////////
+        val runnable = kotlinx.coroutines.Runnable {
+            myAccountPostAllData.add(null)
+            myAdapter?.notifyItemInserted(myAccountPostAllData.size - 1)
+        }
+        pBinding.myAccountPostRv.post(runnable)
+        //null을 감지 했으니
+        //이 부분에 프로그래스바가 들어올거라 알림
+        //mttBinding.moreTaxiTabRv.adapter!!.notifyItemInserted(moreCarpoolAllData.size-1)
+
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed(java.lang.Runnable {
+            //null추가한 거 삭제
+            myAccountPostAllData.removeAt(myAccountPostAllData.size - 1)
+            myAdapter?.notifyItemRemoved(myAccountPostAllData.size)
+            //data.clear()
+
+            //page수가 totalpages 보다 작거나 같다면 데이터 더 가져오기 가능
+            if (currentPage < totalPages - 1) {
+                currentPage += 1
+                CoroutineScope(Dispatchers.IO).launch {
+                    api.getMyPostData(userId,"createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                        override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                            if (response.isSuccessful) {
+
+                                //println(response.body()!!.content)
+                                /*val start = SystemClock.elapsedRealtime()
+
+                                // 함수 실행시간
+                                val date = Date(start)
+                                val mFormat = SimpleDateFormat("HH:mm:ss")
+                                val time = mFormat.format(date)
+                                println(start)
+                                println(time)*/
+                                /*val s : ArrayList<PostReadAllResponse> = ArrayList()
+                                s.add(PostReadAllResponse())*/
+
+                                for (i in response.body()!!.content.indices) {
+                                    //탑승자 null체크
+                                    var part = 0
+                                    var location = ""
+                                    var title = ""
+                                    var content = ""
+                                    var targetDate = ""
+                                    var targetTime = ""
+                                    var categoryName = ""
+                                    var cost = 0
+                                    var verifyGoReturn = false
+                                    if (response.isSuccessful) {
+                                        part = try {
+                                            response.body()!!.content[i].participantsCount
+                                        } catch (e : java.lang.NullPointerException) {
+                                            Log.d("null", e.toString())
+                                            0
+                                        }
+                                        location = try {
+                                            response.body()!!.content[i].location.isEmpty()
+                                            response.body()!!.content[i].location
+                                        } catch (e : java.lang.NullPointerException) {
+                                            Log.d("null", e.toString())
+                                            "수락산역 3번 출구"
+                                        }
+                                        title = try {
+                                            response.body()!!.content[i].title.isEmpty()
+                                            response.body()!!.content[i].title
+                                        } catch (e : java.lang.NullPointerException) {
+                                            Log.d("null", e.toString())
+                                            "null"
+                                        }
+                                        content = try {
+                                            response.body()!!.content[i].content.isEmpty()
+                                            response.body()!!.content[i].content
+                                        } catch (e : java.lang.NullPointerException) {
+                                            Log.d("null", e.toString())
+                                            "null"
+                                        }
+                                        targetDate = try {
+                                            response.body()!!.content[i].targetDate.isEmpty()
+                                            response.body()!!.content[i].targetDate
+                                        } catch (e : java.lang.NullPointerException) {
+                                            Log.d("null", e.toString())
+                                            "null"
+                                        }
+                                        targetTime = try {
+                                            response.body()!!.content[i].targetTime.isEmpty()
+                                            response.body()!!.content[i].targetTime
+                                        } catch (e : java.lang.NullPointerException) {
+                                            Log.d("null", e.toString())
+                                            "null"
+                                        }
+                                        categoryName = try {
+                                            response.body()!!.content[i].category.categoryName.isEmpty()
+                                            response.body()!!.content[i].category.categoryName
+                                        } catch (e : java.lang.NullPointerException) {
+                                            Log.d("null", e.toString())
+                                            "null"
+                                        }
+                                        cost = try {
+                                            response.body()!!.content[i].cost
+                                        } catch (e : java.lang.NullPointerException) {
+                                            Log.d("null", e.toString())
+                                            0
+                                        }
+                                        verifyGoReturn = try {
+                                            response.body()!!.content[i].verifyGoReturn
+                                        } catch (e : java.lang.NullPointerException) {
+                                            Log.d("null", e.toString())
+                                            false
+                                        }
+                                    }
+
+                                    //println(response!!.body()!!.content[i].user.studentId)
+                                    myAccountPostAllData.add(
+                                        PostData(
+                                            response.body()!!.content[i].user.studentId,
+                                            response.body()!!.content[i].postId,
+                                            title,
+                                            content,
+                                            targetDate,
+                                            targetTime,
+                                            categoryName,
+                                            location,
+                                            //participantscount가 현재 참여하는 인원들
+                                            part,
+                                            //numberOfPassengers은 총 탑승자 수
+                                            response.body()!!.content[i].numberOfPassengers,
+                                            cost,
+                                            verifyGoReturn,
+                                            response.body()!!.content[i].user,
+                                            response.body()!!.content[i].latitude,
+                                            response.body()!!.content[i].longitude
+                                        ))
+                                }
+                                Log.d("mypostfragment", myAccountPostAllData.toString())
+                                myAdapter!!.notifyDataSetChanged()
+                            } else {
+                                Log.d("f", response.code().toString())
+                            }
+                        }
+
+                        override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                            Log.d("error", t.toString())
+                        }
+                    })
+                }
+            }
             isLoading = false
         }, 2000)
     }

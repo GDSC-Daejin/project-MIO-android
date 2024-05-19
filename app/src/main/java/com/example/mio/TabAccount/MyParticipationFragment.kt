@@ -228,24 +228,16 @@ class MyParticipationFragment : Fragment() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                val layoutm =  mpBinding.participationPostRv.layoutManager as LinearLayoutManager
+                //val layoutm = pBinding.myAccountPostRv.layoutManager as LinearLayoutManager
                 //화면에 보이는 마지막 아이템의 position
                 // 어댑터에 등록된 아이템의 총 개수 -1
                 //데이터의 마지막이 아이템의 화면에 뿌려졌는지
                 if (currentPage < totalPages - 1) {
-                    if (!isLoading) {
-                        if (!mpBinding.participationPostRv.canScrollVertically(1)) {
-                            //가져온 data의 크기가 5와 같을 경우 실행
-                            if (myParticipationAllData.size == 5) {
-                                isLoading = true
-                                getMoreItem()
-                            }
-                        }
-                    }
-                    if (!isLoading) {
-                        if (layoutm.findLastCompletelyVisibleItemPosition() == myParticipationAllData.size-1) {
-                            isLoading = true
+                    if(!isLoading){
+                        if ((recyclerView.layoutManager as LinearLayoutManager?)!!.findLastCompletelyVisibleItemPosition() == myParticipationAllData.size - 1){
+                            Log.e("true", "True")
                             getMoreItem()
+                            isLoading =  true
                         }
                     }
                 } else {
@@ -292,16 +284,17 @@ class MyParticipationFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
         ////////////////////////////////////////////////////
 
-        myParticipationAllData.add(null)
-        //null을 감지 했으니
-        //이 부분에 프로그래스바가 들어올거라 알림
-        mpBinding.participationPostRv.adapter!!.notifyItemInserted(myParticipationAllData.size-1)
-        //성공//
+        val runnable = kotlinx.coroutines.Runnable {
+            myParticipationAllData.add(null)
+            myAdapter?.notifyItemInserted(myParticipationAllData.size - 1)
+        }
+        mpBinding.participationPostRv.post(runnable)
 
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
             //null추가한 거 삭제
             myParticipationAllData.removeAt(myParticipationAllData.size - 1)
+            myAdapter?.notifyItemRemoved(myParticipationAllData.size)
 
             //data.clear()
 

@@ -2,12 +2,14 @@ package com.example.mio.Adapter
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
@@ -42,9 +44,11 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
     //클릭된 아이템의 위치를 저장할 변수
     private var selectedItem = -1
-    private var cancelItem = -2
+    //private var cancelItem = -2
     init {
         setHasStableIds(true)
+        Log.d("ParticipationAdapter", participationItemData.toString())
+        Log.d("ParticipationAdapter", participantsUserData.toString())
     }
 
     inner class ParticipationViewHolder(private val binding : ParticipationItemLayoutBinding ) : RecyclerView.ViewHolder(binding.root) {
@@ -88,7 +92,15 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 val handler = Handler(Looper.getMainLooper())
 
                 val r = Runnable {
-                    cancelItem = -1
+                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) //승인
+
+                    // 배경색 변경
+                    binding.participationCsl.backgroundTintList = colorStateList
+                    binding.participationItemLl.backgroundTintList = colorStateList
+
+                    binding.participationCancel.visibility = View.VISIBLE
+                    binding.participationRefuse.visibility = View.GONE
+                    binding.participationApproval.visibility = View.GONE
                     selectedItem = position
                     notifyDataSetChanged()
                 }
@@ -99,13 +111,58 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 val handler = Handler(Looper.getMainLooper())
 
                 val r = Runnable {
+                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
+
+                    // 배경색 변경
+                    binding.participationCsl.backgroundTintList = colorStateList
+                    binding.participationItemLl.backgroundTintList = colorStateList
+
+                    binding.participationCancel.visibility = View.GONE
+                    binding.participationRefuse.visibility = View.VISIBLE
+                    binding.participationApproval.visibility = View.VISIBLE
                     selectedItem = -1
-                    cancelItem = position
                     notifyDataSetChanged()
                 }
 
                 handler.post(r)
             }
+            /*when (partData.approvalOrReject) {
+                "APPROVAL" -> {
+                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) //승인
+
+                    // 배경색 변경
+                    binding.participationCsl.backgroundTintList = colorStateList
+                    binding.participationItemLl.backgroundTintList = colorStateList
+
+                    binding.participationCancel.visibility = View.VISIBLE
+                    binding.participationRefuse.visibility = View.GONE
+                    binding.participationApproval.visibility = View.GONE
+
+                }
+                "REJECT" -> {
+                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
+
+                    // 배경색 변경
+                    binding.participationCsl.backgroundTintList = colorStateList
+                    binding.participationItemLl.backgroundTintList = colorStateList
+
+                    binding.participationCancel.visibility = View.GONE
+                    binding.participationRefuse.visibility = View.VISIBLE
+                    binding.participationApproval.visibility = View.VISIBLE
+
+                }
+                else -> {
+                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
+
+                    // 배경색 변경
+                    binding.participationCsl.backgroundTintList = colorStateList
+                    binding.participationItemLl.backgroundTintList = colorStateList
+
+                    binding.participationCancel.visibility = View.GONE
+                    binding.participationRefuse.visibility = View.VISIBLE
+                    binding.participationApproval.visibility = View.VISIBLE
+                }
+            }*/
         }
     }
 
@@ -116,16 +173,45 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             parent, false
         )*/
         binding = ParticipationItemLayoutBinding.inflate(LayoutInflater.from(parent.context),parent, false)
+        Log.d("ParticipationAdapter", participationItemData.toString())
+        Log.d("ParticipationAdapter", participantsUserData.toString())
         return ParticipationViewHolder(binding)
 
     }
 
     override fun onBindViewHolder(holder: ParticipationAdapter.ParticipationViewHolder, position: Int) {
         holder.bind(participationItemData[position], position)
-        /*holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, participationItemData[holder.adapterPosition].postId)
-            println(participationItemData[holder.adapterPosition].approvalOrReject)
-        }*/
+
+        if(selectedItem == position) {
+            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) //승인
+
+            holder.itemView.backgroundTintList = colorStateList
+
+            // 배경색 변경
+            /*binding.participationCsl.backgroundTintList = colorStateList
+            binding.participationItemLl.backgroundTintList = colorStateList*/
+
+            binding.participationCancel.visibility = View.VISIBLE
+            binding.participationRefuse.visibility = View.GONE
+            binding.participationApproval.visibility = View.GONE
+        } else {
+            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
+            holder.itemView.backgroundTintList = colorStateList
+
+            binding.participationCancel.visibility = View.GONE
+            binding.participationRefuse.visibility = View.VISIBLE
+            binding.participationApproval.visibility = View.VISIBLE
+        }
+
+        holder.itemView.findViewById<Button>(R.id.participation_approval).setOnClickListener {
+            //itemClickListener.onClick(it, holder.adapterPosition, participationItemData[holder.adapterPosition].postId)
+            val pos = position
+            selectedItem = pos
+
+            //notifyItemChanged(beforePos)
+            notifyItemChanged(selectedItem)
+        }
+
 
 
 
@@ -135,7 +221,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             val item = participationItemData[position]
             // 아이템 정보를 사용하여 서버 요청 보내기
             fetchItemDetails(item.participantId)
-            cancelItem = -1
+            //cancelItem = -1
             selectedItem = approvalPosition
             notifyDataSetChanged()
             sendAlarmData("예약", position, item)
@@ -147,10 +233,10 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             val cancelPosition = position
             selectedItem = -1
             val item = participationItemData[position]
-            cancelItem = cancelPosition
+            ////cancelItem = cancelPosition
             notifyDataSetChanged()
             println(participationItemData[position].approvalOrReject)
-            removeData(participationItemData[position].userId, position)
+            removeData(participationItemData[position].participantId, position)
             sendAlarmData("취소", position, item)
         }
 
@@ -159,48 +245,13 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             val cancelPosition = position
             selectedItem = -1
             val item = participationItemData[position]
-            cancelItem = cancelPosition
+            //cancelItem = cancelPosition
             notifyDataSetChanged()
             removeData(participationItemData[position].participantId, position)
             sendAlarmData("취소", position, item)
         }
 
-        when (position) {
-            selectedItem -> {
-                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) //승인
 
-                // 배경색 변경
-                binding.participationCsl.backgroundTintList = colorStateList
-                binding.participationItemLl.backgroundTintList = colorStateList
-
-                binding.participationCancel.visibility = View.VISIBLE
-                binding.participationRefuse.visibility = View.GONE
-                binding.participationApproval.visibility = View.GONE
-
-            }
-            cancelItem -> {
-                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
-
-                // 배경색 변경
-                binding.participationCsl.backgroundTintList = colorStateList
-                binding.participationItemLl.backgroundTintList = colorStateList
-
-                binding.participationCancel.visibility = View.GONE
-                binding.participationRefuse.visibility = View.VISIBLE
-                binding.participationApproval.visibility = View.VISIBLE
-            }
-            else -> {
-                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
-
-                // 배경색 변경
-                binding.participationCsl.backgroundTintList = colorStateList
-                binding.participationItemLl.backgroundTintList = colorStateList
-
-                binding.participationCancel.visibility = View.GONE
-                binding.participationRefuse.visibility = View.VISIBLE
-                binding.participationApproval.visibility = View.VISIBLE
-            }
-        }
 
     /*binding.homeRemoveIv.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)

@@ -449,7 +449,9 @@ class TaxiTabFragment : Fragment() {
     }
 
     private fun initCalendarRecyclerView() {
-        setCalendarData()
+        CoroutineScope(Dispatchers.IO).launch {
+            setCalendarData()
+        }
         calendarAdapter = CalendarAdapter()
         CalendarUtil.selectedDate = LocalDate.now()
         calendarAdapter!!.calendarItemData = calendarItemData
@@ -500,7 +502,7 @@ class TaxiTabFragment : Fragment() {
 
     private fun setCalendarData() {
 
-        val cal = Calendar.getInstance()
+        //val cal = Calendar.getInstance()
         //cal.set(2023, 5, 1)
         /*cal.add(Calendar.YEAR, LocalDate.now().year)
         cal.add(Calendar.MONTH, LocalDate.now().monthValue)
@@ -612,8 +614,7 @@ class TaxiTabFragment : Fragment() {
                             var verifyGoReturn = false
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants!!.isEmpty()
-                                    response.body()!!.content[i].participants!!.size
+                                    response.body()!!.content[i].participantsCount
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0

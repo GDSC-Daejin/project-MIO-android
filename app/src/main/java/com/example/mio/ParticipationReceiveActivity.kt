@@ -138,8 +138,14 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                             CoroutineScope(Dispatchers.IO).launch {
                                 setParticipantsUserData(userId = response.body()!![i].userId)
                             }
+                        } else {
+                            loadingDialog.dismiss()
+                            pBinding.nonParticipation.visibility = View.VISIBLE
+                            pBinding.participationRv.visibility = View.GONE
                         }
                     }
+
+
 
                     //participationItemAllData = participationItemAllData.filter { it.content != "작성자" }
 
@@ -215,6 +221,8 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                     }
 
                     participationAdapter.notifyDataSetChanged()
+                    pBinding.nonParticipation.visibility = View.GONE
+                    pBinding.participationRv.visibility = View.VISIBLE
                     loadingDialog.dismiss()
                 } else {
                     Log.e("PARTICIPATION RESPONSE ERROR", response.errorBody().toString())

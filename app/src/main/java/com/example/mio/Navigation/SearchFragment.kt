@@ -24,6 +24,7 @@ import com.example.mio.TapSearch.NearbypostActivity
 import com.example.mio.TapSearch.SearchResultActivity
 import com.example.mio.databinding.FragmentSearchBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.shape.MaterialShapeDrawable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -531,6 +532,12 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
             layoutParams.bottomMargin = 0
             bottomNavigationView.layoutParams = layoutParams
+            // 그림자 효과 없애기
+            bottomNavigationView.background = MaterialShapeDrawable().apply {
+                // 배경색을 투명하게 설정하여 그림자 효과를 없앱니다.
+                setTint(Color.TRANSPARENT)
+            }
+
 
            /* mapView?.removeAllPOIItems()
             mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
@@ -571,6 +578,73 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
     override fun onStart() {
         super.onStart()
         Log.d("searchFragment1", "start")
+        if (mapView != null) {
+            sBinding?.mapMyMapcontainer?.removeAllViews()
+            sBinding?.mapMyMapcontainer?.removeAllViewsInLayout()
+            mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
+            mapView = null
+
+            (activity as? AppCompatActivity)?.supportActionBar?.show()
+
+            activity?.window?.apply {
+                // 원래의 상태바 색상을 복원.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    statusBarColor = resources.getColor(R.color.white, null)
+                }
+                clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+                // 원래의 UI 플래그를 설정
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                    decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+                }
+            }
+
+            // 네비게이션 바 마진 복원.
+            val activity = activity as AppCompatActivity
+            val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
+            val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
+            layoutParams.bottomMargin = 0
+            bottomNavigationView.layoutParams = layoutParams
+            // 그림자 효과 없애기
+            bottomNavigationView.background = MaterialShapeDrawable().apply {
+                // 배경색을 투명하게 설정하여 그림자 효과를 없앱니다.
+                setTint(Color.TRANSPARENT)
+            }
+
+
+            /* mapView?.removeAllPOIItems()
+             mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
+             mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
+             sBinding?.editFirstVf?.removeView(mapView)
+             mapView?.onPause()
+             mapView?.onSurfaceDestroyed()
+ //            mapView.onStop()
+ //            mapView.onDestroy()
+             mapView = null*/
+
+            /*// 상태바와 하단 네비게이션 바를 원래대로 복원
+            (activity as? AppCompatActivity)?.supportActionBar?.show()
+
+            activity?.window?.apply {
+                // 원래의 상태바 색상을 복원.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    statusBarColor = resources.getColor(R.color.white, null)
+                }
+                clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+                // 원래의 UI 플래그를 설정
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                    decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+                }
+            }
+
+            // 네비게이션 바 마진 복원.
+            val activity = activity as AppCompatActivity
+            val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
+            val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
+            layoutParams.bottomMargin = 0
+            bottomNavigationView.layoutParams = layoutParams*/
+        }
         if (mapView == null) {
             initMapView()
         }

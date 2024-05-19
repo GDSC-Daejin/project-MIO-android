@@ -151,6 +151,7 @@ class MyBookmarkFragment : Fragment() {
                 override fun onResponse(call: Call<List<BookMarkResponseData>>, response: Response<List<BookMarkResponseData>>) {
                     if (response.isSuccessful) {
                         val responseData = response.body()
+
                         for (i in responseData!!) {
                             myBookmarkAllData.add(
                                 PostData(
@@ -173,10 +174,9 @@ class MyBookmarkFragment : Fragment() {
                                     i.post.longitude
                                 )
                             )
-
-                            myAdapter!!.notifyDataSetChanged()
                         }
-
+                        totalPages = myBookmarkAllData.size / 5
+                        myAdapter!!.notifyDataSetChanged()
                         if (myBookmarkAllData.size > 0) {
                             binding.bookmarkPostNotDataLl.visibility = View.GONE
                             binding.bookmarkSwipe.visibility = View.VISIBLE
@@ -222,24 +222,12 @@ class MyBookmarkFragment : Fragment() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                val layoutm = binding.bookmarkRv.layoutManager as LinearLayoutManager
-                //화면에 보이는 마지막 아이템의 position
-                // 어댑터에 등록된 아이템의 총 개수 -1
-                //데이터의 마지막이 아이템의 화면에 뿌려졌는지
                 if (currentPage < totalPages - 1) {
-                    if (!isLoading) {
-                        if (!binding.bookmarkRv.canScrollVertically(1)) {
-                            //가져온 data의 크기가 5와 같을 경우 실행
-                            if (myBookmarkAllData.size == 5) {
-                                isLoading = true
-                                getMoreItem()
-                            }
-                        }
-                    }
-                    if (!isLoading) {
-                        if (layoutm.findLastCompletelyVisibleItemPosition() == myBookmarkAllData.size-1) {
-                            isLoading = true
+                    if(!isLoading){
+                        if ((recyclerView.layoutManager as LinearLayoutManager?)!!.findLastCompletelyVisibleItemPosition() == myBookmarkAllData.size - 1){
+                            Log.e("true", "True")
                             getMoreItem()
+                            isLoading =  true
                         }
                     }
                 } else {
@@ -250,10 +238,6 @@ class MyBookmarkFragment : Fragment() {
     }
 
     private fun getMoreItem() {
-        myBookmarkAllData.add(null)
-        //null을 감지 했으니
-        //이 부분에 프로그래스바가 들어올거라 알림
-        binding.bookmarkRv.adapter!!.notifyItemInserted(myBookmarkAllData.size-1)
         //성공//
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
@@ -290,17 +274,25 @@ class MyBookmarkFragment : Fragment() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
 
+        val runnable = kotlinx.coroutines.Runnable {
+            myBookmarkAllData.add(null)
+            myAdapter?.notifyItemInserted(myBookmarkAllData.size - 1)
+        }
+        binding.bookmarkRv.post(runnable)
+        //null을 감지 했으니
+        //이 부분에 프로그래스바가 들어올거라 알림
+        //mttBinding.moreTaxiTabRv.adapter!!.notifyItemInserted(moreCarpoolAllData.size-1)
+
+
+
 
         val handler = Handler(Looper.getMainLooper())
-        handler.postDelayed({
+        handler.postDelayed(java.lang.Runnable {
             //null추가한 거 삭제
             myBookmarkAllData.removeAt(myBookmarkAllData.size - 1)
+            myAdapter?.notifyItemRemoved(myBookmarkAllData.size)
 
-            //data.clear()
 
-            //page수가 totalpages 보다 작거나 같다면 데이터 더 가져오기 가능
-
-            //여기 변경 하기 스크랩 api로 TODO ///////////////////////////////////////
             if (currentPage < totalPages - 1) {
                 currentPage += 1
                 CoroutineScope(Dispatchers.IO).launch {

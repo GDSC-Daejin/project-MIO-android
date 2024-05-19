@@ -55,10 +55,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="나 태워줘요"
             android:fontFamily="@font/pretendard_medium"
+            android:text="나 태워줘요"
             android:textColor="@color/mio_gray_9"
-            />
+            android:visibility="visible" />
 
 
         <LinearLayout

@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
     private var isClicked = false
     private var isSettingClicked = false
     //notification에서 뒤로가기 구현할 때 그 전에 어느 fragment에 있었는 지 알기위한 변수
-    private var oldFragment : androidx.fragment.app.Fragment? = null
+    private var oldFragment : Fragment? = null
     private var oldTAG = ""
     // private lateinit var loadingDialog : LoadingProgressDialog
     private var backPressedTime = 0L
@@ -82,22 +82,45 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.top_menu, menu)
 
-        val actionNotification = menu!!.findItem(R.id.action_notification)
-        val actionSetting = menu.findItem(R.id.action_main_setting)
+        val actionNotification = menu?.findItem(R.id.action_notification)
+        val actionSetting = menu?.findItem(R.id.action_main_setting)
 
         initNotification(actionNotification)
 
-        if (isClicked) {
-            actionNotification.isVisible = !isClicked
+       /*if (isClicked) {
+            Log.e("isclicked", isClicked.toString())
+            actionNotification?.isVisible = !isClicked
+            actionNotification?.isVisible = false
         } else {
-            actionNotification.isVisible = !isClicked
+            actionNotification?.isVisible = !isClicked
         }
 
         if (isSettingClicked) {
-            actionSetting.isVisible = !isSettingClicked
-            actionNotification.isVisible = false
+            actionSetting?.isVisible = !isSettingClicked
+            actionNotification?.isVisible = false
         } else {
-            actionSetting.isVisible = !isSettingClicked
+            actionSetting?.isVisible = !isSettingClicked
+        }
+        actionNotification?.isVisible = !isClicked
+        Log.e("actionNotificaion", isClicked.toString())
+        actionSetting?.isVisible = !isSettingClicked
+        Log.e("actionSetting", isSettingClicked.toString())*/
+        if (isClicked) {
+            Log.e("isclicked", isClicked.toString())
+            actionNotification?.isVisible = false//!isClicked
+            //actionSetting?.isVisible = true
+        } else {
+            Log.e("isclicked", isClicked.toString())
+            actionNotification?.isVisible = true//!isClicked
+            //actionSetting?.isVisible = false
+        }
+
+        if (isSettingClicked) {
+            Log.e("isSettingClicked", isSettingClicked.toString())
+            actionSetting?.isVisible = false
+        } else {
+            Log.e("isSettingClicked", isSettingClicked.toString())
+            actionSetting?.isVisible = true
         }
 
         return true
@@ -107,18 +130,20 @@ class MainActivity : AppCompatActivity() {
         return when(item.itemId){
             R.id.action_notification -> {
                 isClicked = true
+
+                changeFragment(NotificationFragment())
                 toolbarType = "알림"
                 setToolbarView(toolbarType)
-                setFragment(TAG_NOTIFICATION, NotificationFragment())
+                //setFragment(TAG_NOTIFICATION, NotificationFragment())
 
-                println(isClicked)
                 super.onOptionsItemSelected(item)
             }
             R.id.action_main_setting -> {
-                //공유 버튼 눌렀을 때
+                //설정 버튼 눌렀을 때
                 isSettingClicked = true
 
-                setFragment(TAG_SETTING, SettingsFragment())
+                //setFragment(TAG_SETTING, SettingsFragment())
+                changeFragment(SettingsFragment())
                 toolbarType = "설정"
                 setToolbarView(toolbarType)
 
@@ -127,7 +152,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             android.R.id.home -> {
-                setFragment(oldTAG, oldFragment!!)
+                //setFragment(oldTAG, oldFragment!!)
+                changeFragment(HomeFragment())
                 toolbarType = "기본"
                 setToolbarView(toolbarType)
                 isClicked = false
@@ -172,7 +198,8 @@ class MainActivity : AppCompatActivity() {
                         oldFragment = HomeFragment()
                         oldTAG = TAG_HOME
                         //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(TAG_HOME, HomeFragment())
+                        //setFragment(TAG_HOME, HomeFragment())
+                        changeFragment(HomeFragment())
                         toolbarType = "기본"
                         setToolbarView(toolbarType)
                         isClicked = false
@@ -183,7 +210,8 @@ class MainActivity : AppCompatActivity() {
                         oldFragment = SearchFragment()
                         oldTAG = TAG_SEARCH
                         //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(TAG_SEARCH, SearchFragment())
+                        //setFragment(TAG_SEARCH, SearchFragment())
+                        changeFragment(SearchFragment())
                         toolbarType = "기본"
                         setToolbarView(toolbarType)
                         isClicked = false
@@ -206,13 +234,14 @@ class MainActivity : AppCompatActivity() {
 
 
                     R.id.navigation_account -> {
-                        /*oldFragment = AccountFragment()
+                        oldFragment = AccountFragment()
                         oldTAG = TAG_ACCOUNT
                         //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(TAG_ACCOUNT, AccountFragment())*/
+                        //setFragment(TAG_ACCOUNT, AccountFragment())
                         supportFragmentManager.beginTransaction()
                             .replace(R.id.fragment_content, AccountFragment())
                             .commit()
+                        //setFragment(oldTAG, oldFragment!!)
                         toolbarType = "기본"
                         setToolbarView(toolbarType)
                         isClicked = false
@@ -223,7 +252,8 @@ class MainActivity : AppCompatActivity() {
                     else -> {
                         oldFragment = HomeFragment()
                         oldTAG = TAG_HOME
-                        setFragment(TAG_HOME, HomeFragment())
+                        //setFragment(TAG_HOME, HomeFragment())
+                        changeFragment(HomeFragment())
                         toolbarType = "기본"
                         setToolbarView(toolbarType)
                         isClicked = false
@@ -242,14 +272,14 @@ class MainActivity : AppCompatActivity() {
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {
-            AppCompatActivity.RESULT_OK -> {
+            RESULT_OK -> {
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {
                         oldFragment = HomeFragment()
                         oldTAG = TAG_HOME
                         //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(oldTAG, oldFragment!!)
+                        //setFragment(oldTAG, oldFragment!!)
 
                         mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
 
@@ -265,7 +295,7 @@ class MainActivity : AppCompatActivity() {
                         oldFragment = HomeFragment()
                         oldTAG = TAG_HOME
                         //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(TAG_HOME, HomeFragment())
+                        //setFragment(TAG_HOME, HomeFragment())
 
                         mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
 
@@ -300,7 +330,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     //여기는 알람 클릭 시 notificationFragment로 이동하기 위함
-                    8 -> {
+                    /*8 -> {
                         isClicked = true
                         toolbarType = "알림"
                         setToolbarView(toolbarType)
@@ -309,7 +339,7 @@ class MainActivity : AppCompatActivity() {
                         //setToolbarView(TAG_HOME, oldTAG)
                         setFragment(TAG_NOTIFICATION, NotificationFragment())
                         //mBinding.bottomNavigationView.selectedItemId = R.id.action_notification
-                    }
+                    }*/
 
                     9 -> {
                         toolbarType = "기본"
@@ -561,7 +591,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun initNotification(menuItem: MenuItem) {
+    private fun initNotification(menuItem: MenuItem?) {
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
         val notificationCheck = saveSharedPreferenceGoogleLogin.getSharedNotification(this).toString()
@@ -613,14 +643,14 @@ class MainActivity : AppCompatActivity() {
             ) {
                 if (response.isSuccessful) {
                     if (response.body().isNullOrEmpty() && response.body()?.toString() == "") {
-                        menuItem.setIcon(R.drawable.top_menu_notification)
+                        menuItem?.setIcon(R.drawable.top_menu_notification)
                         Log.e("MainActivitu Notification??", notificationCheck.toString())
                     } else {
                        if (response.body()?.size!! > notificationCheck.toInt()) { //사이즈가 달라짐 = 데이터가 더 추가되었다
-                           menuItem.setIcon(R.drawable.notification_update_icon)
+                           menuItem?.setIcon(R.drawable.notification_update_icon)
                            Log.e("MainActivitu Notification??", notificationCheck.toString())
                        } else { //달라진게없으면? 다시 원상태 즉 봣다는거니
-                           menuItem.setIcon(R.drawable.top_menu_notification)
+                           menuItem?.setIcon(R.drawable.top_menu_notification)
                            Log.e("MainActivitu Notification??", notificationCheck.toString())
                        }
                         /*Log.e("MainActivitu Notification", response.body()?.size.toString())

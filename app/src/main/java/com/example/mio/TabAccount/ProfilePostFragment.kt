@@ -168,8 +168,7 @@ class ProfilePostFragment : Fragment() {
                             var verifyGoReturn = false
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants!!.isEmpty()
-                                    response.body()!!.content[i].participants!!.size
+                                    response.body()!!.content[i].participantsCount
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0

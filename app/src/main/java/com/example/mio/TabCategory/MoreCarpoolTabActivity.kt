@@ -31,6 +31,7 @@ import com.example.mio.databinding.ActivityMoreCarpoolBinding
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Call
@@ -219,8 +220,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                         var verifyGoReturn = false
                                         if (response.isSuccessful) {
                                             part = try {
-                                                response.body()!!.content[i].participants!!.isEmpty()
-                                                response.body()!!.content[i].participants!!.size
+                                                response.body()!!.content[i].participantsCount
                                             } catch (e : java.lang.NullPointerException) {
                                                 Log.d("null", e.toString())
                                                 0
@@ -352,8 +352,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                         var verifyGoReturn = false
                                         if (response.isSuccessful) {
                                             part = try {
-                                                response.body()!!.content[i].participants!!.isEmpty()
-                                                response.body()!!.content[i].participants!!.size
+                                                response.body()!!.content[i].participantsCount
                                             } catch (e : java.lang.NullPointerException) {
                                                 Log.d("null", e.toString())
                                                 0
@@ -689,8 +688,26 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
             //activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
         }
     }
-
     private fun initScrollListener(){
+        mttBinding.moreTaxiTabRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                if (currentPage < totalPages - 1) {
+                    if(!isLoading){
+                        if ((recyclerView.layoutManager as LinearLayoutManager?)!!.findLastCompletelyVisibleItemPosition() == moreCarpoolAllData.size - 1){
+                            Log.e("true", "True")
+                            getMoreItem()
+                            isLoading =  true
+                        }
+                    }
+                } else {
+                    isLoading = false
+                }
+            }
+        })
+    }
+    /*private fun initScrollListener(){
         mttBinding.moreTaxiTabRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -720,13 +737,17 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                 }
             }
         })
-    }
+    }*/
 
     private fun getMoreItem() {
-        moreCarpoolAllData.add(null)
+        val runnable = Runnable {
+            moreCarpoolAllData.add(null)
+            mtAdapter?.notifyItemInserted(moreCarpoolAllData.size-1)
+        }
+        mttBinding.moreTaxiTabRv.post(runnable)
         //null을 감지 했으니
         //이 부분에 프로그래스바가 들어올거라 알림
-        mttBinding.moreTaxiTabRv.adapter!!.notifyItemInserted(moreCarpoolAllData.size-1)
+        //mttBinding.moreTaxiTabRv.adapter!!.notifyItemInserted(moreCarpoolAllData.size-1)
         //성공//
         val call = RetrofitServerConnect.service
 
@@ -734,7 +755,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         handler.postDelayed(java.lang.Runnable {
             //null추가한 거 삭제
             moreCarpoolAllData.removeAt(moreCarpoolAllData.size - 1)
-
+            mtAdapter?.notifyItemRemoved(moreCarpoolAllData.size)
             //data.clear()
 
             //page수가 totalpages 보다 작거나 같다면 데이터 더 가져오기 가능
@@ -770,8 +791,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                     var verifyGoReturn = false
                                     if (response.isSuccessful) {
                                         part = try {
-                                            response.body()!!.content[i].participants!!.isEmpty()
-                                            response.body()!!.content[i].participants!!.size
+                                            response.body()!!.content[i].participantsCount
                                         } catch (e : java.lang.NullPointerException) {
                                             Log.d("null", e.toString())
                                             0

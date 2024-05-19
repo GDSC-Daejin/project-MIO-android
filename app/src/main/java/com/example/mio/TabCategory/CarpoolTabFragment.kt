@@ -499,9 +499,12 @@ class CarpoolTabFragment : Fragment() {
     }
 
     private fun initCalendarRecyclerView() {
-        setCalendarData()
+        CoroutineScope(Dispatchers.IO).launch {
+            setCalendarData()
+        }
         calendarAdapter = CalendarAdapter()
         CalendarUtil.selectedDate = LocalDate.now()
+
         calendarAdapter!!.calendarItemData = calendarItemData
         val recyclerViewScrollListener = object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -514,7 +517,12 @@ class CarpoolTabFragment : Fragment() {
         }
         // RecyclerView 스크롤 이벤트 리스너 등록
         taxiTabBinding.calendarRV.addOnScrollListener(recyclerViewScrollListener)
+        taxiTabBinding.calendarRV.adapter = calendarAdapter
+        //레이아웃 뒤집기 안씀
+        //manager.reverseLayout = true
+        //manager.stackFromEnd = true
         taxiTabBinding.calendarRV.setHasFixedSize(true)
+
         horizonManager.orientation = LinearLayoutManager.HORIZONTAL
         taxiTabBinding.calendarRV.layoutManager = horizonManager
 
@@ -586,6 +594,7 @@ class CarpoolTabFragment : Fragment() {
                 calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), tempDayOfWeek.toString().substring(0, 1), i.toString()))
             }
         }
+        Log.d("calendar carpool data " , calendarItemData.toString())
     }
 
 
@@ -624,8 +633,7 @@ class CarpoolTabFragment : Fragment() {
                             var verifyGoReturn = false
                             if (response.isSuccessful) {
                                 part = try {
-                                    response.body()!!.content[i].participants!!.isEmpty()
-                                    response.body()!!.content[i].participants!!.size
+                                    response.body()!!.content[i].participantsCount
                                 } catch (e : java.lang.NullPointerException) {
                                     Log.d("null", e.toString())
                                     0

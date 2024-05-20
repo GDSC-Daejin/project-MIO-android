@@ -132,7 +132,8 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                                     response.body()!![i].content,
                                     response.body()!![i].approvalOrReject,
                                     response.body()!![i].driverMannerFinish,
-                                    response.body()!![i].passengerMannerFinish
+                                    response.body()!![i].passengerMannerFinish,
+                                    response.body()!![i].verifyFinish
                                 )
                             )
                             CoroutineScope(Dispatchers.IO).launch {

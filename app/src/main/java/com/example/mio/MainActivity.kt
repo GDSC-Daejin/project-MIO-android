@@ -108,6 +108,8 @@ class MainActivity : AppCompatActivity() {
         if (isClicked) {
             Log.e("isclicked", isClicked.toString())
             actionNotification?.isVisible = false//!isClicked
+            toolbarType = "알림"
+            setToolbarView(toolbarType)
             //actionSetting?.isVisible = true
         } else {
             Log.e("isclicked", isClicked.toString())
@@ -159,6 +161,8 @@ class MainActivity : AppCompatActivity() {
                 isClicked = false
                 isSettingClicked = false
                 Log.e("eoerer", oldTAG)
+                mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
+
                 super.onOptionsItemSelected(item)
             }
             else -> super.onOptionsItemSelected(item)
@@ -672,7 +676,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    fun changeFragment(fragment : Fragment) {
+    private fun changeFragment(fragment : Fragment) {
         //프래그먼트를 교체 하는 작업을 수행할 수 있게 해줍니다.
         supportFragmentManager
             .beginTransaction()

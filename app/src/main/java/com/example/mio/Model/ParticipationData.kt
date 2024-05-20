@@ -19,7 +19,9 @@ data class ParticipationData(
     @SerializedName("driverMannerFinish")
     var driverMannerFinish : Boolean,
     @SerializedName("passengerMannerFinish")
-    var passengerMannerFinish : Boolean
+    var passengerMannerFinish : Boolean,
+    @SerializedName("verifyFinish")
+    var verifyFinish : Boolean
 
 ) : java.io.Serializable {
 

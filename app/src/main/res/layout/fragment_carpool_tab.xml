@@ -50,7 +50,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/pretendard_bold"
-                android:text="오늘 예약된 카풀이 없습니다"
+                android:text="예약된 카풀이 없습니다"
                 android:textColor="@color/mio_gray_7"
                 android:visibility="gone" />
 

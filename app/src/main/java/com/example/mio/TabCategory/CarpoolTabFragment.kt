@@ -924,81 +924,42 @@ class CarpoolTabFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
 
         //println(userId)
-        api.getMyParticipantsData(0, 20).enqueue(object : Callback<List<Content>> {
-            override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
+        api.getMyParticipantsUserData().enqueue(object : Callback<Content> {
+            override fun onResponse(call: Call<Content>, response: Response<Content>) {
                 if (response.isSuccessful) {
-                    val responseData = response.body().isNullOrEmpty()
+                    val responseData : Content? = response.body()
                     println("예약 정보")
                     //데이터 청소
                     currentTaxiAllData.clear()
 
-                    for (i in response.body()!!.indices) {
-                        //println(response!!.body()!!.content[i].user.studentId)
-                        currentTaxiAllData.add(PostData(
-                            response.body()!![i].user.studentId,
-                            response.body()!![i].postId,
-                            response.body()!![i].title,
-                            response.body()!![i].content,
-                            response.body()!![i].targetDate,
-                            response.body()!![i].targetTime,
-                            response.body()!![i].category.categoryName,
-                            response.body()!![i].location,
-                            //participantscount가 현재 참여하는 인원들
-                            response.body()!![i].participantsCount,
-                            //numberOfPassengers은 총 탑승자 수
-                            response.body()!![i].numberOfPassengers,
-                            response.body()!![i].cost,
-                            response.body()!![i].verifyGoReturn,
-                            response.body()!![i].user,
-                            response.body()!![i].latitude,
-                            response.body()!![i].longitude
-                        ))
-                    }
+                    currentTaxiAllData.add(PostData(
+                        responseData!!.user.studentId,
+                        responseData.postId,
+                        responseData.title,
+                        responseData.content,
+                        responseData.targetDate,
+                        responseData.targetTime,
+                        responseData.category.categoryName,
+                        responseData.location,
+                        //participantscount가 현재 참여하는 인원들
+                        responseData.participantsCount,
+                        //numberOfPassengers은 총 탑승자 수
+                        responseData.numberOfPassengers,
+                        responseData.cost,
+                        responseData.verifyGoReturn,
+                        responseData.user,
+                        responseData.latitude,
+                        responseData.longitude
+                    ))
                     currentNoticeBoardAdapter!!.notifyDataSetChanged()
 
                     //val list : ArrayList<Participants> = ArrayList()
-                    if (responseData) {
+                    if (responseData != null) {
                         CoroutineScope(Dispatchers.IO).launch {
-                            for (i in response.body()!!.indices) {
-
-                                carpoolParticipantsData.add(response.body()!![i].participants)
-
-                                /*for (j in response.body()!![i].participants?.indices!!) {
-                                    tempData.add(Participants(
-                                        response.body()!![i].participants?.get(j)?.id!!,
-                                        response.body()!![i].participants?.get(j)?.email!!,
-                                        response.body()!![i].participants?.get(j)?.studentId!!,
-                                        response.body()!![i].participants?.get(j)?.profileImageUrl!!,
-                                        response.body()!![i].participants?.get(j)?.name!!,
-                                        response.body()!![i].participants?.get(j)?.accountNumber!!,
-                                        response.body()!![i].participants?.get(j)?.gender!!,
-                                        response.body()!![i].participants?.get(j)?.verifySmoker!!,
-                                        response.body()!![i].participants?.get(j)?.roleType!!,
-                                        response.body()!![i].participants?.get(j)?.status!!,
-                                        response.body()!![i].participants?.get(j)?.mannerCount!!,
-                                        response.body()!![i].participants?.get(j)?.grade!!,
-                                    ))
-                                }
-                                s.add(tempData)*/
-                            }
                             /*for (i in response.body()!!.indices) {
-                                for (j in response.body()!![i].participants.indices) {
-                                    carpoolParticipantsData.add(Participants(
-                                        response.body()!![i].participants[j].id,
-                                        response.body()!![i].participants[j].email,
-                                        response.body()!![i].participants[j].studentId,
-                                        response.body()!![i].participants[j].profileImageUrl,
-                                        response.body()!![i].participants[j].name,
-                                        response.body()!![i].participants[j].accountNumber,
-                                        response.body()!![i].participants[j].gender,
-                                        response.body()!![i].participants[j].verifySmoker,
-                                        response.body()!![i].participants[j].roleType,
-                                        response.body()!![i].participants[j].status,
-                                        response.body()!![i].participants[j].mannerCount,
-                                        response.body()!![i].participants[j].grade,
-                                    ))
-                                }
+                                carpoolParticipantsData.add(response.body()!![i].participants)
                             }*/
+                            carpoolParticipantsData.add(responseData.participants)
                         }
                     }
 
@@ -1047,7 +1008,7 @@ class CarpoolTabFragment : Fragment() {
                 }
             }
 
-            override fun onFailure(call: Call<List<Content>>, t: Throwable) {
+            override fun onFailure(call: Call<Content>, t: Throwable) {
                 Log.d("error", t.toString())
             }
         })

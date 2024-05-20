@@ -90,7 +90,8 @@ class AlarmReceiver : BroadcastReceiver() {
         if (!WorkManagerInitializer.isInitialized()) {
             WorkManager.initialize(context, Configuration.Builder().build())
             WorkManagerInitializer.setInitialized(true)
-
+        } else {
+            Log.d("AlarmReceiver", "WorkManager is already initialized")
         }
     }
 }

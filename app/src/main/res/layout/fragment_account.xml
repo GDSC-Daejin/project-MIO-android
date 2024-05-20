@@ -101,8 +101,8 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/pretendard_medium"
                     android:text="서울특별시 노원구"
-                    android:textSize="11sp"
-                    android:textColor="@color/mio_gray_7" />
+                    android:textColor="@color/mio_gray_7"
+                    android:textSize="11sp" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -117,8 +117,8 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/pretendard_medium"
                     android:text="1234567890101 토스뱅크"
-                    android:textSize="11sp"
-                    android:textColor="@color/mio_gray_7" />
+                    android:textColor="@color/mio_gray_7"
+                    android:textSize="11sp" />
 
             </LinearLayout>
         </LinearLayout>
@@ -127,11 +127,11 @@
             android:id="@+id/account_review_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
             android:layout_gravity="center"
             android:background="@drawable/account_review_btn_layout"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/linearLayout12"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 

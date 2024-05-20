@@ -31,6 +31,10 @@ interface MioInterface {
                           @Query("page") page : Int,
                           @Query("size") size : Int) : Call<PostReadAllResponse>
 
+    //게시글로 id로 상세조회
+    @GET("/detail/{id}")
+    fun getPostIdDetailSearch(@Path("id") postId : Int) : Call<Content>
+
     //카테고리에 따른 게시글 생성 순 조회 1=카풀, 2=택시
     @GET("/categoryPost/{categoryId}")
     fun getCategoryPostData(@Path("categoryId") categoryId: Int,
@@ -157,10 +161,15 @@ interface MioInterface {
     @GET("/{postId}/check")
     fun checkParticipate(@Path("postId") postId : Int) : Call<Boolean>
 
-    //유저가 참여한 게시글 조회
+    //전부 + 작성자 제거
     @GET("/user/participants")
     fun getMyParticipantsData(@Query("page") page : Int,
-                              @Query("size") size : Int) : Call<List<Content>>
+                              @Query("size") size : Int) : Call<List<ParticipationData>>
+
+    //승인된 참여 + 작성자 제거안함
+    @GET("/user/participants/carpool")
+    fun getMyParticipantsUserData() : Call<Content>
+
 
     @PATCH("/{participantId}/participate") //void는 response의 값이 없음을 나타내기 위해 Void를 사용, 성공 코드만 call받기위함
     fun patchParticipantsApproval(@Path("participantId") participantId : Int) : Call<Void>

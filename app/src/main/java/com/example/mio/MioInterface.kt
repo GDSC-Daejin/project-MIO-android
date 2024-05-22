@@ -168,7 +168,7 @@ interface MioInterface {
 
     //승인된 참여 + 작성자 제거안함
     @GET("/user/participants/carpool")
-    fun getMyParticipantsUserData() : Call<Content>
+    fun getMyParticipantsUserData() : Call<List<Content>>
 
 
     @PATCH("/{participantId}/participate") //void는 response의 값이 없음을 나타내기 위해 Void를 사용, 성공 코드만 call받기위함

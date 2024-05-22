@@ -10,6 +10,7 @@ import androidx.preference.SwitchPreference
 import com.example.mio.Helper.NotificationHelper
 import com.example.mio.OpenSourceManagementActivity
 import com.example.mio.R
+import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -17,6 +18,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private var openSourceLicensePreference : Preference? = null
     private var openSourceLicensePreference2 : Preference? = null
 
+    private var sharedPreference = SaveSharedPreferenceGoogleLogin()
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
@@ -26,6 +28,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
             alarmSettingPreference = findPreference("alarmReceive")
             openSourceLicensePreference = findPreference("openSource_license")
             openSourceLicensePreference2 = findPreference("openSource_license2")
+
+            if (sharedPreference.getSharedAlarm(requireActivity())) {
+                alarmSettingPreference?.setDefaultValue(sharedPreference.getSharedAlarm(requireActivity()))
+            } else {
+                alarmSettingPreference?.setDefaultValue(false)
+            }
         }
 
 
@@ -34,7 +42,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             if (newValue as Boolean) {
                 check = newValue
             }
-
+            sharedPreference.setSharedAlarm(requireActivity(), check)
             if (check) {
                 Toast.makeText(requireActivity(), "${check}", Toast.LENGTH_SHORT).show()
             } else {

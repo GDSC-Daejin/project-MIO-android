@@ -18,7 +18,9 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -95,8 +97,6 @@ class CarpoolTabFragment : Fragment() {
     //게시글과 targetDate를 받아
     private var sharedViewModel: SharedViewModel? = null
     private var calendarTempData = ArrayList<String>()
-    //이건 캘린더에 적용될 모든 데이터
-    private var calendarTaxiAllData : ArrayList<PostData> = ArrayList()
     //캘린더에서 선택된거 저장하고 없어지고 할 데이터
     private var selectCalendarCarpoolData : ArrayList<PostData> = ArrayList()
     //edit에서 받은 값
@@ -202,33 +202,36 @@ class CarpoolTabFragment : Fragment() {
             //여기서 position = 0시작은 date가 되야함 itemId=1로 시작함
             override fun onClick(view: View, position: Int, itemId: String) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    if (calendarTaxiAllData.isNotEmpty()) {
+                    if (carpoolAllData.isNotEmpty()) {
                         try {
-                            val selectDateData = calendarTaxiAllData.filter { it.postTargetDate == itemId }
+                            val selectDateData = carpoolAllData.filter { it.postTargetDate == itemId }
+                            Log.d("carpool, selectDateData", selectDateData.toString())
+                            Log.d("carpool, carpoolAllData", carpoolAllData.toString())
                             if (selectDateData.isNotEmpty()) {
-                                noticeBoardAdapter = NoticeBoardAdapter()
-                                noticeBoardAdapter!!.postItemData = selectCalendarCarpoolData
-                                taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
-                                //레이아웃 뒤집기 안씀
-                                //manager.reverseLayout = true
-                                //manager.stackFromEnd = true
-                                taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
-                                taxiTabBinding.noticeBoardRV.layoutManager = manager
-
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
-                                    taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
-                                }
                                 selectCalendarCarpoolData.clear()
 
                                 /* for (i in selectDateData.indices) {
                                      calendarTaxiAllData.add(selectDateData[i])
                                  }*/
-                                for (select in selectDateData) {
-                                    selectCalendarCarpoolData.add(select)
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    for (select in selectDateData) {
+                                        selectCalendarCarpoolData.add(select)
+                                    }
+
+                                    noticeBoardAdapter = NoticeBoardAdapter()
+                                    noticeBoardAdapter!!.postItemData = selectCalendarCarpoolData
+                                    taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
+                                    //레이아웃 뒤집기 안씀
+                                    //manager.reverseLayout = true
+                                    //manager.stackFromEnd = true
+                                    taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
+                                    taxiTabBinding.noticeBoardRV.layoutManager = manager
                                 }
 
-
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                                    taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
+                                }
                                 noticeBoardAdapter!!.notifyDataSetChanged()
 
                                 //recyclerview item클릭 시
@@ -260,14 +263,7 @@ class CarpoolTabFragment : Fragment() {
                     } else {
                         println("null")
                     }
-                    /*
-                    calendarAdapter!!.notifyItemChanged(oldSelectedPostion)
-                    calendarAdapter!!.notifyItemChanged(selectedPostion)
-                    */
                 }
-                /* calendarAdapter!!.notifyItemChanged(selectedPostion)
-                calendarAdapter!!.notifyItemChanged(oldSelectedPostion)*/
-
                 noticeBoardAdapter!!.notifyDataSetChanged()
                 Toast.makeText(activity, calendarItemData[position]!!.day, Toast.LENGTH_SHORT).show()
             }
@@ -748,8 +744,8 @@ class CarpoolTabFragment : Fragment() {
                             taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
                         }
 
-                        calendarTaxiAllData = carpoolAllData
-                        selectCalendarCarpoolData = calendarTaxiAllData
+                        //calendarTaxiAllData = carpoolAllData
+                        //selectCalendarCarpoolData = calendarTaxiAllData
 
                         calendarAdapter!!.notifyDataSetChanged()
 
@@ -925,40 +921,37 @@ class CarpoolTabFragment : Fragment() {
 
         //println(userId)
         //작성자 제거 x
-        api.getMyParticipantsUserData().enqueue(object : Callback<Content> {
-            override fun onResponse(call: Call<Content>, response: Response<Content>) {
+        api.getMyParticipantsUserData().enqueue(object : Callback<List<Content>> {
+            override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
                 if (response.isSuccessful) {
-                    val responseData : Content? = response.body()
+                    val responseData = response.body()
+                    Log.d("carpool", response.code().toString())
                     println("예약 정보")
                     //데이터 청소
                     currentTaxiAllData.clear()
 
-                    responseData.let {
-                        currentTaxiAllData.add(PostData(
-                            responseData!!.user.studentId,
-                            responseData.postId,
-                            responseData.title,
-                            responseData.content,
-                            responseData.targetDate,
-                            responseData.targetTime,
-                            responseData.category.categoryName,
-                            responseData.location,
-                            //participantscount가 현재 참여하는 인원들
-                            responseData.participantsCount,
-                            //numberOfPassengers은 총 탑승자 수
-                            responseData.numberOfPassengers,
-                            responseData.cost,
-                            responseData.verifyGoReturn,
-                            responseData.user,
-                            responseData.latitude,
-                            responseData.longitude
-                        ))
-
-                        CoroutineScope(Dispatchers.IO).launch {
-                            /*for (i in response.body()!!.indices) {
-                                carpoolParticipantsData.add(response.body()!![i].participants)
-                            }*/
-                            carpoolParticipantsData.add(responseData.participants)
+                    if (responseData != null) {
+                        for (i in responseData) {
+                            currentTaxiAllData.add(PostData(
+                                i.user.studentId,
+                                i.postId,
+                                i.title,
+                                i.content,
+                                i.targetDate,
+                                i.targetTime,
+                                i.category.categoryName,
+                                i.location,
+                                //participantscount가 현재 참여하는 인원들
+                                i.participantsCount,
+                                //numberOfPassengers은 총 탑승자 수
+                                i.numberOfPassengers,
+                                i.cost,
+                                i.verifyGoReturn,
+                                i.user,
+                                i.latitude,
+                                i.longitude
+                            ))
+                            carpoolParticipantsData.add(i.participants)
                         }
                     }
 
@@ -1011,7 +1004,7 @@ class CarpoolTabFragment : Fragment() {
                 }
             }
 
-            override fun onFailure(call: Call<Content>, t: Throwable) {
+            override fun onFailure(call: Call<List<Content>>, t: Throwable) {
                 Log.d("error", t.toString())
             }
         })

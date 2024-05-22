@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
 
     private var selectedTab = ""
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+    private var notificationIcon : MenuItem? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -85,7 +86,8 @@ class MainActivity : AppCompatActivity() {
         val actionNotification = menu?.findItem(R.id.action_notification)
         val actionSetting = menu?.findItem(R.id.action_main_setting)
 
-        initNotification(actionNotification)
+        notificationIcon = actionNotification
+
 
        /*if (isClicked) {
             Log.e("isclicked", isClicked.toString())
@@ -582,6 +584,9 @@ class MainActivity : AppCompatActivity() {
                     val responseData = response.body()
                     saveSharedPreferenceGoogleLogin.setUserId(this@MainActivity, responseData?.id)
                     saveSharedPreferenceGoogleLogin.setArea(this@MainActivity, responseData?.activityLocation)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        initNotification(notificationIcon)
+                    }
                 } else {
                     Log.e("MainActivity set user", response.message().toString())
                     Log.e("MainActivity set user", response.code().toString())

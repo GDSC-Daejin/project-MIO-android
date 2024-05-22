@@ -312,11 +312,14 @@ class LoginActivity : AppCompatActivity() {
                 val userInfoToken = TokenRequest(idToken.toString())
                 signInCheck(userInfoToken)
             } else {
+                loadingDialog?.dismiss()
                 Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
             }
 
         } catch (e : ApiException) {
-            Log.w("failed", "signinresultfalied code = " + e.statusCode)
+            Log.e("catch failed", "signinresultfalied code = " + e.statusCode)
+            loadingDialog?.dismiss()
+            Toast.makeText(this, "로그인에 오류가 발생했습니다. ${e.statusCode}", Toast.LENGTH_SHORT).show()
         }
     }
 

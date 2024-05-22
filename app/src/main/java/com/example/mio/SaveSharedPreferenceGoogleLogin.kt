@@ -24,7 +24,20 @@ public class SaveSharedPreferenceGoogleLogin {
     // SharedPreferences 키
     private val PREF_LAST_BOTTOM_SHEET_TIME = "last_bottom_sheet_time"
 
+    //alarm key
+    private val ALARM_SETTING = "alarm_setting"
 
+
+    //알람 받을 건지 아닌지 get
+    fun getSharedAlarm(ctx: Context?): Boolean {
+        return getSharedPreferences(ctx).getBoolean(ALARM_SETTING, true)
+    }
+    //알람 set
+    fun setSharedAlarm(ctx: Context?, check: Boolean) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putBoolean(ALARM_SETTING, check)
+        editor.apply()
+    }
 
     //알람의 데이터 수가 달라지는 거 확인용
     fun getSharedNotification(ctx: Context?): String? {

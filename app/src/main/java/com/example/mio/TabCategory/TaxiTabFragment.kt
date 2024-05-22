@@ -104,7 +104,6 @@ class TaxiTabFragment : Fragment() {
     private var calendarTaxiAllData : ArrayList<PostData> = ArrayList()
     private var selectCalendarTaxiData : ArrayList<PostData> = ArrayList()
     //edit에서 받은 값
-    private var selectCalendarData = HashMap<String, ArrayList<PostData>>()
     private var testselectCalendarData = HashMap<String, ArrayList<PostData>>()
 
     //뒤로 가기 받아오기
@@ -206,12 +205,22 @@ class TaxiTabFragment : Fragment() {
             //여기서 position = 0시작은 date가 되야함 itemId=1로 시작함
             override fun onClick(view: View, position: Int, itemId: String) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    if (calendarTaxiAllData.isNotEmpty()) {
+                    if (taxiAllData.isNotEmpty()) {
                         try {
-                            val selectDateData = calendarTaxiAllData.filter { it.postTargetDate == itemId }
-                            val mainHandler = Handler(Looper.getMainLooper())
-                            mainHandler.post {
-                                if (selectDateData.isNotEmpty()) {
+                            val selectDateData = taxiAllData.filter { it.postTargetDate == itemId }
+                            Log.d("carpool, selectDateData", selectDateData.toString())
+                            Log.d("carpool, taxiAllData", taxiAllData.toString())
+                            if (selectDateData.isNotEmpty()) {
+                                selectCalendarTaxiData.clear()
+
+                                /* for (i in selectDateData.indices) {
+                                     calendarTaxiAllData.add(selectDateData[i])
+                                 }*/
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    for (select in selectDateData) {
+                                        selectCalendarTaxiData.add(select)
+                                    }
+
                                     noticeBoardAdapter = NoticeBoardAdapter()
                                     noticeBoardAdapter!!.postItemData = selectCalendarTaxiData
                                     taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
@@ -220,57 +229,43 @@ class TaxiTabFragment : Fragment() {
                                     //manager.stackFromEnd = true
                                     taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
                                     taxiTabBinding.noticeBoardRV.layoutManager = manager
+                                }
 
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
-                                        taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
-                                    }
-                                    selectCalendarTaxiData.clear()
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                                    taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
+                                }
+                                noticeBoardAdapter!!.notifyDataSetChanged()
 
-                                    /* for (i in selectDateData.indices) {
-                                         calendarTaxiAllData.add(selectDateData[i])
-                                     }*/
-                                    for (select in selectDateData) {
-                                        selectCalendarTaxiData.add(select)
-                                    }
-
-
-                                    noticeBoardAdapter!!.notifyDataSetChanged()
-
-                                    //recyclerview item클릭 시
-                                    noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
-                                        override fun onClick(view: View, position: Int, itemId: Int) {
-                                            CoroutineScope(Dispatchers.IO).launch {
-                                                val temp = taxiAllData[position]
-                                                dataPosition = position
-                                                val intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
-                                                    putExtra("type", "READ")
-                                                    putExtra("postItem", temp)
-                                                    putExtra("uri", temp.user.profileImageUrl)
-                                                    putExtra("tabType", "택시")
-                                                }
-                                                requestActivity.launch(intent)
+                                //recyclerview item클릭 시
+                                noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
+                                    override fun onClick(view: View, position: Int, itemId: Int) {
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            val temp = taxiAllData[position]
+                                            dataPosition = position
+                                            val intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
+                                                putExtra("type", "READ")
+                                                putExtra("postItem", temp)
+                                                putExtra("uri", temp.user.profileImageUrl)
                                             }
+                                            requestActivity.launch(intent)
                                         }
-                                    })
-
-                                } else {
-                                    CoroutineScope(Dispatchers.Main).launch {
-                                        taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
-                                        taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                                     }
+                                })
+
+                            } else {
+                                CoroutineScope(Dispatchers.Main).launch {
+                                    taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                                    taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                                 }
                             }
+
                         } catch (e: java.lang.IndexOutOfBoundsException) {
-                            println("tesetstes")
+                            Log.e("current taxi", e.toString())
                         }
                     } else {
-                        println("null")
+                        Log.e("current taxi is empty", taxiAllData.toString())
                     }
-                    /*
-                    calendarAdapter!!.notifyItemChanged(oldSelectedPostion)
-                    calendarAdapter!!.notifyItemChanged(selectedPostion)
-                    */
                 }
                 /* calendarAdapter!!.notifyItemChanged(selectedPostion)
                 calendarAdapter!!.notifyItemChanged(oldSelectedPostion)*/
@@ -728,8 +723,6 @@ class TaxiTabFragment : Fragment() {
                             taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
                         }
 
-                        calendarTaxiAllData = taxiAllData
-                        selectCalendarTaxiData = calendarTaxiAllData
 
                         calendarAdapter!!.notifyDataSetChanged()
 
@@ -897,53 +890,41 @@ class TaxiTabFragment : Fragment() {
         //println(userId)
 
         CoroutineScope(Dispatchers.IO).launch {
-            api.getMyParticipantsUserData().enqueue(object : Callback<Content> {
-                override fun onResponse(call: Call<Content>, response: Response<Content>) {
+            api.getMyParticipantsUserData().enqueue(object : Callback<List<Content>> {
+                override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
                     if (response.isSuccessful) {
-                        val responseData : Content? = response.body()
-                        println("예약 정보")
+                        val responseData = response.body()
+                        Log.d("taxi", response.code().toString())
                         //데이터 청소
                         currentTaxiAllData.clear()
 
-                        responseData.let {
-                            currentTaxiAllData.add(PostData(
-                                responseData!!.user.studentId,
-                                responseData.postId,
-                                responseData.title,
-                                responseData.content,
-                                responseData.targetDate,
-                                responseData.targetTime,
-                                responseData.category.categoryName,
-                                responseData.location,
-                                //participantscount가 현재 참여하는 인원들
-                                responseData.participantsCount,
-                                //numberOfPassengers은 총 탑승자 수
-                                responseData.numberOfPassengers,
-                                responseData.cost,
-                                responseData.verifyGoReturn,
-                                responseData.user,
-                                responseData.latitude,
-                                responseData.longitude
-                            ))
-
-                            CoroutineScope(Dispatchers.IO).launch {
-                                /*for (i in response.body()!!.indices) {
-                                    carpoolParticipantsData.add(response.body()!![i].participants)
-                                }*/
-                                taxiParticipantsData.add(responseData.participants)
+                        CoroutineScope(Dispatchers.IO).launch {
+                            if (responseData != null) {
+                                for (i in responseData) {
+                                    currentTaxiAllData.add(PostData(
+                                        i.user.studentId,
+                                        i.postId,
+                                        i.title,
+                                        i.content,
+                                        i.targetDate,
+                                        i.targetTime,
+                                        i.category.categoryName,
+                                        i.location,
+                                        //participantscount가 현재 참여하는 인원들
+                                        i.participantsCount,
+                                        //numberOfPassengers은 총 탑승자 수
+                                        i.numberOfPassengers,
+                                        i.cost,
+                                        i.verifyGoReturn,
+                                        i.user,
+                                        i.latitude,
+                                        i.longitude
+                                    ))
+                                    taxiParticipantsData.add(i.participants)
+                                }
                             }
                         }
                         currentNoticeBoardAdapter!!.notifyDataSetChanged()
-
-                        //val list : ArrayList<Participants> = ArrayList()
-                        if (responseData != null) {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                /*for (i in response.body()!!.indices) {
-                                    carpoolParticipantsData.add(response.body()!![i].participants)
-                                }*/
-                                taxiParticipantsData.add(responseData.participants)
-                            }
-                        }
 
                         if (currentTaxiAllData.isEmpty()) {
                             taxiTabBinding.currentRv.visibility = View.GONE
@@ -978,6 +959,12 @@ class TaxiTabFragment : Fragment() {
                                 setCurrentTaxiData()
                             }
                         }
+                        taxiTabBinding.carpoolText.setOnClickListener {
+                            Log.d("carpoolText", "clcickckckc")
+                            lifecycleScope.launch {
+                                setCurrentTaxiData()
+                            }
+                        }
 
                         if (currentTaxiAllData.isEmpty()) {
                             taxiTabBinding.currentRv.visibility = View.GONE
@@ -992,7 +979,7 @@ class TaxiTabFragment : Fragment() {
                     }
                 }
 
-                override fun onFailure(call: Call<Content>, t: Throwable) {
+                override fun onFailure(call: Call<List<Content>>, t: Throwable) {
                     Log.d("error", t.toString())
                 }
             })

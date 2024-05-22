@@ -1547,7 +1547,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
     }
 
 
-    private fun updateMarker(mapPoint: MapPoint?) {
+    /*private fun updateMarker() {
         // 이전 마커 제거
         marker?.let {
             mapView?.removePOIItem(it)
@@ -1564,7 +1564,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
             setCustomImageAnchor(0.5f, 1.0f)
         }
         mapView?.addPOIItem(marker)
-    }
+    }*/
 
     private val callback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {

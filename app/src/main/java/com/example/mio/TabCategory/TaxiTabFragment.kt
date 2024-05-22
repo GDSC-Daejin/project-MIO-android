@@ -126,7 +126,7 @@ class TaxiTabFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         taxiTabBinding = FragmentTaxiTabBinding.inflate(inflater, container, false)
 
@@ -905,25 +905,34 @@ class TaxiTabFragment : Fragment() {
                         //데이터 청소
                         currentTaxiAllData.clear()
 
-                        currentTaxiAllData.add(PostData(
-                            responseData!!.user.studentId,
-                            responseData.postId,
-                            responseData.title,
-                            responseData.content,
-                            responseData.targetDate,
-                            responseData.targetTime,
-                            responseData.category.categoryName,
-                            responseData.location,
-                            //participantscount가 현재 참여하는 인원들
-                            responseData.participantsCount,
-                            //numberOfPassengers은 총 탑승자 수
-                            responseData.numberOfPassengers,
-                            responseData.cost,
-                            responseData.verifyGoReturn,
-                            responseData.user,
-                            responseData.latitude,
-                            responseData.longitude
-                        ))
+                        responseData.let {
+                            currentTaxiAllData.add(PostData(
+                                responseData!!.user.studentId,
+                                responseData.postId,
+                                responseData.title,
+                                responseData.content,
+                                responseData.targetDate,
+                                responseData.targetTime,
+                                responseData.category.categoryName,
+                                responseData.location,
+                                //participantscount가 현재 참여하는 인원들
+                                responseData.participantsCount,
+                                //numberOfPassengers은 총 탑승자 수
+                                responseData.numberOfPassengers,
+                                responseData.cost,
+                                responseData.verifyGoReturn,
+                                responseData.user,
+                                responseData.latitude,
+                                responseData.longitude
+                            ))
+
+                            CoroutineScope(Dispatchers.IO).launch {
+                                /*for (i in response.body()!!.indices) {
+                                    carpoolParticipantsData.add(response.body()!![i].participants)
+                                }*/
+                                taxiParticipantsData.add(responseData.participants)
+                            }
+                        }
                         currentNoticeBoardAdapter!!.notifyDataSetChanged()
 
                         //val list : ArrayList<Participants> = ArrayList()
@@ -938,6 +947,8 @@ class TaxiTabFragment : Fragment() {
 
                         if (currentTaxiAllData.isEmpty()) {
                             taxiTabBinding.currentRv.visibility = View.GONE
+                            taxiTabBinding.nonCurrentRvTv.text = "예약된 게시글이 없습니다"
+                            taxiTabBinding.nonCurrentRvTv2.text = "미오에서 카풀,택시를 구해보세요!"
                             taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
                             taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
                         } else {

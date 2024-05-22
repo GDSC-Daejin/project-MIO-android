@@ -27,7 +27,7 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class SearchResultActivity : AppCompatActivity() {
+class SearchResultActivity : AppCompatActivity() { //검색창
 
     companion object {
         const val BASE_URL = "https://dapi.kakao.com/"

@@ -924,6 +924,7 @@ class CarpoolTabFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
 
         //println(userId)
+        //작성자 제거 x
         api.getMyParticipantsUserData().enqueue(object : Callback<Content> {
             override fun onResponse(call: Call<Content>, response: Response<Content>) {
                 if (response.isSuccessful) {
@@ -932,29 +933,27 @@ class CarpoolTabFragment : Fragment() {
                     //데이터 청소
                     currentTaxiAllData.clear()
 
-                    currentTaxiAllData.add(PostData(
-                        responseData!!.user.studentId,
-                        responseData.postId,
-                        responseData.title,
-                        responseData.content,
-                        responseData.targetDate,
-                        responseData.targetTime,
-                        responseData.category.categoryName,
-                        responseData.location,
-                        //participantscount가 현재 참여하는 인원들
-                        responseData.participantsCount,
-                        //numberOfPassengers은 총 탑승자 수
-                        responseData.numberOfPassengers,
-                        responseData.cost,
-                        responseData.verifyGoReturn,
-                        responseData.user,
-                        responseData.latitude,
-                        responseData.longitude
-                    ))
-                    currentNoticeBoardAdapter!!.notifyDataSetChanged()
+                    responseData.let {
+                        currentTaxiAllData.add(PostData(
+                            responseData!!.user.studentId,
+                            responseData.postId,
+                            responseData.title,
+                            responseData.content,
+                            responseData.targetDate,
+                            responseData.targetTime,
+                            responseData.category.categoryName,
+                            responseData.location,
+                            //participantscount가 현재 참여하는 인원들
+                            responseData.participantsCount,
+                            //numberOfPassengers은 총 탑승자 수
+                            responseData.numberOfPassengers,
+                            responseData.cost,
+                            responseData.verifyGoReturn,
+                            responseData.user,
+                            responseData.latitude,
+                            responseData.longitude
+                        ))
 
-                    //val list : ArrayList<Participants> = ArrayList()
-                    if (responseData != null) {
                         CoroutineScope(Dispatchers.IO).launch {
                             /*for (i in response.body()!!.indices) {
                                 carpoolParticipantsData.add(response.body()!![i].participants)
@@ -963,10 +962,14 @@ class CarpoolTabFragment : Fragment() {
                         }
                     }
 
+                    currentNoticeBoardAdapter!!.notifyDataSetChanged()
+
+                    //val list : ArrayList<Participants> = ArrayList(
+
                     if (currentTaxiAllData.isEmpty()) {
                         taxiTabBinding.currentRv.visibility = View.GONE
-                        taxiTabBinding.nonCurrentRvTv.text = "오늘 예약된 카풀이 없습니다"
-                        taxiTabBinding.nonCurrentRvTv2.text = "미오에서 카풀을 구해보세요!"
+                        taxiTabBinding.nonCurrentRvTv.text = "예약된 게시글이 없습니다"
+                        taxiTabBinding.nonCurrentRvTv2.text = "미오에서 카풀,택시를 구해보세요!"
                         taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
                         taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
                     } else {

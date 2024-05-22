@@ -20,7 +20,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class NearbypostActivity  : AppCompatActivity() {
+class NearbypostActivity  : AppCompatActivity() { //게시글 더보기 이동 시
     private lateinit var nbinding : ActivityNearbypostBinding
     private lateinit var adapter: NearbyPostAdapter
 

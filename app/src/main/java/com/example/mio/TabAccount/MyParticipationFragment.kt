@@ -52,7 +52,10 @@ class MyParticipationFragment : Fragment() {
     private lateinit var mpBinding : FragmentMyParticipationBinding
 
     private var myAdapter : MyAccountParticipationAdapter? = null
+    //자신이 신청한 예약의 게시글 정보를 순서대로 담은 데이터 변수
     private var myParticipationAllData = ArrayList<PostData?>()
+    //자신이 신청한 예약의 정보(waiting, approval등)을 순서대로 담은 데이터변수
+    private var myParticipationApprovalOrRejectAllData = ArrayList<String?>()
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
 
     private var dataPosition = 0
@@ -103,6 +106,7 @@ class MyParticipationFragment : Fragment() {
         setMyParticipationData()
         myAdapter = MyAccountParticipationAdapter()
         myAdapter!!.myPostItemData = myParticipationAllData
+        myAdapter!!.myPostReservationCheck = myParticipationApprovalOrRejectAllData
         mpBinding.participationPostRv.adapter = myAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true
@@ -167,8 +171,8 @@ class MyParticipationFragment : Fragment() {
         //println(userId)
 
         CoroutineScope(Dispatchers.IO).launch {
-            api.getMyParticipantsData(0, 5).enqueue(object : Callback<List<Content>> {
-                override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
+            api.getMyParticipantsData(0, 5).enqueue(object : Callback<List<ParticipationData>> {
+                override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                     if (response.isSuccessful) {
                         //데이터 청소
                         println("가져오기 참가 성공")
@@ -177,25 +181,10 @@ class MyParticipationFragment : Fragment() {
 
                         for (i in response.body()!!.indices) {
                             //println(response!!.body()!!.content[i].user.studentId)
-                            myParticipationAllData.add(PostData(
-                                response.body()!![i].user.studentId,
-                                response.body()!![i].postId,
-                                response.body()!![i].title,
-                                response.body()!![i].content,
-                                response.body()!![i].targetDate,
-                                response.body()!![i].targetTime,
-                                response.body()!![i].category.categoryName,
-                                response.body()!![i].location,
-                                //participantscount가 현재 참여하는 인원들
-                                response.body()!![i].participantsCount,
-                                //numberOfPassengers은 총 탑승자 수
-                                response.body()!![i].numberOfPassengers,
-                                response.body()!![i].cost,
-                                response.body()!![i].verifyGoReturn,
-                                response.body()!![i].user,
-                                response.body()!![i].latitude,
-                                response.body()!![i].longitude
-                            ))
+                            myParticipationApprovalOrRejectAllData.add(response.body()!![i].approvalOrReject)
+                            CoroutineScope(Dispatchers.IO).launch {
+                                setPostUserData(postId = response.body()!![i].postId)
+                            }
                         }
                         myAdapter!!.notifyDataSetChanged()
 
@@ -210,15 +199,91 @@ class MyParticipationFragment : Fragment() {
                         }
                         Log.d("mypartipationFragment", myParticipationAllData.toString())
                     } else {
-                        Log.d("f", response.code().toString())
+                        Log.e("f", response.code().toString())
                     }
                 }
 
-                override fun onFailure(call: Call<List<Content>>, t: Throwable) {
-                    Log.d("error", t.toString())
+                override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
+                    Log.e("error", t.toString())
                 }
             })
         }
+    }
+    //게시글 승인 예약 인원정보
+    private fun setPostUserData(postId : Int) {
+        Log.e("participationFragment PostId Test", "진입완료")
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
+        /*val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.substring(0 until 8)
+        val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(this)!!*/
+
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    startActivity(intent)
+                    requireActivity().finish()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        ///////////////////////////////////////////////////
+        api.getPostIdDetailSearch(postId).enqueue(object : Callback<Content> {
+            override fun onResponse(call: Call<Content>, response: Response<Content>) {
+                if (response.isSuccessful) {
+                    val responseData = response.body()
+                    responseData.let {
+                        myParticipationAllData.add(PostData(
+                                response.body()!!.user.studentId,
+                                response.body()!!.postId,
+                                response.body()!!.title,
+                                response.body()!!.content,
+                                response.body()!!.targetDate,
+                                response.body()!!.targetTime,
+                                response.body()!!.category.categoryName,
+                                response.body()!!.location,
+                                //participantscount가 현재 참여하는 인원들
+                                response.body()!!.participantsCount,
+                                //numberOfPassengers은 총 탑승자 수
+                                response.body()!!.numberOfPassengers,
+                                response.body()!!.cost,
+                                response.body()!!.verifyGoReturn,
+                                response.body()!!.user,
+                                response.body()!!.latitude,
+                                response.body()!!.longitude
+                        ))
+                    }
+
+
+                } else {
+                    Log.e("MyParticipationFragment", response.code().toString())
+                }
+            }
+
+            override fun onFailure(call: Call<Content>, t: Throwable) {
+                Log.e("MyParticipationFail", t.message.toString())
+            }
+
+        })
     }
 
 
@@ -302,37 +367,22 @@ class MyParticipationFragment : Fragment() {
             if (currentPage < totalPages - 1) {
                 currentPage += 1
                 CoroutineScope(Dispatchers.IO).launch {
-                    //page확인하고 수정 위에도 TODO //////////////////////////////////
-                    api.getMyParticipantsData(currentPage, 5).enqueue(object : Callback<List<Content>> {
-                        override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
+                    api.getMyParticipantsData(currentPage, 5).enqueue(object : Callback<List<ParticipationData>> {
+                        override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                             if (response.isSuccessful) {
                                 //데이터 청소
                                 println("가져오기 참가 성공")
-                                myParticipationAllData.clear()
+                                totalPages = response.body()!!.size / 5
+                                //myParticipationAllData.clear()
 
                                 for (i in response.body()!!.indices) {
                                     //println(response!!.body()!!.content[i].user.studentId)
-                                    myParticipationAllData.add(PostData(
-                                        response.body()!![i].user.studentId,
-                                        response.body()!![i].postId,
-                                        response.body()!![i].title,
-                                        response.body()!![i].content,
-                                        response.body()!![i].targetDate,
-                                        response.body()!![i].targetTime,
-                                        response.body()!![i].category.categoryName,
-                                        response.body()!![i].location,
-                                        //participantscount가 현재 참여하는 인원들
-                                        response.body()!![i].participantsCount,
-                                        //numberOfPassengers은 총 탑승자 수
-                                        response.body()!![i].numberOfPassengers,
-                                        response.body()!![i].cost,
-                                        response.body()!![i].verifyGoReturn,
-                                        response.body()!![i].user,
-                                        response.body()!![i].latitude,
-                                        response.body()!![i].longitude
-                                    ))
-                                    myAdapter!!.notifyDataSetChanged()
+                                    myParticipationApprovalOrRejectAllData.add(response.body()!![i].approvalOrReject)
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        setPostUserData(postId = response.body()!![i].postId)
+                                    }
                                 }
+                                myAdapter!!.notifyDataSetChanged()
 
                                 if (myParticipationAllData.size > 0) {
                                     mpBinding.accountParticipationNotDataLl.visibility = View.GONE
@@ -349,7 +399,7 @@ class MyParticipationFragment : Fragment() {
                             }
                         }
 
-                        override fun onFailure(call: Call<List<Content>>, t: Throwable) {
+                        override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
                             Log.d("error", t.toString())
                         }
                     })

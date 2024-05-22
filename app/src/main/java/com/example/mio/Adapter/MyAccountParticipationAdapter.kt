@@ -20,6 +20,8 @@ import kotlin.collections.ArrayList
 class MyAccountParticipationAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     private lateinit var binding : PostItemBinding
     var myPostItemData = ArrayList<PostData?>()
+    //예약정보 가져온거 approval같은거
+    var myPostReservationCheck = kotlin.collections.ArrayList<String?>()
     private lateinit var context : Context
     companion object {
         //item을 표시할 때
@@ -56,66 +58,26 @@ class MyAccountParticipationAdapter : RecyclerView.Adapter<RecyclerView.ViewHold
             //accountProfile.setImageURI() = pillData.pillTakeTime
             //val listener = itemClickListener?.get()
 
-            val now = System.currentTimeMillis()
-            val date = Date(now)
-            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-            val currentDate = sdf.format(date)
 
-            val postDateTime = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
-            println(postDateTime)
-            val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate) //현재시간
-            val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime) //카풀이 출발하는시간
-            val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time!!) //현재시간 - 카풀시간
-            val diffSeconds = diffMilliseconds?.div(1000)
-            val diffMinutes = diffMilliseconds?.div((60 * 1000))
-            val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
-            val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
-            if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
-                //TODO 이거 여기 api 잘보고 데이터 값 확인하고 수정하기
-                /*if (diffMinutes < 0) {
-                    if (accountData.postVerifyGoReturn && accountData.) {
-                        binding.postStatus.setImageResource(R.drawable.reservation_carpool_complete)
-                        binding.postStatus.visibility = View.VISIBLE
-                    } else {
-                        //3번?
-                        binding.postStatus.setImageResource(R.drawable.reservation_complete)
-                        binding.postStatus.visibility = View.VISIBLE
-                    }
-                }*/
-
-                if(diffSeconds > -1){
-
-                }
-
-                if (diffSeconds > 0) {
-
-                }
-
-                if (diffMinutes > 0) {
-
-                }
-
-                if (diffHours > 0) {
-
-                }
-
-                //여기 잘 생각해서 다시 수정하기 TODO
-                if (diffDays > 0) {
-                    println("진입완료")
-                    if (accountData.postVerifyGoReturn) {
-                        binding.postStatus.setImageResource(R.drawable.reservation_carpool_complete)
-                        binding.postStatus.visibility = View.VISIBLE
-                    } else {
-                        binding.postStatus.setImageResource(R.drawable.reservation_complete)
-                        binding.postStatus.visibility = View.VISIBLE
-                    }
-                } else {
-                    println("???????")
+            when(myPostReservationCheck[position]) {
+                "APPROVAL" -> {
+                    binding.postStatus.setImageResource(R.drawable.reservation_complete)
                     binding.postStatus.visibility = View.VISIBLE
                 }
 
-                if (diffDays < 0) {
+                "WAITING" ->{
+                    binding.postStatus.setImageResource(R.drawable.reservation_ing)
+                    binding.postStatus.visibility = View.VISIBLE
+                }
 
+                "REJECT" -> {
+                    binding.postStatus.setImageResource(R.drawable.reservation_cancel)
+                    binding.postStatus.visibility = View.VISIBLE
+                }
+
+                "FINISH" -> {
+                    binding.postStatus.setImageResource(R.drawable.reservation_carpool_complete)
+                    binding.postStatus.visibility = View.VISIBLE
                 }
             }
         }

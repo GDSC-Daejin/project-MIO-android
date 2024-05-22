@@ -305,7 +305,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
     private fun addMarker(location: LocationReadAllResponse) {
         val latLng = MapPoint.mapPointWithGeoCoord(location.latitude, location.longitude)
         val marker = MapPOIItem().apply {
-            itemName = location.title
+            itemName = "게시글 : ${location.title}"
             mapPoint = latLng
             markerType = MapPOIItem.MarkerType.CustomImage
             customImageResourceId = R.drawable.map_poi_srn
@@ -315,13 +315,37 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         mapView?.addPOIItem(marker)
 
         // 마커 클릭시
-/*        mapView.setPOIItemEventListener(object : MapView.POIItemEventListener {
+        mapView?.setPOIItemEventListener(object : MapView.POIItemEventListener {
             override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, mapPOIItem: MapPOIItem?) {
-                updatePostData(mapPOIItem?.userObject as? LocationReadAllResponse)
-                Log.d("1111", "111111")
+                //updatePostData(mapPOIItem?.userObject as? LocationReadAllResponse)
+                //Log.d("1111", "111111")
             }
 
             override fun onCalloutBalloonOfPOIItemTouched(p0: MapView, p1: MapPOIItem, p2: MapPOIItem.CalloutBalloonButtonType) {
+                val temp = PostData(
+                    accountID = location.user?.studentId!!,
+                    postID = location.postId,
+                    postTitle = location.title,
+                    postContent = location.content,
+                    postTargetDate = location.targetDate,
+                    postTargetTime = location.targetTime,
+                    postCategory = location.category?.categoryName!!,
+                    postLocation = location.location,
+                    postParticipation = location.participantsCount,
+                    postParticipationTotal = location.numberOfPassengers,
+                    postCost = location.cost,
+                    postVerifyGoReturn = location.verifyGoReturn,
+                    user = location.user!!,
+                    postlatitude = location.latitude,
+                    postlongitude = location.longitude
+                )
+
+                val intent = Intent(requireActivity(), NoticeBoardReadActivity::class.java).apply {
+                    putExtra("type", "READ")
+                    putExtra("postItem", temp)
+                    putExtra("uri", temp.user.profileImageUrl)
+                }
+                startActivity(intent)
             }
 
             override fun onPOIItemSelected(p0: MapView, p1: MapPOIItem) {
@@ -329,7 +353,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
 
             override fun onDraggablePOIItemMoved(p0: MapView, p1: MapPOIItem, p2: MapPoint) {
             }
-        })*/
+        })
     }
 
     //안드로이드 13 이상 PostNotification 대응
@@ -373,7 +397,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
                                 // 다시 맵뷰 초기화 및 추가
                                 /*mapViewContainer.addView(mapView)
                                 mapView?.setMapViewEventListener(this)*/
-                                //initMapView()
+                                initMapView()
 
                             } catch (re: RuntimeException) {
                                 Log.e("SERACHFRAGMENT", re.toString())

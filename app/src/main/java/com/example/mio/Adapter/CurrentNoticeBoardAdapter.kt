@@ -87,7 +87,7 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
 
 
             val postDateTime = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
-            println(postDateTime)
+            //println(postDateTime)
 
             val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
             val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)

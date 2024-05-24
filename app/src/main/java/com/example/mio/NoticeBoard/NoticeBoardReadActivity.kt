@@ -449,7 +449,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
                                     val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
                                     val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
-                                    val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this@NoticeBoardReadActivity)!!.substring(0 until 8)
+                                    val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this@NoticeBoardReadActivity)!!.split("@").map { it }.first()
                                     val userId = saveSharedPreferenceGoogleLogin.getUserId(this@NoticeBoardReadActivity)!!
 
                                     val interceptor = Interceptor { chain ->
@@ -683,7 +683,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.substring(0 until 8)
         val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
 
         val interceptor = Interceptor { chain ->
@@ -1590,8 +1589,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.substring(0 until 8)
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
 
         val interceptor = Interceptor { chain ->
             var newRequest: Request

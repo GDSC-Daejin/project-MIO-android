@@ -45,6 +45,15 @@ android {
         manifestPlaceholders = [kakaoNativeAppKey: kakao_native_app_key, applicationKey: applicationKey]
     }
 
+    signingConfigs {
+        release {
+            storeFile file('C:\\kotlinStore\\androidReleaseMioKeyStore.jks')
+            storePassword "!bluegagel5676"
+            keyAlias "mio0"
+            keyPassword "!bluegagel5676"
+        }
+    }
+
     buildTypes {
         release {
 
@@ -60,7 +69,7 @@ android {
             //debugger true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            //signingConfig signingConfigs.release
+            signingConfig signingConfigs.release
         }
 
         debug {

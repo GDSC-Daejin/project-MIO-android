@@ -85,7 +85,7 @@ class AccountFragment : Fragment() {
         aBinding.accountSettingIv.setOnClickListener {
             val intent = Intent(activity, AccountSettingActivity::class.java).apply {
                 putExtra("type", "ACCOUNT")
-                putExtra("accountData", email.substring(0 until 8)) //20201530 숫자만
+                putExtra("accountData", email.split("@").map { it.toString() }.first()) //20201530 숫자만
             }
             startActivity(intent)
         }
@@ -117,7 +117,7 @@ class AccountFragment : Fragment() {
 
         saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity).toString()
-        aBinding.accountUserId.text = email.substring(0..7).toString()
+        aBinding.accountUserId.text = email.split("@").map { it }.first()
 
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {

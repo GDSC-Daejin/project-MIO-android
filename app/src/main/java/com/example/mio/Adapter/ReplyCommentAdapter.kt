@@ -31,7 +31,7 @@ class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommen
         fun bind(comment : CommentData, position : Int) {
             this.position = position
             val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!.substring(0..7)
+            identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!.split("@").map { it }.first()
 
             if (identification == comment.user.studentId) {
                 binding.reCommentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_blue_4))

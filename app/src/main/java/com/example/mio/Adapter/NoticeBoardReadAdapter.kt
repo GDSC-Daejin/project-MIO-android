@@ -128,7 +128,7 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
         context = parent.context
         binding = CommentItemLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!.substring(0..7)
+        identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!.split("@").map { it }.first()
 
         return NoticeBoardReadViewHolder(binding)
     }

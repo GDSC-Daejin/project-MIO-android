@@ -18,6 +18,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContentProviderCompat.requireContext
@@ -536,7 +537,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             } else {
                 mBinding.editParticipateTv.text = "0"
                 participateNumberOfPeople = 0
-                myViewModel.postCheckValue(isAllCheck)
+                //myViewModel.postCheckValue(isAllCheck)
             }
         }
 
@@ -633,10 +634,22 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             }
         })
 
+        mBinding.etSearchField.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+
+            }
+            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+
+            }
+            override fun afterTextChanged(editable: Editable) {
+                keyword = editable.toString()
+                mBinding.recentSearch.text = "관련 검색어"
+            }
+        })
+
         mBinding.btnSearch.setOnClickListener {
-            keyword = mBinding.etSearchField.text.toString()
-            mBinding.recentSearch.text = "관련 검색어"
             searchKeyword(keyword)
+            Log.d("edit btn click", keyword)
             mBinding.rvRecentSearchList.visibility = View.INVISIBLE
         }
     }
@@ -1189,6 +1202,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         mBinding.editBottomLl.layoutParams = layoutParams
     }
 
+    @Keep
     private fun searchKeyword(keyword: String) {
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -1196,16 +1210,39 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             .build()
         val api = retrofit.create(KakaoAPI::class.java)
         val call = api.getSearchKeyword(API_KEY, keyword)
+        Log.e("edit search", keyword.toString())
 
         call.enqueue(object: Callback<ResultSearchKeyword> {
             override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
                 if (response.isSuccessful) {
-                    println("Edit Search" + response.body()?.documents)
-                    addItemsAndMarkers(response.body())
+                    val result = response.body()
+                    if (response.code() == 200) {
+                        val documents = result?.documents
+                        if (documents?.isNotEmpty()==true) {
+                            Log.e("edit search", response.message().toString())
+                            Log.e("edit search", response.code().toString())
+                            Log.e("edit search", documents.toString())
+                            addItemsAndMarkers(result)
+                        } else {
+                            Log.e("Search Error", response.code().toString())
+                            Log.e("Search Error", response.body().toString())
+                            Log.e("Search Error", response.errorBody().toString())
+                        }
+                    } else {
+                        Log.e("Search Error", response.code().toString())
+                        Log.e("Search Error", response.message().toString())
+                        Log.e("Search Error", response.body().toString())
+                        Log.e("Search Error", response.errorBody().toString())
+                    }
+                    /*if (result != null) {
+
+                    } else {
+                        Log.e("edit search", "Response body is null")
+                    }*/
                 } else {
                     Log.e("EDIT Search", response.code().toString())
                     Log.e("EDIT Search", response.errorBody().toString())
-                    Log.e("EDIT Search", response.errorBody()?.string()!!)
+                    Log.e("EDIT Search", response.errorBody()?.string() ?: "Unknown error")
                     Log.e("EDIT Search", call.request().toString())
                     Log.e("EDIT Search", response.message().toString())
                 }

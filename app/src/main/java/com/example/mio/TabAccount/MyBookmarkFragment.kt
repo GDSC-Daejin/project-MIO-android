@@ -111,8 +111,7 @@ class MyBookmarkFragment : Fragment() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
+
 
         val interceptor = Interceptor { chain ->
             var newRequest: Request
@@ -242,8 +241,7 @@ class MyBookmarkFragment : Fragment() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
+
 
         val interceptor = Interceptor { chain ->
             var newRequest: Request

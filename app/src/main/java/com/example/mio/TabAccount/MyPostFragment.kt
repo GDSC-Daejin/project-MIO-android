@@ -83,7 +83,7 @@ class MyPostFragment : Fragment() {
         pBinding = FragmentMyPostBinding.inflate(inflater, container, false)
         token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
         getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-        email = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity())!!.substring(0 until 8)
+        email = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity())!!.split("@").map { it }.first()
         userId = saveSharedPreferenceGoogleLogin.getUserId(requireActivity()).toString()
         initMyRecyclerView()
         initSwipeRefresh()
@@ -522,7 +522,6 @@ class MyPostFragment : Fragment() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
         val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
 
         val interceptor = Interceptor { chain ->

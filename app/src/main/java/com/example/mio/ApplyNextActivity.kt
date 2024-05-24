@@ -397,7 +397,7 @@ class ApplyNextActivity : AppCompatActivity() {
     private fun sendAlarmData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)?.substring(0..7).toString()
+        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)?.toString()?.split("@")?.map { it }?.first()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
         val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)

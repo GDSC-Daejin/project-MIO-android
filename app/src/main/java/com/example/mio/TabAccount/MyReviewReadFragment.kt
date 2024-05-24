@@ -67,7 +67,6 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
         val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
 
         val interceptor = Interceptor { chain ->

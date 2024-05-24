@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.work.Configuration
 import androidx.work.WorkManager
+import java.io.File
 
 class FragSharedViewModel2 : Application() {
     lateinit var sharedViewModel: FragSharedViewModel
@@ -17,6 +18,8 @@ class FragSharedViewModel2 : Application() {
         sharedViewModel = ViewModelProvider(ViewModelStore(), factory)[FragSharedViewModel::class.java]
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         initializeWorkManager()
+        val dexOutputDir: File = codeCacheDir
+        dexOutputDir.setReadOnly()
     }
 
     private fun initializeWorkManager() {

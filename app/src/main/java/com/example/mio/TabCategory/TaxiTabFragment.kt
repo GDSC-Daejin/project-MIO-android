@@ -855,8 +855,6 @@ class TaxiTabFragment : Fragment() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
 
         val interceptor = Interceptor { chain ->
             var newRequest: Request
@@ -1134,7 +1132,7 @@ class TaxiTabFragment : Fragment() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val myId = saveSharedPreferenceGoogleLogin.getUserId(requireActivity()).toString()
         val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity()).toString().substring(0..7)
+        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity()).toString().split("@").map { it }.first()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
         val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)

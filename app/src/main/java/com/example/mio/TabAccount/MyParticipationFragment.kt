@@ -136,7 +136,7 @@ class MyParticipationFragment : Fragment() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
+        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.split("@").map { it }.first()
         val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
 
         val interceptor = Interceptor { chain ->
@@ -175,8 +175,10 @@ class MyParticipationFragment : Fragment() {
                 override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                     if (response.isSuccessful) {
                         //데이터 청소
-                        println("가져오기 참가 성공")
-                        totalPages = response.body()!!.size / 5
+                        Log.d("myparticipationFragment", response.code().toString())
+                        Log.d("myparticipationFragment", response.body().toString())
+
+                        totalPages = response.body()?.size?.toInt()?.div(5) ?: 0
                         myParticipationAllData.clear()
 
                         for (i in response.body()!!.indices) {
@@ -316,8 +318,6 @@ class MyParticipationFragment : Fragment() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
 
         val interceptor = Interceptor { chain ->
             var newRequest: Request

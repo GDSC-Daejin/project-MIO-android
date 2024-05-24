@@ -32,11 +32,9 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.*
 import okhttp3.*
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.IOException
-import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
+import com.example.mio.R
 
 
 class LoginActivity : AppCompatActivity() {
@@ -100,6 +98,18 @@ class LoginActivity : AppCompatActivity() {
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
         mBinding.signInLl.setOnClickListener {
+            //로딩창 실행
+            loadingDialog = LoadingProgressDialog(this@LoginActivity)
+            loadingDialog?.setCancelable(false)
+            //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+            //로딩창
+            loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
+            loadingDialog?.window!!.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            loadingDialog?.show()
             signIn()
         }
 
@@ -268,7 +278,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun handleSignInResult(completedTask : Task<GoogleSignInAccount>) {
         try {
-            println("handleSignInResult")
+            Log.d("handleSignInResult", "handleSignInResult")
             val account = completedTask.getResult(ApiException::class.java)
             val email = account?.email.toString()
             val authCode = account.serverAuthCode
@@ -297,7 +307,7 @@ class LoginActivity : AppCompatActivity() {
                 /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 startActivity(intent)
                 this@LoginActivity.finish()*/
-            } else if (userEmailMap.contains("anes53027")){
+            } else if (userEmailMap.contains("anes53027")) {
                 saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
 
                 Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
@@ -323,160 +333,9 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    /*private suspend fun getAccessTokenAsync(authCode: String): LoginGoogleResponse? {
-        val client = OkHttpClient()
-        val requestBody: RequestBody = FormBody.Builder()
-            .add("grant_type", "authorization_code")
-            .add("client_id", CLIENT_WEB_ID_KEY)
-            .add("client_secret", BuildConfig.client_web_secret_key)
-            .add("redirect_uri", "")
-            .add("code", authCode)
-            .add("response_type", "code")
-            .add("access_type", "offline")
-            .add("approval_prompt", "force")
-            .build()
-
-        val request = Request.Builder()
-            .url("https://oauth2.googleapis.com/token")
-            .post(requestBody)
-            .build()
-
-        return withContext(Dispatchers.IO) {
-            val response = client.newCall(request).execute()
-            val body = response.body?.string()
-            Log.e("withContext", body.toString())
-            response.close()
-
-            if (!response.isSuccessful || body == null) {
-                Log.e("HTTP Error" , "${response.code.toString()}, ${response.message.toString()}, $response")
-                return@withContext null
-            }
-
-            try {
-                val jsonObject = JSONObject(body)
-                LoginGoogleResponse(
-                    jsonObject.getString("access_token"),
-                    jsonObject.getInt("expires_in"),
-                    jsonObject.getString("scope"),
-                    jsonObject.getString("token_type"),
-                    jsonObject.getString("id_token")
-                )
-            } catch (e: JSONException) {
-                e.printStackTrace()
-                null
-            }
-        }
-    }*/
-
-    /*private fun getAccessToken(authCode: String) {
-        println("getAccessToken")
-
-        CoroutineScope(Dispatchers.IO).launch {
-            val loginResponse = getAccessTokenAsync(authCode)
-            Log.e("LoginActivity", loginResponse.toString())
-            if (loginResponse != null) {
-                // 성공적으로 응답을 받았을 때의 처리
-                currentUser = loginResponse
-                signInCheck(TokenRequest(currentUser.id_token))
-            } else {
-                // 응답이 실패했을 때의 처리
-                Log.e("LoginActivity", "Failed to get access token")
-                if (loadingDialog != null && loadingDialog!!.isShowing) {
-                    loadingDialog?.dismiss()
-                    loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                }
-                Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }*/
-
-    /*private fun getAccessToken(authCode : String) {
-        println("getAccessToken")
-        val client = OkHttpClient()
-        val requestBody: RequestBody = FormBody.Builder()
-            //1시간
-            .add("grant_type", "authorization_code")
-            .add(
-                "client_id",
-                CLIENT_WEB_ID_KEY
-            )
-            .add("client_secret", CLIENT_WEB_SECRET_KEY)
-            .add("redirect_uri", "")
-            .add("code", authCode)
-            //refresh token 필요시
-            .add("response_type", "code")
-            .add("access_type", "offline")
-            .add("approval_prompt", "force")
-            .build()
-
-        val request = Request.Builder()
-            .url("https://oauth2.googleapis.com/token")
-            .post(requestBody)
-            .build()
-
-        CoroutineScope(Dispatchers.IO).launch {
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    print("Failed")
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    try {
-                        val jsonObject = JSONObject(response.body!!.string())
-                        val message = jsonObject.keys() //.toString(5)
-
-                        //json파일 키와 벨류를 잠시담는 변수
-                        val tempKey = ArrayList<String>()
-                        val tempValue = ArrayList<String>()
-                        //정리한번
-                        user_info.clear()
-
-                        while (message.hasNext()) {
-                            val s = message.next().toString()
-                            tempKey.add(s)
-
-                        }
-
-                        for (i in tempKey.indices) {
-                            //fruitValueList.add(fruitObject.getString(fruitKeyList.get(j)));
-                            tempValue.add(jsonObject.getString(tempKey[i]))
-                            println(tempKey[i] + "/" + jsonObject.getString(tempKey[i]))
-                        }
-
-                        user_info.add(LoginGoogleResponse(tempValue[0], tempValue[1].toInt(), tempValue[2], tempValue[3], tempValue[4]))
-                        currentUser = user_info[0]
-                        println(message)
-                        println(user_info[0].id_token)
-                        //createClipData(user_info[0].id_token)
-                        signInCheck(TokenRequest(currentUser.id_token, "/auth/google", "POST"))
-                        tempKey.clear()
-                        tempValue.clear()
-                    } catch (e: JSONException) {
-                        e.printStackTrace()
-                    }
-                }
-
-            })
-        }
-    }*/
     private fun signIn() {
-        println("signIn")
-        //로딩창 실행
-        loadingDialog = LoadingProgressDialog(this@LoginActivity)
-        loadingDialog?.setCancelable(false)
-        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        //로딩창
-        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-        loadingDialog?.window!!.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        loadingDialog?.show()
-
+        Log.d("signIn", "signin")
         //setData()
-
-
         val signIntent = mGoogleSignInClient.signInIntent
         resultLauncher.launch(signIntent)
     }
@@ -655,6 +514,11 @@ class LoginActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         Log.d("LoginActivity", "stop")
+        if (loadingDialog != null && loadingDialog!!.isShowing) {
+            loadingDialog?.dismiss()
+            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+            Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onDestroy() {

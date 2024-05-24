@@ -1113,7 +1113,7 @@ class CarpoolTabFragment : Fragment() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val myId = saveSharedPreferenceGoogleLogin.getUserId(requireActivity()).toString()
         val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity()).toString().substring(0..7)
+        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity()).toString().split("@")
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
         val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)

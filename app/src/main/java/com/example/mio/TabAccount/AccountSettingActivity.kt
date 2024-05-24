@@ -47,7 +47,7 @@ class AccountSettingActivity : AppCompatActivity() {
             email = intent.getStringExtra("accountData").toString()
             initAccountSet()
         }
-        aBinding?.asProfileUseridTv?.text = email.substring(0..8)
+        aBinding?.asProfileUseridTv?.text = email.split("@").map { it }.first()
 
         aBinding!!.asGenderLl.setOnClickListener {
             val bottomSheet = AccountSettingBottomSheetFragment(true)
@@ -226,7 +226,6 @@ class AccountSettingActivity : AppCompatActivity() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.substring(0 until 8)
         val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
 
         val interceptor = Interceptor { chain ->

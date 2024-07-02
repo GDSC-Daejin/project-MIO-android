@@ -24,4 +24,7 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <string name="banner_ad">ca-app-pub-2168794711133266/9176999241</string>
+    <string name="ad_id">ca-app-pub-2168794711133266~8618596049</string>
 </resources>

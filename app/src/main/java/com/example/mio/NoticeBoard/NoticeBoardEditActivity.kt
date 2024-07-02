@@ -30,6 +30,7 @@ import com.airbnb.lottie.model.Marker
 import com.example.mio.*
 import com.example.mio.Adapter.PlaceAdapter
 import com.example.mio.Model.*
+import com.example.mio.Navigation.SearchFragment
 import com.example.mio.TabCategory.CarpoolTabFragment
 import com.example.mio.TabCategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
@@ -170,7 +171,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     //뒤로가기
     // private lateinit var loadingDialog : LoadingProgressDialog
     private var backPressedTime = 0L
-
+    //private var eventListener : SearchFragment.MarkerEventListener? = null   // 마커 클릭 이벤트 리스너
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -1202,8 +1203,14 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         mBinding.editBottomLl.layoutParams = layoutParams
     }
 
-    @Keep
     private fun searchKeyword(keyword: String) {
+        val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+        if (inputMethodManager.isActive) {
+            // 가상 키보드가 올라가 있다면 내립니다.
+            inputMethodManager.hideSoftInputFromWindow(mBinding.editCalendar.windowToken, 0)
+        }
+
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -1216,6 +1223,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
                 if (response.isSuccessful) {
                     val result = response.body()
+                    Log.e("edit search", result.toString())
                     if (response.code() == 200) {
                         val documents = result?.documents
                         if (documents?.isNotEmpty()==true) {
@@ -1276,7 +1284,6 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
     fun addItemsAndMarkers(searchResult: ResultSearchKeyword?) {
         if (!searchResult?.documents.isNullOrEmpty()) {
-
             listItems.clear()
             mapView?.removeAllPOIItems()
             for (document in searchResult!!.documents) {
@@ -1286,6 +1293,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     document.x.toDouble(),
                     document.y.toDouble())
                 listItems.add(item)
+                val index = listItems.indexOf(item)
 
                 val point = MapPOIItem()
                 point.apply {
@@ -1299,6 +1307,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     setCustomImageAnchor(0.5f, 1.0f)
                 }
                 mapView?.addPOIItem(point)
+                //mapView?.setPOIItemEventListener(eventListener)
             }
             placeAdapter.notifyDataSetChanged()
         } else {
@@ -1429,16 +1438,16 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
             mapView?.removePOIItem(marker)
             marker!!.markerType = MapPOIItem.MarkerType.BluePin
         }
-        marker = MapPOIItem().apply {
+        /*marker = MapPOIItem().apply {
             itemName = "선택 위치"
             this.mapPoint = mapPoint //MapPoint.mapPointWithGeoCoord(tlatitude, tlongitude)
             markerType = MapPOIItem.MarkerType.CustomImage
             customImageResourceId = R.drawable.map_poi_icon
-            isCustomImageAutoscale = false
+            isCustomImageAutoscale = true
             isDraggable = false
             setCustomImageAnchor(0.5f, 1.0f)
         }
-        mapView?.addPOIItem(marker)
+        mapView?.addPOIItem(marker)*/
 
         if (Build.VERSION.SDK_INT < 33) { // SDK 버전이 33보다 큰 경우에만 아래 함수를 씁니다.
             val addresses = geocoder.getFromLocation(latitude, longitude, 1)?.first()
@@ -1583,24 +1592,26 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
         })
     }
 
-
-    /*private fun updateMarker() {
-        // 이전 마커 제거
-        marker?.let {
-            mapView?.removePOIItem(it)
+    // 마커 클릭 이벤트 리스너
+    /*class MarkerEventListener(val context: Context, val location : ResultSearchKeyword?, val binding: ActivityNoticeBoardEditBinding, val index : Int): MapView.POIItemEventListener {
+        override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
+            // 마커 클릭 시
+            binding.placeName.text = location!!.documents[index].place_name
+            binding.placeRoad.text = location.documents[index].address_name
         }
 
-        // 새로운 마커 추가
-        marker = MapPOIItem().apply {
-            itemName = "선택 위치"
-            this.mapPoint = mapPoint
-            markerType = MapPOIItem.MarkerType.CustomImage
-            customImageResourceId = R.drawable.map_poi_icon
-            isCustomImageAutoscale = false
-            isDraggable = false
-            setCustomImageAnchor(0.5f, 1.0f)
+        override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
+            // 말풍선 클릭 시 (Deprecated)
+            // 이 함수도 작동하지만 그냥 아래 있는 함수에 작성하자
         }
-        mapView?.addPOIItem(marker)
+
+        override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?, buttonType: MapPOIItem.CalloutBalloonButtonType?) {
+            // 말풍선 클릭 시
+        }
+
+        override fun onDraggablePOIItemMoved(mapView: MapView?, poiItem: MapPOIItem?, mapPoint: MapPoint?) {
+            // 마커의 속성 중 isDraggable = true 일 때 마커를 이동시켰을 경우
+        }
     }*/
 
     private val callback = object : OnBackPressedCallback(true) {

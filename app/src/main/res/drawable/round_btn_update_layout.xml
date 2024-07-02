@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="160dp"
+    android:width="150dp"
     android:height="50dp"
     android:viewportWidth="170"
     android:viewportHeight="50">
@@ -7,5 +8,5 @@
         android:fillColor="@color/mio_blue_4"
         android:strokeColor="@color/mio_gray_7"
         android:strokeWidth="1"
-        android:pathData="M0.5 12c0-6.35 5.15-11.5 11.5-11.5h146c6.35 0 11.5 5.15 11.5 11.5v26c0 6.35-5.15 11.5-11.5 11.5h-146c-6.35 0-11.5-5.15-11.5-11.5z"/>
+        android:pathData="M0.5 10c0-5.25 4.25-9.5 9.5-9.5h150c5.25 0 9.5 4.25 9.5 9.5v30c0 5.25-4.25 9.5-9.5 9.5h-150c-5.25 0-9.5-4.25-9.5-9.5z"/>
 </vector>

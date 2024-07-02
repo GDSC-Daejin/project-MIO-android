@@ -182,7 +182,7 @@
                 android:textColor="@color/mio_gray_11"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
-                android:text="1"
+                android:text="0"
                 />
 
             <ImageView
@@ -236,6 +236,7 @@
             android:visibility="visible">
 
             <LinearLayout
+                android:id="@+id/checklist_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="27dp"
@@ -260,9 +261,10 @@
                         android:id="@+id/gtschool_btn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/round_btn_layout"
+                        android:background="@drawable/edit_check_btn"
                         android:text="등교"
                         android:textColor="@color/mio_gray_11"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -270,9 +272,10 @@
                         android:id="@+id/aschool_btn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/round_btn_layout"
+                        android:background="@drawable/edit_check_btn"
                         android:text="하교"
                         android:textColor="@color/mio_gray_11"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -296,10 +299,11 @@
                         android:id="@+id/man_btn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/round_btn_layout"
+                        android:background="@drawable/edit_check_btn"
                         android:contentDescription="남성"
                         android:text="남성"
                         android:textColor="@color/mio_gray_11"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -307,9 +311,10 @@
                         android:id="@+id/woman_btn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/round_btn_layout"
+                        android:background="@drawable/edit_check_btn"
                         android:text="여성"
                         android:textColor="@color/mio_gray_11"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -331,9 +336,10 @@
                         android:id="@+id/smoker_btn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/round_btn_layout"
+                        android:background="@drawable/edit_check_btn"
                         android:text="O"
                         android:textColor="@color/mio_gray_11"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
@@ -341,11 +347,13 @@
                         android:id="@+id/nsmoker_btn"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/round_btn_layout"
+                        android:background="@drawable/edit_check_btn"
                         android:text="X"
                         android:textColor="@color/mio_gray_11"
+                        app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_bias="0.0" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>

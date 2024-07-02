@@ -249,43 +249,41 @@ class MyParticipationFragment : Fragment() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         ///////////////////////////////////////////////////
-        api.getPostIdDetailSearch(postId).enqueue(object : Callback<Content> {
-            override fun onResponse(call: Call<Content>, response: Response<Content>) {
-                if (response.isSuccessful) {
-                    val responseData = response.body()
-                    responseData.let {
+        CoroutineScope(Dispatchers.IO).launch {
+            api.getPostIdDetailSearch(postId).enqueue(object : Callback<Content> {
+                override fun onResponse(call: Call<Content>, response: Response<Content>) {
+                    if (response.isSuccessful) {
+                        val responseData = response.body()
                         myParticipationAllData.add(PostData(
-                                response.body()!!.user.studentId,
-                                response.body()!!.postId,
-                                response.body()!!.title,
-                                response.body()!!.content,
-                                response.body()!!.targetDate,
-                                response.body()!!.targetTime,
-                                response.body()!!.category.categoryName,
-                                response.body()!!.location,
-                                //participantscount가 현재 참여하는 인원들
-                                response.body()!!.participantsCount,
-                                //numberOfPassengers은 총 탑승자 수
-                                response.body()!!.numberOfPassengers,
-                                response.body()!!.cost,
-                                response.body()!!.verifyGoReturn,
-                                response.body()!!.user,
-                                response.body()!!.latitude,
-                                response.body()!!.longitude
+                            responseData!!.user.studentId,
+                            responseData.postId,
+                            responseData.title,
+                            responseData.content,
+                            responseData.targetDate,
+                            responseData.targetTime,
+                            responseData.category.categoryName,
+                            responseData.location,
+                            //participantscount가 현재 참여하는 인원들
+                            responseData.participantsCount,
+                            //numberOfPassengers은 총 탑승자 수
+                            responseData.numberOfPassengers,
+                            responseData.cost,
+                            responseData.verifyGoReturn,
+                            responseData.user,
+                            responseData.latitude,
+                            responseData.longitude
                         ))
+                    } else {
+                        Log.e("MyParticipationFragment", response.code().toString())
                     }
-
-
-                } else {
-                    Log.e("MyParticipationFragment", response.code().toString())
                 }
-            }
 
-            override fun onFailure(call: Call<Content>, t: Throwable) {
-                Log.e("MyParticipationFail", t.message.toString())
-            }
+                override fun onFailure(call: Call<Content>, t: Throwable) {
+                    Log.e("MyParticipationFail", t.message.toString())
+                }
 
-        })
+            })
+        }
     }
 
 

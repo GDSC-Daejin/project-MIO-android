@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -988,7 +989,15 @@ class CarpoolTabFragment : Fragment() {
                     taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
 
                     taxiTabBinding.nonCurrentRvTv2.setOnClickListener {
-                        setCurrentCarpoolData()
+                        lifecycleScope.launch {
+                            setCurrentCarpoolData()
+                        }
+                    }
+                    taxiTabBinding.carpoolText.setOnClickListener {
+                        Log.d("carpoolText", "clcickckckc")
+                        lifecycleScope.launch {
+                            setCurrentCarpoolData()
+                        }
                     }
 
                     if (currentTaxiAllData.isEmpty()) {

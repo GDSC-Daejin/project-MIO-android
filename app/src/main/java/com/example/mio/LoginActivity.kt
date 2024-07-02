@@ -4,10 +4,12 @@ import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Base64
 import android.util.Log
 import android.view.*
 import android.view.animation.AnticipateInterpolator
@@ -35,6 +37,7 @@ import okhttp3.*
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import com.example.mio.R
+import java.security.MessageDigest
 
 
 class LoginActivity : AppCompatActivity() {

@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
+import com.example.mio.CalendarUtil.Companion.selectedDate
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentBottomSheetBinding
@@ -21,6 +22,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -48,15 +50,15 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
     //버튼 체크 변수들
     //체크리스트 펴기 체크
-    private var isCheckListClicked = false
+    private var isCheckListClicked = false // true 닫힌거 아래로열림 , false 열린거 위로열린모양
     //등하교 버튼 체크
-    private var isCheckSchool = " "
+    private var isCheckSchool = ""
     //흡연여부 체크
-    private var isCheckSmoke = " "
+    private var isCheckSmoke = ""
     //성별 체크
-    private var isCheckGender = " "
+    private var isCheckGender = ""
     //참여 인원 수
-    private var participateNumberOfPeople = 1
+    private var participateNumberOfPeople = 0
     //초기화 체크
     private var isReset = "false"
 
@@ -79,7 +81,13 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         bsBinding.filterCalendar.setOnClickListener {
             val cal = Calendar.getInstance()
             val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
-                selectTargetDate = "${year}-${month+1}-${day}"
+                val selectedDate = Calendar.getInstance().apply {
+                    set(year, month, day)
+                }
+                // SimpleDateFormat을 사용하여 날짜를 원하는 형식으로 포맷
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                selectTargetDate = dateFormat.format(selectedDate.time)  // 2024-01-01 형식
+
                 bsBinding.selectDateTv.text = "${year}년/${month+1}월/${day}일"
                 bsBinding.selectDateTv.setTextColor(Color.BLACK)
                 bsBinding.filterCalendar.setImageResource(R.drawable.filter_calendar_update_icon)
@@ -115,25 +123,26 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         }
 
         bsBinding.filterChecklistIv.setOnClickListener {
-            isCheckListClicked = !isCheckListClicked
+            // ScrollView의 특정 위치로 부드럽게 스크롤
+            bsBinding.checklistDetailView.smoothScrollTo(0, bsBinding.checklistContainer.top)
+            // 포커스를 이동
+            bsBinding.checklistContainer.requestFocus()
             if (isCheckListClicked) {
                 bsBinding.filterChecklistIv.animate().apply {
                     duration = 300
                     rotation(180f)
                 }
-                CoroutineScope(Dispatchers.Main).launch {
-                    //bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_update_icon)
-                    bsBinding.checklistDetailView.visibility = View.VISIBLE
-                }
+                isCheckListClicked = !isCheckListClicked
+                bsBinding.checklistDetailView.visibility = View.VISIBLE
+
             } else {
                 bsBinding.filterChecklistIv.animate().apply {
                     duration = 300
                     rotation(0f)
                 }
-                CoroutineScope(Dispatchers.Main).launch {
-                    //bsBinding.filterChecklistIv.setImageResource(R.drawable.filter_checklist_icon)
-                    bsBinding.checklistDetailView.visibility = View.GONE
-                }
+                isCheckListClicked = !isCheckListClicked
+                bsBinding.checklistDetailView.visibility = View.GONE
+
             }
         }
 
@@ -142,8 +151,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             if (participateNumberOfPeople > 0) {
                 bsBinding.filterParticipateTv.text = participateNumberOfPeople.toString()
             } else {
-                bsBinding.filterParticipateTv.text = "1"
-                participateNumberOfPeople = 1
+                bsBinding.filterParticipateTv.text = "0"
+                participateNumberOfPeople = 0
             }
         }
 
@@ -152,8 +161,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             if (participateNumberOfPeople < 11) {
                 bsBinding.filterParticipateTv.text = participateNumberOfPeople.toString()
             } else {
-                bsBinding.filterParticipateTv.text = "1"
-                participateNumberOfPeople = 1
+                bsBinding.filterParticipateTv.text = "0"
+                participateNumberOfPeople = 0
             }
         }
 
@@ -301,7 +310,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.filterSearchBtn.setOnClickListener {
             if (listener == null) return@setOnClickListener
-            listener?.sendValue("${selectTargetDate} ${sendSelectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset")
+            listener?.sendValue("${selectTargetDate},${sendSelectTime},${participateNumberOfPeople},${isCheckSchool},${isCheckGender},${isCheckSmoke}")
             dismiss()
         }
 
@@ -319,7 +328,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 if (view.isShown) {
                     myCalender[Calendar.HOUR_OF_DAY] = hourOfDay
                     myCalender[Calendar.MINUTE] = minute
-                    sendSelectTime = requireActivity().getString(R.string.setSendFilterTimeText, hourOfDay.toString(), minute.toString())
+                    sendSelectTime = String.format("%02d:%02d:00", hourOfDay, minute)
                     selectTime = if (hourOfDay > 12) {
                         val pm = hourOfDay - 12;
                         "오후 " + pm + "시 " + minute + "분 선택"

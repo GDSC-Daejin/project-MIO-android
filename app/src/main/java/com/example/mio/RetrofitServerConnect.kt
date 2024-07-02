@@ -13,7 +13,7 @@ object RetrofitServerConnect {
     val service: MioInterface = retrofit.create(MioInterface::class.java)
 
 
-    /*private const val BASE_URL = BuildConfig.server_URL
+    private const val BASE_URL = BuildConfig.server_URL
 
     fun create(context: Context): MioInterface {
         val okHttpClient = OkHttpClient.Builder()
@@ -27,7 +27,7 @@ object RetrofitServerConnect {
             .build()
 
         return retrofit.create(MioInterface::class.java)
-    }*/
+    }
 }
 
 /*

@@ -77,7 +77,7 @@ class TaxiTabFragment : Fragment() {
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     private var areaManager : LinearLayoutManager = LinearLayoutManager(activity)
     private var horizonManager : LinearLayoutManager = LinearLayoutManager(activity)
-
+    private var horizonManager2 : LinearLayoutManager = LinearLayoutManager(activity)
     private var noticeBoardAdapter : NoticeBoardAdapter? = null
     private var currentNoticeBoardAdapter : CurrentNoticeBoardAdapter? = null
     private var noticeBoardMyAreaAdapter : NoticeBoardMyAreaAdapter? = null
@@ -440,7 +440,8 @@ class TaxiTabFragment : Fragment() {
         //manager.reverseLayout = true
         //manager.stackFromEnd = true
         taxiTabBinding.currentRv.setHasFixedSize(true)
-        //taxiTabBinding.currentRv.layoutManager = manager
+        horizonManager2.orientation = LinearLayoutManager.HORIZONTAL
+        taxiTabBinding.currentRv.layoutManager = horizonManager2
     }
 
     private fun initCalendarRecyclerView() {

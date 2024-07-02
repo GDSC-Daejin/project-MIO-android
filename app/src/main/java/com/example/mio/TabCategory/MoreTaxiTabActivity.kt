@@ -55,6 +55,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
     //칩 생성
     private var chipList = kotlin.collections.ArrayList<Chip>()
 
+    private var tempFilterPostData : ArrayList<PostData?> = ArrayList()
+
     //로딩 즉 item의 끝이며 스크롤의 끝인지
     private var isLoading = false
     //데이터의 현재 페이지 수
@@ -83,6 +85,19 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         //showBottomSheetAd(this)
 
         //이건 날짜, 탑승 수, 담배, 성별, 학교 순서 등 필터
+        mttBinding.filterResetLl.setOnClickListener {//필터리셋
+            mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_gray_8))
+            mttBinding.moreFilterBtn.setImageResource(R.drawable.filter_icon)
+            mttBinding.moreNonfilterTv.visibility = View.GONE
+            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+            mttBinding.filterResetLl.visibility = View.GONE
+            mttBinding.moreAddFilterBtnSg.removeAllViewsInLayout()
+            chipList.clear()
+            CoroutineScope(Dispatchers.IO).launch {
+                setSelectData()
+            }
+        }
+        //이건 날짜, 탑승 수, 담배, 성별, 학교 순서 등 필터
         //필터 취소 기능 넣기 TODO
         mttBinding.moreFilterBtn.setOnClickListener {
             myViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
@@ -92,23 +107,13 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 setCallback(object : BottomSheetFragment.OnSendFromBottomSheetDialog{
                     override fun sendValue(value: String) {
                         Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
-                        //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
-                        if (value.split(" ")[6].toBoolean()) {
-                            println(value.split(" ").map { it })
-                            myViewModel.postCheckFilter(getBottomData)
-                            mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_gray_8))
-                            mttBinding.moreFilterBtn.setBackgroundResource(R.drawable.filter_icon)
-                            mttBinding.moreNonfilterTv.visibility = View.GONE
-                            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
-                            CoroutineScope(Dispatchers.IO).launch {
-                                setSelectData()
-                            }
-                        } else {
+                        //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke}"
+                        if (value.split(",").count {it == " "} < 5) {
                             getBottomData = value
                             myViewModel.postCheckFilter(getBottomData)
-                            mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
+                            mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity,R.color.mio_blue_4))
                             mttBinding.moreFilterBtn.setImageResource(R.drawable.filter_update_icon)
-                            println(moreTaxiAllData.filter { it?.postTargetDate == "2023-11-21" })
+                            mttBinding.filterResetLl.visibility = View.VISIBLE
                         }
                     }
                 })
@@ -459,17 +464,9 @@ class MoreTaxiTabActivity : AppCompatActivity() {
 
         myViewModel.checkFilter.observe(this) { it ->
             //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
-            val temp = it.split(" ")
-            println("temp"+ temp)
-            when (temp[6]) {
-                "true" -> {
-                    println("true")
-                    mttBinding.moreAddFilterBtnSg.removeAllViewsInLayout()
-                }
-                "false" -> {
-
-                }
-            }
+            val temp = it.split(",")
+            Log.e("temp Filter Test", temp.toString())
+            tempFilterPostData.clear()
             when (temp[3]) {
                 "등교" -> {
                     chipList.add(createNewChip(
@@ -532,12 +529,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             when (temp[5]) {
                 "흡연O" -> {
                     chipList.add(createNewChip(
-                        text = "흡연여부 O"
+                        text = "흡연O"
                     ))
                 }
                 "흡연x" -> {
                     chipList.add(createNewChip(
-                        text = "흡연여부 X"
+                        text = "흡연X"
                     ))
                 }
                 else -> {
@@ -545,85 +542,120 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 }
             }
 
-            var tempFilterPostData : List<PostData?> = ArrayList()
             CoroutineScope(Dispatchers.IO).launch {
-                //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
+                //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke}"
+                var noConditionDate = ""
+                var noConditionTime = ""
+                var noConditionPeople = -1 //0이 아니면 true
+                var noConditionSchool : Boolean?= null
+                var noConditionGender: Boolean? = null
+                var noConditionSmoke: Boolean? = null
+                tempFilterPostData.clear()
+                // temp 배열을 기준으로 필터링 조건 설정
                 for (i in temp.indices) {
-                    when(temp[i]) {
-                        temp[0] -> { //날짜
-                            if (temp[0].isNotEmpty()) {
-                                //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.postTargetDate == temp[0] }
-                                println("testestet" + moreTaxiAllData.filterNotNull().filter { it.postTargetDate == temp[0] })
-                                println("sadffsdfds" + temp[0])
+                    val currentCondition = temp[i]
+                    Log.e("currentCondition", currentCondition.toString())
+                    when (i) {
+                        0 -> { // 날짜
+                            if (currentCondition.isNotEmpty()) {
+                                noConditionDate = currentCondition
+                                Log.d("condition0", noConditionDate)
                             } else {
-                                println("empty")
+                                Log.e("No condition0", "empty")
                             }
                         }
-                        temp[1] -> { //시간
-                            if (temp[1].isNotEmpty() && tempFilterPostData.isEmpty()) {
-                                //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.postTargetTime == temp[1] }
-                            } else if (temp[1].isNotEmpty()) {
-                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.postTargetTime == temp[1] }
+                        1 -> { // 시간
+                            if (currentCondition.isNotEmpty()) {
+                                noConditionTime = currentCondition
+                                Log.d("condition1", noConditionTime)
+                            } else {
+                                Log.e("No condition1", "empty")
                             }
                         }
-                        temp[2] -> { //인원수
-                            if (temp[2].isNotEmpty() && tempFilterPostData.isEmpty()) {
-                                //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.postParticipation == temp[2].toInt() }
-                            } else if (temp[2].isNotEmpty()) {
-                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.postParticipation == temp[2].toInt() }
+                        2 -> { // 인원수
+                            if (currentCondition.isNotEmpty()) {
+                                noConditionPeople = currentCondition.toInt()
+                                Log.d("condition2", noConditionPeople.toString())
+                            } else {
+                                Log.e("No condition2", "empty")
                             }
                         }
-                        temp[3] -> { //등하교
-                            if (temp[3].isNotEmpty() && tempFilterPostData.isEmpty()) {
-                                var postVerifyGoReturn: Boolean?
-                                postVerifyGoReturn = temp[3] == "등교"
-
-                                //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.postVerifyGoReturn == postVerifyGoReturn }
-                            } else if (temp[3].isNotEmpty()) {
-                                var postVerifyGoReturn: Boolean?
-                                postVerifyGoReturn = temp[3] == "등교"
-
-                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.postVerifyGoReturn == postVerifyGoReturn }
+                        3 -> { // 등하교
+                            if (currentCondition.isNotEmpty()) {
+                                if (currentCondition == "등교") {
+                                    noConditionSchool = true
+                                } else if (currentCondition == "하교") {
+                                    noConditionSchool = false
+                                }
+                                Log.d("condition3", noConditionSchool.toString())
+                            } else {
+                                Log.e("No condition3", "empty")
                             }
                         }
-                        temp[4] -> { //성별
-                            if (temp[4].isNotEmpty() && tempFilterPostData.isEmpty()) {
-                                var isGender: Boolean?
-                                isGender = temp[4] == "여성"
-
-                                //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.user.gender == isGender }
-                            } else if (temp[4].isNotEmpty()) {
-                                var isGender: Boolean?
-                                isGender = temp[4] == "여성"
-
-                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.user.gender == isGender }
+                        4 -> { // 성별
+                            if (currentCondition.isNotEmpty()) {
+                                if (currentCondition == "여성") {
+                                    noConditionGender = true
+                                } else if (currentCondition == "남성") {
+                                    noConditionGender = false
+                                }
+                                Log.d("condition4", noConditionGender.toString())
+                            } else {
+                                Log.e("No condition4", "empty")
                             }
                         }
-                        temp[5] -> { //흡연여부
-                            if (temp[5].isNotEmpty() && tempFilterPostData.isEmpty()) {
-                                var isSmoke: Boolean?
-                                isSmoke = temp[5] == "흡연O"
-
-                                //null 값을 제외한 List를 반환
-                                tempFilterPostData = moreTaxiAllData.filterNotNull().filter { it.user.verifySmoker == isSmoke }
-                            } else if (temp[5].isNotEmpty()) {
-                                var isSmoke: Boolean?
-                                isSmoke = temp[5] == "흡연O"
-
-                                tempFilterPostData = tempFilterPostData.filterNotNull().filter { it.user.verifySmoker == isSmoke }
+                        5 -> { // 흡연여부
+                            if (currentCondition.isNotEmpty()) {
+                                if (temp[5] == "흡연O") {
+                                    noConditionSmoke = true
+                                } else if (temp[5] == "흡연x") {
+                                    noConditionSmoke = false
+                                }
+                                Log.d("condition5", noConditionSmoke.toString())
+                            } else {
+                                Log.e("No condition5", "empty")
                             }
+                        }
+                        else -> {
+                            // 추가 조건이 있는 경우 여기에 추가할 수 있음
+                            Log.e("Unknown condition", "Index $i not handled")
                         }
                     }
                 }
-                moreTaxiAllData.clear()
+                Log.d("morecaarpoolfilter", "$noConditionDate $noConditionTime $noConditionPeople $noConditionSchool $noConditionGender $noConditionSmoke")
+                var tempData: List<PostData?>? = null
+                if (noConditionPeople > 0) {
+                    // 인원수가 0보다 큰 경우, 모든 조건을 적용하여 필터링
+                    tempData = moreTaxiAllData.filter { item ->
+                        item != null &&
+                                (noConditionDate.isEmpty() || item.postTargetDate == noConditionDate) &&
+                                (noConditionTime.isEmpty() || item.postTargetTime == noConditionTime) &&
+                                (noConditionPeople == -1 || item.postParticipationTotal == noConditionPeople) &&
+                                (noConditionSchool == null || item.postVerifyGoReturn == noConditionSchool) &&
+                                (noConditionGender == null || item.user.gender == noConditionGender) &&
+                                (noConditionSmoke == null || item.user.verifySmoker == noConditionSmoke)
+                    }
+                } else {
+                    // 인원수가 0인 경우, 날짜로만 필터링
+                    tempData = moreTaxiAllData.filter { item ->
+                        item != null &&
+                                (noConditionDate.isEmpty() || item.postTargetDate == noConditionDate) &&
+                                (noConditionTime.isEmpty() || item.postTargetTime == noConditionTime) &&
+                                (noConditionSchool == null || item.postVerifyGoReturn == noConditionSchool) &&
+                                (noConditionGender == null || item.user.gender == noConditionGender) &&
+                                (noConditionSmoke == null || item.user.verifySmoker == noConditionSmoke)
+                    }
+                }
+                tempData.forEach { item ->
+                    tempFilterPostData.add(item)
+                }
+                //dszcctempFilterPostData.addAll(tempData)
+                Log.d("filter", tempData.toString())
+                //moreCarpoolAllData.clear()
+                Log.d("filter", tempFilterPostData.toString())
+                mtAdapter!!.moreTaxiData = tempFilterPostData
 
-                println("filter" + tempFilterPostData)
-                mtAdapter!!.moreTaxiData = tempFilterPostData as ArrayList<PostData?>
+
                 withContext(Dispatchers.Main) {
                     if (tempFilterPostData.isEmpty()) {
                         mttBinding.moreNonfilterTv.visibility = View.VISIBLE
@@ -637,18 +669,21 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 }
             }
 
-            for (i in chipList.indices) {
-                // 마지막 Chip 뷰의 인덱스를 계산
-                val lastChildIndex = mttBinding.moreAddFilterBtnSg.childCount - 1
-
-                // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
-                // 현재 Chip을 바로 그 앞에 추가
-                if (lastChildIndex >= 0) {
-                    mttBinding.moreAddFilterBtnSg.addView(chipList[i], lastChildIndex)
-                } else {
-                    // ChipGroup에 자식이 없는 경우, 그냥 추가
-                    mttBinding.moreAddFilterBtnSg.addView(chipList[i])
+            if (chipList.isNotEmpty()) {
+                mttBinding.moreAddFilterBtnSg.removeAllViewsInLayout()
+                for (i in chipList.indices) {
+                    // 마지막 Chip 뷰의 인덱스를 계산
+                    val lastChildIndex = mttBinding.moreAddFilterBtnSg.childCount - 1
+                    // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
+                    // 현재 Chip을 바로 그 앞에 추가
+                    if (lastChildIndex >= 0) {
+                        mttBinding.moreAddFilterBtnSg.addView(chipList[i], lastChildIndex)
+                    } else {
+                        // ChipGroup에 자식이 없는 경우, 그냥 추가
+                        mttBinding.moreAddFilterBtnSg.addView(chipList[i])
+                    }
                 }
+                chipList.clear()
             }
         }
 

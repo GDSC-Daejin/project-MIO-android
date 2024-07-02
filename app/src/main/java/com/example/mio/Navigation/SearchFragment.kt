@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.contains
 import androidx.fragment.app.Fragment
 
@@ -65,6 +66,7 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
     private lateinit var geocoder: Geocoder
     private var mapView: MapView? = null
 
+    private var eventListener : MarkerEventListener? = null   // 마커 클릭 이벤트 리스너
 
     val sharedViewModel: FragSharedViewModel by lazy {
         (activity?.application as FragSharedViewModel2).sharedViewModel
@@ -312,16 +314,17 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             isShowCalloutBalloonOnTouch = true
             userObject = location
         }
+        //eventListener = MarkerEventListener(requireContext(), location)
         mapView?.addPOIItem(marker)
-
+        //mapView?.setPOIItemEventListener(eventListener)
         // 마커 클릭시
-        mapView?.setPOIItemEventListener(object : MapView.POIItemEventListener {
-            override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, mapPOIItem: MapPOIItem?) {
-                //updatePostData(mapPOIItem?.userObject as? LocationReadAllResponse)
-                //Log.d("1111", "111111")
+        /*mapView?.setPOIItemEventListener(object : MapView.POIItemEventListener {
+            override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
+                // 말풍선 클릭 시 (Deprecated)
+                // 이 함수도 작동하지만 그냥 아래 있는 함수에 작성하자
             }
 
-            override fun onCalloutBalloonOfPOIItemTouched(p0: MapView, p1: MapPOIItem, p2: MapPOIItem.CalloutBalloonButtonType) {
+            override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?, buttonType: MapPOIItem.CalloutBalloonButtonType?) {
                 val temp = PostData(
                     accountID = location.user?.studentId!!,
                     postID = location.postId,
@@ -353,7 +356,49 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
 
             override fun onDraggablePOIItemMoved(p0: MapView, p1: MapPOIItem, p2: MapPoint) {
             }
-        })
+        })*/
+    }
+
+    class MarkerEventListener(val context: Context, val location: LocationReadAllResponse): MapView.POIItemEventListener {
+        override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
+            // 마커 클릭 시
+        }
+
+        override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
+            // 말풍선 클릭 시 (Deprecated)
+            // 이 함수도 작동하지만 그냥 아래 있는 함수에 작성하자
+        }
+
+        override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?, buttonType: MapPOIItem.CalloutBalloonButtonType?) {
+            val temp = PostData(
+                accountID = location.user?.studentId!!,
+                postID = location.postId,
+                postTitle = location.title,
+                postContent = location.content,
+                postTargetDate = location.targetDate,
+                postTargetTime = location.targetTime,
+                postCategory = location.category?.categoryName!!,
+                postLocation = location.location,
+                postParticipation = location.participantsCount,
+                postParticipationTotal = location.numberOfPassengers,
+                postCost = location.cost,
+                postVerifyGoReturn = location.verifyGoReturn,
+                user = location.user!!,
+                postlatitude = location.latitude,
+                postlongitude = location.longitude
+            )
+
+            val intent = Intent(context, NoticeBoardReadActivity::class.java).apply {
+                putExtra("type", "READ")
+                putExtra("postItem", temp)
+                putExtra("uri", temp.user.profileImageUrl)
+            }
+            context.startActivity(intent)
+        }
+
+        override fun onDraggablePOIItemMoved(mapView: MapView?, poiItem: MapPOIItem?, mapPoint: MapPoint?) {
+            // 마커의 속성 중 isDraggable = true 일 때 마커를 이동시켰을 경우
+        }
     }
 
     //안드로이드 13 이상 PostNotification 대응
@@ -526,9 +571,92 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
         layoutParams.bottomMargin = 0
             bottomNavigationView.layoutParams = layoutParams
     }*/
+    override fun onStart() {
+        super.onStart()
+        Log.d("searchFragment1", "start")
+        if (mapView != null) {
+            sBinding?.mapMyMapcontainer?.removeAllViews()
+            sBinding?.mapMyMapcontainer?.removeAllViewsInLayout()
+            mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
+            mapView = null
+
+            (activity as? AppCompatActivity)?.supportActionBar?.show()
+
+            activity?.window?.apply {
+                // 원래의 상태바 색상을 복원.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    statusBarColor = resources.getColor(R.color.white, null)
+                }
+                clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+                // 원래의 UI 플래그를 설정
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                    decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+                }
+            }
+
+            // 네비게이션 바 마진 복원.
+            val activity = activity as AppCompatActivity
+            val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
+            val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
+            layoutParams.bottomMargin = 0
+            bottomNavigationView.layoutParams = layoutParams
+            // 그림자 효과 없애기
+            bottomNavigationView.background = MaterialShapeDrawable().apply {
+                // 배경색을 투명하게 설정하여 그림자 효과를 없앱니다.
+                setTint(Color.TRANSPARENT)
+            }
+
+
+            /* mapView?.removeAllPOIItems()
+             mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
+             mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
+             sBinding?.editFirstVf?.removeView(mapView)
+             mapView?.onPause()
+             mapView?.onSurfaceDestroyed()
+    //            mapView.onStop()
+    //            mapView.onDestroy()
+             mapView = null*/
+
+            /*// 상태바와 하단 네비게이션 바를 원래대로 복원
+            (activity as? AppCompatActivity)?.supportActionBar?.show()
+
+            activity?.window?.apply {
+                // 원래의 상태바 색상을 복원.
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    statusBarColor = resources.getColor(R.color.white, null)
+                }
+                clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+
+                // 원래의 UI 플래그를 설정
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+                    decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+                }
+            }
+
+            // 네비게이션 바 마진 복원.
+            val activity = activity as AppCompatActivity
+            val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
+            val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
+            layoutParams.bottomMargin = 0
+            bottomNavigationView.layoutParams = layoutParams*/
+        } else {
+            initMapView()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("searchFragment1", "resume")
+        if (mapView == null) {
+            initMapView()
+        }
+    }
+
 
     override fun onPause() {
         super.onPause()
+        Log.d("searchFragment1", "pause")
         if (mapView != null) {
             sBinding?.mapMyMapcontainer?.removeAllViews()
             sBinding?.mapMyMapcontainer?.removeAllViewsInLayout()
@@ -595,84 +723,13 @@ class SearchFragment : Fragment(), MapView.MapViewEventListener {
             val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
             layoutParams.bottomMargin = 0
             bottomNavigationView.layoutParams = layoutParams*/
-        }
-    }
-
-
-    override fun onStart() {
-        super.onStart()
-        Log.d("searchFragment1", "start")
-        if (mapView != null) {
-            sBinding?.mapMyMapcontainer?.removeAllViews()
-            sBinding?.mapMyMapcontainer?.removeAllViewsInLayout()
-            mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
-            mapView = null
-
-            (activity as? AppCompatActivity)?.supportActionBar?.show()
-
-            activity?.window?.apply {
-                // 원래의 상태바 색상을 복원.
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    statusBarColor = resources.getColor(R.color.white, null)
-                }
-                clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-
-                // 원래의 UI 플래그를 설정
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-                    decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-                }
-            }
-
-            // 네비게이션 바 마진 복원.
-            val activity = activity as AppCompatActivity
-            val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
-            val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
-            layoutParams.bottomMargin = 0
-            bottomNavigationView.layoutParams = layoutParams
-            // 그림자 효과 없애기
-            bottomNavigationView.background = MaterialShapeDrawable().apply {
-                // 배경색을 투명하게 설정하여 그림자 효과를 없앱니다.
-                setTint(Color.TRANSPARENT)
-            }
-
-
-            /* mapView?.removeAllPOIItems()
-             mapView?.currentLocationTrackingMode = MapView.CurrentLocationTrackingMode.TrackingModeOff
-             mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
-             sBinding?.editFirstVf?.removeView(mapView)
-             mapView?.onPause()
-             mapView?.onSurfaceDestroyed()
- //            mapView.onStop()
- //            mapView.onDestroy()
-             mapView = null*/
-
-            /*// 상태바와 하단 네비게이션 바를 원래대로 복원
-            (activity as? AppCompatActivity)?.supportActionBar?.show()
-
-            activity?.window?.apply {
-                // 원래의 상태바 색상을 복원.
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    statusBarColor = resources.getColor(R.color.white, null)
-                }
-                clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-
-                // 원래의 UI 플래그를 설정
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-                    decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-                }
-            }
-
-            // 네비게이션 바 마진 복원.
-            val activity = activity as AppCompatActivity
-            val bottomNavigationView = activity.findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
-            val layoutParams = bottomNavigationView.layoutParams as ViewGroup.MarginLayoutParams
-            layoutParams.bottomMargin = 0
-            bottomNavigationView.layoutParams = layoutParams*/
-        }
-        if (mapView == null) {
+        } else {
             initMapView()
         }
     }
+
+
+
 
 
     /*override fun onStop() {

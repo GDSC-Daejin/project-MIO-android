@@ -93,6 +93,28 @@
             android:layout_height="wrap_content"
             android:layout_weight="1" />
 
+        <LinearLayout
+            android:id="@+id/filter_reset_ll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:visibility="gone">
+            <ImageView
+                android:id="@+id/filter_reset_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:src="@drawable/filter_reset_icon" />
+            <TextView
+                android:id="@+id/filter_reset_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:fontFamily="@font/pretendard_medium"
+                android:textAlignment="center"
+                android:text="초기화"
+                android:textColor="@color/mio_gray_8" />
+        </LinearLayout>
+
         <ImageView
             android:id="@+id/more_filter_btn"
             android:layout_width="wrap_content"

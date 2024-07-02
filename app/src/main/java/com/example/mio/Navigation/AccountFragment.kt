@@ -85,7 +85,7 @@ class AccountFragment : Fragment() {
         aBinding.accountSettingIv.setOnClickListener {
             val intent = Intent(activity, AccountSettingActivity::class.java).apply {
                 putExtra("type", "ACCOUNT")
-                putExtra("accountData", email.split("@").map { it.toString() }.first()) //20201530 숫자만
+                putExtra("accountData", email) //20201530 숫자만
             }
             startActivity(intent)
         }

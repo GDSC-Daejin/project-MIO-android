@@ -507,7 +507,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
             }
             mBinding.editCategoryTaxiBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
             }
         }
@@ -519,7 +519,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
             }
             mBinding.editCategoryCarpoolBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
             }
         }
@@ -701,7 +701,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
             }
             mBinding.editAschoolBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
             }
             isAllCheck.isThirdVF.isGSchool = true
@@ -714,7 +714,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
             }
             mBinding.editGtschoolBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
             }
             isAllCheck.isThirdVF.isGSchool = false
@@ -729,7 +729,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
             }
             mBinding.editNsmokerBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
             }
             isAllCheck.isThirdVF.isSmoke = true
@@ -742,7 +742,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
             }
             mBinding.editSmokerBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
             }
             isAllCheck.isThirdVF.isSmoke = false
@@ -755,7 +755,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
             }
             mBinding.editWomanBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
             }
             isAllCheck.isThirdVF.isMGender = true
@@ -768,7 +768,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
             }
             mBinding.editManBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
             }
             isAllCheck.isThirdVF.isMGender = false

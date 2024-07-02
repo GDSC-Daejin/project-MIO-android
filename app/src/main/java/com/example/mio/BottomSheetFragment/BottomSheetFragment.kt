@@ -176,7 +176,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             }
 
             bsBinding.aschoolBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
@@ -190,7 +190,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
             }
             bsBinding.gtschoolBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
@@ -204,7 +204,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
             }
             bsBinding.womanBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
@@ -218,7 +218,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
             }
             bsBinding.manBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
@@ -231,7 +231,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
             }
             bsBinding.nsmokerBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
@@ -244,7 +244,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
             }
             bsBinding.smokerBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }
@@ -254,27 +254,27 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             //뷰 초기화
             CoroutineScope(Dispatchers.Main).launch {
                 bsBinding.gtschoolBtn.apply {
-                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setBackgroundResource(R.drawable.edit_check_btn)
                     setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
                 bsBinding.aschoolBtn.apply {
-                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setBackgroundResource(R.drawable.edit_check_btn)
                     setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
                 bsBinding.manBtn.apply {
-                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setBackgroundResource(R.drawable.edit_check_btn)
                     setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
                 bsBinding.womanBtn.apply {
-                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setBackgroundResource(R.drawable.edit_check_btn)
                     setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
                 bsBinding.smokerBtn.apply {
-                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setBackgroundResource(R.drawable.edit_check_btn)
                     setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
                 bsBinding.nsmokerBtn.apply {
-                    setBackgroundResource(R.drawable.round_btn_layout)
+                    setBackgroundResource(R.drawable.edit_check_btn)
                     setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
                 }
             }
@@ -469,27 +469,27 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         //뷰 초기화
         CoroutineScope(Dispatchers.IO).launch {
             bsBinding.gtschoolBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
             bsBinding.aschoolBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
             bsBinding.manBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
             bsBinding.womanBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
             bsBinding.smokerBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
             bsBinding.nsmokerBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_11))
             }
         }

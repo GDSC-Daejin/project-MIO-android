@@ -754,11 +754,13 @@ class CarpoolTabFragment : Fragment() {
 
                     } else {
                         Log.e("f", response.code().toString())
+                        loadingDialog?.dismiss()
                     }
                 }
 
                 override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                     Log.e("error", t.toString())
+                    loadingDialog?.dismiss()
                 }
             })
         }
@@ -983,20 +985,30 @@ class CarpoolTabFragment : Fragment() {
                     Log.d("message", call.request().toString())
                     Log.d("f", response.code().toString())
 
-                    taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
-                    taxiTabBinding.nonCurrentRvTv.text = "예상치 못한 오류가 발생했습니다"
-                    taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
-                    taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
+                    if (response.code().toString() == "500") {
+                        if (response.errorBody()?.string() != null) {
+                            taxiTabBinding.currentRv.visibility = View.GONE
+                            taxiTabBinding.nonCurrentRvTv.text = "예약된 게시글이 없습니다"
+                            taxiTabBinding.nonCurrentRvTv2.text = "미오에서 카풀,택시를 구해보세요!"
+                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+                        } else {
+                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv.text = "예상치 못한 오류가 발생했습니다"
+                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
 
-                    taxiTabBinding.nonCurrentRvTv2.setOnClickListener {
-                        lifecycleScope.launch {
-                            setCurrentCarpoolData()
-                        }
-                    }
-                    taxiTabBinding.carpoolText.setOnClickListener {
-                        Log.d("carpoolText", "clcickckckc")
-                        lifecycleScope.launch {
-                            setCurrentCarpoolData()
+                            taxiTabBinding.nonCurrentRvTv2.setOnClickListener {
+                                lifecycleScope.launch {
+                                    setCurrentCarpoolData()
+                                }
+                            }
+                            taxiTabBinding.carpoolText.setOnClickListener {
+                                Log.d("carpoolText", "clcickckckc")
+                                lifecycleScope.launch {
+                                    setCurrentCarpoolData()
+                                }
+                            }
                         }
                     }
 

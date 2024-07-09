@@ -19,15 +19,21 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:visibility="visible"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <RelativeLayout
-                android:id="@+id/map_my_mapcontainer"
+            <com.kakao.vectormap.MapView
+                android:id="@+id/map_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
 
-           <!-- <net.daum.mf.map.api.MapView
+            <!-- <net.daum.mf.map.api.MapView
                 android:id="@+id/search_mapView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -35,12 +41,25 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />-->
+            <TextView
+                android:id="@+id/poi_info_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/round_search_tv_background"
+                android:textColor="@color/white"
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="parent"
+                app:layout_constraintEnd_toStartOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" /> <!-- 초기에는 숨김 -->
 
             <LinearLayout
                 android:id="@+id/linearLayout10"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
                 android:layout_marginTop="44dp"
+                android:layout_marginEnd="10dp"
                 android:background="@drawable/round_layout"
                 android:gravity="center"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -66,18 +85,18 @@
                     android:layout_marginEnd="30dp"
                     android:layout_weight="1"
                     android:background="@null"
-                    android:gravity="start|center_vertical"
-                    android:maxLines="1"
                     android:ellipsize="end"
+                    android:gravity="start|center_vertical"
                     android:hint="장소를 입력해주세요"
-                    android:textSize="18sp"
+                    android:maxLines="1"
                     android:textColor="@color/mio_gray_8"
-                    android:textColorHint="@color/mio_gray_6" />
+                    android:textColorHint="@color/mio_gray_6"
+                    android:textSize="18sp" />
 
                 <Space
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"/>
+                    android:layout_weight="1" />
 
                 <ImageButton
                     android:id="@+id/btn_search"
@@ -91,27 +110,18 @@
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/post_data"
-                android:layout_width="250dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
                 android:layout_marginBottom="5dp"
-                android:visibility="gone"
+                android:layout_marginEnd="5dp"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent">
 
-                <Button
-                    android:id="@+id/post_search_item"
-                    android:layout_width="match_parent"
-                    android:layout_height="140dp"
-                    android:background="@android:color/transparent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="@+id/post_ll"
-                    app:layout_constraintStart_toStartOf="@+id/post_ll"
-                    app:layout_constraintTop_toTopOf="@+id/post_ll" />
-
                 <LinearLayout
                     android:id="@+id/post_ll"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/round_horizontal"
                     android:gravity="center"
@@ -185,7 +195,9 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:layout_marginStart="4dp"
+                                android:ellipsize="end"
                                 android:fontFamily="@font/pretendard_medium"
+                                android:maxLines="1"
                                 android:text="수락산역 3번출구"
                                 android:textColor="@color/mio_gray_6" />
                         </LinearLayout>
@@ -245,8 +257,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
                 android:layout_marginBottom="5dp"
-                android:visibility="gone"
+                android:layout_marginEnd="5dp"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/post_data">
 
                 <ImageButton
@@ -264,7 +278,8 @@
                     android:id="@+id/textView6"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="15dp"
+                    android:layout_marginStart="10dp"
+                    android:fontFamily="@font/pretendard_medium"
                     android:text="게시글 더보기"
                     android:textColor="@color/mio_gray_7"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -276,6 +291,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
+                    android:layout_marginEnd="5dp"
+
                     android:src="@drawable/front_arrow"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"

@@ -31,6 +31,8 @@ class NearbypostActivity  : AppCompatActivity() { //게시글 더보기 이동 �
 
         // 게시글 ID를 받아옵니다.
         val postId = intent.getIntExtra("POST_ID", -1)
+        val searchWord = intent.getStringExtra("searchWord")
+        nbinding.searchWordField.text = searchWord
 
         nbinding.rvNearbypostList.layoutManager = LinearLayoutManager(this)
         adapter = NearbyPostAdapter { post ->
@@ -78,7 +80,6 @@ class NearbypostActivity  : AppCompatActivity() { //게시글 더보기 이동 �
                         posts?.let { allPosts ->
                             val referencePost = allPosts.find { it.postId == postId }
                             referencePost?.let {
-                                nbinding.etSearchField2.setText(it.location)
                                 val filteredAndSortedPosts = allPosts.filter { post ->
                                     calculateDistance(it.latitude, it.longitude, post.latitude, post.longitude) <= 3.0
                                 }.sortedBy { post ->

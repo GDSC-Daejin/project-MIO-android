@@ -307,37 +307,14 @@ class CarpoolTabFragment : Fragment() {
             requestActivity.launch(intent)
         }
 
-        /*taxiTabBinding.filterBtn.setOnClickListener {
-            *//*val bottomSheetDialog = BottomSheetDialog(
-                requireActivity(), R.style.BottomSheetDialogTheme
-            ).apply {
-                behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                behavior.isDraggable = true
+        taxiTabBinding.moreAreaBtn.setOnClickListener {
+            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+            val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity()).toString()
+            val intent = Intent(requireActivity(), MoreAreaActivity::class.java).apply {
+                putExtra("area", myAreaData)
             }
-
-            val bottomView = LayoutInflater.from(requireActivity()).inflate(
-                R.layout.bottom_sheet_dialog, null
-            )
-
-
-            //bottomSheetDialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            // bottomSheetDialog 뷰 생성
-            bottomSheetDialog.setContentView(bottomView)
-
-            // bottomSheetDialog 호출
-            bottomSheetDialog.show()*//*
-
-            val bottomSheet = BottomSheetFragment()
-            bottomSheet.show(requireActivity().supportFragmentManager, bottomSheet.tag)
-            bottomSheet.apply {
-                setCallback(object : BottomSheetFragment.OnSendFromBottomSheetDialog{
-                    override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
-                    }
-                })
-            }
-
-        }*/
+            requestActivity.launch(intent)
+        }
 
 
         return taxiTabBinding.root
@@ -770,7 +747,7 @@ class CarpoolTabFragment : Fragment() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-        var myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity()).toString()
+        val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity()).toString()
 
         val interceptor = Interceptor { chain ->
             var newRequest: Request
@@ -793,6 +770,8 @@ class CarpoolTabFragment : Fragment() {
 
                     // Log.d("MainActivitu Notification", expireDate.toString())
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -855,10 +834,12 @@ class CarpoolTabFragment : Fragment() {
                             taxiTabBinding.areaRvLl.visibility = View.GONE
                             taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
                             taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
+                            taxiTabBinding.moreAreaBtn.visibility = View.GONE
                         } else {
                             taxiTabBinding.areaRvLl.visibility = View.VISIBLE
                             taxiTabBinding.nonAreaRvTv.visibility = View.GONE
                             taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                            taxiTabBinding.moreAreaBtn.visibility = View.VISIBLE
                         }
 
                     } else {
@@ -903,6 +884,8 @@ class CarpoolTabFragment : Fragment() {
 
                     Log.e("CarpoolFragment", "순서체크")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -1155,6 +1138,8 @@ class CarpoolTabFragment : Fragment() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)

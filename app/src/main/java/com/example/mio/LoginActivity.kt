@@ -14,12 +14,14 @@ import android.util.Log
 import android.view.*
 import android.view.animation.AnticipateInterpolator
 import android.widget.Toast
+import android.window.SplashScreenView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.splashscreen.SplashScreenViewProvider
 import com.example.mio.Model.LoginResponsesData
 import com.example.mio.Model.LoginGoogleResponse
 import com.example.mio.Model.RefreshTokenRequest
@@ -86,7 +88,7 @@ class LoginActivity : AppCompatActivity() {
         }*/
         initSplashScreen()
         super.onCreate(savedInstanceState)
-
+        initData()
         setContentView(mBinding.root)
         MobileAds.initialize(this@LoginActivity) {}
         setResultSignUp()
@@ -122,24 +124,28 @@ class LoginActivity : AppCompatActivity() {
         // 별도의 데이터 처리가 없기 때문에 3초의 딜레이를 줌.
         // 선행되어야 하는 작업이 있는 경우, 이곳에서 처리 후 isReady를 변경.
         CoroutineScope(Dispatchers.IO).launch {
-            delay(3000)
+            delay(1500)
+            // 데이터 처리나 초기화 작업을 여기서 수행할 수 있음
+            withContext(Dispatchers.Main) {
+                isReady = true
+            }
         }
-        isReady = true
     }
+
     private fun initSplashScreen() {
-        initData()
         val splashScreen = installSplashScreen()
         val content: View = findViewById(android.R.id.content)
-        // SplashScreen이 생성되고 그려질 때 계속해서 호출된다.
+
         content.viewTreeObserver.addOnPreDrawListener(
             object : ViewTreeObserver.OnPreDrawListener {
                 override fun onPreDraw(): Boolean {
                     return if (isReady) {
                         // 3초 후 Splash Screen 제거
                         content.viewTreeObserver.removeOnPreDrawListener(this)
+                        // Splash screen이 준비되었으므로 제거하는 로직을 여기에 추가
                         true
                     } else {
-                        // The content is not ready
+                        // 데이터가 준비되지 않았으므로 계속 기다림
                         false
                     }
                 }
@@ -161,12 +167,16 @@ class LoginActivity : AppCompatActivity() {
                     ).apply {
                         interpolator = AnticipateInterpolator()
                         duration = 300L
-                        doOnEnd { splashScreenView.remove() }
+                        doOnEnd { removeSplashScreen(splashScreenView) }
                         start()
                     }
                 }
             }
         }
+    }
+
+    private fun removeSplashScreen(splashScreenView: SplashScreenViewProvider) {
+        splashScreenView.remove()
     }
 
     private fun signInCheck(userInfoToken : TokenRequest) {

@@ -312,37 +312,14 @@ class TaxiTabFragment : Fragment() {
             requestActivity.launch(intent)
         }
 
-        /*taxiTabBinding.filterBtn.setOnClickListener {
-            *//*val bottomSheetDialog = BottomSheetDialog(
-                requireActivity(), R.style.BottomSheetDialogTheme
-            ).apply {
-                behavior.state = BottomSheetBehavior.STATE_EXPANDED
-                behavior.isDraggable = true
+        taxiTabBinding.moreAreaBtn.setOnClickListener {
+            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+            val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity()).toString()
+            val intent = Intent(requireActivity(), MoreAreaActivity::class.java).apply {
+                putExtra("area", myAreaData)
             }
-
-            val bottomView = LayoutInflater.from(requireActivity()).inflate(
-                R.layout.bottom_sheet_dialog, null
-            )
-
-
-            //bottomSheetDialog.behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            // bottomSheetDialog 뷰 생성
-            bottomSheetDialog.setContentView(bottomView)
-
-            // bottomSheetDialog 호출
-            bottomSheetDialog.show()*//*
-
-            val bottomSheet = BottomSheetFragment()
-            bottomSheet.show(requireActivity().supportFragmentManager, bottomSheet.tag)
-            bottomSheet.apply {
-                setCallback(object : BottomSheetFragment.OnSendFromBottomSheetDialog{
-                    override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
-                    }
-                })
-            }
-
-        }*/
+            requestActivity.launch(intent)
+        }
 
 
         return taxiTabBinding.root
@@ -768,6 +745,8 @@ class TaxiTabFragment : Fragment() {
 
                     // Log.d("MainActivitu Notification", expireDate.toString())
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -869,6 +848,8 @@ class TaxiTabFragment : Fragment() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -948,20 +929,30 @@ class TaxiTabFragment : Fragment() {
                         Log.d("message", call.request().toString())
                         Log.d("f", response.code().toString())
 
-                        taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
-                        taxiTabBinding.nonCurrentRvTv.text = "예상치 못한 오류가 발생했습니다"
-                        taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
-                        taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
+                        if (response.code().toString() == "500") {
+                            if (response.errorBody()?.string() != null) {
+                                taxiTabBinding.currentRv.visibility = View.GONE
+                                taxiTabBinding.nonCurrentRvTv.text = "예약된 게시글이 없습니다"
+                                taxiTabBinding.nonCurrentRvTv2.text = "미오에서 카풀,택시를 구해보세요!"
+                                taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                                taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+                            } else {
+                                taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                                taxiTabBinding.nonCurrentRvTv.text = "예상치 못한 오류가 발생했습니다"
+                                taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+                                taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
 
-                        taxiTabBinding.nonCurrentRvTv2.setOnClickListener {
-                            lifecycleScope.launch {
-                                setCurrentTaxiData()
-                            }
-                        }
-                        taxiTabBinding.carpoolText.setOnClickListener {
-                            Log.d("carpoolText", "clcickckckc")
-                            lifecycleScope.launch {
-                                setCurrentTaxiData()
+                                taxiTabBinding.nonCurrentRvTv2.setOnClickListener {
+                                    lifecycleScope.launch {
+                                        setCurrentTaxiData()
+                                    }
+                                }
+                                taxiTabBinding.carpoolText.setOnClickListener {
+                                    Log.d("carpoolText", "clcickckckc")
+                                    lifecycleScope.launch {
+                                        setCurrentTaxiData()
+                                    }
+                                }
                             }
                         }
 
@@ -1154,6 +1145,8 @@ class TaxiTabFragment : Fragment() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)

@@ -8,6 +8,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -277,164 +278,92 @@ class MainActivity : AppCompatActivity() {
 
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
-        when (it.resultCode) {
-            RESULT_OK -> {
-                when(it.data?.getIntExtra("flag", -1)) {
-                    //add
-                    0 -> {
-                        oldFragment = HomeFragment()
-                        oldTAG = TAG_HOME
-                        //setToolbarView(TAG_HOME, oldTAG)
-                        //setFragment(oldTAG, oldFragment!!)
-
-                        mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
-
-                        CoroutineScope(Dispatchers.Main).launch {
-                            supportFragmentManager.beginTransaction()
-                                .replace(R.id.fragment_content, HomeFragment())
-                                .commit()
-                        }
-                        //finish()
-                    }
-                    //수정 테스트 해보기 todo//edit
-                    1 -> {
-                        oldFragment = HomeFragment()
-                        oldTAG = TAG_HOME
-                        //setToolbarView(TAG_HOME, oldTAG)
-                        //setFragment(TAG_HOME, HomeFragment())
-
-                        mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
-
-                        CoroutineScope(Dispatchers.Main).launch {
-                            supportFragmentManager.beginTransaction()
-                                .replace(R.id.fragment_content, HomeFragment())
-                                .commit()
-                        }
-                    }
-
-                    /*6 -> {
-                        oldFragment = AccountFragment()
-                        oldTAG = TAG_ACCOUNT
-                        //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(TAG_ACCOUNT, AccountFragment())
-
-                        mBinding.bottomNavigationView.selectedItemId = R.id.navigation_account
-                        CoroutineScope(Dispatchers.Main).launch {
-                            supportFragmentManager.beginTransaction()
-                                .replace(R.id.fragment_content, AccountFragment())
-                                .commit()
-                        }
-                    }*/
-
-                    7 -> {
-                        //이거 먼저 되는지 테스트
-                        oldFragment = AccountFragment()
-                        oldTAG = TAG_ACCOUNT
-                        //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(TAG_ACCOUNT, AccountFragment())
-                        mBinding.bottomNavigationView.selectedItemId = R.id.navigation_account
-                    }
-
-                    //여기는 알람 클릭 시 notificationFragment로 이동하기 위함
-                    /*8 -> {
-                        isClicked = true
-                        toolbarType = "알림"
-                        setToolbarView(toolbarType)
-                        oldFragment = NotificationFragment()
-                        oldTAG = TAG_NOTIFICATION
-                        //setToolbarView(TAG_HOME, oldTAG)
-                        setFragment(TAG_NOTIFICATION, NotificationFragment())
-                        //mBinding.bottomNavigationView.selectedItemId = R.id.action_notification
-                    }*/
-
-                    9 -> {
-                        toolbarType = "기본"
-                        setToolbarView(toolbarType)
-                        setFragment(TAG_HOME, HomeFragment())
-                        mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
-                    }
-
-                    22-> {
-                        toolbarType = "기본"
-                        setToolbarView(toolbarType)
-                        selectedTab = it.data?.getStringExtra("selectedTab").toString()
-
-                        // HomeFragment에 전달할 데이터를 포함한 Bundle 생성
-                        val bundle = Bundle().apply {
-                            putString("selectedTab", selectedTab)
-                        }
-                        val homeFragment = HomeFragment().apply {
-                            arguments = bundle
-                        }
-                        setFragment(TAG_HOME, homeFragment)
-
-                        mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
-                    }
-
-
-
-                }
-                //getSerializableExtra = intent의 값을 보내고 받을때사용
-                //타입 변경을 해주지 않으면 Serializable객체로 만들어지니 as로 캐스팅해주자
-                /*val pill = it.data?.getSerializableExtra("pill") as PillData
-                val selectCategory = it.data?.getSerializableExtra("cg") as String*/
-
-                //선택한 카테고리 및 데이터 추가
-
-
-                /*if (selectCategory.isNotEmpty()) {
-                    selectCategoryData[selectCategory] = categoryArr
-                }*/
-
-
-                //api 33이후 아래로 변경됨
-                /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    getSerializable(key, T::class.java)
-                } else {
-                    getSerializable(key) as? T
-                }*/
-                /*when(it.data?.getIntExtra("flag", -1)) {
-                    //add
-                    0 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            data.add(pill)
-                            categoryArr.add(pill)
-                            //add면 그냥 추가
-                            selectCategoryData[selectCategory] = categoryArr
-                            //전
-                            //println( categoryArr[dataPosition])
-                        }
-                        println("전 ${selectCategoryData[selectCategory]}")
-                        //livedata
-                        sharedViewModel!!.setCategoryLiveData("add", selectCategoryData)
-
-
-                        homeAdapter!!.notifyDataSetChanged()
-                        Toast.makeText(activity, "추가되었습니다.", Toast.LENGTH_SHORT).show()
-                    }
-                    //edit
-                    1 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            data[dataPosition] = pill
-                            categoryArr[dataPosition] = pill
-                            selectCategoryData.clear()
-                            selectCategoryData[selectCategory] = categoryArr
-                            //후
-                            //println(categoryArr[dataPosition])
-                        }
-                        println("선택 $selectCategory")
-                        //livedata
-                        sharedViewModel!!.categoryLiveData.value = selectCategoryData
-                        println(testselectCategoryData)
-                        homeAdapter!!.notifyDataSetChanged()
-                        //Toast.makeText(activity, "수정되었습니다.", Toast.LENGTH_SHORT).show()
-                        Toast.makeText(activity, "$testselectCategoryData", Toast.LENGTH_SHORT).show()
-                    }
-                }*/
+        if (it.resultCode == RESULT_OK) {
+            CoroutineScope(Dispatchers.Main).launch {
+                val flag = it.data?.getIntExtra("flag", -1) ?: -1
+                handleResult(flag, it)
             }
         }
     }
+    private fun handleResult(flag: Int, result : ActivityResult) {
+        when (flag) {
+            0 -> {
+                // HomeFragment로 전환
+                oldFragment = HomeFragment()
+                oldTAG = TAG_HOME
+                mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
 
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_content, HomeFragment())
+                    .commit()
+            }
+            1 -> {
+                // 수정용 HomeFragment로 전환 (동일한 로직이므로 0과 병합 가능)
+                oldFragment = HomeFragment()
+                oldTAG = TAG_HOME
+                mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
+
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_content, HomeFragment())
+                    .commit()
+            }
+            6 -> {
+                // AccountFragment로 전환
+                oldFragment = AccountFragment()
+                oldTAG = TAG_ACCOUNT
+                mBinding.bottomNavigationView.selectedItemId = R.id.navigation_account
+
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_content, AccountFragment())
+                    .commit()
+            }
+            // 추가적인 flag 처리
+            7 -> {
+                //이거 먼저 되는지 테스트
+                oldFragment = AccountFragment()
+                oldTAG = TAG_ACCOUNT
+                //setToolbarView(TAG_HOME, oldTAG)
+                setFragment(TAG_ACCOUNT, AccountFragment())
+                mBinding.bottomNavigationView.selectedItemId = R.id.navigation_account
+            }
+
+            //여기는 알람 클릭 시 notificationFragment로 이동하기 위함
+            /*8 -> {
+                isClicked = true
+                toolbarType = "알림"
+                setToolbarView(toolbarType)
+                oldFragment = NotificationFragment()
+                oldTAG = TAG_NOTIFICATION
+                //setToolbarView(TAG_HOME, oldTAG)
+                setFragment(TAG_NOTIFICATION, NotificationFragment())
+                //mBinding.bottomNavigationView.selectedItemId = R.id.action_notification
+            }*/
+
+            9 -> {
+                toolbarType = "기본"
+                setToolbarView(toolbarType)
+                setFragment(TAG_HOME, HomeFragment())
+                mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
+            }
+
+            22-> {
+                toolbarType = "기본"
+                setToolbarView(toolbarType)
+                selectedTab = result.data?.getStringExtra("selectedTab").toString()
+
+                // HomeFragment에 전달할 데이터를 포함한 Bundle 생성
+                val bundle = Bundle().apply {
+                    putString("selectedTab", selectedTab)
+                }
+                val homeFragment = HomeFragment().apply {
+                    arguments = bundle
+                }
+                setFragment(TAG_HOME, homeFragment)
+
+                mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
+            }
+        }
+    }
     private fun setFragment(tag : String, fragment: Fragment) {
         val manager : FragmentManager = supportFragmentManager
         val bt = manager.beginTransaction()
@@ -559,6 +488,8 @@ class MainActivity : AppCompatActivity() {
 
                     // Log.d("MainActivitu Notification", expireDate.toString())
                     val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -626,6 +557,8 @@ class MainActivity : AppCompatActivity() {
 
                    // Log.d("MainActivitu Notification", expireDate.toString())
                     val intent = Intent(this@MainActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)

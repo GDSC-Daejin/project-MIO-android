@@ -117,5 +117,9 @@ class MyAccountPostAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun setItemClickListener(itemClickListener: MyAccountPostAdapter.ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
-
+    fun addMoreData(newData: List<PostData?>) {
+        val startPosition = myPostItemData.size
+        myPostItemData.addAll(newData)
+        notifyItemRangeInserted(startPosition, newData.size)
+    }
 }

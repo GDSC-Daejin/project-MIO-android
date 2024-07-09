@@ -1,17 +1,18 @@
 package com.example.mio.TabAccount
 
 import android.content.Intent
-import android.os.Build.VERSION_CODES.M
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import com.example.mio.*
-import com.example.mio.Model.*
+import com.example.mio.Model.EditAccountData
+import com.example.mio.Model.Place
+import com.example.mio.Model.User
+import com.example.mio.Navigation.AccountFragment
 import com.example.mio.databinding.ActivityAccountSettingBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -154,6 +155,8 @@ class AccountSettingActivity : AppCompatActivity() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(this@AccountSettingActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -198,13 +201,14 @@ class AccountSettingActivity : AppCompatActivity() {
                         aBinding?.asAccountTv?.text = "화살표를 눌러 계좌를 등록해주세요"
                     } else {
                         aBinding?.asAccountTv?.text = response.body()?.accountNumber
-
+                        setAccountNumber = response.body()?.accountNumber
                     }
 
                     if (response.body()?.activityLocation.isNullOrEmpty()) {
                         aBinding?.asLocationTv?.text = "화살표를 눌러 지역을 검색해주세요"
                     } else {
                         aBinding?.asLocationTv?.text = response.body()?.activityLocation
+                        setLocation2 = response.body()?.activityLocation
                     }
 
                 } else {
@@ -240,6 +244,8 @@ class AccountSettingActivity : AppCompatActivity() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(this@AccountSettingActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -259,9 +265,8 @@ class AccountSettingActivity : AppCompatActivity() {
 
         //println(userId)
 
-        //여기 계좌까지 추가하면 활성화하기 Todo
         sendAccountData = if (setLocation != null) {
-            EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation?.road_address_name.toString())
+            EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation?.place_name.toString())
         } else {
             EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation2.toString())
         }
@@ -272,16 +277,20 @@ class AccountSettingActivity : AppCompatActivity() {
             api.editMyAccountData(userId, sendAccountData!!).enqueue(object : Callback<User> {
                 override fun onResponse(call: Call<User>, response: Response<User>) {
                     if (response.isSuccessful) {
-                        Log.d("Success", response.code().toString())
-                        Log.d("Account Setting", "Account Setting Response Success")
+                        runOnUiThread {
+                            // call the invalidate()
+                            Log.d("Success", response.code().toString())
+                            Log.d("Account Setting", "Account Setting Response Success")
 
-                        saveSharedPreferenceGoogleLogin.setArea(this@AccountSettingActivity, sendAccountData?.activityLocation)
+                            saveSharedPreferenceGoogleLogin.setArea(this@AccountSettingActivity, sendAccountData?.activityLocation)
 
-                        val intent = Intent(this@AccountSettingActivity, MainActivity::class.java).apply {
-                            putExtra("flag", 6)
+                            val intent = Intent(this@AccountSettingActivity, AccountFragment::class.java).apply {
+                                putExtra("flag", 6)
+                            }
+
+                            setResult(RESULT_OK, intent)
+                            finish() // 액티비티 종료
                         }
-                        setResult(RESULT_OK, intent)
-                        finish()
                     } else {
                         Log.d("f", response.code().toString())
                         Log.d("error", response.errorBody().toString())
@@ -304,8 +313,8 @@ class AccountSettingActivity : AppCompatActivity() {
                     val locationData : Place? = it.data?.getSerializableExtra("locationData") as Place?
                     val locationData2 = it.data?.getStringExtra("locationData2")
 
-                    Log.e("AccountSettingREquestAc", locationData2.toString())
-                    Log.e("AccountSettingREquestAc", locationData.toString())
+                    Log.e("AccountSettingREquestAc", locationData2.toString()) //서울 노원구 상계동
+                    Log.e("AccountSettingREquestAc", locationData.toString()) //place데이터
 
                     val accountNumber = it.data?.getStringExtra("AccountNumber") ?: ""
                     val handler = Handler(Looper.getMainLooper())
@@ -325,7 +334,7 @@ class AccountSettingActivity : AppCompatActivity() {
 
 
                         //location 세팅
-                        3 -> {
+                        3 -> { //검색해서 선택
                             handler.post {
                                 setLocation = locationData
                                 aBinding?.asLocationTv?.text = setLocation?.road_address_name.toString() + " " + setLocation?.place_name.toString()
@@ -334,7 +343,7 @@ class AccountSettingActivity : AppCompatActivity() {
                             }
                         }
 
-                        4 -> {
+                        4 -> { //최근검색어에서 바로선택
                             handler.post {
                                 setLocation2 = locationData2.toString()
                                 aBinding?.asLocationTv?.text = setLocation2?.toString()

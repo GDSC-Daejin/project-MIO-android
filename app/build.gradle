@@ -28,6 +28,7 @@ android {
         buildConfigField "String", "client_web_api_key", properties['client_web_api_key']
         buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
         buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
+        buildConfigField "String", "kakao_native_app_key",  "\"${properties['kakao_native_app_key']}\""
 
         buildConfigField "String", "client_web_release_id_key", properties['client_web_release_id_key']
         buildConfigField "String", "client_web_release_secret_key", properties['client_web_release_secret_key']
@@ -61,6 +62,7 @@ android {
             buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
             buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
             buildConfigField "String", "client_release_id_key", properties['client_release_id_key']
+            buildConfigField "String", "kakao_native_app_key",  "\"${properties['kakao_native_app_key']}\""
             buildConfigField "String", "server_URL", properties['server_URL']
             buildConfigField "String", "map_api_key", properties['map_api_key']
             buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
@@ -77,6 +79,7 @@ android {
             buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
             buildConfigField "String", "client_id_key", properties['client_id_key']
             buildConfigField "String", "server_URL", properties['server_URL']
+            buildConfigField "String", "kakao_native_app_key",  "\"${properties['kakao_native_app_key']}\""
             buildConfigField "String", "map_api_key", properties['map_api_key']
             buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
             buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
@@ -113,6 +116,7 @@ android {
 allprojects {
     repositories {
         maven {url 'https://jitpack.io'}
+        maven { url 'https://devrepo.kakao.com/nexus/repository/kakaomap-releases/' }
     }
 }
 
@@ -136,6 +140,7 @@ dependencies {
     api files('libs/libDaumMapAndroid.jar')
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation files('libs/libDaumMapAndroid.jar')
+    implementation 'com.kakao.maps.open:android:2.9.7'
 
     //preference
     implementation 'androidx.preference:preference-ktx:1.2.0'

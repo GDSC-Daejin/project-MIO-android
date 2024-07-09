@@ -4,40 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    tools:context=".NoticeBoard.NoticeBoardReadActivity">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp">
-
-            <ImageView
-                android:id="@+id/back_arrow"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:src="@drawable/baseline_arrow_back_24" />
-
-            <ImageView
-                android:id="@+id/read_setting"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_marginEnd="14dp"
-                android:padding="8dp"
-                android:src="@drawable/read_setting_icon" />
-
-        </RelativeLayout>
-    </androidx.appcompat.widget.Toolbar>
 
     <!--<androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/coordinatorLayout"
@@ -79,12 +47,43 @@
 
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>-->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp">
+
+            <ImageView
+                android:id="@+id/back_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/baseline_arrow_back_24" />
+
+            <ImageView
+                android:id="@+id/read_setting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="14dp"
+                android:padding="8dp"
+                android:src="@drawable/read_setting_icon" />
+
+        </RelativeLayout>
+    </androidx.appcompat.widget.Toolbar>
 
     <com.amar.library.ui.StickyScrollView
         android:id="@+id/main_scroll"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -103,8 +102,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:orientation="vertical"
                 android:background="@color/white"
+                android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/toolbar">
@@ -112,8 +111,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
                     android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
                     android:layout_marginEnd="20dp"
                     android:layout_marginBottom="20dp"
                     android:orientation="horizontal">
@@ -121,6 +120,7 @@
                     <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent">
+
                         <ImageView
                             android:id="@+id/read_user_profile"
                             android:layout_width="match_parent"
@@ -177,19 +177,19 @@
                     android:layout_marginBottom="10dp"
                     android:fontFamily="@font/pretendard_bold"
                     android:text="택시 N빵할 대진인 구해요"
-                    android:textSize="18sp"
-                    android:textColor="@color/mio_gray_11" />
+                    android:textColor="@color/mio_gray_11"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/read_content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/pretendard_medium"
                     android:layout_marginStart="20dp"
                     android:layout_marginEnd="20dp"
+                    android:fontFamily="@font/pretendard_medium"
                     android:text="평내호평역 1번 출구 앞 신호등에서 같이 택시 타실 분 구합니다. 금액은 미리 받고 오버되면 제가 더 지불하겠습니다. 9시되면 기다리는거 없이 바로 출발합니다."
-                    android:textSize="14sp"
-                    android:textColor="@color/mio_gray_9" />
+                    android:textColor="@color/mio_gray_9"
+                    android:textSize="14sp" />
 
                 <!--필터 같은 거 동적으로 추가할 ll-->
                 <LinearLayout
@@ -197,30 +197,30 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="20dp"
-                    android:orientation="horizontal"
-                    >
+                    android:orientation="horizontal">
+
                     <com.google.android.material.chip.ChipGroup
                         android:id="@+id/read_set_filter_cg"
-                        android:orientation="horizontal"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:visibility="visible"
-                        >
+                        android:orientation="horizontal"
+                        android:visibility="visible">
 
                     </com.google.android.material.chip.ChipGroup>
+
                     <Space
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        />
+                        android:layout_weight="1" />
+
                     <TextView
                         android:id="@+id/read_time_check"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/pretendard_medium"
-                        android:text="10분 전"
                         android:layout_gravity="center|end"
+                        android:fontFamily="@font/pretendard_medium"
                         android:gravity="end"
+                        android:text="10분 전"
                         android:textColor="@color/mio_gray_7" />
                 </LinearLayout>
             </LinearLayout>
@@ -231,12 +231,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:orientation="vertical"
                 android:background="@color/mio_gray_1"
+                android:orientation="vertical"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
-
 
 
                 <!--세부적인 내용을 보여줄 곳-->
@@ -250,8 +249,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="25dp"
-                        android:baselineAligned="true"
                         android:layout_marginTop="15dp"
+                        android:baselineAligned="true"
                         android:orientation="horizontal">
 
                         <ImageView
@@ -266,8 +265,8 @@
                             android:id="@+id/read_numberOfPassengers"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
-                            android:gravity="center"
                             android:fontFamily="@font/pretendard_medium"
+                            android:gravity="center"
                             android:text="1"
                             android:textColor="@color/mio_gray_8" />
 
@@ -283,8 +282,8 @@
                             android:id="@+id/read_numberOfPassengersTotal"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
-                            android:gravity="center"
                             android:fontFamily="@font/pretendard_medium"
+                            android:gravity="center"
                             android:text="4"
                             android:textColor="@color/mio_gray_8" />
                     </LinearLayout>
@@ -350,9 +349,9 @@
                         android:layout_marginTop="10dp"
                         android:layout_marginEnd="15dp"
                         android:layout_marginBottom="10dp"
+                        android:background="@drawable/read_location_background"
                         android:clickable="true"
                         android:focusable="true"
-                        android:background="@drawable/read_location_background"
                         android:orientation="vertical">
 
                         <TextView
@@ -387,12 +386,11 @@
                 android:id="@+id/read_ad"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
                 android:layout_gravity="center"
                 android:layout_marginBottom="20dp"
+                android:background="@color/white"
                 app:adSize="BANNER"
-                app:adUnitId="@string/banner_ad"
-                />
+                app:adUnitId="@string/banner_ad" />
 
             <!--댓글 전부-->
             <LinearLayout
@@ -400,8 +398,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:orientation="vertical"
-                >
+                android:orientation="vertical">
 
                 <!--댓글-->
                 <LinearLayout
@@ -429,9 +426,9 @@
                         android:id="@+id/read_comment_total"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingStart="3dp"
                         android:layout_marginStart="5dp"
                         android:fontFamily="@font/pretendard_medium"
+                        android:paddingStart="3dp"
                         android:text="17"
                         android:textColor="@color/mio_gray_7" />
                 </LinearLayout>
@@ -439,14 +436,14 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center"
                     android:layout_marginStart="10dp"
                     android:layout_marginTop="10dp"
                     android:layout_marginEnd="10dp"
                     android:layout_marginBottom="5dp"
-                    android:gravity="center"
-                    android:layout_gravity="center"
                     android:background="@drawable/read_round_edittext"
                     android:baselineAligned="false"
+                    android:gravity="center"
                     android:orientation="horizontal">
 
                     <TextView
@@ -455,15 +452,15 @@
                         android:layout_height="match_parent"
                         android:layout_marginStart="15dp"
                         android:layout_marginEnd="15dp"
-                        android:gravity="center|start"
                         android:layout_weight="10"
                         android:background="@android:color/transparent"
                         android:baselineAligned="true"
                         android:fontFamily="@font/pretendard_medium"
-                        android:text="댓글을 작성해보세요."
-                        android:textSize="18sp"
+                        android:gravity="center|start"
                         android:scrollHorizontally="false"
-                        android:textColorHint="@color/mio_gray_6" />
+                        android:text="댓글을 작성해보세요."
+                        android:textColorHint="@color/mio_gray_6"
+                        android:textSize="18sp" />
 
                 </LinearLayout>
 
@@ -480,135 +477,133 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="10dp"
-                    android:layout_marginBottom="4dp"
+                    android:layout_marginBottom="10dp"
                     android:fontFamily="@font/pretendard_bold"
                     android:gravity="center"
                     android:text="댓글이 없습니다. \n 처음으로 댓글을 남겨보세요!"
-                    android:textSize="16sp"
-                    android:textColor="@color/mio_gray_9" />
+                    android:textColor="@color/mio_gray_9"
+                    android:textSize="16sp" />
 
             </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/read_fix_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/mio_gray_3"
+                android:gravity="bottom"
+                android:orientation="horizontal"
+                android:paddingTop="10dp">
+
+                <Button
+                    android:id="@+id/read_bookmark"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/read_bookmark_icon" />
+
+                <Button
+                    android:id="@+id/read_apply_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/read_apply_btn_layout"
+                    android:backgroundTint="@color/mio_blue_5"
+                    android:text="신청하기"
+                    android:textColor="@color/mio_gray_3"
+                    android:textSize="15sp"
+                    android:visibility="visible" />
+
+                <Button
+                    android:id="@+id/read_cancel_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/read_apply_btn_layout"
+                    android:backgroundTint="@color/mio_gray_7"
+                    android:text="신청 취소하기"
+                    android:textColor="@color/mio_gray_3"
+                    android:textSize="15sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/read_comment_ll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:background="@color/mio_gray_1"
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                android:visibility="visible"
+                app:layout_constraintBottom_toTopOf="@+id/read_fix_bottom"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <LinearLayout
+                    android:id="@+id/read_comment_ll2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/read_round_edittext"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/read_comment_et"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:layout_weight="10"
+                        android:autofillHints=""
+                        android:background="@android:color/transparent"
+                        android:backgroundTint="@color/mio_gray_1"
+                        android:baselineAligned="true"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:hint="댓글을 작성해보세요."
+                        android:inputType="none"
+                        android:padding="8dp"
+                        android:scrollHorizontally="false"
+                        android:textColorHint="@color/mio_gray_6"
+                        android:textSize="14sp"
+                        android:visibility="visible" />
+
+                    <ImageView
+                        android:id="@+id/read_send_comment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="15dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_weight="1"
+                        android:src="@drawable/baseline_send_24"
+                        android:visibility="gone" />
+
+                    <ImageView
+                        android:id="@+id/read_edit_send_comment"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginEnd="15dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_weight="1"
+                        android:src="@drawable/baseline_send_24"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
+
+
+
     </com.amar.library.ui.StickyScrollView>
 
-    <LinearLayout
-        android:id="@+id/read_comment_ll"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
-        android:background="@color/mio_gray_1"
-        android:baselineAligned="false"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/read_fix_bottom"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:visibility="gone"
-        >
-
-        <LinearLayout
-            android:id="@+id/read_comment_ll2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/read_round_edittext"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
-            android:baselineAligned="false"
-            android:orientation="horizontal"
-            >
-
-            <EditText
-                android:id="@+id/read_comment_et"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                android:layout_weight="10"
-                android:autofillHints=""
-                android:background="@android:color/transparent"
-                android:backgroundTint="@color/mio_gray_1"
-                android:baselineAligned="true"
-                android:fontFamily="@font/pretendard_medium"
-                android:textSize="14sp"
-                android:hint="댓글을 작성해보세요."
-                android:padding="8dp"
-                android:focusable="true"
-                android:clickable="true"
-                android:inputType="none"
-                android:scrollHorizontally="false"
-                android:textColorHint="@color/mio_gray_6"
-                android:visibility="visible" />
-
-            <ImageView
-                android:id="@+id/read_send_comment"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="15dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                android:layout_weight="1"
-                android:src="@drawable/baseline_send_24"
-                android:visibility="gone"
-                />
-
-            <ImageView
-                android:id="@+id/read_edit_send_comment"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="15dp"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                android:layout_weight="1"
-                android:src="@drawable/baseline_send_24"
-                android:visibility="gone" />
-        </LinearLayout>
-    </LinearLayout>
-
-
-    <LinearLayout
-        android:id="@+id/read_fix_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/mio_gray_3"
-        android:gravity="bottom"
-        android:orientation="horizontal"
-        android:paddingTop="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <Button
-            android:id="@+id/read_bookmark"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/read_bookmark_icon" />
-
-        <Button
-            android:id="@+id/read_apply_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
-            android:background="@drawable/read_apply_btn_layout"
-            android:backgroundTint="@color/mio_blue_5"
-            android:text="신청하기"
-            android:textColor="@color/mio_gray_3"
-            android:textSize="15sp"
-            android:visibility="visible" />
-
-        <Button
-            android:id="@+id/read_cancel_btn"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
-            android:background="@drawable/read_apply_btn_layout"
-            android:backgroundTint="@color/mio_gray_7"
-            android:text="신청 취소하기"
-            android:textColor="@color/mio_gray_3"
-            android:textSize="15sp"
-            android:visibility="gone" />
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

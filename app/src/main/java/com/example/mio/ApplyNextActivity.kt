@@ -306,6 +306,8 @@ class ApplyNextActivity : AppCompatActivity() {
                         /*newRequest =
                             chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                         val intent = Intent(this@ApplyNextActivity, LoginActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                         startActivity(intent)
                         finish()
                         return@Interceptor chain.proceed(newRequest)
@@ -418,6 +420,8 @@ class ApplyNextActivity : AppCompatActivity() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(this@ApplyNextActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)

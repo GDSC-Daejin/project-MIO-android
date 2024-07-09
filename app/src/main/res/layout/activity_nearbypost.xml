@@ -42,16 +42,16 @@
                     android:layout_marginStart="5dp"
                     android:src="@drawable/back_arrow" />
 
-                <EditText
-                    android:id="@+id/et_search_field2"
+                <TextView
+                    android:id="@+id/search_word_field"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
-                    android:background="@null"
-                    android:inputType="none"
-                    android:editable="false"
-                    android:hint=""
+                    android:fontFamily="@font/pretendard_extrabold"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textSize="24sp"
                     android:textColor="@color/mio_gray_8"
                     android:textColorHint="@color/mio_gray_6" />
 
@@ -86,13 +86,13 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
 
-
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/constraintLayout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="50dp"
                     android:background="@color/mio_gray_2"
+                    android:visibility="visible"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView3">
@@ -101,14 +101,30 @@
                         android:id="@+id/rv_nearbypost_list"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="vertical"
                         android:layout_marginTop="2dp"
+                        android:orientation="vertical"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <TextView
+                    android:id="@+id/non_nearby_data_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/mio_gray_1"
+                    android:fontFamily="@font/pretendard_bold"
+                    android:gravity="center"
+                    android:text="검색한 지역의 게시글이 없습니다"
+                    android:textColor="@color/mio_gray_8"
+                    android:textSize="24sp"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
 
 

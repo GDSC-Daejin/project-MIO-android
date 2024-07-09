@@ -64,7 +64,7 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                     Log.e("searchAdapterTESTST", location.location)
                     val intent = Intent(this@AccountSearchLocationActivity, AccountSettingActivity::class.java).apply {
                         putExtra("flag", 4)
-                        putExtra("locationData2", location.location.split(",").first())
+                        putExtra("locationData2", location.location.split(",").last())
                     }
                     setResult(RESULT_OK, intent)
                     finish()

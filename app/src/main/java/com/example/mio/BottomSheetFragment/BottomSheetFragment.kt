@@ -130,7 +130,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             if (isCheckListClicked) {
                 bsBinding.filterChecklistIv.animate().apply {
                     duration = 300
-                    rotation(180f)
+                    rotation(0f)
                 }
                 isCheckListClicked = !isCheckListClicked
                 bsBinding.checklistDetailView.visibility = View.VISIBLE
@@ -138,7 +138,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             } else {
                 bsBinding.filterChecklistIv.animate().apply {
                     duration = 300
-                    rotation(0f)
+                    rotation(180f)
                 }
                 isCheckListClicked = !isCheckListClicked
                 bsBinding.checklistDetailView.visibility = View.GONE

@@ -24,6 +24,7 @@ import com.example.mio.databinding.FragmentMyBookmarkBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -58,6 +59,8 @@ class MyBookmarkFragment : Fragment() {
     private var currentPage = 0
     //데이터의 전체 페이지 수
     private var totalPages = 0
+
+    private var currentData :  ArrayList<PostData?> = ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -125,6 +128,8 @@ class MyBookmarkFragment : Fragment() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -151,32 +156,41 @@ class MyBookmarkFragment : Fragment() {
                     if (response.isSuccessful) {
                         val responseData = response.body()
 
-                        for (i in responseData!!) {
-                            myBookmarkAllData.add(
-                                PostData(
-                                    i.user.studentId,
-                                    i.post.postId,
-                                    i.post.title,
-                                    i.post.content,
-                                    i.post.targetDate,
-                                    i.post.targetTime,
-                                    i.post.category.categoryName,
-                                    i.post.location,
-                                    //participantscount가 현재 참여하는 인원들
-                                    i.post.participants!!.size,
-                                    //numberOfPassengers은 총 탑승자 수
-                                    i.post.numberOfPassengers,
-                                    i.post.cost,
-                                    i.post.verifyGoReturn,
-                                    i.user,
-                                    i.post.latitude,
-                                    i.post.longitude
+                        if (responseData!!.isNotEmpty()) {
+                            for (i in responseData!!) {
+                                myBookmarkAllData.add(
+                                    PostData(
+                                        i.user.studentId,
+                                        i.post.postId,
+                                        i.post.title,
+                                        i.post.content,
+                                        i.post.targetDate,
+                                        i.post.targetTime,
+                                        i.post.category.categoryName,
+                                        i.post.location,
+                                        //participantscount가 현재 참여하는 인원들
+                                        i.post.participants!!.size,
+                                        //numberOfPassengers은 총 탑승자 수
+                                        i.post.numberOfPassengers,
+                                        i.post.cost,
+                                        i.post.verifyGoReturn,
+                                        i.user,
+                                        i.post.latitude,
+                                        i.post.longitude
+                                    )
                                 )
-                            )
+                            }
+                            totalPages = if (myBookmarkAllData.size % 5 == 0) {
+                                myBookmarkAllData.size / 5
+                            } else {
+                                myBookmarkAllData.size / 5 + 1
+                            }
+                            currentData.addAll(myBookmarkAllData.take(5))
+                            myAdapter!!.myPostItemData = currentData
+                            myAdapter!!.notifyDataSetChanged()
                         }
-                        totalPages = myBookmarkAllData.size / 5
-                        myAdapter!!.notifyDataSetChanged()
-                        if (myBookmarkAllData.size > 0) {
+
+                        if (myBookmarkAllData.isNotEmpty()) {
                             binding.bookmarkPostNotDataLl.visibility = View.GONE
                             binding.bookmarkSwipe.visibility = View.VISIBLE
                             binding.bookmarkRv.visibility = View.VISIBLE
@@ -255,6 +269,8 @@ class MyBookmarkFragment : Fragment() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -293,56 +309,18 @@ class MyBookmarkFragment : Fragment() {
 
             if (currentPage < totalPages - 1) {
                 currentPage += 1
-                CoroutineScope(Dispatchers.IO).launch {
-                    api.getBookmark().enqueue(object :
-                        Callback<List<BookMarkResponseData>> {
-                        override fun onResponse(call: Call<List<BookMarkResponseData>>, response: Response<List<BookMarkResponseData>>) {
-                            if (response.isSuccessful) {
-                                val responseData = response.body()
-                                for (i in responseData!!) {
-                                    myBookmarkAllData.add(
-                                        PostData(
-                                            i.user.studentId,
-                                            i.post.postId,
-                                            i.post.title,
-                                            i.post.content,
-                                            i.post.targetDate,
-                                            i.post.targetTime,
-                                            i.post.category.categoryName,
-                                            i.post.location,
-                                            //participantscount가 현재 참여하는 인원들
-                                            i.post.participants!!.size,
-                                            //numberOfPassengers은 총 탑승자 수
-                                            i.post.numberOfPassengers,
-                                            i.post.cost,
-                                            i.post.verifyGoReturn,
-                                            i.user,
-                                            i.post.latitude,
-                                            i.post.longitude
-                                        )
-                                    )
+                if (currentPage < totalPages - 1) {
+                    currentPage += 1
 
-                                    myAdapter!!.notifyDataSetChanged()
-                                }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val start = currentPage * 5
+                        val end = minOf(start + 5, myBookmarkAllData.size)
+                        val nextData = myBookmarkAllData.subList(start, end)
 
-                                if (myBookmarkAllData.size > 0) {
-                                    binding.bookmarkPostNotDataLl.visibility = View.GONE
-                                    binding.bookmarkSwipe.visibility = View.VISIBLE
-                                    binding.bookmarkRv.visibility = View.VISIBLE
-                                } else {
-                                    binding.bookmarkPostNotDataLl.visibility = View.VISIBLE
-                                    binding.bookmarkSwipe.visibility = View.GONE
-                                    binding.bookmarkRv.visibility = View.GONE
-                                }
-                            } else {
-                                Log.d("f", response.code().toString())
-                            }
+                        withContext(Dispatchers.Main) {
+                            myAdapter!!.addMoreData(nextData)
                         }
-
-                        override fun onFailure(call: Call<List<BookMarkResponseData>>, t: Throwable) {
-                            Log.d("error", t.toString())
-                        }
-                    })
+                    }
                 }
             }
 

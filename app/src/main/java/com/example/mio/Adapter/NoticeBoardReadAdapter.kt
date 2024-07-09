@@ -37,12 +37,13 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
 
     //게시글용
     private var getBottomSheetData = ""
+    var getWriter = ""
 
 
     private var replyCommentAdapter : ReplyCommentAdapter? = null
     var replyCommentItemData = ArrayList<CommentData?>()
 
-    //본인 확인
+    //게시글 확인
     private var identification = ""
 
 
@@ -64,10 +65,11 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
 
 
             this.position = position
-            if (identification == comment.user.studentId) {
+            if (identification == getWriter) { //게시글 작성자와 댓글 쓴 사람 아이디가 같으면
                 binding.commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_blue_4))
                 commentUserId.text = comment.user.studentId.toString()
             } else {
+                binding.commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_7))
                 commentUserId.text = comment.user.studentId.toString()
             }
 

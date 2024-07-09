@@ -17,6 +17,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.mio.Adapter.AccountTabAdapter
 import com.example.mio.Adapter.CategoryTabAdapter
@@ -87,7 +89,7 @@ class AccountFragment : Fragment() {
                 putExtra("type", "ACCOUNT")
                 putExtra("accountData", email) //20201530 숫자만
             }
-            startActivity(intent)
+            requestActivity.launch(intent)
         }
 
         aBinding.accountReviewBtn.setOnClickListener {
@@ -291,6 +293,22 @@ class AccountFragment : Fragment() {
             })
         }
 
+    }
+
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+        when (it.resultCode) {
+            AppCompatActivity.RESULT_OK -> {
+                when (it.data?.getIntExtra("flag", -1)) {
+                    //add
+                    6 -> {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            initSetAccountData()
+                        }
+                        //finish()
+                    }
+                }
+            }
+        }
     }
 
     //클립보드에 복사하기

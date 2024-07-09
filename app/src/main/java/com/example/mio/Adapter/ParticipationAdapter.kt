@@ -310,6 +310,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(context, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                     context.startActivity(intent)
                     return@Interceptor chain.proceed(newRequest)
                 }
@@ -417,6 +418,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
                     val intent = Intent(context, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     context.startActivity(intent)
                     return@Interceptor chain.proceed(newRequest)
                 }
@@ -472,6 +475,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
                     val intent = Intent(context, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     context.startActivity(intent)
                     return@Interceptor chain.proceed(newRequest)
                 }

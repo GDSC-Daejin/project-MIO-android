@@ -64,9 +64,16 @@ class SearchResultActivity : AppCompatActivity() { //검색창
             setOnItemClickListener(object : RecentSearchAdapter.OnItemClickListener {
                 override fun onItemClicked(location: LocationReadAllResponse) {
                     sharedViewModel.selectedLocation.value = location
+                    Log.e("searchresultintent", "click recent")
                     val locationJson = convertLocationToJSON(location)
                     SharedPrefManager.saveRecentSearch(this@SearchResultActivity, locationJson)
-                    finish()
+
+                    val resultIntent = Intent().apply {
+                        putExtra("flag", 103) // 필요한 결과 값을 설정
+                        putExtra("location", location)
+                    }
+                    setResult(RESULT_OK, resultIntent)
+                    finish() // Activity 종료
                 }
                 override fun onItemRemove(location: LocationReadAllResponse) {
                     // 선택된 위치를 SharedPref에서 제거합니다.
@@ -233,8 +240,6 @@ class SearchResultActivity : AppCompatActivity() { //검색창
         if (!SharedPrefManager.isLocationInRecentSearch(this@SearchResultActivity, locationJson)) {
             SharedPrefManager.saveRecentSearch(this@SearchResultActivity, locationJson)
         }
-
-        finish()
     }
 
 
@@ -243,6 +248,7 @@ class SearchResultActivity : AppCompatActivity() { //검색창
             setOnItemClickListener(object : SearchResultAdapter.OnItemClickListener {
                 override fun onItemClicked(location: LocationReadAllResponse) {
                     moveToSearchFragment(location)
+                    Log.e("searchresultintent", "back searchfragment")
 /*
                     // Convert the location object to a JSON string
                     val locationJson = convertLocationToJSON(location)
@@ -250,7 +256,12 @@ class SearchResultActivity : AppCompatActivity() { //검색창
                     // Save the JSON string representing the location object
                     SharedPrefManager.saveRecentSearch(this@SearchResultActivity, locationJson)
 */
-                    finish() // 액티비티 종료와 함께 SearchFragment로 돌아갑니다.
+                    val resultIntent = Intent().apply {
+                        putExtra("flag", 103) // 필요한 결과 값을 설정
+                        putExtra("location", location)
+                    }
+                    setResult(RESULT_OK, resultIntent)
+                    finish()
                 }
             })
         }
@@ -285,7 +296,7 @@ class SearchResultActivity : AppCompatActivity() { //검색창
 
     override fun onStart() {
         super.onStart()
-        Log.d("SearchResultActivity", "start")
+        Log.e("searchresultintent", "click start")
     }
 
 /*    private fun getAllPosts(): List<PostReadAllResponse> {

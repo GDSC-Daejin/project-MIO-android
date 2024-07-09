@@ -100,7 +100,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         //이건 날짜, 탑승 수, 담배, 성별, 학교 순서 등 필터
         //필터 취소 기능 넣기 TODO
         mttBinding.moreFilterBtn.setOnClickListener {
-            myViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
             val bottomSheet = BottomSheetFragment()
             bottomSheet.show(this.supportFragmentManager, bottomSheet.tag)
             bottomSheet.apply {

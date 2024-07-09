@@ -225,7 +225,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/pretendard_bold"
-                android:text="나의 활동 지역 카풀"
+                android:text="나의 활동 지역 택시"
                 android:textSize="18sp"
                 android:textColor="@color/mio_gray_11"
                 android:layout_marginStart="20dp"
@@ -261,7 +261,7 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/pretendard_bold"
-                android:text="내 활동 지역에 해당하는 카풀이 없습니다."
+                android:text="내 활동 지역에 해당하는 택시가 없습니다."
                 android:textColor="@color/mio_gray_7"
                 android:visibility="gone" />
 

@@ -57,6 +57,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -464,6 +465,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                                 /*newRequest =
                                                     chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                                                 val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                                                 startActivity(intent)
                                                 finish()
                                                 return@Interceptor chain.proceed(newRequest)
@@ -619,6 +622,67 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        nbrBinding.readBookmark.setOnClickListener {
+            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+            val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
+            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
+            val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this@NoticeBoardReadActivity)!!.split("@").map { it }.first()
+            val userId = saveSharedPreferenceGoogleLogin.getUserId(this@NoticeBoardReadActivity)!!
+
+            val interceptor = Interceptor { chain ->
+                var newRequest: Request
+                if (token != null && token != "") { // 토큰이 없는 경우
+                    // Authorization 헤더에 토큰 추가
+                    newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    val expireDate: Long = getExpireDate.toLong()
+                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                        //refresh 들어갈 곳
+                        /*newRequest =
+                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                        val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                        startActivity(intent)
+                        finish()
+                        return@Interceptor chain.proceed(newRequest)
+                    }
+                } else newRequest = chain.request()
+                chain.proceed(newRequest)
+            }
+            val SERVER_URL = BuildConfig.server_URL
+            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+            val builder = OkHttpClient.Builder()
+            builder.interceptors().add(interceptor)
+            val client: OkHttpClient = builder.build()
+            retrofit.client(client)
+            val retrofit2: Retrofit = retrofit.build()
+            val api = retrofit2.create(MioInterface::class.java)
+
+            //println(userId)
+            Log.d("NoticeReadGetParticipation", userId.toString())
+            api.addBookmark(postId = temp?.postID!!).enqueue(object : Callback<Void> {
+                override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                    if (response.isSuccessful) {
+                        Log.d("noticeboardread", response.code().toString())
+                    } else {
+                        println(response.errorBody().toString())
+                        println(response.message().toString())
+                        println("실패")
+                        println("faafa")
+                        Log.d("add", response.errorBody()?.string()!!)
+                        Log.d("message", call.request().toString())
+                        Log.d("f", response.code().toString())
+                    }
+                }
+
+                override fun onFailure(call: Call<Void>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
+        }
+
 
         //뒤로가기
         nbrBinding.backArrow.setOnClickListener {
@@ -697,6 +761,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -820,6 +886,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             /*newRequest =
                                 chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                             val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                             startActivity(intent)
                             finish()
                             return@Interceptor chain.proceed(newRequest)
@@ -983,6 +1051,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 /*newRequest =
                                     chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                                 val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                                 startActivity(intent)
                                 finish()
                                 return@Interceptor chain.proceed(newRequest)
@@ -1062,22 +1132,32 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         nbrBinding.readCommentEt.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
                 nbrBinding.readSendComment.visibility = View.GONE
+                nbrBinding.readEditSendComment.visibility = View.GONE
             }
-            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
 
+            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
+                // Nothing to do in this method
             }
+
             override fun afterTextChanged(editable: Editable) {
-                commentEditText = editable.toString()
-                if (editable.isEmpty() && getBottomSheetCommentData != "수정") { //아무것도 아닐때
-                    println("비어있고 수정아닐때")
-                    nbrBinding.readSendComment.visibility = View.GONE
-                    nbrBinding.readEditSendComment.visibility = View.GONE
-                } else if (getBottomSheetCommentData != "수정"){ //일반 댓글용
-                    println("일반 댓글")
+                val newText = editable.toString()
+                Log.e("commentTest", "After text changed: $newText")
+
+                if (newText.isNotEmpty()) {
+                    commentEditText = newText
+                }
+
+                if (newText.isEmpty() && getBottomSheetCommentData != "수정") {
+                    Log.e("commentTest", "비어있고 수정아닐때")
+                    //commentEditText = newText
+                } else if (newText.isNotEmpty() && getBottomSheetCommentData != "수정") {
+                    Log.e("commentTest", "일반 댓글")
+                    commentEditText = newText
                     nbrBinding.readSendComment.visibility = View.VISIBLE
                     nbrBinding.readEditSendComment.visibility = View.GONE
-                } else { //댓글 수정용
-                    println("댓글 수정할때")
+                } else {
+                    Log.e("commentTest", "댓글 수정할때")
+                    commentEditText = newText
                     nbrBinding.readSendComment.visibility = View.GONE
                     nbrBinding.readEditSendComment.visibility = View.VISIBLE
                 }
@@ -1087,7 +1167,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         //댓글 수정하는 곳
         nbrBinding.readEditSendComment.setOnClickListener {
-            println(getBottomSheetCommentData)
+            Log.e("readEditSendCommentgetBottomSheetCommentData" , getBottomSheetCommentData)
             val now = System.currentTimeMillis()
             val date = Date(now)
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
@@ -1118,6 +1198,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         /*newRequest =
                             chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                         val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                         startActivity(intent)
                         finish()
                         return@Interceptor chain.proceed(newRequest)
@@ -1160,16 +1242,23 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
 
         nbrBinding.readSendComment.setOnClickListener {
+            Log.e("readSendComment", commentEditText)
             if (isReplyComment) { //대댓글
                 //서버에서 원하는 형식으로 날짜 설정
-                val now = System.currentTimeMillis()
+                /*val now = System.currentTimeMillis()
                 val date = Date(now)
                 val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
                 val currentDate = sdf.format(date)
                 val formatter = DateTimeFormatter
                     .ofPattern("yyyy-MM-dd HH:mm:ss")
                     .withZone(ZoneId.systemDefault())
-                val result: Instant = Instant.from(formatter.parse(currentDate))
+                val result: Instant = Instant.from(formatter.parse(currentDate))*/
+                val nowInKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
+                // KST 시간을 UTC 시간대로 변환
+                val nowInUTC2 = nowInKST.withZoneSameInstant(ZoneId.of("UTC"))
+                // ISO 8601 형식으로 변환 (UTC 시간대, 'Z' 포함)
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                val result = nowInKST.format(formatter)
 
                 val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
                 val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
@@ -1192,6 +1281,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             /*newRequest =
                                 chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                             val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                             startActivity(intent)
                             finish()
                             return@Interceptor chain.proceed(newRequest)
@@ -1244,14 +1335,19 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
             } else {  //댓글
                 //서버에서 원하는 형식으로 날짜 설정
-                val now = System.currentTimeMillis()
+                /*val now = System.currentTimeMillis()
                 val date = Date(now)
                 val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
                 val currentDate = sdf.format(date)
                 val formatter = DateTimeFormatter
                     .ofPattern("yyyy-MM-dd HH:mm:ss")
                     .withZone(ZoneId.systemDefault())
-                val result: Instant = Instant.from(formatter.parse(currentDate))
+                val result: Instant = Instant.from(formatter.parse(currentDate))*/
+                val nowInKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
+                // ISO 8601 형식으로 변환 (UTC 시간대, 'Z' 포함)
+                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                val result = nowInKST.format(formatter)
+
 
                 val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
                 val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
@@ -1274,6 +1370,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             /*newRequest =
                                 chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                             val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                             startActivity(intent)
                             finish()
                             return@Interceptor chain.proceed(newRequest)
@@ -1292,7 +1390,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
                 //댓글 잠시 저장
                 val commentTemp = SendCommentData(commentEditText, result.toString(), temp!!.postID)
-                //println("ct $commentTemp")
+                Log.d("commentTemt", "$commentTemp")
                 CoroutineScope(Dispatchers.IO).launch {
                     api.addCommentData(commentTemp, temp!!.postID).enqueue(object : Callback<CommentData> {
                         override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
@@ -1533,6 +1631,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -1575,6 +1675,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         noticeBoardReadAdapter!!.commentItemData = commentAllData
         noticeBoardReadAdapter!!.replyCommentItemData = replyCommentAllData
         noticeBoardReadAdapter!!.supportFragment = this@NoticeBoardReadActivity.supportFragmentManager
+        noticeBoardReadAdapter!!.getWriter = temp?.user?.studentId!!
         nbrBinding.commentRV.adapter = noticeBoardReadAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true
@@ -1602,6 +1703,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -1767,6 +1870,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -1965,7 +2070,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     nbrBinding.readCommentLl.visibility = View.GONE
                     nbrBinding.readCommentEt.clearFocus()
                     nbrBinding.readCommentEt.text = null
-                    commentEditText = ""
                     getBottomSheetCommentData = ""
                 }
             }

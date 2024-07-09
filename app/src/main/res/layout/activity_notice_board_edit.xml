@@ -442,6 +442,9 @@
                     android:hint="장소를 입력해주세요"
                     android:textColor="@color/mio_gray_8"
                     android:textColorHint="@color/mio_gray_6"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:singleLine="true"
                     android:autofillHints="" />
 
                 <View
@@ -488,15 +491,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:listitem="@layout/search_word_layout"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>

@@ -148,4 +148,9 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
+    fun addMoreData(newData: List<PostData?>) {
+        val startPosition = moreTaxiData.size
+        moreTaxiData.addAll(newData)
+        notifyItemRangeInserted(startPosition, newData.size)
+    }
 }

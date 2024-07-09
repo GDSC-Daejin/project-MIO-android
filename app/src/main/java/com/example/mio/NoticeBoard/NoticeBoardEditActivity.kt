@@ -14,6 +14,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.RelativeLayout
 import android.widget.Toast
@@ -279,9 +280,9 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             }
         }*/
 
-        mBinding.rvList.layoutManager =
+        /*mBinding.rvList.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        mBinding.rvList.adapter = placeAdapter
+        mBinding.rvList.adapter = placeAdapter*/
 
         mBinding.rvRecentSearchList.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -644,7 +645,12 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             }
             override fun afterTextChanged(editable: Editable) {
                 keyword = editable.toString()
-                mBinding.recentSearch.text = "관련 검색어"
+                if (keyword.isNotEmpty()) {
+                    mBinding.recentSearch.text = "관련 검색어"
+                } else {
+                    mBinding.recentSearch.text = "최근 검색어"
+                    mBinding.rvRecentSearchList.visibility = View.VISIBLE
+                }
             }
         })
 
@@ -652,6 +658,15 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             searchKeyword(keyword)
             Log.d("edit btn click", keyword)
             mBinding.rvRecentSearchList.visibility = View.INVISIBLE
+        }
+
+        mBinding.etSearchField.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                // 검색 버튼을 눌렀을 때 수행할 작업을 여기에 작성
+                searchKeyword(keyword)
+                return@setOnEditorActionListener true
+            }
+            false
         }
     }
 
@@ -844,6 +859,8 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                         /*newRequest =
                             chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                         val intent = Intent(this@NoticeBoardEditActivity, LoginActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
                         startActivity(intent)
                         finish()
                         return@Interceptor chain.proceed(newRequest)
@@ -1235,6 +1252,8 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                             Log.e("Search Error", response.code().toString())
                             Log.e("Search Error", response.body().toString())
                             Log.e("Search Error", response.errorBody().toString())
+
+
                         }
                     } else {
                         Log.e("Search Error", response.code().toString())

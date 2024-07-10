@@ -8,8 +8,11 @@ import android.content.Intent
 import android.graphics.Color
 import android.location.Address
 import android.location.Geocoder
+import android.location.LocationRequest
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -22,9 +25,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
-import androidx.core.view.contains
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.airbnb.lottie.model.Marker
@@ -37,6 +38,12 @@ import com.example.mio.TabCategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.kakao.vectormap.KakaoMap
+import com.kakao.vectormap.KakaoMapReadyCallback
+import com.kakao.vectormap.LatLng
+import com.kakao.vectormap.MapLifeCycleCallback
+import com.kakao.vectormap.label.*
+import com.kakao.vectormap.mapwidget.InfoWindow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -58,7 +65,7 @@ import java.util.*
 import kotlin.math.*
 
 
-class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListener {
+class NoticeBoardEditActivity : AppCompatActivity() {
     companion object {
         const val BASE_URL = "https://dapi.kakao.com/"
         private const val API_KEY = BuildConfig.map_api_key
@@ -79,20 +86,28 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
     private val listItems = arrayListOf<PlaceData>()
     private val placeAdapter = PlaceAdapter(listItems)
+    //최근검색어
     private val recentSearchItems = arrayListOf<PlaceData>()
     private val recentSearchAdapter = PlaceAdapter(recentSearchItems)
     private var keyword = ""
     private lateinit var geocoder: Geocoder
-    private var mapView: MapView? = null
+    //private var mapView: MapView? = null
     //var mapViewContainer: RelativeLayout? = null
-    private var marker: MapPOIItem? = null
+    //private var map: MapPOIItem? = null
     private val PREFS_NAME = "recent_search"
     private val KEY_RECENT_SEARCH = "search_items"
 
-    private var sharedViewModel: SharedViewModel? = null
+    private var map : com.kakao.vectormap.MapView? = null
+    private var kakaoMapValue : KakaoMap? = null
+    private var centerLabel: Label? = null
+    private var startPosition: LatLng? = null
+    private var labelLayer: LabelLayer? = null
+    private var labelLatLng : LatLng? = null
+    //전에 찍은 라벨
+    private var preLabel : Label? = null
 
-    private var selectCalendarDataNoticeBoard : HashMap<String, ArrayList<PostData>> = HashMap()
-
+    private var pendingData: String? = null
+    private var pendingLatLng: String? = null
     //콜백 리스너
     //private var variableChangeListener: VariableChangeListener? = null
     //모든 데이터 값
@@ -124,8 +139,8 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
 
     /*두 번째 vf*/
-    private var latitude = 0.0
-    private var longitude = 0.0
+    private var latitude : Double? = null
+    private var longitude : Double? = null
     private var location = ""
     /*세 번째 vf*/
     //선택한 가격
@@ -182,7 +197,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         myViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
         //기기의 뒤로가기 콜백
         this.onBackPressedDispatcher.addCallback(this, callback)
-        //initMapView()
+        initMapView()
         /*mapView = MapView(this)
 
 
@@ -280,9 +295,9 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             }
         }*/
 
-        /*mBinding.rvList.layoutManager =
+        mBinding.rvList.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        mBinding.rvList.adapter = placeAdapter*/
+        mBinding.rvList.adapter = placeAdapter
 
         mBinding.rvRecentSearchList.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
@@ -401,9 +416,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
 
     private fun initMapView() {
         // 맵뷰 초기화 및 컨테이너 레이아웃에 추가
-        mapView = MapView(this)
-        mapView?.setMapViewEventListener(this)
-        mBinding.mapView.addView(mapView)
+        map = mBinding.mapView
     }
 
     private fun firstVF() {
@@ -586,7 +599,6 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 latitude = listItems[position].y
                 longitude = listItems[position].x
 
-                mapView?.setMapCenterPointAndZoomLevel(mapPoint, 1, true)
                 mBinding.placeName.text = listItems[position].name
                 mBinding.placeRoad.text = listItems[position].road
                 addToRecentSearch(listItems[position])
@@ -595,6 +607,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 isAllCheck.isSecondVF.isPlaceName = true
                 isAllCheck.isSecondVF.isPlaceRode = true
                 myViewModel.postCheckValue(isAllCheck)
+                startMapLifeCycle()
             }
         })
 
@@ -609,7 +622,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 latitude = recentSearchItems[position].y
                 longitude = recentSearchItems[position].x
 
-                mapView?.setMapCenterPointAndZoomLevel(mapPoint, 1, true)
+               /* mapView?.setMapCenterPointAndZoomLevel(mapPoint, 1, true)
 
                 if (marker != null) {
                     mapView?.removePOIItem(marker)
@@ -623,7 +636,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     isCustomImageAutoscale = false
                     setCustomImageAnchor(0.5f, 1.0f)
                 }
-                mapView?.addPOIItem(marker)
+                mapView?.addPOIItem(marker)*/
 
                 //여기서 name고정됨
                 mBinding.placeName.text = recentSearchItems[position].name
@@ -633,6 +646,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                 isAllCheck.isSecondVF.isPlaceName = true
                 isAllCheck.isSecondVF.isPlaceRode = true
                 myViewModel.postCheckValue(isAllCheck)
+                startMapLifeCycle()
             }
         })
 
@@ -658,12 +672,15 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
             searchKeyword(keyword)
             Log.d("edit btn click", keyword)
             mBinding.rvRecentSearchList.visibility = View.INVISIBLE
+            map?.resume()
         }
 
         mBinding.etSearchField.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 // 검색 버튼을 눌렀을 때 수행할 작업을 여기에 작성
                 searchKeyword(keyword)
+                mBinding.rvRecentSearchList.visibility = View.INVISIBLE
+                map?.resume()
                 return@setOnEditorActionListener true
             }
             false
@@ -1178,14 +1195,6 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
         variableChangeListener?.onVariableChanged(isF)
     }*/
 
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
-
-        }
-        return super.onOptionsItemSelected(item)
-    }
-
     private fun returnStatusbar() {
         mBinding.toolbar.visibility = View.VISIBLE
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -1304,7 +1313,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
     fun addItemsAndMarkers(searchResult: ResultSearchKeyword?) {
         if (!searchResult?.documents.isNullOrEmpty()) {
             listItems.clear()
-            mapView?.removeAllPOIItems()
+            map?.removeAllViewsInLayout()
             for (document in searchResult!!.documents) {
                 val item = PlaceData(document.place_name,
                     document.road_address_name,
@@ -1312,7 +1321,7 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     document.x.toDouble(),
                     document.y.toDouble())
                 listItems.add(item)
-                val index = listItems.indexOf(item)
+                /*val index = listItems.indexOf(item)
 
                 val point = MapPOIItem()
                 point.apply {
@@ -1325,8 +1334,30 @@ class NoticeBoardEditActivity : AppCompatActivity(), MapView.MapViewEventListene
                     isCustomImageAutoscale = true
                     setCustomImageAnchor(0.5f, 1.0f)
                 }
-                mapView?.addPOIItem(point)
+                mapView?.addPOIItem(point)*/
+
+
                 //mapView?.setPOIItemEventListener(eventListener)
+                /*for (i in response.body()!!.filter { it.postId != postId }) {
+                    //latLngList.add(LatLng.from(i.latitude, i.longitude))
+                    // 스타일 지정. LabelStyle.from()안에 원하는 이미지 넣기
+                    val style = kakaoMapValue?.labelManager?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.map_poi_srn)))
+                    // 라벨 옵션 지정. 위경도와 스타일 넣기
+                    val options = LabelOptions.from(LatLng.from(i.latitude, i.longitude)).setStyles(style)
+                    // 레이어 가져오기
+                    val layer = kakaoMapValue?.labelManager?.layer
+                    // 레이어에 라벨 추가
+                    layer?.addLabel(options)
+                }*/
+                //latLngList.add(LatLng.from(i.latitude, i.longitude))
+                // 스타일 지정. LabelStyle.from()안에 원하는 이미지 넣기
+                //val style = kakaoMapValue?.labelManager?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.map_poi_srn)))
+                // 라벨 옵션 지정. 위경도와 스타일 넣기
+                //val options = LabelOptions.from(LatLng.from(i.latitude, i.longitude)).setStyles(style)
+                // 레이어 가져오기
+                //val layer = kakaoMapValue?.labelManager?.layer
+                // 레이어에 라벨 추가
+                //layer?.addLabel(options)
             }
             placeAdapter.notifyDataSetChanged()
         } else {
@@ -1428,7 +1459,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
     }*/
 
 
-    override fun onMapViewInitialized(p0: MapView?) {
+    /*override fun onMapViewInitialized(p0: MapView?) {
 
     }
 
@@ -1441,148 +1472,8 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
     }
 
     override fun onMapViewSingleTapped(mapView: MapView?, mapPoint: MapPoint?) {
-        latitude = mapPoint?.mapPointGeoCoord?.latitude ?: return
-        longitude = mapPoint.mapPointGeoCoord.longitude
 
-        val geocoder = Geocoder(this, Locale.KOREA)
-        var address: Address? = null
-
-
-        isAllCheck.isSecondVF.isPlaceName = true
-        isAllCheck.isSecondVF.isPlaceRode = true
-        myViewModel.postCheckValue(isAllCheck)
-
-
-        if (marker != null) {
-            mapView?.removePOIItem(marker)
-            marker!!.markerType = MapPOIItem.MarkerType.BluePin
-        }
-        /*marker = MapPOIItem().apply {
-            itemName = "선택 위치"
-            this.mapPoint = mapPoint //MapPoint.mapPointWithGeoCoord(tlatitude, tlongitude)
-            markerType = MapPOIItem.MarkerType.CustomImage
-            customImageResourceId = R.drawable.map_poi_icon
-            isCustomImageAutoscale = true
-            isDraggable = false
-            setCustomImageAnchor(0.5f, 1.0f)
-        }
-        mapView?.addPOIItem(marker)*/
-
-        if (Build.VERSION.SDK_INT < 33) { // SDK 버전이 33보다 큰 경우에만 아래 함수를 씁니다.
-            val addresses = geocoder.getFromLocation(latitude, longitude, 1)?.first()
-
-            address?.let {
-                if (addresses != null) {
-                    val adminArea = addresses.adminArea ?: ""
-                    val subAdminArea = addresses.subAdminArea ?: ""
-                    val locality = addresses.locality ?: ""
-                    val subLocality = addresses.subLocality ?: ""
-                    val thoroughfare = addresses.thoroughfare ?: ""
-                    val featureName = addresses.featureName ?: ""
-
-                    val detailedAddress = "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
-
-                    mBinding.placeName.text = detailedAddress
-                    mBinding.placeRoad.text = detailedAddress // 텍스트뷰에 주소 정보 표시
-                    //getAddressFromCoordinates(longitude, latitude)
-                }
-            }
-        } else {
-            val geocodeListener = @RequiresApi(33) object : Geocoder.GeocodeListener {
-                override fun onGeocode(addresses: MutableList<Address>) {
-                    // 주소 리스트를 가지고 할 것을 적어주면 됩니다.
-                    address = addresses.firstOrNull()
-                    address?.let {
-                        val adminArea = it.adminArea ?: ""
-                        val subAdminArea = it.subAdminArea ?: ""
-                        val locality = it.locality ?: ""
-                        val subLocality = it.subLocality ?: ""
-                        val thoroughfare = it.thoroughfare ?: ""
-                        val featureName = it.featureName ?: ""
-
-                        val detailedAddress =
-                            "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
-
-                        //mBinding.placeName.text =
-                        //mBinding.placeRoad.text = "현재 마커 주소 : " + detailedAddress // 텍스트뷰에 주소 정보 표시
-                        //getAddressFromCoordinates(longitude, latitude)
-                       /* val latitude = latitude
-                        val longitude = longitude
-                        val apiKey = API_KEY*/
-
-                        /*getAddressFromCoordinates(latitude, longitude, apiKey) { address ->
-                            if (address != null) {
-                                *//*val address = address[0].*//*
-                                //val name = address.split(" ").map { it.toString() }
-
-                                println("주소: $address") //buildingName포함
-                            } else {
-                                println("주소를 가져올 수 없습니다.")
-                            }
-                        }*/
-                        // 도로명 주소 검색
-
-                        if (addresses.isNotEmpty()) {
-                            address = addresses[0]
-                            val roadAddress = address?.getAddressLine(0) ?: ""
-
-                            //대한민국 경기도 포천시 선단동 834-2
-                            Log.d("Address", "도로명 주소: $roadAddress")
-                            Log.d("detail", "$detailedAddress")
-
-                            // Kakao Map API를 호출하여 해당 주소 주변의 빌딩 정보 검색
-                            searchNearbyBuildings(detailedAddress,latitude, longitude) { buildingNames ->
-                                buildingNames?.let { placeDocument ->
-                                    //PlaceDocument(road_address=RoadAddress(address_name=경기 포천시 송선로 285, building_name=))]
-                                    //1번 근데 빌딩이름은 없고 도로명만 나올때가있음
-                                    Log.d("BuildingNames", "빌딩 이름들: $buildingNames")
-                                    // 여기에서 UI 업데이트 또는 다른 작업을 수행할 수 있습니다.
-                                    if (placeDocument.isNotEmpty()) {
-                                        location = placeDocument.first().road_address.address_name + "/" + placeDocument.first().road_address.building_name
-                                        mBinding.placeName.text = placeDocument.first().road_address.building_name
-                                        mBinding.placeRoad.text = placeDocument.first().road_address.address_name
-                                    } else {
-                                        getAddressFromCoordinates(latitude, longitude, API_KEY) { addressCoordinates ->
-                                            addressCoordinates.let {//2번
-                                                //경기 포천시 선단동 834-2
-                                                if (addressCoordinates != null) {
-                                                    location = addressCoordinates
-                                                    mBinding.placeName.text = ""
-                                                    mBinding.placeRoad.text = addressCoordinates
-                                                } else {
-                                                    //대한민국 경기도 포천시 선단동 834-2
-                                                    location = address?.getAddressLine(0).toString()
-                                                    mBinding.placeName.text = ""
-                                                    mBinding.placeRoad.text = address?.getAddressLine(0).toString()
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            Log.e("Address", "주소를 가져올 수 없습니다.")
-                            //Toast.makeText(this, "주소를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
-                        }
-
-
-                    }
-                }
-
-                override fun onError(errorMessage: String?) {
-                    address = null
-                    Toast.makeText(
-                        this@NoticeBoardEditActivity,
-                        "주소가 발견되지 않았습니다.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-            geocoder.getFromLocation(latitude, longitude, 10, geocodeListener)
-        }
-
-
-    }
+    }*/
     // Kakao Map API를 호출하여 주변 빌딩 정보를 검색하는 함수
     private fun searchNearbyBuildings(query : String, latitude: Double, longitude: Double, callback: (List<PlaceDocument>?) -> Unit) {
         val retrofit = Retrofit.Builder()
@@ -1610,28 +1501,266 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
             }
         })
     }
+    private fun startMapLifeCycle() {
+        map?.start(object : MapLifeCycleCallback() {
+            override fun onMapDestroy() {
+                Log.e("noticeboardeditMapTest", "onMapDestroy")
+            }
 
-    // 마커 클릭 이벤트 리스너
-    /*class MarkerEventListener(val context: Context, val location : ResultSearchKeyword?, val binding: ActivityNoticeBoardEditBinding, val index : Int): MapView.POIItemEventListener {
-        override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
-            // 마커 클릭 시
-            binding.placeName.text = location!!.documents[index].place_name
-            binding.placeRoad.text = location.documents[index].address_name
-        }
+            override fun onMapPaused() {
+                super.onMapPaused()
+                Log.e("noticeboardeditMapTest", "onmappaused")
+                map?.resume()
+            }
 
-        override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
-            // 말풍선 클릭 시 (Deprecated)
-            // 이 함수도 작동하지만 그냥 아래 있는 함수에 작성하자
-        }
+            override fun onMapResumed() {
+                super.onMapResumed()
+                Log.e("noticeboardeditMapTest", "onmapresumed")
+            }
 
-        override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?, buttonType: MapPOIItem.CalloutBalloonButtonType?) {
-            // 말풍선 클릭 시
-        }
+            override fun onMapError(error: Exception?) {
+                Log.e("noticeboardedit", "onMapError", error)
+            }
 
-        override fun onDraggablePOIItemMoved(mapView: MapView?, poiItem: MapPOIItem?, mapPoint: MapPoint?) {
-            // 마커의 속성 중 isDraggable = true 일 때 마커를 이동시켰을 경우
-        }
-    }*/
+        }, object : KakaoMapReadyCallback() {
+            override fun getPosition(): LatLng {
+                return super.getPosition()
+            }
+
+            override fun getZoomLevel(): Int {
+                return 17
+            }
+
+            override fun onMapReady(kakaoMap: KakaoMap) {
+                Log.e("noticeboardedit", "onMapReady")
+                kakaoMapValue = kakaoMap
+                labelLayer = kakaoMap.labelManager!!.layer
+                val trackingManager = kakaoMap.trackingManager
+                //labelLatLng = LatLng.from(latitude, longitude)
+                if (latitude != null && longitude != null) {
+                    startPosition = LatLng.from(latitude!!, longitude!!)
+                    centerLabel = labelLayer!!.addLabel(
+                        LabelOptions.from("centerLabel", startPosition)
+                            .setStyles(LabelStyle.from(R.drawable.map_poi_icon).setAnchorPoint(0.5f, 0.5f))
+                            .setRank(1)
+                    )
+
+                    trackingManager!!.startTracking(centerLabel)
+                }
+
+                kakaoMapValue!!.setOnMapClickListener { _, latLng, _, poi ->
+                    //showInfoWindow(position, poi)
+                    trackingManager?.stopTracking()
+                    latitude = latLng.latitude
+                    longitude = latLng.longitude
+
+                    val geocoder = Geocoder(this@NoticeBoardEditActivity, Locale.KOREA)
+                    var address: Address? = null
+                    var roadAddress : String? = null
+
+
+                    isAllCheck.isSecondVF.isPlaceName = true
+                    isAllCheck.isSecondVF.isPlaceRode = true
+                    myViewModel.postCheckValue(isAllCheck)
+
+                    /*marker = MapPOIItem().apply {
+                        itemName = "선택 위치"
+                        this.mapPoint = mapPoint //MapPoint.mapPointWithGeoCoord(tlatitude, tlongitude)
+                        markerType = MapPOIItem.MarkerType.CustomImage
+                        customImageResourceId = R.drawable.map_poi_icon
+                        isCustomImageAutoscale = true
+                        isDraggable = false
+                        setCustomImageAnchor(0.5f, 1.0f)
+                    }
+                    mapView?.addPOIItem(marker)*/
+
+                    if (Build.VERSION.SDK_INT < 33) { // SDK 버전이 33보다 큰 경우에만 아래 함수를 씁니다.
+                        val addresses = geocoder.getFromLocation(latitude!!, longitude!!, 1)?.first()
+                        Log.e("notice Test Log", "ongeocode <33")
+                        address?.let {
+                            if (addresses != null) {
+                                val adminArea = addresses.adminArea ?: ""
+                                val subAdminArea = addresses.subAdminArea ?: ""
+                                val locality = addresses.locality ?: ""
+                                val subLocality = addresses.subLocality ?: ""
+                                val thoroughfare = addresses.thoroughfare ?: ""
+                                val featureName = addresses.featureName ?: ""
+
+                                val detailedAddress = "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
+                                roadAddress = detailedAddress
+                                mBinding.placeRoad.text = roadAddress
+                            }
+                        }
+                    } else {
+                        val geocodeListener = @RequiresApi(33) object : Geocoder.GeocodeListener {
+                            override fun onGeocode(addresses: MutableList<Address>) {
+                                Log.e("notice Test Log", "ongeocode")
+                                // 주소 리스트를 가지고 할 것을 적어주면 됩니다.
+                                address = addresses.firstOrNull()
+                                address?.let {
+                                    val adminArea = it.adminArea ?: ""
+                                    val subAdminArea = it.subAdminArea ?: ""
+                                    val locality = it.locality ?: ""
+                                    val subLocality = it.subLocality ?: ""
+                                    val thoroughfare = it.thoroughfare ?: ""
+                                    val featureName = it.featureName ?: ""
+
+                                    val detailedAddress =
+                                        "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
+
+                                    //mBinding.placeName.text =
+                                    //mBinding.placeRoad.text = "현재 마커 주소 : " + detailedAddress // 텍스트뷰에 주소 정보 표시
+                                    //getAddressFromCoordinates(longitude, latitude)
+                                    /* val latitude = latitude
+                                     val longitude = longitude
+                                     val apiKey = API_KEY*/
+
+                                    /*getAddressFromCoordinates(latitude, longitude, apiKey) { address ->
+                                        if (address != null) {
+                                            *//*val address = address[0].*//*
+                                //val name = address.split(" ").map { it.toString() }
+
+                                println("주소: $address") //buildingName포함
+                            } else {
+                                println("주소를 가져올 수 없습니다.")
+                            }
+                        }*/
+                                    // 도로명 주소 검색
+
+                                    if (addresses.isNotEmpty()) {
+                                        address = addresses[0]
+                                        val roadAddressCheck = address?.getAddressLine(0) ?: ""
+
+                                        //대한민국 경기도 포천시 선단동 834-2
+                                        Log.d("Address", "도로명 주소: $roadAddressCheck")
+                                        Log.d("detail", "$detailedAddress")
+                                        mBinding.placeRoad.text = roadAddressCheck
+                                        // Kakao Map API를 호출하여 해당 주소 주변의 빌딩 정보 검색
+                                        /*searchNearbyBuildings(detailedAddress,latitude!!, longitude!!) { buildingNames ->
+                                            buildingNames?.let { placeDocument ->
+                                                //PlaceDocument(road_address=RoadAddress(address_name=경기 포천시 송선로 285, building_name=))]
+                                                //1번 근데 빌딩이름은 없고 도로명만 나올때가있음
+                                                Log.d("BuildingNames", "빌딩 이름들: $buildingNames")
+                                                // 여기에서 UI 업데이트 또는 다른 작업을 수행할 수 있습니다.
+                                                if (placeDocument.isNotEmpty()) {
+
+                                                    location = placeDocument.first().road_address.address_name + "/" + placeDocument.first().road_address.building_name
+                                                    mBinding.placeRoad.text = placeDocument.first().road_address.address_name
+                                                } else {
+                                                    getAddressFromCoordinates(latitude!!, longitude!!, API_KEY) { addressCoordinates ->
+                                                        addressCoordinates.let {//2번
+                                                            //경기 포천시 선단동 834-2
+                                                            if (addressCoordinates != null) {
+                                                                location = addressCoordinates
+                                                                //mBinding.placeName.text = ""
+                                                                mBinding.placeRoad.text = addressCoordinates
+                                                            } else {
+                                                                //대한민국 경기도 포천시 선단동 834-2
+                                                                location = address?.getAddressLine(0).toString()
+                                                                //mBinding.placeName.text = ""
+                                                                mBinding.placeRoad.text = address?.getAddressLine(0).toString()
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }*/
+                                    } else {
+                                        Log.e("Address", "주소를 가져올 수 없습니다.")
+                                        //Toast.makeText(this, "주소를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                    }
+
+
+                                }
+                            }
+
+                            override fun onError(errorMessage: String?) {
+                                address = null
+                                Toast.makeText(
+                                    this@NoticeBoardEditActivity,
+                                    "주소가 발견되지 않았습니다.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                        geocoder.getFromLocation(latitude!!, longitude!!, 10, geocodeListener)
+                    }
+                    if (poi.name.isNotEmpty()) {
+                        if (preLabel == null) { //눌러진 poi 또는 label이없으면
+                            labelLatLng = LatLng.from(latLng.latitude, latLng.longitude)
+                            Log.e("labelLatLng", "$labelLatLng")
+
+                            // 레이어 가져오기
+                            val labelLayer = kakaoMap.labelManager?.layer
+
+                            // 스타일 지정
+                            val style = kakaoMap.labelManager?.addLabelStyles(
+                                LabelStyles.from(
+                                    LabelStyle.from(R.drawable.map_poi_icon).apply {
+                                        setAnchorPoint(0.5f, 0.5f)
+                                        isApplyDpScale = false
+                                    }
+                                )
+                            )
+
+                            // 라벨 옵션 지정
+                            val options = LabelOptions.from(labelLatLng).setStyles(style)
+
+                            // 라벨 추가
+                            val label = labelLayer?.addLabel(options)
+                            preLabel = label
+                            mBinding.placeName.text = poi.name
+                            // 라벨로 트래킹 시작
+                            if (label != null) {
+                                trackingManager?.startTracking(label)
+                                val handler = Handler(Looper.getMainLooper())
+                                handler.postDelayed(java.lang.Runnable {
+                                    trackingManager?.stopTracking()
+                                },1000)
+                            } else {
+                                Log.e("kakaoMapValue", "Label is null, tracking cannot be started.")
+                            }
+                        } else { //만약 누른 poi나 label이 있다면? 지우고 그리기
+                            // 레이어 가져오기
+                            val labelLayer = kakaoMap.labelManager?.layer
+                            // 스타일 지정
+                            val style = kakaoMap.labelManager?.addLabelStyles(
+                                LabelStyles.from(
+                                    LabelStyle.from(R.drawable.map_poi_icon).apply {
+                                        setAnchorPoint(0.5f, 0.5f)
+                                        isApplyDpScale = false
+                                    }
+                                )
+                            )
+                            labelLatLng = LatLng.from(latLng.latitude, latLng.longitude)
+                            Log.e("labelLatLng", "$labelLatLng")
+                            //이전 값 지우고?
+                            labelLayer?.remove(preLabel)
+                            // 라벨 옵션 지정
+                            val options = LabelOptions.from(labelLatLng).setStyles(style)
+                            // 라벨 추가
+                            val label = labelLayer?.addLabel(options)
+                            mBinding.placeName.text = poi.name
+                            // 라벨로 트래킹 시작
+                            if (label != null) {
+                                trackingManager?.startTracking(label)
+                                val handler = Handler(Looper.getMainLooper())
+                                handler.postDelayed(java.lang.Runnable {
+                                    trackingManager?.stopTracking()
+                                },1000)
+                            } else {
+                                Log.e("kakaoMapValue", "Label is null, tracking cannot be started.")
+                            }
+                        }
+                    }
+                }
+
+                kakaoMapValue!!.setOnLabelClickListener { _, _, label ->
+                    trackingManager?.startTracking(label)
+                }
+            }
+        })
+    }
 
     private val callback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
@@ -1654,287 +1783,30 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
             }
         }
     }
-    /*private val callback = object : OnBackPressedCallback(true) {
-        override fun handleOnBackPressed() {
-            // 뒤로가기 클릭 시 실행시킬 코드 입력
-            val transaction = supportFragmentManager.beginTransaction()
-            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_content)
-
-            val fragmentManager = supportFragmentManager
-
-            if (System.currentTimeMillis() > backPressedTime + 2000) {
-                backPressedTime = System.currentTimeMillis()
-                Toast.makeText(this@NoticeBoardEditActivity, "뒤로 버튼을 한 번 더 누르시면 홈으로 이동합니다.", Toast.LENGTH_SHORT).show()
-                return
-            }
-
-            if (System.currentTimeMillis() <= backPressedTime + 2000) {
-                if (fragmentManager.backStackEntryCount > 0) {
-                    fragmentManager.popBackStack()
-
-                } else {
-                    this@NoticeBoardEditActivity.finishAffinity()
-                }
-
-                if (currentFragment != null) {
-                    transaction.remove(currentFragment)
-
-                    transaction.commit()
-                }
-
-                this@NoticeBoardEditActivity.finishAffinity()
-            }
-        }
-    }*/
-
-   /* private fun addMarker(latitude: Double, longitude: Double) {
-        // 이전 마커들 제거
-        marker?.let {
-            mapView?.removePOIItem(it)
-        }
-        markers.clear()
-
-        // 주변 위치 정보 요청
-        kakaoApiService.getAddress(latitude, longitude).enqueue(object : Callback<AddressResponse> {
-            override fun onResponse(call: Call<AddressResponse>, response: Response<AddressResponse>) {
-                if (response.isSuccessful) {
-                    val places = response.body()?.documents
-                    places?.let { sortAndAddMarkers(it) }
-                } else {
-                    Log.e("KakaoMap", "Failed to fetch nearby places: ${response.errorBody()}")
-                }
-            }
-
-            override fun onFailure(call: Call<AddressResponse>, t: Throwable) {
-                Log.e("KakaoMap", "Error fetching nearby places: ${t.message}", t)
-            }
-        })
-    }
-
-    private fun sortAndAddMarkers(places: List<Document>) {
-        // 정확도를 기준으로 위치 정보 정렬
-        val sortedPlaces = places.sortedByDescending { it.address.address_name }
-
-        Log.d("sortAndAddMarkers", sortedPlaces.toString())
-    }*/
-   /*override fun onMapViewSingleTapped(mapView: MapView?, mapPoint: MapPoint?) {
-       latitude = mapPoint?.mapPointGeoCoord?.latitude ?: return
-       longitude = mapPoint.mapPointGeoCoord.longitude
-
-       var address: Address? = null
-
-       // POI 검색 반경 (미터)
-       val searchRadius = 100
-
-       // POI 검색 이벤트 리스너
-       val poiItemEventListener = object : MapPOIItemEventListener {
-           override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
-               // 선택한 POI 처리
-           }
-
-           override fun onCalloutBalloonOfPOIItemTouched(mapView: MapView?, poiItem: MapPOIItem?) {
-               // POI 말풍선 터치 시 처리
-           }
-
-           override fun onCalloutBalloonOfPOIItemTouched(
-               mapView: MapView?,
-               poiItem: MapPOIItem?,
-               buttonType: MapPOIItem.CalloutBalloonButtonType?
-           ) {
-               // POI 말풍선의 버튼 터치 시 처리
-           }
-       }
-
-       // POI 검색
-       val poiSearcher = MapPOIItem.Searcher()
-       poiSearcher.searchKeyword(
-           mapPoint.mapPointGeoCoord.longitude,
-           mapPoint.mapPointGeoCoord.latitude,
-           searchRadius,
-           poiItemEventListener
-       )
-
-       val geocoder = Geocoder(this, Locale.getDefault())
-
-       isAllCheck.isSecondVF.isPlaceName = true
-       isAllCheck.isSecondVF.isPlaceRode = true
-       myViewModel.postCheckValue(isAllCheck)
-
-       if (marker != null) {
-           mapView?.removePOIItem(marker)
-           marker!!.markerType = MapPOIItem.MarkerType.BluePin
-       }
-
-       marker = MapPOIItem().apply {
-           itemName = "선택 위치"
-           this.mapPoint = mapPoint
-           markerType = MapPOIItem.MarkerType.CustomImage
-           customImageResourceId = R.drawable.map_poi_icon
-           isCustomImageAutoscale = false
-           isDraggable = true
-           setCustomImageAnchor(0.5f, 1.0f)
-       }
-       mapView?.addPOIItem(marker)
-
-       // 지오코딩 서비스를 이용하여 마커 위치의 POI 정보 가져오기
-       *//*val geocodeListener = @RequiresApi(33) object : Geocoder.GeocodeListener {
-           override fun onGeocode(addresses: MutableList<Address>) {
-               val address = addresses.firstOrNull()
-               address?.let {
-                   val poiName = it.featureName ?: "Unknown"
-                   val adminArea = it.adminArea ?: ""
-                   val subAdminArea = it.subAdminArea ?: ""
-                   val locality = it.locality ?: ""
-                   val subLocality = it.subLocality ?: ""
-                   val thoroughfare = it.thoroughfare ?: ""
-                   val featureName = it.featureName ?: ""
-
-                   val detailedAddress = "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
-
-                   mBinding.placeName.text = poiName
-                   mBinding.placeRoad.text = detailedAddress // 텍스트뷰에 주소 정보 표시
-               }
-           }
-
-           override fun onError(errorMessage: String?) {
-               // 에러 처리
-               Toast.makeText(this@NoticeBoardEditActivity, "주소가 발견되지 않았습니다.", Toast.LENGTH_LONG).show()
-           }
-       }
-
-       geocoder.getFromLocation(latitude, longitude, 1, geocodeListener)*//*
-       if (Build.VERSION.SDK_INT < 33) { // SDK 버전이 33보다 큰 경우에만 아래 함수를 씁니다.
-           val addresses = geocoder.getFromLocation(latitude, longitude, 1)!!.first()
-
-           address?.let {
-               if (addresses != null) {
-                   val adminArea = addresses.adminArea ?: ""
-                   val subAdminArea = addresses.subAdminArea ?: ""
-                   val locality = addresses.locality ?: ""
-                   val subLocality = addresses.subLocality ?: ""
-                   val thoroughfare = addresses.thoroughfare ?: ""
-                   val featureName = addresses.featureName ?: ""
-
-                   val detailedAddress = "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
-
-                   mBinding.placeName.text = addresses.featureName
-                   mBinding.placeRoad.text = detailedAddress // 텍스트뷰에 주소 정보 표시
-               }
-           }
-       } else {
-           val geocodeListener = @RequiresApi(33) object : Geocoder.GeocodeListener {
-               override fun onGeocode(addresses: MutableList<Address>) {
-                   // 주소 리스트를 가지고 할 것을 적어주면 됩니다.
-                   address = addresses[0];
-                   address?.let {
-                       val adminArea = it.adminArea ?: ""
-                       val subAdminArea = it.subAdminArea ?: ""
-                       val locality = it.locality ?: ""
-                       val subLocality = it.subLocality ?: ""
-                       val thoroughfare = it.thoroughfare ?: ""
-                       val featureName = it.featureName ?: ""
-
-                       val detailedAddress =
-                           "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
-
-                       mBinding.placeName.text = poiName
-                       mBinding.placeRoad.text = detailedAddress // 텍스트뷰에 주소 정보 표시
-                       Log.d("NoticeEdit Map Test", "${detailedAddress}")
-                       Log.d("NoticeEdit Map Test", "${address?.featureName}")
-                       Log.d("NoticeEdit Map Test", "${address}")
-                       Log.d("NoticeEdit Map Test", address?.getAddressLine(0).toString())
-                   }
-               }
-
-               override fun onError(errorMessage: String?) {
-                   address = null
-                   Toast.makeText(
-                       this@NoticeBoardEditActivity,
-                       "주소가 발견되지 않았습니다.",
-                       Toast.LENGTH_LONG
-                   ).show()
-               }
-           }
-           geocoder.getFromLocation(latitude, longitude, 1, geocodeListener)
-       }
-   }*/
-
-    override fun onMapViewDoubleTapped(p0: MapView?, p1: MapPoint?) {
-
-    }
-
-    override fun onMapViewLongPressed(p0: MapView?, p1: MapPoint?) {
-
-    }
-
-    override fun onMapViewDragStarted(p0: MapView?, p1: MapPoint?) {
-
-    }
-
-    override fun onMapViewDragEnded(p0: MapView?, p1: MapPoint?) {
-
-    }
-
-    override fun onMapViewMoveFinished(p0: MapView?, p1: MapPoint?) {
-
-    }
 
     override fun onStart() {
         super.onStart()
-        Log.e("NoticeBoardEdit", "start")
-        if (mapView == null) {
-            initMapView()
-        } /*else {
-            mapView = null
-            mBinding.mapView.removeAllViews()
-            mBinding.mapView.removeAllViewsInLayout()
-
-            mBinding.mapView.removeView(mapView)
-
-            mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
-        }*/
+        Log.e("NoticeBoardEdit TEst Log", "start")
     }
 
-    /*override fun onRestart() {
-        super.onRestart()
-        Log.e("NoticeBoardEdit", "restart")
-        // 액티비티 재시작 시 (B 액티비티가 종료되고 다시 시작될 때)
-        // MapView가 포함되어 있지 않다면 추가
-        if (mapView != null) {
-            Log.e("Notice Restart", "mapview not null")
-            try {
-                // 다시 맵뷰 초기화 및 추가
-                initMapView()
-            } catch (re: RuntimeException) {
-                Log.e("EDIT", re.toString())
-            }
-        } else {
-            Log.e("Notice Restart", "mapview null")
-            mapView = null
-            mBinding.mapView.removeAllViews()
-            mBinding.mapView.removeAllViewsInLayout()
-            initMapView()
-        }
-    }*/
+    override fun onResume() {
+        super.onResume()
+        Log.e("NoticeBoardEdit TEst Log", "reumse")
+        startMapLifeCycle()
+        map?.resume()
+    }
 
     override fun onPause() {
         super.onPause()
-        Log.e("NoticeBoardEdit", "pause")
-        /*if (mapView != null) {
-            mBinding.mapContainer1.removeAllViews()
-        } else {
-            initMapView()
-        }*/
-        if (mapView != null) {
-            mBinding.mapView.removeAllViews()
-            mBinding.mapView.removeAllViewsInLayout()
+        Log.e("NoticeBoardEdit TEst Log", "pause")
+        map?.pause()
+    }
 
-            mapView?.setMapViewEventListener(null as MapView.MapViewEventListener?)
-
-            mapView = null
-        }/* else {
-            initMapView()
-        }*/
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.e("NoticeBoardEdit TEst Log", "destory")
+        map?.finish()
+        map = null
     }
 
     /*override fun onResume() {

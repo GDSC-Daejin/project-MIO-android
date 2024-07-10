@@ -491,7 +491,18 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:listitem="@layout/search_word_layout"/>
+
             </androidx.constraintlayout.widget.ConstraintLayout>
+
 
         </LinearLayout>
 
@@ -512,10 +523,14 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent">
 
-                <RelativeLayout
+                <com.kakao.vectormap.MapView
                     android:id="@+id/map_view"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <!--<TextView
                     android:layout_width="wrap_content"
@@ -542,7 +557,7 @@
                         android:id="@+id/place_name"
                         android:layout_width="match_parent"
                         android:layout_height="30dp"
-                        android:layout_marginLeft="20dp"
+                        android:layout_marginStart="20dp"
                         android:textColor="@color/mio_gray_10"
                         android:textSize="20sp"
                         android:fontFamily="@font/pretendard_bold"
@@ -554,7 +569,7 @@
                         android:id="@+id/place_road"
                         android:layout_width="match_parent"
                         android:layout_height="30dp"
-                        android:layout_marginLeft="20dp"
+                        android:layout_marginStart="20dp"
                         android:layout_marginBottom="20dp"
                         android:textColor="@color/mio_gray_8"
                         android:fontFamily="@font/pretendard_bold"

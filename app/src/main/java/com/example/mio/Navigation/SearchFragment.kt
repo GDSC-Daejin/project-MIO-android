@@ -301,10 +301,11 @@ class SearchFragment : Fragment() {
                             /*if (latLngList.isNotEmpty()) {
 
                             }*/
+                            //주위에 있는 게시글 표시 여러개찍기
                             for (i in response.body()!!.filter { it.postId != postId }) {
                                 //latLngList.add(LatLng.from(i.latitude, i.longitude))
                                 // 스타일 지정. LabelStyle.from()안에 원하는 이미지 넣기
-                                val style = kakaoMapValue?.labelManager?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.map_poi_icon)))
+                                val style = kakaoMapValue?.labelManager?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.map_poi_srn)))
                                 // 라벨 옵션 지정. 위경도와 스타일 넣기
                                 val options = LabelOptions.from(LatLng.from(i.latitude, i.longitude)).setStyles(style)
                                 // 레이어 가져오기
@@ -543,7 +544,7 @@ class SearchFragment : Fragment() {
                     centerLabel = layer!!.addLabel(
                         LabelOptions.from("centerLabel", startPosition)
                             .setStyles(
-                                LabelStyle.from(R.drawable.map_poi_icon).setAnchorPoint(0.5f, 0.5f)
+                                LabelStyle.from(R.drawable.map_poi_sr2).setAnchorPoint(0.5f, 0.5f)
                             )
                             .setRank(1) //우선순위
                     )

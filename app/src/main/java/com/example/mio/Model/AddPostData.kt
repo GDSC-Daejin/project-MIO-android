@@ -20,9 +20,9 @@ data class AddPostData(
     @SerializedName("verifyFinish")
     var verifyFinish: Boolean,
     @SerializedName("latitude")
-    var latitude: Double,
+    var latitude: Double?,
     @SerializedName("longitude")
-    var longitude: Double,
+    var longitude: Double?,
     @SerializedName("location")
     var location: String,
     @SerializedName("cost")

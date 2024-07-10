@@ -5,8 +5,6 @@ import android.util.Log
 import com.example.mio.Model.LocationReadAllResponse
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import java.util.*
-import kotlin.collections.LinkedHashSet
 
 object SharedPrefManager {
 
@@ -25,31 +23,18 @@ object SharedPrefManager {
 
     fun saveRecentSearch(context: Context, newLocation: String) {
         val prefs = context.getSharedPreferences(RECENT_SEARCH_PREF, Context.MODE_PRIVATE)
-
-        // 기존 저장된 위치 리스트를 로드
         val currentLocations: MutableList<String> = loadRecentSearch(context)?.toMutableList() ?: mutableListOf()
 
-        // 새로운 위치를 정규화하여 대소문자 무시 및 공백 제거하여 비교
-        val normalizedNewLocation = newLocation.trim().lowercase(Locale.getDefault())
+        // Remove all occurrences of newLocation to ensure no duplicates
+        currentLocations.removeAll { it == newLocation }
 
-        // 리스트에서 중복된 위치 제거
-        val iterator = currentLocations.iterator()
-        while (iterator.hasNext()) {
-            val location = iterator.next()
-            if (location.trim().lowercase(Locale.getDefault()) == normalizedNewLocation) {
-                iterator.remove()
-            }
+        // Add the new location to the beginning of the list if it is not empty
+        if (newLocation.isNotEmpty()) {
+            currentLocations.add(0, newLocation)
         }
 
-        // 새로운 위치를 리스트의 맨 앞에 추가
-        currentLocations.add(0, newLocation)
-
-        // 중복 제거를 위해 Set으로 변환한 후 다시 리스트로 변환
-        val uniqueLocations = LinkedHashSet(currentLocations)
-
-        // JSON 형식으로 변환하여 SharedPreferences에 저장
         val editor = prefs.edit()
-        val json = Gson().toJson(uniqueLocations)
+        val json = Gson().toJson(currentLocations)
         editor.putString(RECENT_SEARCH_KEY, json)
         editor.apply()
     }

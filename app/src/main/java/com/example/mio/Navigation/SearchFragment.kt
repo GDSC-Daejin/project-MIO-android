@@ -578,7 +578,7 @@ class SearchFragment : Fragment() {
                                 LabelStyles.from(
                                     LabelStyle.from(R.drawable.map_poi_sr2).apply {
                                         setAnchorPoint(0.5f, 0.5f)
-                                        isApplyDpScale = false
+                                        isApplyDpScale = true
                                     }
                                 )
                             )
@@ -608,7 +608,7 @@ class SearchFragment : Fragment() {
                                 LabelStyles.from(
                                     LabelStyle.from(R.drawable.map_poi_sr2).apply {
                                         setAnchorPoint(0.5f, 0.5f)
-                                        isApplyDpScale = false
+                                        isApplyDpScale = true
                                     }
                                 )
                             )

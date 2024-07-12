@@ -101,7 +101,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     private var kakaoMapValue : KakaoMap? = null
     private var centerLabel: Label? = null
     private var startPosition: LatLng? = null
-    private var labelLayer: LabelLayer? = null
+    private var labelLayerObject: LabelLayer? = null
     private var labelLatLng : LatLng? = null
     //전에 찍은 라벨
     private var preLabel : Label? = null
@@ -1534,14 +1534,14 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
             override fun onMapReady(kakaoMap: KakaoMap) {
                 Log.e("noticeboardedit", "onMapReady")
                 kakaoMapValue = kakaoMap
-                labelLayer = kakaoMap.labelManager!!.layer
+                labelLayerObject = kakaoMap.labelManager!!.layer
                 val trackingManager = kakaoMap.trackingManager
                 //labelLatLng = LatLng.from(latitude, longitude)
                 if (latitude != null && longitude != null) {
                     startPosition = LatLng.from(latitude!!, longitude!!)
-                    centerLabel = labelLayer!!.addLabel(
+                    centerLabel = labelLayerObject!!.addLabel(
                         LabelOptions.from("centerLabel", startPosition)
-                            .setStyles(LabelStyle.from(R.drawable.map_poi_icon).setAnchorPoint(0.5f, 0.5f))
+                            .setStyles(LabelStyle.from(R.drawable.map_poi_black_icon).setAnchorPoint(0.5f, 0.5f))
                             .setRank(1)
                     )
 
@@ -1589,6 +1589,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                                 val detailedAddress = "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
                                 roadAddress = detailedAddress
                                 mBinding.placeRoad.text = roadAddress
+                                location = roadAddress + "/" + poi.name//listItems[position].road + "/" + listItems[position].name
                             }
                         }
                     } else {
@@ -1635,6 +1636,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                                         Log.d("Address", "도로명 주소: $roadAddressCheck")
                                         Log.d("detail", "$detailedAddress")
                                         mBinding.placeRoad.text = roadAddressCheck
+                                        location = roadAddressCheck + "/" + poi.name
                                         // Kakao Map API를 호출하여 해당 주소 주변의 빌딩 정보 검색
                                         /*searchNearbyBuildings(detailedAddress,latitude!!, longitude!!) { buildingNames ->
                                             buildingNames?.let { placeDocument ->
@@ -1688,17 +1690,17 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                     if (poi.name.isNotEmpty()) {
                         if (preLabel == null) { //눌러진 poi 또는 label이없으면
                             labelLatLng = LatLng.from(latLng.latitude, latLng.longitude)
-                            Log.e("labelLatLng", "$labelLatLng")
+                            Log.e("labelLatLng1", "$labelLatLng")
 
                             // 레이어 가져오기
-                            val labelLayer = kakaoMap.labelManager?.layer
+                            //val labelLayer = kakaoMap.labelManager?.layer
 
                             // 스타일 지정
                             val style = kakaoMap.labelManager?.addLabelStyles(
                                 LabelStyles.from(
-                                    LabelStyle.from(R.drawable.map_poi_icon).apply {
+                                    LabelStyle.from(R.drawable.map_poi_black_icon).apply {
                                         setAnchorPoint(0.5f, 0.5f)
-                                        isApplyDpScale = false
+                                        isApplyDpScale = true
                                     }
                                 )
                             )
@@ -1707,7 +1709,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                             val options = LabelOptions.from(labelLatLng).setStyles(style)
 
                             // 라벨 추가
-                            val label = labelLayer?.addLabel(options)
+                            val label = labelLayerObject?.addLabel(options)
                             preLabel = label
                             mBinding.placeName.text = poi.name
                             // 라벨로 트래킹 시작
@@ -1722,24 +1724,24 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                             }
                         } else { //만약 누른 poi나 label이 있다면? 지우고 그리기
                             // 레이어 가져오기
-                            val labelLayer = kakaoMap.labelManager?.layer
+                            //val labelLayer = kakaoMap.labelManager?.layer
                             // 스타일 지정
                             val style = kakaoMap.labelManager?.addLabelStyles(
                                 LabelStyles.from(
-                                    LabelStyle.from(R.drawable.map_poi_icon).apply {
+                                    LabelStyle.from(R.drawable.map_poi_black_icon).apply {
                                         setAnchorPoint(0.5f, 0.5f)
-                                        isApplyDpScale = false
+                                        isApplyDpScale = true
                                     }
                                 )
                             )
                             labelLatLng = LatLng.from(latLng.latitude, latLng.longitude)
-                            Log.e("labelLatLng", "$labelLatLng")
+                            Log.e("labelLatLng2", "$labelLatLng")
                             //이전 값 지우고?
-                            labelLayer?.remove(preLabel)
+                            labelLayerObject?.remove(preLabel)
                             // 라벨 옵션 지정
                             val options = LabelOptions.from(labelLatLng).setStyles(style)
                             // 라벨 추가
-                            val label = labelLayer?.addLabel(options)
+                            val label = labelLayerObject?.addLabel(options)
                             mBinding.placeName.text = poi.name
                             // 라벨로 트래킹 시작
                             if (label != null) {

@@ -71,13 +71,20 @@ class LocationActivity : AppCompatActivity() {
                 kakaoMapValue = kakaoMap
                 labelLayer = kakaoMap.labelManager!!.layer
                 val trackingManager = kakaoMap.trackingManager
-
-                if (startPosition != null) {
-                    centerLabel = labelLayer!!.addLabel(
-                        LabelOptions.from("centerLabel", startPosition)
-                            .setStyles(LabelStyle.from(R.drawable.map_poi_icon).setAnchorPoint(0.5f, 0.5f))
-                            .setRank(10)
+                // 스타일 지정
+                val style = kakaoMap.labelManager?.addLabelStyles(
+                    LabelStyles.from(
+                        LabelStyle.from(R.drawable.map_poi_black_icon).apply {
+                            setAnchorPoint(0.5f, 0.5f)
+                            isApplyDpScale = true
+                        }
                     )
+                )
+
+                // 라벨 옵션 지정
+                val options = LabelOptions.from(startPosition).setStyles(style)
+                if (startPosition != null) {
+                    centerLabel = labelLayer!!.addLabel(options)
 
                     trackingManager!!.startTracking(centerLabel)
                 }

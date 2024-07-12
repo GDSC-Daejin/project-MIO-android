@@ -216,28 +216,22 @@ class TaxiTabFragment : Fragment() {
                                 /* for (i in selectDateData.indices) {
                                      calendarTaxiAllData.add(selectDateData[i])
                                  }*/
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    for (select in selectDateData) {
-                                        selectCalendarTaxiData.add(select)
-                                    }
-
-                                    noticeBoardAdapter = NoticeBoardAdapter()
-                                    noticeBoardAdapter!!.postItemData = selectCalendarTaxiData
-                                    taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
-                                    //레이아웃 뒤집기 안씀
-                                    //manager.reverseLayout = true
-                                    //manager.stackFromEnd = true
-                                    taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
-                                    taxiTabBinding.noticeBoardRV.layoutManager = manager
+                                for (select in selectDateData) {
+                                    selectCalendarTaxiData.add(select)
                                 }
 
-                                CoroutineScope(Dispatchers.Main).launch {
-                                    taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
-                                    taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
-                                }
+                                noticeBoardAdapter = NoticeBoardAdapter()
+                                noticeBoardAdapter!!.postItemData = selectCalendarTaxiData
+                                taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
+                                //레이아웃 뒤집기 안씀
+                                //manager.reverseLayout = true
+                                //manager.stackFromEnd = true
+                                taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
+                                taxiTabBinding.noticeBoardRV.layoutManager = manager
+                                taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                                taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                                 noticeBoardAdapter!!.notifyDataSetChanged()
-
-                                //recyclerview item클릭 시
+//recyclerview item클릭 시
                                 noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
                                     override fun onClick(view: View, position: Int, itemId: Int) {
                                         CoroutineScope(Dispatchers.IO).launch {
@@ -252,6 +246,7 @@ class TaxiTabFragment : Fragment() {
                                         }
                                     }
                                 })
+
 
                             } else {
                                 CoroutineScope(Dispatchers.Main).launch {
@@ -843,10 +838,19 @@ class TaxiTabFragment : Fragment() {
                 newRequest =
                     chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
                 val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+
+                if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.d("TaxiFragment", expireDate.toString())
+
+                    // UI 스레드에서 Toast 실행
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(requireActivity(), "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                    }
+
+                    Log.e("TaxiFragment", "순서체크")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
 
@@ -854,9 +858,11 @@ class TaxiTabFragment : Fragment() {
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
                 }
+
             } else newRequest = chain.request()
             chain.proceed(newRequest)
         }
+
         val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -869,249 +875,107 @@ class TaxiTabFragment : Fragment() {
 
         //println(userId)
 
-        CoroutineScope(Dispatchers.IO).launch {
-            api.getMyParticipantsUserData().enqueue(object : Callback<List<Content>> {
-                override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
-                    if (response.isSuccessful) {
-                        val responseData = response.body()
-                        Log.d("taxi", response.code().toString())
-                        //데이터 청소
-                        currentTaxiAllData.clear()
+        api.getMyParticipantsUserData().enqueue(object : Callback<List<Content>> {
+            override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
+                if (response.isSuccessful) {
+                    val responseData = response.body()
+                    Log.d("taxi", response.code().toString())
+                    //데이터 청소
+                    currentTaxiAllData.clear()
 
-                        CoroutineScope(Dispatchers.IO).launch {
-                            if (responseData != null) {
-                                for (i in responseData) {
-                                    currentTaxiAllData.add(PostData(
-                                        i.user.studentId,
-                                        i.postId,
-                                        i.title,
-                                        i.content,
-                                        i.targetDate,
-                                        i.targetTime,
-                                        i.category.categoryName,
-                                        i.location,
-                                        //participantscount가 현재 참여하는 인원들
-                                        i.participantsCount,
-                                        //numberOfPassengers은 총 탑승자 수
-                                        i.numberOfPassengers,
-                                        i.cost,
-                                        i.verifyGoReturn,
-                                        i.user,
-                                        i.latitude,
-                                        i.longitude
-                                    ))
-                                    taxiParticipantsData.add(i.participants)
-                                }
-                            }
+                    if (responseData != null) {
+                        for (i in responseData) {
+                            currentTaxiAllData.add(PostData(
+                                i.user.studentId,
+                                i.postId,
+                                i.title,
+                                i.content,
+                                i.targetDate,
+                                i.targetTime,
+                                i.category.categoryName,
+                                i.location,
+                                //participantscount가 현재 참여하는 인원들
+                                i.participantsCount,
+                                //numberOfPassengers은 총 탑승자 수
+                                i.numberOfPassengers,
+                                i.cost,
+                                i.verifyGoReturn,
+                                i.user,
+                                i.latitude,
+                                i.longitude
+                            ))
+                            taxiParticipantsData.add(i.participants)
                         }
-                        currentNoticeBoardAdapter!!.notifyDataSetChanged()
+                    }
+                    currentNoticeBoardAdapter!!.notifyDataSetChanged()
 
-                        if (currentTaxiAllData.isEmpty()) {
+                    if (currentTaxiAllData.isEmpty()) {
+                        taxiTabBinding.currentRv.visibility = View.GONE
+                        taxiTabBinding.nonCurrentRvTv.text = "예약된 게시글이 없습니다"
+                        taxiTabBinding.nonCurrentRvTv2.text = "미오에서 카풀,택시를 구해보세요!"
+                        taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                        taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+                    } else {
+                        taxiTabBinding.currentRv.visibility = View.VISIBLE
+                        taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
+                        taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
+                    }
+
+                    loadingDialog.dismiss()
+
+                } else {
+                    println(response.errorBody().toString())
+                    println(response.message().toString())
+                    println("실패")
+                    println("faafa")
+                    Log.d("add", response.errorBody()?.string()!!)
+                    Log.d("message", call.request().toString())
+                    Log.d("f", response.code().toString())
+
+                    if (response.code().toString() == "500") {
+                        if (response.errorBody()?.string() != null) {
                             taxiTabBinding.currentRv.visibility = View.GONE
                             taxiTabBinding.nonCurrentRvTv.text = "예약된 게시글이 없습니다"
                             taxiTabBinding.nonCurrentRvTv2.text = "미오에서 카풀,택시를 구해보세요!"
                             taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
                             taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
                         } else {
-                            taxiTabBinding.currentRv.visibility = View.VISIBLE
-                            taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
-                            taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
-                        }
+                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv.text = "예상치 못한 오류가 발생했습니다"
+                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+                            taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
 
-                        loadingDialog.dismiss()
-
-                    } else {
-                        println(response.errorBody().toString())
-                        println(response.message().toString())
-                        println("실패")
-                        println("faafa")
-                        Log.d("add", response.errorBody()?.string()!!)
-                        Log.d("message", call.request().toString())
-                        Log.d("f", response.code().toString())
-
-                        if (response.code().toString() == "500") {
-                            if (response.errorBody()?.string() != null) {
-                                taxiTabBinding.currentRv.visibility = View.GONE
-                                taxiTabBinding.nonCurrentRvTv.text = "예약된 게시글이 없습니다"
-                                taxiTabBinding.nonCurrentRvTv2.text = "미오에서 카풀,택시를 구해보세요!"
-                                taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
-                                taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
-                            } else {
-                                taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
-                                taxiTabBinding.nonCurrentRvTv.text = "예상치 못한 오류가 발생했습니다"
-                                taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
-                                taxiTabBinding.nonCurrentRvTv2.text = "이곳을 눌러 새로고침 해주세요"
-
-                                taxiTabBinding.nonCurrentRvTv2.setOnClickListener {
-                                    lifecycleScope.launch {
-                                        setCurrentTaxiData()
-                                    }
+                            taxiTabBinding.nonCurrentRvTv2.setOnClickListener {
+                                lifecycleScope.launch {
+                                    setCurrentTaxiData()
                                 }
-                                taxiTabBinding.carpoolText.setOnClickListener {
-                                    Log.d("carpoolText", "clcickckckc")
-                                    lifecycleScope.launch {
-                                        setCurrentTaxiData()
-                                    }
+                            }
+                            taxiTabBinding.carpoolText.setOnClickListener {
+                                Log.d("carpoolText", "clcickckckc")
+                                lifecycleScope.launch {
+                                    setCurrentTaxiData()
                                 }
                             }
                         }
-
-                        if (currentTaxiAllData.isEmpty()) {
-                            taxiTabBinding.currentRv.visibility = View.GONE
-                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
-                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
-
-                        } else {
-                            taxiTabBinding.currentRv.visibility = View.VISIBLE
-                            taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
-                            taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
-                        }
                     }
-                }
 
-                override fun onFailure(call: Call<List<Content>>, t: Throwable) {
-                    Log.d("error", t.toString())
-                }
-            })
-        }
-        /*val call = RetrofitServerConnect.service
-        CoroutineScope(Dispatchers.IO).launch {
-            call.getCurrentServerPostData("createDate,desc").enqueue(object : Callback<PostReadAllResponse> {
-                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                    if (response.isSuccessful) {
-                        val temp = kotlin.collections.ArrayList<PostData>()
-                        //데이터 청소
-                        currentTaxiAllData.clear()
+                    if (currentTaxiAllData.isEmpty()) {
+                        taxiTabBinding.currentRv.visibility = View.GONE
+                        taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                        taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
 
-                        for (i in response.body()!!.content.indices) {
-                            //탑승자 null체크
-                            var part = 0
-                            var location = ""
-                            var title = ""
-                            var content = ""
-                            var targetDate = ""
-                            var targetTime = ""
-                            var categoryName = ""
-                            var cost = 0
-                            var verifyGoReturn = false
-                            if (response.isSuccessful) {
-                                part = try {
-                                    response.body()!!.content[i].participants.isEmpty()
-                                    response.body()!!.content[i].participants.size
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                location = try {
-                                    response.body()!!.content[i].location.isEmpty()
-                                    response.body()!!.content[i].location
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "수락산역 3번 출구"
-                                }
-                                title = try {
-                                    response.body()!!.content[i].title.isEmpty()
-                                    response.body()!!.content[i].title
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                content = try {
-                                    response.body()!!.content[i].content.isEmpty()
-                                    response.body()!!.content[i].content
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetDate = try {
-                                    response.body()!!.content[i].targetDate.isEmpty()
-                                    response.body()!!.content[i].targetDate
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetTime = try {
-                                    response.body()!!.content[i].targetTime.isEmpty()
-                                    response.body()!!.content[i].targetTime
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                categoryName = try {
-                                    response.body()!!.content[i].category.categoryName.isEmpty()
-                                    response.body()!!.content[i].category.categoryName
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                cost = try {
-                                    response.body()!!.content[i].cost
-                                    response.body()!!.content[i].cost
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                verifyGoReturn = try {
-                                    response.body()!!.content[i].verifyGoReturn
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    false
-                                }
-                            }
-
-                            //println(response!!.body()!!.content[i].user.studentId)
-                            temp.add(PostData(
-                                response.body()!!.content[i].user.studentId,
-                                response.body()!!.content[i].postId,
-                                title,
-                                content,
-                                targetDate,
-                                targetTime,
-                                categoryName,
-                                location,
-                                //participantscount가 현재 참여하는 인원들
-                                part,
-                                //numberOfPassengers은 총 탑승자 수
-                                response.body()!!.content[i].numberOfPassengers,
-                                cost,
-                                verifyGoReturn,
-                                response.body()!!.content[i].user
-                            ))
-                        }
-                        val now = System.currentTimeMillis()
-                        val date = Date(now)
-                        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA)
-                        val currentDate = sdf.format(date)
-                        val selectFormattedDate = LocalDate.parse(currentDate, DateTimeFormatter.ofPattern("yyyy-MM-dd")).format(
-                            DateTimeFormatter.ISO_DATE)
-                        val currentTempData = temp.filter { it.postTargetDate == selectFormattedDate}
-                        for (j in currentTempData.indices) {
-                            currentTaxiAllData.add(currentTempData[j])
-                        }
-                        currentNoticeBoardAdapter!!.notifyDataSetChanged()
-
-
-                        if (currentTaxiAllData.isEmpty()) {
-                            taxiTabBinding.currentRv.visibility = View.GONE
-                            taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
-                            taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
-                        } else {
-                            taxiTabBinding.currentRv.visibility = View.VISIBLE
-                            taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
-                            taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
-                        }
-
-                        loadingDialog.dismiss()
                     } else {
-                        Log.d("f", response.code().toString())
+                        taxiTabBinding.currentRv.visibility = View.VISIBLE
+                        taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
+                        taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
                     }
                 }
+            }
 
-                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.d("error", t.toString())
-                }
-            })
-        }*/
+            override fun onFailure(call: Call<List<Content>>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
     }
     //오늘날짜에 선택되게
     private fun triggerFirstItemOfCalendarAdapter(currentDatePos : Int) {

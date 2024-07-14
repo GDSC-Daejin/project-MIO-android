@@ -10,9 +10,10 @@ import retrofit2.http.*
 interface MioInterface {
 
     //게시글 생성
+    @Headers("Content-Type: application/json; charset=utf-8")
     @POST("/post/{categoryId}")
     fun addPostData(/*@Header("Content-Type") content_type : String,*/ /*@PartMap postData : Map<String, RequestBody>*/@Body postData : AddPostData, @Path("categoryId") categoryId : Int) : Call<AddPostResponse>
-
+    //"application/json; charset=utf-8"
     /*@POST("/post/1")
     fun addCarpoolPostData(@Body postData : AddPostData) : Call<AddPostResponse>
     */
@@ -56,7 +57,7 @@ interface MioInterface {
     fun getLocationPostData(@Query("latitude") latitude : Double, @Query("longitude") longitude : Double) : Call<List<LocationReadAllResponse>>*/
 
     @PATCH("/post/verfiyFinish/{id}")
-    fun patchVerifyFinish(@Body verifyFinish : Boolean, @Path("id") id : Int) : Call<AddPostResponse>
+    fun patchVerifyFinish(@Body verifyFinish : VerifyFinishData, @Path("id") id : Int) : Call<AddPostResponse>
 
     @GET("/post/location2") //활동
     fun getLocationPostData(@Query("location") location : String) : Call<List<LocationReadAllResponse>>

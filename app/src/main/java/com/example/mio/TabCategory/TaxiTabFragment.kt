@@ -171,6 +171,7 @@ class TaxiTabFragment : Fragment() {
                                 putExtra("postData", currentTaxiAllData[position])
                             }
                             sendAlarmData("PASSENGER", position, currentTaxiAllData[position])
+                            patchVerifyFinish(temp.postID)
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Driver -> { //내가 운전자로 카풀이 완료되었을 떄
@@ -180,6 +181,7 @@ class TaxiTabFragment : Fragment() {
                                 putExtra("postData", currentTaxiAllData[position])
                             }
                             sendAlarmData("DRIVER", position, currentTaxiAllData[position])
+                            patchVerifyFinish(temp.postID)
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Neither -> {
@@ -982,6 +984,69 @@ class TaxiTabFragment : Fragment() {
         taxiTabBinding.calendarRV.post {
             taxiTabBinding.calendarRV.findViewHolderForAdapterPosition(currentDatePos)?.itemView?.performClick()
         }
+    }
+
+    private fun patchVerifyFinish(postId : Int) {
+        //저장된 값
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
+
+        //통신
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        //.client(clientBuilder)
+
+        //Authorization jwt토큰 로그인
+        val interceptor = Interceptor { chain ->
+
+            val newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(requireContext(), LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                    startActivity(intent)
+                    requireActivity().finish()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        ///
+        api.patchVerifyFinish(verifyFinish = VerifyFinishData(true), postId).enqueue(object : Callback<AddPostResponse> {
+            override fun onResponse(
+                call: Call<AddPostResponse>,
+                response: Response<AddPostResponse>
+            ) {
+                if (response.isSuccessful) {
+                    Log.d("patchVerifyFinishSuccess", response.code().toString())
+                } else {
+                    Log.e("patchVerifyFinishSuccess", response.code().toString())
+                    Log.e("patchVerifyFinishSuccess", response.errorBody().toString())
+                    Log.e("patchVerifyFinishSuccess", response.message().toString())
+                }
+            }
+
+            override fun onFailure(call: Call<AddPostResponse>, t: Throwable) {
+                Log.e("patchVerifyFinishSuccess", t.toString())
+            }
+        })
     }
 
     private fun sendAlarmData(status:String , dataPos : Int, postData : PostData) { //카풀이 종료(종료버튼 눌렀을 때) 되었을 때 후기 알림

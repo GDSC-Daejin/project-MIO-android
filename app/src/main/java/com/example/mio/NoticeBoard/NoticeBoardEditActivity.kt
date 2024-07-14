@@ -728,6 +728,14 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
         //등/하교
         mBinding.editGtschoolBtn.setOnClickListener {
+            // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+            val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+            if (inputMethodManager.isActive) {
+                // 가상 키보드가 올라가 있다면 내립니다.
+                inputMethodManager.hideSoftInputFromWindow(mBinding.editGtschoolBtn.windowToken, 0)
+            }
+
             mBinding.editGtschoolBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
@@ -868,8 +876,11 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 var newRequest: Request
                 if (token != null && token != "") { // 토큰이 없는 경우
                     // Authorization 헤더에 토큰 추가
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    newRequest = chain.request().newBuilder()
+                        .addHeader("Authorization", "Bearer $token")
+                        .addHeader("Content-Type", "application/json; charset=utf-8")
+                        .build()
+
                     val expireDate: Long = getExpireDate.toLong()
                     if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                         //refresh 들어갈 곳

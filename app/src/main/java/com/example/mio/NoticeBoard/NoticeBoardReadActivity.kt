@@ -522,11 +522,19 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             commentEditText = ""
             val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
             imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed(java.lang.Runnable {
+                nbrBinding.readCommentEt.clearFocus()
+            },1000)
         }
+        //대댓글 수정 및 삭제
+        /*noticeBoardReadAdapter?.setCommentClickListener(object : NoticeBoardReadAdapter.CommentClickListener {
+
+        })*/
 
 
         //대댓글 달기 또는 다른 기능 추가 예정
-        noticeBoardReadAdapter!!.setItemClickListener(object : NoticeBoardReadAdapter.ItemClickListener {
+        noticeBoardReadAdapter?.setItemClickListener(object : NoticeBoardReadAdapter.ItemClickListener {
             //대댓글 쓸 때
             @RequiresApi(Build.VERSION_CODES.S)
             override fun onClick(view: View, position: Int, itemId: Int) {
@@ -539,15 +547,21 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     getSystemService(VIBRATOR_SERVICE) as Vibrator
                 }
                 if (vibration.hasVibrator()) {
-                    vibration.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
+                    vibration.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
                 }
-
+                Log.e("setItemClickListener", "clclclclclclcl")
                 nbrBinding.readCommentLl.visibility = View.VISIBLE
 
                 //자동으로 포커스 줘서 대댓글 달게 하기
                 nbrBinding.readCommentEt.requestFocus()
                 val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                 imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
+                val handler = Handler(Looper.getMainLooper())
+                handler.postDelayed(java.lang.Runnable {
+                    nbrBinding.readCommentEt.clearFocus()
+                },1000)
+                //nbrBinding.readSendComment.requestFocus()
+
 
                 sharedViewModel!!.postReply(reply = true) //수정
 
@@ -559,7 +573,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             //댓글 수정 및 삭제할 때
             override fun onLongClick(view: View, position: Int, itemId: Int) {
                 if (email == temp!!.user.email) {
-                    nbrBinding.readCommentEt.clearFocus()
+                    val handler = Handler(Looper.getMainLooper())
+                    handler.postDelayed(java.lang.Runnable {
+                        nbrBinding.readCommentEt.clearFocus()
+                    },1000)
+
                     //수정용
                     commentPosition = itemId
                     val bottomSheet = ReadSettingBottomSheetFragment()
@@ -576,11 +594,15 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         val filterCommentText = realCommentAllData.find { it!!.commentId == commentPosition }
                                         nbrBinding.readCommentLl.visibility = View.VISIBLE
                                         nbrBinding.readCommentEt.setText(filterCommentText?.content)
-                                        /*nbrBinding.readCommentEt.requestFocus()
+                                        nbrBinding.readCommentEt.requestFocus()
                                         val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
                                         imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
                                         println(filterCommentText)
-                                        println(commentPosition)*/
+                                        println(commentPosition)
+                                        val handler = Handler(Looper.getMainLooper())
+                                        handler.postDelayed(java.lang.Runnable {
+                                            nbrBinding.readCommentEt.clearFocus()
+                                        },1000)
                                     }
 
                                     "삭제" -> {
@@ -593,9 +615,48 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     }
                 }
             }
+
+            override fun onReplyClicked(
+                status: String?,
+                commentId: Int?,
+                commentData: CommentData?
+            ) {
+                if (status == "수정") {
+                    println(status)
+
+                    getBottomSheetCommentData = "수정"
+                    nbrBinding.readCommentLl.visibility = View.VISIBLE
+                    nbrBinding.readCommentEt.setText(commentData?.content)
+                    commentEditText = commentData?.content.toString()
+                    //자동으로 포커스 줘서 대댓글 달게 하기
+                    nbrBinding.readCommentEt.post {
+                        Log.d("POST Comment", "edittext keyboard")
+                        nbrBinding.readCommentEt.isFocusableInTouchMode = true
+                        nbrBinding.readCommentEt.requestFocus()
+                        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                        imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
+                    }
+                    val handler = Handler(Looper.getMainLooper())
+                    handler.postDelayed(java.lang.Runnable {
+                        nbrBinding.readCommentEt.clearFocus()
+                    },1000)
+                    println(commentId) //이건 부모 댓글 id
+                    println(commentData?.content.toString()) //이건 수정할 대댓글의 정보
+                    Log.e("setCommentClickListener", "clclclclclc2lcl")
+
+
+                } else {
+                    if (commentId != null) {
+                        deleteCommentData(commentId)
+                        fetchAllComments()
+                    }
+                }
+            }
         })
 
         sharedViewModel!!.isReply.observe(this@NoticeBoardReadActivity) {
+            nbrBinding.readSendComment.requestFocus()
+            nbrBinding.readEditSendComment.requestFocus()
             isReplyComment = when(it) {
                 true -> {
                     true
@@ -605,7 +666,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     false
                 }
             }
-            println(isReplyComment)
+            Log.e("sharedViewmodel" , isReplyComment.toString())
         }
 
         nbrBinding.readUserId.setOnClickListener {
@@ -695,37 +756,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             finish()
         }
 
-        //대댓글 수정 및 삭제
-        noticeBoardReadAdapter?.setCommentClickListener(object : NoticeBoardReadAdapter.CommentClickListener {
-            override fun onReplyClicked(status: String?, commentId: Int?, commentData: CommentData?) {
-                if (status == "수정") {
-                    println(status)
 
-                    getBottomSheetCommentData = "수정"
-                    nbrBinding.readCommentLl.visibility = View.VISIBLE
-                    nbrBinding.readCommentEt.setText(commentData?.content)
-                    commentEditText = commentData?.content.toString()
-                    //자동으로 포커스 줘서 대댓글 달게 하기
-                    /*nbrBinding.readCommentEt.post {
-                        Log.d("POST Comment", "edittext keyboard")
-                        nbrBinding.readCommentEt.isFocusableInTouchMode = true
-                        nbrBinding.readCommentEt.requestFocus()
-                        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                        imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
-                    }*/
-                    println(commentId) //이건 부모 댓글 id
-                    println(commentData?.content.toString()) //이건 수정할 대댓글의 정보
-
-
-
-                } else {
-                    if (commentId != null) {
-                        deleteCommentData(commentId)
-                        fetchAllComments()
-                    }
-                }
-            }
-        })
 
         /*val observer: ViewTreeObserver = nbrBinding.root.viewTreeObserver
         observer.addOnPreDrawListener {
@@ -1091,7 +1122,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     }
 
     //edittext가 아닌 다른 곳 클릭 시 내리기
-    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+    /*override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         val focusView: View? = currentFocus
         if (focusView != null) {
             val rect = Rect()
@@ -1106,7 +1137,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             }
         }
         return super.dispatchTouchEvent(ev)
-    }
+    }*/
 
     /*override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.comment_option_menu, menu)
@@ -1225,6 +1256,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             fetchAllComments()
                             nbrBinding.readCommentEt.text = null
                             nbrBinding.readCommentLl.visibility = View.GONE
+                            // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                            val inputMethodManager = this@NoticeBoardReadActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                            // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                            if (inputMethodManager.isActive) {
+                                // 가상 키보드가 올라가 있다면 내립니다.
+                                inputMethodManager.hideSoftInputFromWindow(nbrBinding.readEditSendComment.windowToken, 0)
+                            }
                             println("수정성공")
                         } else {
                             println("faafa")
@@ -1243,6 +1281,14 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         nbrBinding.readSendComment.setOnClickListener {
             Log.e("readSendComment", commentEditText)
+            Log.e("nbrBinding.readSendComment", isReplyComment.toString())
+            // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+            val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+            if (inputMethodManager.isActive) {
+                // 가상 키보드가 올라가 있다면 내립니다.
+                inputMethodManager.hideSoftInputFromWindow(nbrBinding.readSendComment.windowToken, 0)
+            }
             if (isReplyComment) { //대댓글
                 //서버에서 원하는 형식으로 날짜 설정
                 /*val now = System.currentTimeMillis()
@@ -1314,7 +1360,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 println("대댓글달기성공")
                                 //한 번 달고 끝내야하니 false전달
                                 sharedViewModel!!.postReply(reply = false)
-                                sendAlarmData("댓글", commentEditText, temp)
+                                sendAlarmData("댓글 ", commentEditText, temp)
                                 commentEditText = ""
                                 nbrBinding.readCommentEt.text = null
                             } else {
@@ -1568,7 +1614,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 )
                                 childComments.add(childCommentData)
 
-                                //댓글 수정을 위한 모든 데이터 리스트
+                                // 댓글 수정을 위한 모든 데이터 리스트
                                 realCommentAllData.add(childCommentData)
 
                                 childCommentsSize += 1
@@ -1579,23 +1625,107 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             realCommentAllData.add(commentData)
                         }
 
-                        // 댓글 데이터를 갱신하고 RecyclerView 어댑터를 새로 설정
+                        // 댓글 데이터를 갱신
                         commentAllData = updatedCommentAllData
 
-                        val commentAdapter = NoticeBoardReadAdapter()
-                        commentAdapter!!.commentItemData = commentAllData
-                        nbrBinding.commentRV.adapter = commentAdapter
-
                         // UI 업데이트
-                        val totalSize = commentAllData.size + childCommentsSize
-                        nbrBinding.readCommentTotal.text = totalSize.toString()
+                        runOnUiThread {
+                            val totalSize = commentAllData.size + childCommentsSize
+                            nbrBinding.readCommentTotal.text = totalSize.toString()
 
-                        if (commentAllData.isEmpty()) {
-                            nbrBinding.commentRV.visibility = View.GONE
-                            nbrBinding.notCommentTv.visibility = View.VISIBLE
-                        } else {
-                            nbrBinding.commentRV.visibility = View.VISIBLE
-                            nbrBinding.notCommentTv.visibility = View.GONE
+                            if (commentAllData.isEmpty()) {
+                                nbrBinding.commentRV.visibility = View.GONE
+                                nbrBinding.notCommentTv.visibility = View.VISIBLE
+                            } else {
+                                nbrBinding.commentRV.visibility = View.VISIBLE
+                                nbrBinding.notCommentTv.visibility = View.GONE
+                            }
+
+                            // 어댑터 갱신
+                            (nbrBinding.commentRV.adapter as? NoticeBoardReadAdapter)?.let { adapter ->
+                                adapter.commentItemData = commentAllData
+                                adapter.notifyDataSetChanged()
+                            } ?: run {
+                                // 어댑터 초기화 및 리스너 설정
+                                val commentAdapter = NoticeBoardReadAdapter()
+                                commentAdapter.commentItemData = commentAllData
+                                nbrBinding.commentRV.adapter = commentAdapter
+
+
+                                commentAdapter.setItemClickListener(object : NoticeBoardReadAdapter.ItemClickListener {
+                                    @RequiresApi(Build.VERSION_CODES.S)
+                                    override fun onClick(view: View, position: Int, itemId: Int) {
+                                        val vibration = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                            val vbManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+                                            vbManager.defaultVibrator
+                                        } else {
+                                            @Suppress("DEPRECATION")
+                                            getSystemService(VIBRATOR_SERVICE) as Vibrator
+                                        }
+                                        if (vibration.hasVibrator()) {
+                                            vibration.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+                                        }
+                                        Log.e("setItemClickListener", "clclclclclclcl")
+                                        nbrBinding.readCommentLl.visibility = View.VISIBLE
+                                        nbrBinding.readCommentEt.requestFocus()
+                                        sharedViewModel!!.postReply(reply = true) // 수정
+                                        parentPosition = itemId
+                                    }
+
+                                    override fun onLongClick(view: View, position: Int, itemId: Int) {
+                                        if (email == temp!!.user.email) {
+                                            val handler = Handler(Looper.getMainLooper())
+                                            handler.postDelayed(java.lang.Runnable {
+                                                nbrBinding.readCommentEt.clearFocus()
+                                            },1000)
+                                            commentPosition = itemId
+                                            val bottomSheet = ReadSettingBottomSheetFragment()
+                                            bottomSheet.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet.tag)
+                                            bottomSheet.apply {
+                                                setCallback(object : ReadSettingBottomSheetFragment.OnSendFromBottomSheetDialog {
+                                                    override fun sendValue(value: String) {
+                                                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
+                                                        getBottomSheetCommentData = value
+                                                        when (value) {
+                                                            "수정" -> {
+                                                                val filterCommentText = realCommentAllData.find { it!!.commentId == commentPosition }
+                                                                nbrBinding.readCommentLl.visibility = View.VISIBLE
+                                                                nbrBinding.readCommentEt.setText(filterCommentText?.content)
+                                                            }
+                                                            "삭제" -> {
+                                                                deleteCommentData(itemId)
+                                                                fetchAllComments()
+                                                            }
+                                                        }
+                                                    }
+                                                })
+                                            }
+                                        }
+                                    }
+
+                                    override fun onReplyClicked(
+                                        status: String?,
+                                        commentId: Int?,
+                                        commentData: CommentData?
+                                    ) {
+                                        if (status == "수정") {
+                                            println(status)
+                                            getBottomSheetCommentData = "수정"
+                                            nbrBinding.readCommentLl.visibility = View.VISIBLE
+                                            nbrBinding.readCommentEt.setText(commentData?.content)
+                                            commentEditText = commentData?.content.toString()
+                                            println(commentId) //이건 부모 댓글 id
+                                            println(commentData?.content.toString()) //이건 수정할 대댓글의 정보
+                                            Log.e("setCommentClickListener", "clclclclclc2lcl")
+                                        } else {
+                                            if (commentId != null) {
+                                                deleteCommentData(commentId)
+                                                fetchAllComments()
+                                            }
+                                        }
+                                    }
+                                })
+                            }
                         }
                     } else {
                         Log.e("ERROR COMMENT", response.errorBody().toString())
@@ -2068,7 +2198,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     Log.d("READ Keyboard test", "키보드 내리기")
                     //키보드가 숨겨졌을 때
                     nbrBinding.readCommentLl.visibility = View.GONE
-                    nbrBinding.readCommentEt.clearFocus()
+                    val handler = Handler(Looper.getMainLooper())
+                    handler.postDelayed(java.lang.Runnable {
+                        nbrBinding.readCommentEt.clearFocus()
+                    },1000)
                     nbrBinding.readCommentEt.text = null
                     getBottomSheetCommentData = ""
                 }

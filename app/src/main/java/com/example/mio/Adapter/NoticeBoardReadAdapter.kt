@@ -113,14 +113,14 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
             //accountProfile.setImageURI() = pillData.pillTakeTime
 
             binding.root.setOnClickListener {
-                itemClickListener.onClick(it, layoutPosition, commentItemData[layoutPosition]!!.commentId)
+                itemClickListener?.onClick(it, layoutPosition, commentItemData[layoutPosition]!!.commentId)
                 println(postDateTime)
                 println(comment.createDate)
                 println(identification)
             }
 
             binding.root.setOnLongClickListener {
-                itemClickListener.onLongClick(it, layoutPosition, commentItemData[layoutPosition]!!.commentId)
+                itemClickListener?.onLongClick(it, layoutPosition, commentItemData[layoutPosition]!!.commentId)
                 return@setOnLongClickListener true
             }
         }
@@ -170,11 +170,11 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
                                     "수정" -> {
                                         Log.d("adpater Read Test", "${temp}")
                                         Log.d("adpater Read Test", "${parentComment}")
-                                        commentClickListener.onReplyClicked("수정", parentComment?.commentId, temp)
+                                        itemClickListener?.onReplyClicked("수정", parentComment?.commentId, temp)
                                     }
 
                                     "삭제" -> {
-                                        commentClickListener.onReplyClicked("삭제", temp.commentId, temp)
+                                        itemClickListener?.onReplyClicked("삭제", temp.commentId, temp)
                                     }
                                 }
                             }
@@ -243,16 +243,18 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
     interface ItemClickListener {
         fun onClick(view: View, position: Int, itemId: Int)
         fun onLongClick(view: View, position: Int, itemId: Int)
-    }
 
-    interface CommentClickListener {
         fun onReplyClicked(status : String? , commentId: Int?, commentData : CommentData?)
     }
 
+    interface CommentClickListener {
 
-    private lateinit var itemClickListener: ItemClickListener
+    }
 
-    private lateinit var commentClickListener: CommentClickListener
+
+    private var itemClickListener: ItemClickListener? = null
+
+    private var commentClickListener: CommentClickListener? = null
 
     fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener

@@ -1,5 +1,6 @@
 package com.example.mio.Adapter
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -59,7 +60,7 @@ class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommen
             val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
             val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
             if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
-
+                Log.e("replycommentAdapter", diffSeconds.toString())
                 if(diffSeconds > -1){
                     reCommentRealTimeCheck.text = "방금전"
                 }

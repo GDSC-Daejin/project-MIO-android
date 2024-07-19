@@ -74,7 +74,15 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
                 commentUserId.text = comment.user.studentId.toString()
             }
 
-            commentContent.text = comment.content
+            if (comment.content == "삭제된 댓글입니다.") {
+                binding.commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_8))
+                commentContent.text = comment.content
+            } else {
+                binding.commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_11))
+                commentContent.text = comment.content
+            }
+
+
             //commentRealTimeCheck.text = comment.createDate
 
             val now = System.currentTimeMillis()

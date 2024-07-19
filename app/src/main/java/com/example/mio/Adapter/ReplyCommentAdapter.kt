@@ -40,8 +40,14 @@ class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommen
             } else {
                 reCommentUserId.text = comment.user.studentId.toString()
             }
-            //reCommentUserId.text = comment.user.studentId.toString()
-            reCommentContent.text = comment.content
+
+            if (comment.content == "삭제된 댓글입니다.") {
+                binding.reCommentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_8))
+                reCommentContent.text = comment.content
+            } else {
+                binding.reCommentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_11))
+                reCommentContent.text = comment.content
+            }
 
 
             val now = System.currentTimeMillis()

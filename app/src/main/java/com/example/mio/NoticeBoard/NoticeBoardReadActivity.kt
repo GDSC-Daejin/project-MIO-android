@@ -974,8 +974,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     }
 
                                     "삭제" -> {
-                                        deleteCommentData(itemId)
-                                        fetchAllComments()
+                                        if (commentAllData.find { it?.commentId == itemId }?.content != "삭제된 댓글입니다.") {
+                                            deleteCommentData(itemId)
+                                            fetchAllComments()
+                                        }
                                     }
                                 }
                             }
@@ -1913,8 +1915,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
                                                             }
                                                             "삭제" -> {
-                                                                deleteCommentData(itemId)
-                                                                fetchAllComments()
+                                                                if (commentAllData.find { it?.commentId == itemId }?.content != "삭제된 댓글입니다.") {
+                                                                    deleteCommentData(itemId)
+                                                                    fetchAllComments()
+                                                                }
                                                             }
                                                         }
                                                     }
@@ -2086,6 +2090,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         println("ssssssss")
                         println(response.code())
+                        fetchAllComments()
                     } else {
                         println("faafa")
                         Log.d("add", response.errorBody()?.string()!!)

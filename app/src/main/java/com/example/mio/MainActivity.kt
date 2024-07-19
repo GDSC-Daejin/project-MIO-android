@@ -109,13 +109,13 @@ class MainActivity : AppCompatActivity() {
         actionSetting?.isVisible = !isSettingClicked
         Log.e("actionSetting", isSettingClicked.toString())*/
         if (isClicked) {
-            Log.e("isclicked", isClicked.toString())
+            //Log.e("isclicked", isClicked.toString())
             actionNotification?.isVisible = false//!isClicked
             toolbarType = "알림"
             setToolbarView(toolbarType)
             //actionSetting?.isVisible = true
         } else {
-            Log.e("isclicked", isClicked.toString())
+            //Log.e("isclicked", isClicked.toString())
             actionNotification?.isVisible = true//!isClicked
             //actionSetting?.isVisible = false
         }

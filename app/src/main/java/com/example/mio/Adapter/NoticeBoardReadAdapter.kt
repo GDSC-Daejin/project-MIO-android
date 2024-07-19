@@ -62,6 +62,7 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
             binding.reCommentRv.setHasFixedSize(true)
             binding.reCommentRv.layoutManager = manager
             replyCommentAdapter!!.setReplyCommentData(comment.childComments) // 댓글의 답변 댓글 리스트 설정
+            replyCommentAdapter!!.getWriter = getWriter
 
 
             this.position = position

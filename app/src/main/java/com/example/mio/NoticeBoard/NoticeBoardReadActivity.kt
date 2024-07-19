@@ -33,6 +33,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.example.mio.*
 import com.example.mio.Adapter.NoticeBoardReadAdapter
+import com.example.mio.BottomSheetFragment.BottomSheetCommentFragment
 import com.example.mio.BottomSheetFragment.ReadSettingBottomSheet2Fragment
 import com.example.mio.Helper.AlertReceiver
 import com.example.mio.Helper.SharedPref
@@ -153,7 +154,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.toString()
 
         createChannel()
-        commentSetting()
 
 
         val type = intent.getStringExtra("type")
@@ -515,17 +515,222 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
 
         nbrBinding.readCommentTv.setOnClickListener {
-            nbrBinding.readCommentLl.visibility = View.VISIBLE
-            //자동으로 포커스 줘서 댓글 달게 하기
-            nbrBinding.readCommentEt.requestFocus()
-            nbrBinding.readCommentEt.text = null
-            commentEditText = ""
-            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
-            val handler = Handler(Looper.getMainLooper())
-            handler.postDelayed(java.lang.Runnable {
-                nbrBinding.readCommentEt.clearFocus()
-            },1000)
+            val bottomSheet = BottomSheetCommentFragment(null, null)
+            //bottomSheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.RoundCornerBottomSheetDialogTheme)
+            bottomSheet.show(this.supportFragmentManager, bottomSheet.tag)
+            bottomSheet.apply {
+                setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
+                    override fun sendValue(value: String) {
+                        Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
+                        commentEditText = value
+                        Log.e("readSendComment", commentEditText)
+                        Log.e("nbrBinding.readSendComment", isReplyComment.toString())
+                        // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                        val inputMethodManager = this@NoticeBoardReadActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                        // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                        if (inputMethodManager.isActive) {
+                            // 가상 키보드가 올라가 있다면 내립니다.
+                            inputMethodManager.hideSoftInputFromWindow(nbrBinding.readCommentTv.windowToken, 0)
+                        }
+                        if (isReplyComment) { //대댓글
+                            //서버에서 원하는 형식으로 날짜 설정
+                            /*val now = System.currentTimeMillis()
+                            val date = Date(now)
+                            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+                            val currentDate = sdf.format(date)
+                            val formatter = DateTimeFormatter
+                                .ofPattern("yyyy-MM-dd HH:mm:ss")
+                                .withZone(ZoneId.systemDefault())
+                            val result: Instant = Instant.from(formatter.parse(currentDate))*/
+                            val nowInKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
+                            // KST 시간을 UTC 시간대로 변환
+                            val nowInUTC2 = nowInKST.withZoneSameInstant(ZoneId.of("UTC"))
+                            // ISO 8601 형식으로 변환 (UTC 시간대, 'Z' 포함)
+                            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                            val result = nowInKST.format(formatter)
+
+                            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                            val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
+                            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
+
+                            /////////interceptor
+                            val SERVER_URL = BuildConfig.server_URL
+                            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                                .addConverterFactory(GsonConverterFactory.create())
+                            //Authorization jwt토큰 로그인
+                            val interceptor = Interceptor { chain ->
+                                var newRequest: Request
+                                if (token != null && token != "") { // 토큰이 없는 경우
+                                    // Authorization 헤더에 토큰 추가
+                                    newRequest =
+                                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                                    val expireDate: Long = getExpireDate.toLong()
+                                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                                        //refresh 들어갈 곳
+                                        /*newRequest =
+                                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                        val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                                        startActivity(intent)
+                                        finish()
+                                        return@Interceptor chain.proceed(newRequest)
+                                    }
+
+                                } else newRequest = chain.request()
+                                chain.proceed(newRequest)
+                            }
+                            val builder = OkHttpClient.Builder()
+                            builder.interceptors().add(interceptor)
+                            val client: OkHttpClient = builder.build()
+                            retrofit.client(client)
+                            val retrofit2: Retrofit = retrofit.build()
+                            val api = retrofit2.create(MioInterface::class.java)
+                            /////////
+
+                            //댓글 잠시 저장
+                            val childCommentTemp = SendChildCommentData(commentEditText, result.toString() ,temp!!.postID, parentPosition)
+                            //println("ct $commentTemp")
+                            ///
+
+                            //대댓글 추가하기
+                            CoroutineScope(Dispatchers.IO).launch {
+                                api.addChildCommentData(childCommentTemp, parentPosition).enqueue(object : Callback<CommentData> {
+                                    override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
+                                        if (response.isSuccessful) {
+                                            fetchAllComments()
+                                            println("대댓글달기성공")
+                                            //한 번 달고 끝내야하니 false전달
+                                            sharedViewModel!!.postReply(reply = false)
+                                            sendAlarmData("댓글 ", commentEditText, temp)
+                                            commentEditText = ""
+                                        } else {
+                                            println("faafa")
+                                            Log.d("comment", response.errorBody()?.string()!!)
+                                            Log.d("message", call.request().toString())
+                                            println(response.code())
+                                        }
+                                    }
+
+                                    override fun onFailure(call: Call<CommentData>, t: Throwable) {
+                                        Log.d("error", t.toString())
+                                    }
+                                })
+                            }
+
+                            //nbrBinding.readCommentTotal.text = (commentAllData.size + )
+
+                        } else {  //댓글
+                            //서버에서 원하는 형식으로 날짜 설정
+                            /*val now = System.currentTimeMillis()
+                            val date = Date(now)
+                            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+                            val currentDate = sdf.format(date)
+                            val formatter = DateTimeFormatter
+                                .ofPattern("yyyy-MM-dd HH:mm:ss")
+                                .withZone(ZoneId.systemDefault())
+                            val result: Instant = Instant.from(formatter.parse(currentDate))*/
+                            val nowInKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
+                            // ISO 8601 형식으로 변환 (UTC 시간대, 'Z' 포함)
+                            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                            val result = nowInKST.format(formatter)
+
+
+                            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                            val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
+                            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
+
+                            /////////interceptor
+                            val SERVER_URL = BuildConfig.server_URL
+                            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                                .addConverterFactory(GsonConverterFactory.create())
+                            //Authorization jwt토큰 로그인
+                            val interceptor = Interceptor { chain ->
+                                var newRequest: Request
+                                if (token != null && token != "") { // 토큰이 없는 경우
+                                    // Authorization 헤더에 토큰 추가
+                                    newRequest =
+                                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                                    val expireDate: Long = getExpireDate.toLong()
+                                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                                        //refresh 들어갈 곳
+                                        /*newRequest =
+                                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                        val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                                        startActivity(intent)
+                                        finish()
+                                        return@Interceptor chain.proceed(newRequest)
+                                    }
+
+                                } else newRequest = chain.request()
+                                chain.proceed(newRequest)
+                            }
+                            val builder = OkHttpClient.Builder()
+                            builder.interceptors().add(interceptor)
+                            val client: OkHttpClient = builder.build()
+                            retrofit.client(client)
+                            val retrofit2: Retrofit = retrofit.build()
+                            val api = retrofit2.create(MioInterface::class.java)
+                            /////////
+
+                            //댓글 잠시 저장
+                            val commentTemp = SendCommentData(commentEditText, result.toString(), temp!!.postID)
+                            Log.d("commentTemt", "$commentTemp")
+                            CoroutineScope(Dispatchers.IO).launch {
+                                api.addCommentData(commentTemp, temp!!.postID).enqueue(object : Callback<CommentData> {
+                                    override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
+                                        if (response.isSuccessful) {
+                                            /*val commentNullCheck  = try {
+                                                response.body()!!.childComments.isEmpty()
+                                                response.body()!!.childComments
+                                            } catch (e : java.lang.NullPointerException) {
+                                                Log.d("null", e.toString())
+                                                arrayListOf<CommentData>(CommentData(
+                                                    0,
+                                                    "null",
+                                                    "null",
+                                                    0,
+                                                    CommentUser(),
+
+                                                ))
+                                            }*/
+                                            /*commentAllData.add(CommentData(
+                                                response.body()!!.commentId,
+                                                response.body()!!.content,
+                                                response.body()!!.createDate,
+                                                response.body()!!.postId,
+                                                response.body()!!.user,
+                                                response.body()!!.childComments,
+                                            ))
+
+                                            noticeBoardReadAdapter!!.notifyDataSetChanged()*/
+                                            //setCommentData()
+                                            println("scucuc")
+                                            fetchAllComments()
+                                            sendAlarmData("댓글", commentEditText, temp)
+                                            commentEditText = ""
+                                            nbrBinding.readCommentTotal.text = commentAllData.size.toString()
+                                        } else {
+                                            println("faafa")
+                                            Log.d("comment", response.errorBody()?.string()!!)
+                                            Log.d("message", call.request().toString())
+                                            println(response.code())
+                                        }
+                                    }
+
+                                    override fun onFailure(call: Call<CommentData>, t: Throwable) {
+                                        Log.d("error", t.toString())
+                                    }
+                                })
+                            }
+                        }
+                    }
+                })
+            }
+
+
         }
         //대댓글 수정 및 삭제
         /*noticeBoardReadAdapter?.setCommentClickListener(object : NoticeBoardReadAdapter.CommentClickListener {
@@ -550,34 +755,117 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     vibration.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
                 }
                 Log.e("setItemClickListener", "clclclclclclcl")
-                nbrBinding.readCommentLl.visibility = View.VISIBLE
-
-                //자동으로 포커스 줘서 대댓글 달게 하기
-                nbrBinding.readCommentEt.requestFocus()
-                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
-                val handler = Handler(Looper.getMainLooper())
-                handler.postDelayed(java.lang.Runnable {
-                    nbrBinding.readCommentEt.clearFocus()
-                },1000)
-                //nbrBinding.readSendComment.requestFocus()
-
-
-                sharedViewModel!!.postReply(reply = true) //수정
+                val parent = commentAllData.find { it?.commentId == itemId }?.user?.studentId
+                val bottomSheet = BottomSheetCommentFragment(null, parent)
+                //bottomSheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.RoundCornerBottomSheetDialogTheme)
+                bottomSheet.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet.tag)
+                bottomSheet.apply {
+                    setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
+                        override fun sendValue(value: String) {
+                            Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
+                            commentEditText = value
+                            sharedViewModel!!.postReply(reply = true) //수정
 
 
-                //어떤 댓글을 선택했는지 확인
-                parentPosition = itemId
+                            //어떤 댓글을 선택했는지 확인
+                            parentPosition = itemId
 
+                            if (isReplyComment) { //대댓글
+                                //서버에서 원하는 형식으로 날짜 설정
+                                /*val now = System.currentTimeMillis()
+                                val date = Date(now)
+                                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+                                val currentDate = sdf.format(date)
+                                val formatter = DateTimeFormatter
+                                    .ofPattern("yyyy-MM-dd HH:mm:ss")
+                                    .withZone(ZoneId.systemDefault())
+                                val result: Instant = Instant.from(formatter.parse(currentDate))*/
+                                val nowInKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
+                                // KST 시간을 UTC 시간대로 변환
+                                val nowInUTC2 = nowInKST.withZoneSameInstant(ZoneId.of("UTC"))
+                                // ISO 8601 형식으로 변환 (UTC 시간대, 'Z' 포함)
+                                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                                val result = nowInKST.format(formatter)
+
+                                val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                                val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
+                                val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
+
+                                /////////interceptor
+                                val SERVER_URL = BuildConfig.server_URL
+                                val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                                    .addConverterFactory(GsonConverterFactory.create())
+                                //Authorization jwt토큰 로그인
+                                val interceptor = Interceptor { chain ->
+                                    var newRequest: Request
+                                    if (token != null && token != "") { // 토큰이 없는 경우
+                                        // Authorization 헤더에 토큰 추가
+                                        newRequest =
+                                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                                        val expireDate: Long = getExpireDate.toLong()
+                                        if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                                            //refresh 들어갈 곳
+                                            /*newRequest =
+                                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                            val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                                            startActivity(intent)
+                                            finish()
+                                            return@Interceptor chain.proceed(newRequest)
+                                        }
+
+                                    } else newRequest = chain.request()
+                                    chain.proceed(newRequest)
+                                }
+                                val builder = OkHttpClient.Builder()
+                                builder.interceptors().add(interceptor)
+                                val client: OkHttpClient = builder.build()
+                                retrofit.client(client)
+                                val retrofit2: Retrofit = retrofit.build()
+                                val api = retrofit2.create(MioInterface::class.java)
+                                /////////
+
+                                //댓글 잠시 저장
+                                val childCommentTemp = SendChildCommentData(commentEditText, result.toString() ,temp!!.postID, parentPosition)
+                                //println("ct $commentTemp")
+                                ///
+
+                                //대댓글 추가하기
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    api.addChildCommentData(childCommentTemp, parentPosition).enqueue(object : Callback<CommentData> {
+                                        override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
+                                            if (response.isSuccessful) {
+                                                fetchAllComments()
+                                                println("대댓글달기성공")
+                                                //한 번 달고 끝내야하니 false전달
+                                                sharedViewModel!!.postReply(reply = false)
+                                                sendAlarmData("댓글 ", commentEditText, temp)
+                                                commentEditText = ""
+                                            } else {
+                                                println("faafa")
+                                                Log.d("comment", response.errorBody()?.string()!!)
+                                                Log.d("message", call.request().toString())
+                                                println(response.code())
+                                            }
+                                        }
+
+                                        override fun onFailure(call: Call<CommentData>, t: Throwable) {
+                                            Log.d("error", t.toString())
+                                        }
+                                    })
+                                }
+
+                                //nbrBinding.readCommentTotal.text = (commentAllData.size + )
+
+                            }
+                        }
+                    })
+                }
             }
             //댓글 수정 및 삭제할 때
             override fun onLongClick(view: View, position: Int, itemId: Int) {
-                if (email == temp!!.user.email) {
-                    val handler = Handler(Looper.getMainLooper())
-                    handler.postDelayed(java.lang.Runnable {
-                        nbrBinding.readCommentEt.clearFocus()
-                    },1000)
-
+                if (email == commentAllData[itemId]?.user?.email) {
                     //수정용
                     commentPosition = itemId
                     val bottomSheet = ReadSettingBottomSheetFragment()
@@ -589,20 +877,100 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 getBottomSheetCommentData = value
                                 //댓글 부분 고치기 Todo
                                 when(value) {
-                                    "수정" -> {
+                                    "수정" -> { //부모댓글 수정용
                                         //자동으로 포커스 줘서 대댓글 달게 하기
                                         val filterCommentText = realCommentAllData.find { it!!.commentId == commentPosition }
-                                        nbrBinding.readCommentLl.visibility = View.VISIBLE
-                                        nbrBinding.readCommentEt.setText(filterCommentText?.content)
-                                        nbrBinding.readCommentEt.requestFocus()
-                                        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                                        imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
-                                        println(filterCommentText)
-                                        println(commentPosition)
-                                        val handler = Handler(Looper.getMainLooper())
-                                        handler.postDelayed(java.lang.Runnable {
-                                            nbrBinding.readCommentEt.clearFocus()
-                                        },1000)
+                                        val bottomSheet2 = BottomSheetCommentFragment(filterCommentText, null)
+                                        //bottomSheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.RoundCornerBottomSheetDialogTheme)
+                                        bottomSheet2.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet2.tag)
+                                        bottomSheet2.apply {
+                                            setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
+                                                override fun sendValue(value: String) {
+                                                    Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
+                                                    commentEditText = value
+
+                                                    Log.e("readEditSendCommentgetBottomSheetCommentData" , getBottomSheetCommentData)
+                                                    val now = System.currentTimeMillis()
+                                                    val date = Date(now)
+                                                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+                                                    val currentDate = sdf.format(date)
+                                                    val formatter = DateTimeFormatter
+                                                        .ofPattern("yyyy-MM-dd HH:mm:ss")
+                                                        .withZone(ZoneId.systemDefault())
+                                                    val result: Instant = Instant.from(formatter.parse(currentDate))
+
+                                                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                                                    val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
+                                                    val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
+
+                                                    /////////interceptor
+                                                    val SERVER_URL = BuildConfig.server_URL
+                                                    val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                                                        .addConverterFactory(GsonConverterFactory.create())
+                                                    //Authorization jwt토큰 로그인
+                                                    val interceptor = Interceptor { chain ->
+                                                        var newRequest: Request
+                                                        if (token != null && token != "") { // 토큰이 없는 경우
+                                                            // Authorization 헤더에 토큰 추가
+                                                            newRequest =
+                                                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                                                            val expireDate: Long = getExpireDate.toLong()
+                                                            if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                                                                //refresh 들어갈 곳
+                                                                /*newRequest =
+                                                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                                                val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                                                                startActivity(intent)
+                                                                finish()
+                                                                return@Interceptor chain.proceed(newRequest)
+                                                            }
+
+                                                        } else newRequest = chain.request()
+                                                        chain.proceed(newRequest)
+                                                    }
+                                                    val builder = OkHttpClient.Builder()
+                                                    builder.interceptors().add(interceptor)
+                                                    val client: OkHttpClient = builder.build()
+                                                    retrofit.client(client)
+                                                    val retrofit2: Retrofit = retrofit.build()
+                                                    val api = retrofit2.create(MioInterface::class.java)
+                                                    /////////
+                                                    val editCommentTemp = SendCommentData(commentEditText, result.toString() ,temp!!.postID)
+
+
+                                                    CoroutineScope(Dispatchers.IO).launch {
+                                                        api.editCommentData(editCommentTemp, commentPosition).enqueue(object : Callback<CommentData> {
+                                                            override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
+                                                                if (response.isSuccessful) {
+                                                                    fetchAllComments()
+                                                                    // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                                                                    val inputMethodManager = this@NoticeBoardReadActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                                                                    // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                                                                    if (inputMethodManager.isActive) {
+                                                                        // 가상 키보드가 올라가 있다면 내립니다.
+                                                                        inputMethodManager.hideSoftInputFromWindow(nbrBinding.readCommentTv.windowToken, 0)
+                                                                    }
+                                                                    println("수정성공")
+                                                                } else {
+                                                                    println("faafa")
+                                                                    Log.d("comment", response.errorBody()?.string()!!)
+                                                                    Log.d("message", call.request().toString())
+                                                                    println(response.code())
+                                                                }
+                                                            }
+
+                                                            override fun onFailure(call: Call<CommentData>, t: Throwable) {
+                                                                Log.d("error", t.toString())
+                                                            }
+                                                        })
+                                                    }
+                                                }
+                                            })
+                                        }
+
+
                                     }
 
                                     "삭제" -> {
@@ -625,24 +993,21 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     println(status)
 
                     getBottomSheetCommentData = "수정"
-                    nbrBinding.readCommentLl.visibility = View.VISIBLE
-                    nbrBinding.readCommentEt.setText(commentData?.content)
-                    commentEditText = commentData?.content.toString()
-                    //자동으로 포커스 줘서 대댓글 달게 하기
-                    nbrBinding.readCommentEt.post {
-                        Log.d("POST Comment", "edittext keyboard")
-                        nbrBinding.readCommentEt.isFocusableInTouchMode = true
-                        nbrBinding.readCommentEt.requestFocus()
-                        val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                        imm.showSoftInput(nbrBinding.readCommentEt.findFocus(), InputMethodManager.SHOW_IMPLICIT)
+                    val bottomSheet2 = BottomSheetCommentFragment(commentData, null)
+                    //bottomSheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.RoundCornerBottomSheetDialogTheme)
+                    bottomSheet2.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet2.tag)
+                    bottomSheet2.apply {
+                        setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
+                            override fun sendValue(value: String) {
+                                Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
+                                commentEditText = value
+                                println(commentId) //이건 부모 댓글 id
+                                println(commentData?.content.toString()) //이건 수정할 대댓글의 정보
+                                Log.e("setCommentClickListener", "clclclclclc2lcl")
+                            }
+                        })
                     }
-                    val handler = Handler(Looper.getMainLooper())
-                    handler.postDelayed(java.lang.Runnable {
-                        nbrBinding.readCommentEt.clearFocus()
-                    },1000)
-                    println(commentId) //이건 부모 댓글 id
-                    println(commentData?.content.toString()) //이건 수정할 대댓글의 정보
-                    Log.e("setCommentClickListener", "clclclclclc2lcl")
+
 
 
                 } else {
@@ -655,8 +1020,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         })
 
         sharedViewModel!!.isReply.observe(this@NoticeBoardReadActivity) {
-            nbrBinding.readSendComment.requestFocus()
-            nbrBinding.readEditSendComment.requestFocus()
             isReplyComment = when(it) {
                 true -> {
                     true
@@ -1159,337 +1522,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }*/
 
-    private fun commentSetting() {
-        nbrBinding.readCommentEt.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-                nbrBinding.readSendComment.visibility = View.GONE
-                nbrBinding.readEditSendComment.visibility = View.GONE
-            }
-
-            override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-                // Nothing to do in this method
-            }
-
-            override fun afterTextChanged(editable: Editable) {
-                val newText = editable.toString()
-                Log.e("commentTest", "After text changed: $newText")
-
-                if (newText.isNotEmpty()) {
-                    commentEditText = newText
-                }
-
-                if (newText.isEmpty() && getBottomSheetCommentData != "수정") {
-                    Log.e("commentTest", "비어있고 수정아닐때")
-                    //commentEditText = newText
-                } else if (newText.isNotEmpty() && getBottomSheetCommentData != "수정") {
-                    Log.e("commentTest", "일반 댓글")
-                    commentEditText = newText
-                    nbrBinding.readSendComment.visibility = View.VISIBLE
-                    nbrBinding.readEditSendComment.visibility = View.GONE
-                } else {
-                    Log.e("commentTest", "댓글 수정할때")
-                    commentEditText = newText
-                    nbrBinding.readSendComment.visibility = View.GONE
-                    nbrBinding.readEditSendComment.visibility = View.VISIBLE
-                }
-            }
-        })
-
-
-        //댓글 수정하는 곳
-        nbrBinding.readEditSendComment.setOnClickListener {
-            Log.e("readEditSendCommentgetBottomSheetCommentData" , getBottomSheetCommentData)
-            val now = System.currentTimeMillis()
-            val date = Date(now)
-            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-            val currentDate = sdf.format(date)
-            val formatter = DateTimeFormatter
-                .ofPattern("yyyy-MM-dd HH:mm:ss")
-                .withZone(ZoneId.systemDefault())
-            val result: Instant = Instant.from(formatter.parse(currentDate))
-
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-
-            /////////interceptor
-            val SERVER_URL = BuildConfig.server_URL
-            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-            //Authorization jwt토큰 로그인
-            val interceptor = Interceptor { chain ->
-                var newRequest: Request
-                if (token != null && token != "") { // 토큰이 없는 경우
-                    // Authorization 헤더에 토큰 추가
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                    val expireDate: Long = getExpireDate.toLong()
-                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                        //refresh 들어갈 곳
-                        /*newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                        val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
-                        startActivity(intent)
-                        finish()
-                        return@Interceptor chain.proceed(newRequest)
-                    }
-
-                } else newRequest = chain.request()
-                chain.proceed(newRequest)
-            }
-            val builder = OkHttpClient.Builder()
-            builder.interceptors().add(interceptor)
-            val client: OkHttpClient = builder.build()
-            retrofit.client(client)
-            val retrofit2: Retrofit = retrofit.build()
-            val api = retrofit2.create(MioInterface::class.java)
-            /////////
-            val editCommentTemp = SendCommentData(commentEditText, result.toString() ,temp!!.postID)
-
-
-            CoroutineScope(Dispatchers.IO).launch {
-                api.editCommentData(editCommentTemp, commentPosition).enqueue(object : Callback<CommentData> {
-                    override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
-                        if (response.isSuccessful) {
-                            fetchAllComments()
-                            nbrBinding.readCommentEt.text = null
-                            nbrBinding.readCommentLl.visibility = View.GONE
-                            // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
-                            val inputMethodManager = this@NoticeBoardReadActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                            // 가상 키보드가 올라가 있는지 여부를 확인합니다.
-                            if (inputMethodManager.isActive) {
-                                // 가상 키보드가 올라가 있다면 내립니다.
-                                inputMethodManager.hideSoftInputFromWindow(nbrBinding.readEditSendComment.windowToken, 0)
-                            }
-                            println("수정성공")
-                        } else {
-                            println("faafa")
-                            Log.d("comment", response.errorBody()?.string()!!)
-                            Log.d("message", call.request().toString())
-                            println(response.code())
-                        }
-                    }
-
-                    override fun onFailure(call: Call<CommentData>, t: Throwable) {
-                        Log.d("error", t.toString())
-                    }
-                })
-            }
-        }
-
-        nbrBinding.readSendComment.setOnClickListener {
-            Log.e("readSendComment", commentEditText)
-            Log.e("nbrBinding.readSendComment", isReplyComment.toString())
-            // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
-            val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            // 가상 키보드가 올라가 있는지 여부를 확인합니다.
-            if (inputMethodManager.isActive) {
-                // 가상 키보드가 올라가 있다면 내립니다.
-                inputMethodManager.hideSoftInputFromWindow(nbrBinding.readSendComment.windowToken, 0)
-            }
-            if (isReplyComment) { //대댓글
-                //서버에서 원하는 형식으로 날짜 설정
-                /*val now = System.currentTimeMillis()
-                val date = Date(now)
-                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-                val currentDate = sdf.format(date)
-                val formatter = DateTimeFormatter
-                    .ofPattern("yyyy-MM-dd HH:mm:ss")
-                    .withZone(ZoneId.systemDefault())
-                val result: Instant = Instant.from(formatter.parse(currentDate))*/
-                val nowInKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
-                // KST 시간을 UTC 시간대로 변환
-                val nowInUTC2 = nowInKST.withZoneSameInstant(ZoneId.of("UTC"))
-                // ISO 8601 형식으로 변환 (UTC 시간대, 'Z' 포함)
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                val result = nowInKST.format(formatter)
-
-                val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-                val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-
-                /////////interceptor
-                val SERVER_URL = BuildConfig.server_URL
-                val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                //Authorization jwt토큰 로그인
-                val interceptor = Interceptor { chain ->
-                    var newRequest: Request
-                    if (token != null && token != "") { // 토큰이 없는 경우
-                        // Authorization 헤더에 토큰 추가
-                        newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                        val expireDate: Long = getExpireDate.toLong()
-                        if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                            //refresh 들어갈 곳
-                            /*newRequest =
-                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                            val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
-                            startActivity(intent)
-                            finish()
-                            return@Interceptor chain.proceed(newRequest)
-                        }
-
-                    } else newRequest = chain.request()
-                    chain.proceed(newRequest)
-                }
-                val builder = OkHttpClient.Builder()
-                builder.interceptors().add(interceptor)
-                val client: OkHttpClient = builder.build()
-                retrofit.client(client)
-                val retrofit2: Retrofit = retrofit.build()
-                val api = retrofit2.create(MioInterface::class.java)
-                /////////
-
-                //댓글 잠시 저장
-                val childCommentTemp = SendChildCommentData(commentEditText, result.toString() ,temp!!.postID, parentPosition)
-                //println("ct $commentTemp")
-                ///
-
-                //대댓글 추가하기
-                CoroutineScope(Dispatchers.IO).launch {
-                    api.addChildCommentData(childCommentTemp, parentPosition).enqueue(object : Callback<CommentData> {
-                        override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
-                            if (response.isSuccessful) {
-                                fetchAllComments()
-                                nbrBinding.readCommentLl.visibility = View.GONE
-                                println("대댓글달기성공")
-                                //한 번 달고 끝내야하니 false전달
-                                sharedViewModel!!.postReply(reply = false)
-                                sendAlarmData("댓글 ", commentEditText, temp)
-                                commentEditText = ""
-                                nbrBinding.readCommentEt.text = null
-                            } else {
-                                println("faafa")
-                                Log.d("comment", response.errorBody()?.string()!!)
-                                Log.d("message", call.request().toString())
-                                println(response.code())
-                            }
-                        }
-
-                        override fun onFailure(call: Call<CommentData>, t: Throwable) {
-                            Log.d("error", t.toString())
-                        }
-                    })
-                }
-
-                //nbrBinding.readCommentTotal.text = (commentAllData.size + )
-
-            } else {  //댓글
-                //서버에서 원하는 형식으로 날짜 설정
-                /*val now = System.currentTimeMillis()
-                val date = Date(now)
-                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-                val currentDate = sdf.format(date)
-                val formatter = DateTimeFormatter
-                    .ofPattern("yyyy-MM-dd HH:mm:ss")
-                    .withZone(ZoneId.systemDefault())
-                val result: Instant = Instant.from(formatter.parse(currentDate))*/
-                val nowInKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
-                // ISO 8601 형식으로 변환 (UTC 시간대, 'Z' 포함)
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                val result = nowInKST.format(formatter)
-
-
-                val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-                val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-
-                /////////interceptor
-                val SERVER_URL = BuildConfig.server_URL
-                val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                    .addConverterFactory(GsonConverterFactory.create())
-                //Authorization jwt토큰 로그인
-                val interceptor = Interceptor { chain ->
-                    var newRequest: Request
-                    if (token != null && token != "") { // 토큰이 없는 경우
-                        // Authorization 헤더에 토큰 추가
-                        newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                        val expireDate: Long = getExpireDate.toLong()
-                        if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                            //refresh 들어갈 곳
-                            /*newRequest =
-                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                            val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
-                            startActivity(intent)
-                            finish()
-                            return@Interceptor chain.proceed(newRequest)
-                        }
-
-                    } else newRequest = chain.request()
-                    chain.proceed(newRequest)
-                }
-                val builder = OkHttpClient.Builder()
-                builder.interceptors().add(interceptor)
-                val client: OkHttpClient = builder.build()
-                retrofit.client(client)
-                val retrofit2: Retrofit = retrofit.build()
-                val api = retrofit2.create(MioInterface::class.java)
-                /////////
-
-                //댓글 잠시 저장
-                val commentTemp = SendCommentData(commentEditText, result.toString(), temp!!.postID)
-                Log.d("commentTemt", "$commentTemp")
-                CoroutineScope(Dispatchers.IO).launch {
-                    api.addCommentData(commentTemp, temp!!.postID).enqueue(object : Callback<CommentData> {
-                        override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
-                            if (response.isSuccessful) {
-                                /*val commentNullCheck  = try {
-                                    response.body()!!.childComments.isEmpty()
-                                    response.body()!!.childComments
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    arrayListOf<CommentData>(CommentData(
-                                        0,
-                                        "null",
-                                        "null",
-                                        0,
-                                        CommentUser(),
-
-                                    ))
-                                }*/
-                                /*commentAllData.add(CommentData(
-                                    response.body()!!.commentId,
-                                    response.body()!!.content,
-                                    response.body()!!.createDate,
-                                    response.body()!!.postId,
-                                    response.body()!!.user,
-                                    response.body()!!.childComments,
-                                ))
-
-                                noticeBoardReadAdapter!!.notifyDataSetChanged()*/
-                                //setCommentData()
-                                println("scucuc")
-                                fetchAllComments()
-                                nbrBinding.readCommentLl.visibility = View.GONE
-                                sendAlarmData("댓글", commentEditText, temp)
-                                commentEditText = ""
-                                nbrBinding.readCommentTotal.text = commentAllData.size.toString()
-                                nbrBinding.readCommentEt.text = null
-                            } else {
-                                println("faafa")
-                                Log.d("comment", response.errorBody()?.string()!!)
-                                Log.d("message", call.request().toString())
-                                println(response.code())
-                            }
-                        }
-
-                        override fun onFailure(call: Call<CommentData>, t: Throwable) {
-                            Log.d("error", t.toString())
-                        }
-                    })
-                }
-            }
-        }
-    }
-
     private fun setCommentData() {
         val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
@@ -1500,7 +1532,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         commentAllData.clear()
                         childComments.clear()
                         childCommentsSize = 0
-                        nbrBinding.readCommentLl.visibility = View.GONE
                         for (i in response.body()!!.indices) {
                             val commentResponse = response.body()!![i]
                             /* commentAllData.add(
@@ -1666,18 +1697,117 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                             vibration.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
                                         }
                                         Log.e("setItemClickListener", "clclclclclclcl")
-                                        nbrBinding.readCommentLl.visibility = View.VISIBLE
-                                        nbrBinding.readCommentEt.requestFocus()
-                                        sharedViewModel!!.postReply(reply = true) // 수정
-                                        parentPosition = itemId
+                                        val parent = commentAllData.find { it?.commentId == itemId }?.user?.studentId
+                                        val bottomSheet = BottomSheetCommentFragment(null, parent)
+                                        //bottomSheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.RoundCornerBottomSheetDialogTheme)
+                                        bottomSheet.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet.tag)
+                                        bottomSheet.apply {
+                                            setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
+                                                override fun sendValue(value: String) {
+                                                    Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
+                                                    commentEditText = value
+                                                    sharedViewModel!!.postReply(reply = true) //수정
+
+
+                                                    //어떤 댓글을 선택했는지 확인
+                                                    parentPosition = itemId
+
+                                                    if (isReplyComment) { //대댓글
+                                                        //서버에서 원하는 형식으로 날짜 설정
+                                                        /*val now = System.currentTimeMillis()
+                                                        val date = Date(now)
+                                                        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+                                                        val currentDate = sdf.format(date)
+                                                        val formatter = DateTimeFormatter
+                                                            .ofPattern("yyyy-MM-dd HH:mm:ss")
+                                                            .withZone(ZoneId.systemDefault())
+                                                        val result: Instant = Instant.from(formatter.parse(currentDate))*/
+                                                        val nowInKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
+                                                        // KST 시간을 UTC 시간대로 변환
+                                                        val nowInUTC2 = nowInKST.withZoneSameInstant(ZoneId.of("UTC"))
+                                                        // ISO 8601 형식으로 변환 (UTC 시간대, 'Z' 포함)
+                                                        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                                                        val result = nowInKST.format(formatter)
+
+                                                        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                                                        val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
+                                                        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
+
+                                                        /////////interceptor
+                                                        val SERVER_URL = BuildConfig.server_URL
+                                                        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                                                            .addConverterFactory(GsonConverterFactory.create())
+                                                        //Authorization jwt토큰 로그인
+                                                        val interceptor = Interceptor { chain ->
+                                                            var newRequest: Request
+                                                            if (token != null && token != "") { // 토큰이 없는 경우
+                                                                // Authorization 헤더에 토큰 추가
+                                                                newRequest =
+                                                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                                                                val expireDate: Long = getExpireDate.toLong()
+                                                                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                                                                    //refresh 들어갈 곳
+                                                                    /*newRequest =
+                                                                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                                                    val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                                                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                                                                    startActivity(intent)
+                                                                    finish()
+                                                                    return@Interceptor chain.proceed(newRequest)
+                                                                }
+
+                                                            } else newRequest = chain.request()
+                                                            chain.proceed(newRequest)
+                                                        }
+                                                        val builder = OkHttpClient.Builder()
+                                                        builder.interceptors().add(interceptor)
+                                                        val client: OkHttpClient = builder.build()
+                                                        retrofit.client(client)
+                                                        val retrofit2: Retrofit = retrofit.build()
+                                                        val api = retrofit2.create(MioInterface::class.java)
+                                                        /////////
+
+                                                        //댓글 잠시 저장
+                                                        val childCommentTemp = SendChildCommentData(commentEditText, result.toString() ,temp!!.postID, parentPosition)
+                                                        //println("ct $commentTemp")
+                                                        ///
+
+                                                        //대댓글 추가하기
+                                                        CoroutineScope(Dispatchers.IO).launch {
+                                                            api.addChildCommentData(childCommentTemp, parentPosition).enqueue(object : Callback<CommentData> {
+                                                                override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
+                                                                    if (response.isSuccessful) {
+                                                                        fetchAllComments()
+                                                                        println("대댓글달기성공")
+                                                                        //한 번 달고 끝내야하니 false전달
+                                                                        sharedViewModel!!.postReply(reply = false)
+                                                                        sendAlarmData("댓글 ", commentEditText, temp)
+                                                                        commentEditText = ""
+                                                                    } else {
+                                                                        println("faafa")
+                                                                        Log.d("comment", response.errorBody()?.string()!!)
+                                                                        Log.d("message", call.request().toString())
+                                                                        println(response.code())
+                                                                    }
+                                                                }
+
+                                                                override fun onFailure(call: Call<CommentData>, t: Throwable) {
+                                                                    Log.d("error", t.toString())
+                                                                }
+                                                            })
+                                                        }
+
+                                                        //nbrBinding.readCommentTotal.text = (commentAllData.size + )
+
+                                                    }
+                                                }
+                                            })
+                                        }
                                     }
 
                                     override fun onLongClick(view: View, position: Int, itemId: Int) {
-                                        if (email == temp!!.user.email) {
-                                            val handler = Handler(Looper.getMainLooper())
-                                            handler.postDelayed(java.lang.Runnable {
-                                                nbrBinding.readCommentEt.clearFocus()
-                                            },1000)
+                                        if (email == commentAllData[itemId]?.user?.email) {
                                             commentPosition = itemId
                                             val bottomSheet = ReadSettingBottomSheetFragment()
                                             bottomSheet.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet.tag)
@@ -1687,10 +1817,100 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                                         Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                                                         getBottomSheetCommentData = value
                                                         when (value) {
-                                                            "수정" -> {
+                                                            "수정" -> { //부모댓글 수정용
+                                                                //자동으로 포커스 줘서 대댓글 달게 하기
                                                                 val filterCommentText = realCommentAllData.find { it!!.commentId == commentPosition }
-                                                                nbrBinding.readCommentLl.visibility = View.VISIBLE
-                                                                nbrBinding.readCommentEt.setText(filterCommentText?.content)
+                                                                val bottomSheet2 = BottomSheetCommentFragment(filterCommentText, null)
+                                                                //bottomSheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.RoundCornerBottomSheetDialogTheme)
+                                                                bottomSheet2.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet2.tag)
+                                                                bottomSheet2.apply {
+                                                                    setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
+                                                                        override fun sendValue(value: String) {
+                                                                            Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
+                                                                            commentEditText = value
+
+                                                                            Log.e("readEditSendCommentgetBottomSheetCommentData" , getBottomSheetCommentData)
+                                                                            val now = System.currentTimeMillis()
+                                                                            val date = Date(now)
+                                                                            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+                                                                            val currentDate = sdf.format(date)
+                                                                            val formatter = DateTimeFormatter
+                                                                                .ofPattern("yyyy-MM-dd HH:mm:ss")
+                                                                                .withZone(ZoneId.systemDefault())
+                                                                            val result: Instant = Instant.from(formatter.parse(currentDate))
+
+                                                                            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                                                                            val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
+                                                                            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
+
+                                                                            /////////interceptor
+                                                                            val SERVER_URL = BuildConfig.server_URL
+                                                                            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                                                                                .addConverterFactory(GsonConverterFactory.create())
+                                                                            //Authorization jwt토큰 로그인
+                                                                            val interceptor = Interceptor { chain ->
+                                                                                var newRequest: Request
+                                                                                if (token != null && token != "") { // 토큰이 없는 경우
+                                                                                    // Authorization 헤더에 토큰 추가
+                                                                                    newRequest =
+                                                                                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                                                                                    val expireDate: Long = getExpireDate.toLong()
+                                                                                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                                                                                        //refresh 들어갈 곳
+                                                                                        /*newRequest =
+                                                                                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                                                                        val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                                                                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                                                                                        startActivity(intent)
+                                                                                        finish()
+                                                                                        return@Interceptor chain.proceed(newRequest)
+                                                                                    }
+
+                                                                                } else newRequest = chain.request()
+                                                                                chain.proceed(newRequest)
+                                                                            }
+                                                                            val builder = OkHttpClient.Builder()
+                                                                            builder.interceptors().add(interceptor)
+                                                                            val client: OkHttpClient = builder.build()
+                                                                            retrofit.client(client)
+                                                                            val retrofit2: Retrofit = retrofit.build()
+                                                                            val api = retrofit2.create(MioInterface::class.java)
+                                                                            /////////
+                                                                            val editCommentTemp = SendCommentData(commentEditText, result.toString() ,temp!!.postID)
+
+
+                                                                            CoroutineScope(Dispatchers.IO).launch {
+                                                                                api.editCommentData(editCommentTemp, commentPosition).enqueue(object : Callback<CommentData> {
+                                                                                    override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
+                                                                                        if (response.isSuccessful) {
+                                                                                            fetchAllComments()
+                                                                                            // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                                                                                            val inputMethodManager = this@NoticeBoardReadActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                                                                                            // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                                                                                            if (inputMethodManager.isActive) {
+                                                                                                // 가상 키보드가 올라가 있다면 내립니다.
+                                                                                                inputMethodManager.hideSoftInputFromWindow(nbrBinding.readCommentTv.windowToken, 0)
+                                                                                            }
+                                                                                            println("수정성공")
+                                                                                        } else {
+                                                                                            println("faafa")
+                                                                                            Log.d("comment", response.errorBody()?.string()!!)
+                                                                                            Log.d("message", call.request().toString())
+                                                                                            println(response.code())
+                                                                                        }
+                                                                                    }
+
+                                                                                    override fun onFailure(call: Call<CommentData>, t: Throwable) {
+                                                                                        Log.d("error", t.toString())
+                                                                                    }
+                                                                                })
+                                                                            }
+                                                                        }
+                                                                    })
+                                                                }
+
+
                                                             }
                                                             "삭제" -> {
                                                                 deleteCommentData(itemId)
@@ -1709,11 +1929,19 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         commentData: CommentData?
                                     ) {
                                         if (status == "수정") {
-                                            println(status)
                                             getBottomSheetCommentData = "수정"
-                                            nbrBinding.readCommentLl.visibility = View.VISIBLE
-                                            nbrBinding.readCommentEt.setText(commentData?.content)
-                                            commentEditText = commentData?.content.toString()
+                                            val bottomSheet2 = BottomSheetCommentFragment(commentData, null)
+                                            //bottomSheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.RoundCornerBottomSheetDialogTheme)
+                                            bottomSheet2.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet2.tag)
+                                            bottomSheet2.apply {
+                                                setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
+                                                    override fun sendValue(value: String) {
+                                                        Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
+                                                        commentEditText = value
+                                                    }
+                                                })
+                                            }
+
                                             println(commentId) //이건 부모 댓글 id
                                             println(commentData?.content.toString()) //이건 수정할 대댓글의 정보
                                             Log.e("setCommentClickListener", "clclclclclc2lcl")
@@ -2124,36 +2352,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         //alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, setAlarmTime!!.timeInMillis, pendingIntent)
     }
 
-    interface OnKeyboardVisibilityListener {
-        fun onVisibilityChanged(visible : Boolean)
-    }
-
-    private fun setKeyboardVisibilityListener(onKeyboardVisibilityListener: OnKeyboardVisibilityListener) {
-        val parentView = (nbrBinding.root as ViewGroup).getChildAt(0)
-        parentView.viewTreeObserver.addOnGlobalLayoutListener(object : OnGlobalLayoutListener {
-            private var alreadyOpen = false
-            private val defaultKeyboardHeightDP = 100
-            private val EstimatedKeyboardDP =
-                defaultKeyboardHeightDP + 48
-            private val rect = Rect()
-            override fun onGlobalLayout() {
-                val estimatedKeyboardHeight = TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP,
-                    EstimatedKeyboardDP.toFloat(),
-                    parentView.resources.displayMetrics
-                ).toInt()
-                parentView.getWindowVisibleDisplayFrame(rect)
-                val heightDiff = parentView.rootView.height - (rect.bottom - rect.top)
-                val isShown = heightDiff >= estimatedKeyboardHeight
-                if (isShown == alreadyOpen) {
-                    Log.i("Keyboard state", "Ignoring global layout change...")
-                    return
-                }
-                alreadyOpen = isShown
-                onKeyboardVisibilityListener.onVisibilityChanged(isShown)
-            }
-        })
-    }
 
     private fun initAd() {
         adRequest = AdRequest.Builder().build()
@@ -2190,22 +2388,5 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         loadAdIfNeeded()
-        setKeyboardVisibilityListener(object : OnKeyboardVisibilityListener {
-            override fun onVisibilityChanged(visible: Boolean) {
-                if (visible) {
-                    Log.d("READ Keyboard test", "키보드 올리기")
-                } else {
-                    Log.d("READ Keyboard test", "키보드 내리기")
-                    //키보드가 숨겨졌을 때
-                    nbrBinding.readCommentLl.visibility = View.GONE
-                    val handler = Handler(Looper.getMainLooper())
-                    handler.postDelayed(java.lang.Runnable {
-                        nbrBinding.readCommentEt.clearFocus()
-                    },1000)
-                    nbrBinding.readCommentEt.text = null
-                    getBottomSheetCommentData = ""
-                }
-            }
-        })
     }
 }

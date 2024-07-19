@@ -21,7 +21,7 @@ class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommen
     var replyCommentItemData = ArrayList<CommentData?>()
     private lateinit var context : Context
     private var identification = ""
-
+    var getWriter : String? = ""
     inner class ReplyCommentViewHolder(private val binding : ReplyCommentsItemLayoutBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
         private var reCommentContent = binding.reCommentContent
@@ -34,7 +34,7 @@ class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommen
             val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
             identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!.split("@").map { it }.first()
 
-            if (identification == comment.user.studentId) {
+            if (identification == getWriter) {
                 binding.reCommentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_blue_4))
                 reCommentUserId.text = comment.user.studentId.toString()
             } else {

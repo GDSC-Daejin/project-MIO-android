@@ -836,12 +836,10 @@ class CarpoolTabFragment : Fragment() {
                             taxiTabBinding.areaRvLl.visibility = View.GONE
                             taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
                             taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
-                            taxiTabBinding.moreAreaBtn.visibility = View.GONE
                         } else {
                             taxiTabBinding.areaRvLl.visibility = View.VISIBLE
                             taxiTabBinding.nonAreaRvTv.visibility = View.GONE
                             taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
-                            taxiTabBinding.moreAreaBtn.visibility = View.VISIBLE
                         }
 
                     } else {

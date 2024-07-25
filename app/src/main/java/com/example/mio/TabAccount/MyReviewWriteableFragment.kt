@@ -257,28 +257,10 @@ class MyReviewWriteableFragment : Fragment() {
                                     ))
                                 }
                             }
-                            /*for (i in response.body()!!.indices) {
-                                for (j in response.body()!![i].participants.indices) {
-                                    carpoolParticipantsData.add(Participants(
-                                        response.body()!![i].participants[j].id,
-                                        response.body()!![i].participants[j].email,
-                                        response.body()!![i].participants[j].studentId,
-                                        response.body()!![i].participants[j].profileImageUrl,
-                                        response.body()!![i].participants[j].name,
-                                        response.body()!![i].participants[j].accountNumber,
-                                        response.body()!![i].participants[j].gender,
-                                        response.body()!![i].participants[j].verifySmoker,
-                                        response.body()!![i].participants[j].roleType,
-                                        response.body()!![i].participants[j].status,
-                                        response.body()!![i].participants[j].mannerCount,
-                                        response.body()!![i].participants[j].grade,
-                                    ))
-                                }
-                            }*/
                         }
 
 
-                        if (reviewWriteableReadAllData.size > 0) {
+                        if (reviewWriteableReadAllData.isNotEmpty()) {
                             wBinding.writeableReviewPostNotDataLl.visibility = View.GONE
                             wBinding.writeablReviewSwipe.visibility = View.VISIBLE
                             wBinding.writeablReviewPostRv.visibility = View.VISIBLE

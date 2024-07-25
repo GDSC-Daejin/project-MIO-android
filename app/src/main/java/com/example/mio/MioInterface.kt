@@ -1,10 +1,8 @@
 package com.example.mio
 
 import com.example.mio.Model.*
-import com.google.gson.JsonObject
-import okhttp3.RequestBody
+import com.example.mio.sse.SSEData
 import retrofit2.Call
-import retrofit2.Response
 import retrofit2.http.*
 
 interface MioInterface {

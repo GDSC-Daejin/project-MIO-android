@@ -1,4 +1,4 @@
-package com.example.mio.Model
+package com.example.mio.sse
 
 import com.google.gson.annotations.SerializedName
 

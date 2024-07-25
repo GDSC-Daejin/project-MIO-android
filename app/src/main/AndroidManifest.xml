@@ -15,6 +15,7 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <queries>
         <package android:name="viva.republica.toss" /> <!-- 토스뱅크 -->
@@ -41,21 +42,16 @@
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="33">
 
+        <service android:name=".sse.SSEForegroundService" />
+        <service android:name=".sse.SSERestartService"/>
+        <receiver android:name=".sse.SSEAlarmReceiver"/>
+        <receiver android:name=".sse.SSEBroadcastReceiver"/>
 
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove" />
-        <!--
-<service
-            android:name=".Helper.MyWorker"
-            android:exported="false"
-            android:permission="android.permission.BIND_JOB_SERVICE">
-            <intent-filter>
-                <action android:name="androidx.work.impl.background.systemjob.SystemJobService" />
-            </intent-filter>
-        </service>
-        -->
+
         <activity
             android:name=".CompleteActivity"
             android:exported="true"
@@ -125,16 +121,16 @@
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity"/>
 
-        <receiver
+        <!--<receiver
             android:name=".Helper.AlarmReceiver"
             android:enabled="true"
             android:exported="false">
 
-            <!-- 디바이스 부팅 시 바로 실행되게 설정 -->
+            &lt;!&ndash; 디바이스 부팅 시 바로 실행되게 설정 &ndash;&gt;
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
-        </receiver>
+        </receiver>-->
 
         <activity
             android:name=".ApplyNextActivity"

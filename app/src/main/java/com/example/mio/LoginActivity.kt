@@ -194,8 +194,8 @@ class LoginActivity : AppCompatActivity() {
                         //5초
                         val builder =  OkHttpClient.Builder()
                             .connectTimeout(5, TimeUnit.SECONDS)
-                            .readTimeout(5, TimeUnit.SECONDS)
-                            .writeTimeout(5, TimeUnit.SECONDS)
+                            .readTimeout(2, TimeUnit.MINUTES)
+                            .writeTimeout(2, TimeUnit.MINUTES)
                             .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
                         /*intent.apply {
                             putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())

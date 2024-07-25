@@ -2,21 +2,14 @@ package com.example.mio.NoticeBoard
 
 import android.app.*
 import android.content.Context
-import android.content.Context.INPUT_METHOD_SERVICE
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.*
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
-import android.util.TypedValue
 import android.view.*
-import android.view.ViewTreeObserver.OnGlobalLayoutListener
-import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
@@ -24,9 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -43,6 +34,9 @@ import com.example.mio.TabAccount.ProfileActivity
 import com.example.mio.TabCategory.MoreCarpoolTabActivity
 import com.example.mio.TabCategory.MoreTaxiTabActivity
 import com.example.mio.databinding.ActivityNoticeBoardReadBinding
+import com.example.mio.sse.SSEClient
+import com.example.mio.sse.SSEData
+import com.example.mio.sse.SseHandler
 import com.google.android.gms.ads.AdRequest
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.CoroutineScope
@@ -54,7 +48,6 @@ import okhttp3.Request
 import com.launchdarkly.eventsource.ConnectStrategy
 import com.launchdarkly.eventsource.EventSource
 import com.launchdarkly.eventsource.background.BackgroundEventSource
-import okhttp3.internal.closeQuietly
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -168,7 +161,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val type = intent.getStringExtra("type")
         tabType = intent.getStringExtra("tabType").toString()
         temp = intent.getSerializableExtra("postItem") as PostData?
-        startEventSource(temp?.user?.id!!.toLong())
+        //startEventSource(temp?.user?.id!!.toLong())
         /*val eventSource: BackgroundEventSource = BackgroundEventSource //백그라운드에서 이벤트를 처리하기위한 EVENTSOURCE의 하위 클래스
             .Builder(
                 SseHandler(this@NoticeBoardReadActivity),
@@ -2441,82 +2434,24 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
     }
     private fun startEventSource(user_id : Long?) {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
-
-        /////////interceptor
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                    val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
-                    startActivity(intent)
-                    finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
-        /////////
-        val url = URL("https://mioserver.o-r.kr/subscribe/$user_id")
+        val userId = user_id.toString()
         eventSource = BackgroundEventSource //백그라운드에서 이벤트를 처리하기위한 EVENTSOURCE의 하위 클래스
             .Builder(
                 SseHandler(this@NoticeBoardReadActivity),
                 EventSource.Builder(
                     ConnectStrategy
-                        .http(URL("https://mioserver.o-r.kr/subscribe/$user_id"))
+                        .http(URL("https://mioserver.o-r.kr/v1/subscribe/${userId}"))
                         .header("Accept", "text/event-stream")
                         // 서버와의 연결을 설정하는 타임아웃
                         .connectTimeout(10, TimeUnit.SECONDS)
                         // 서버로부터 데이터를 읽는 타임아웃 시간
-                        .readTimeout(10, TimeUnit.SECONDS)
+                        .readTimeout(600, TimeUnit.SECONDS)
                 )
             )
             .threadPriority(Thread.MAX_PRIORITY) //백그라운드 이벤트 처리를 위한 스레드 우선 순위를 최대로 설정합니다.
             .build()
         // EventSource 연결 시작
         eventSource.start()
-
-        if (user_id != null) {
-            api.getRealTimeBookMarkAlarm(user_id).enqueue(object : Callback<SSEData> {
-                override fun onResponse(call: Call<SSEData>, response: Response<SSEData>) {
-                    if (response.isSuccessful) {
-                        Log.d("realTime", "success")
-
-                    } else {
-                        Log.e("realTime", "fail")
-                        Log.e("realTime", response.code().toString())
-                        Log.e("realTime", response.errorBody()?.string()!!)
-                    }
-                }
-
-                override fun onFailure(call: Call<SSEData>, t: Throwable) {
-                    Log.e("realTimeFailuer", t.message.toString())
-                }
-
-            })
-        }
     }
     private fun getManager() : NotificationManager {
         return getSystemService(NOTIFICATION_SERVICE) as NotificationManager

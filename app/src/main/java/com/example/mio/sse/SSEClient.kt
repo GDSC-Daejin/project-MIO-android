@@ -1,4 +1,4 @@
-package com.example.mio.Helper
+package com.example.mio.sse
 
 import android.util.Log
 import okhttp3.*
@@ -11,12 +11,15 @@ class SSEClient {
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.MINUTES)
+        .writeTimeout(10, TimeUnit.MINUTES)
         .build()
 
     fun startListening(url: String, callback: (String) -> Unit) {
         val request = Request.Builder()
             .url(url)
+            .header("Accept", "application/json")
+            .addHeader("Accept", "text/event-stream")
             .build()
 
         val eventSourceListener = object : EventSourceListener() {

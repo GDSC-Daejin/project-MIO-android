@@ -1,8 +1,13 @@
 package com.example.mio
 
+import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -19,6 +24,7 @@ import com.example.mio.Model.User
 import com.example.mio.Navigation.*
 import com.example.mio.NoticeBoard.NoticeBoardEditActivity
 import com.example.mio.databinding.ActivityMainBinding
+import com.example.mio.sse.SSEForegroundService
 import com.google.android.gms.ads.MobileAds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -58,6 +64,8 @@ class MainActivity : AppCompatActivity() {
     private var selectedTab = ""
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var notificationIcon : MenuItem? = null
+
+    private var serviceIntent: Intent? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
@@ -67,6 +75,37 @@ class MainActivity : AppCompatActivity() {
         /*sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
         sharedViewModel!!.getCalendarLiveData().observe(this)
         */
+
+        //foreground실행행
+       serviceIntent =
+            Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
+
+
+        //절전사용금지앱
+        val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
+        var isWhiteListing = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            isWhiteListing = pm.isIgnoringBatteryOptimizations(applicationContext.packageName)
+        }
+        if (!isWhiteListing) {
+            val intent = Intent()
+            intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+            intent.data = Uri.parse("package:" + applicationContext.packageName)
+            startActivity(intent)
+        }
+
+        if (!foregroundServiceRunning()) { // 이미 작동중인 동일한 서비스가 없다면 실행
+            serviceIntent =
+                Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // 빌드 버전코드 "O" 보다 높은 버전일 경우
+                startService(serviceIntent) // 서비스 인텐트를 전달한 서비스 시작 메서드 실행
+            }
+        } else {
+            serviceIntent = SSEForegroundService().serviceIntent
+        }
+
+
+
         if (oldFragment != null && oldTAG != "") {
             setFragment(oldTAG, oldFragment!!)
         } else {
@@ -79,6 +118,21 @@ class MainActivity : AppCompatActivity() {
         initNavigationBar()
         initUserSet()
         saveSettingData()
+    }
+
+    fun foregroundServiceRunning(): Boolean {
+        val activityManager =
+            this.getSystemService(ACTIVITY_SERVICE) as ActivityManager // 액티비티 매니져를 통해 작동중인 서비스 가져오기
+
+        //val temp = activityManager.runningAppProcesses.any { it.processName == SSEForegroundService::class.java.name && it.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE}
+
+
+        for (service in activityManager.getRunningServices(Int.MAX_VALUE)) { // 작동중인 서비스수 만큼 반복
+            if (SSEForegroundService::class.java.name == service.service.className) { // 비교한 서비스의 이름이 MyForgroundService 와 같다면
+                return true // true 반환
+            }
+        }
+        return false // 기본은 false 로 설정
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -620,6 +674,14 @@ class MainActivity : AppCompatActivity() {
             .beginTransaction()
             .replace(R.id.fragment_content, fragment)
             .commit()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (serviceIntent!=null) {
+            stopService(serviceIntent)// 서비스 정지시켜줌
+            serviceIntent = null
+        }
     }
 
 

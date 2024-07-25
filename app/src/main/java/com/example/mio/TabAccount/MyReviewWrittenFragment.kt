@@ -123,8 +123,8 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
                                     response.body()!![i].createDate,
                                 )
                             )
-                            rwAdapter!!.notifyDataSetChanged()
                         }
+                        rwAdapter!!.notifyDataSetChanged()
                         if (reviewWrittenAllData.size > 0) {
                             rwBinding.writtenReviewPostNotDataLl.visibility = View.GONE
                             rwBinding.writtenReviewSwipe.visibility = View.VISIBLE

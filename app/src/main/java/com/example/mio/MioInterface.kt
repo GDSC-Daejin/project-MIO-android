@@ -23,7 +23,7 @@ interface MioInterface {
 
     //게시글 수정
     @PATCH("/post/{id}")
-    fun editPostData(@Body postData : AddPostData, @Path("id") postId : Int) : Call<AddPostResponse>
+    fun editPostData(@Path("id") id : Int, @Body postData : EditPostData) : Call<AddPostResponse>
 
 
     //게시글 생성 순으로 조회
@@ -190,6 +190,8 @@ interface MioInterface {
     @GET("/alarm/readAll")
     fun getMyAlarm() : Call<List<AddAlarmResponseData>>
 
+    @DELETE("/alarm/delete/{id}")
+    fun deleteMyAlarm(@Path("id") id : Int) : Call<Void>
 
 
     //////////////////////////////////
@@ -226,4 +228,8 @@ interface MioInterface {
     @GET("/bookmark/read")
     fun getBookmark() : Call<List<BookMarkResponseData>>
 
+    //북마크 실시간알람
+    @GET("/subscribe/{user_id}")
+    @Headers("Accept: text/event-stream")
+    fun getRealTimeBookMarkAlarm(@Path("user_id") userId: Long) : Call<SSEData>
 }

@@ -125,7 +125,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     private var selectFormattedDate = ""
     private var isCategory = false //true : 카풀, false : 택시
     private var selectCategory = ""
-    private var selectCategoryId = 0
+    private var selectCategoryId = -1
+
     //설정한 제목
     private var editTitle = ""
     //선택한 시간
@@ -372,7 +373,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     isComplete = !isComplete
                     myViewModel.postCheckComplete(false)
                     currentPage += 1
-                    println(currentPage)
+                    Log.d("edit currentpage", currentPage.toString())
                     myViewModel.postCheckPage(currentPage)
                 }
             } else {
@@ -422,6 +423,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     private fun firstVF() {
         if (type == "EDIT") {
             mBinding.editTitle.setText(eTemp!!.postTitle)
+            editTitle = eTemp!!.postTitle
         }
         mBinding.editTitle.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
@@ -505,8 +507,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
                 }
             } else {
-                selectCategoryId = 0
-                mBinding.editCategoryCarpoolBtn.apply {
+                selectCategoryId = 2
+                mBinding.editCategoryTaxiBtn.apply {
                     setBackgroundResource(R.drawable.round_btn_update_layout)
                     setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
                 }
@@ -905,6 +907,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             val api = retrofit2.create(MioInterface::class.java)
 
             if (type.equals("ADD")) {
+                Log.e("editactivity", "add")
                 if (isFirst) {
                     var school = false
                     var smoke = false
@@ -918,49 +921,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     if (isAllCheck.isThirdVF.isMGender) {
                         gender = true
                     }
-                    /*val t : RequestBody = editTitle.toRequestBody("text/plain".toMediaTypeOrNull())
-                    val c : RequestBody = detailContent.toRequestBody("text/plain".toMediaTypeOrNull())
-                    val std : RequestBody = selectTargetDate.toRequestBody("text/plain".toMediaTypeOrNull())
-                    val stt : RequestBody = selectTime.toRequestBody("text/plain".toMediaTypeOrNull())
-                    val s : RequestBody = school.toString().toRequestBody("text/plain".toMediaTypeOrNull())
-                    val pnp : RequestBody = participateNumberOfPeople.toString().toRequestBody("text/plain".toMediaTypeOrNull())
-                    val lt : RequestBody = "0.0".toRequestBody("text/plain".toMediaTypeOrNull())
-                    val lot : RequestBody = "0.0".toRequestBody("text/plain".toMediaTypeOrNull())
-                    val location : RequestBody = "수락산역 3번 출구".toRequestBody("text/plain".toMediaTypeOrNull())
-                    val vr : RequestBody = "false".toRequestBody("text/plain".toMediaTypeOrNull())
-                    val cos : RequestBody = selectCost.toRequestBody("text/plain".toMediaTypeOrNull())
-                    val vc : RequestBody = "0".toRequestBody("text/plain".toMediaTypeOrNull())
-
-                    val requestMap: HashMap<String, RequestBody> = HashMap()
-                    requestMap.put("title", t)
-                    requestMap.put("content", c)
-                    requestMap.put("targetDate", std)
-                    requestMap.put("targetTime", stt)
-                    requestMap.put("verifyGoReturn", s)
-                    requestMap.put("numberOfPassengers", pnp)
-                    requestMap.put("viewCount", vc)
-                    requestMap.put("verifyFinish", vr)
-                    requestMap.put("latitude", lt)
-                    requestMap.put("longitude", lot)
-                    requestMap.put("location", location)
-                    requestMap.put("cost", cos)
-
-                    val obj = JsonObject()
-                    obj.addProperty("title", editTitle)
-                    obj.addProperty("content", detailContent)
-                    obj.addProperty("targetDate", selectTargetDate)
-                    obj.addProperty("verifyGoReturn", school)
-                    obj.addProperty("numberOfPassengers", participateNumberOfPeople)
-                    obj.addProperty("viewCount", 0)
-                    obj.addProperty("verifyFinish", false)
-                    obj.addProperty("latitude", 0.0)
-                    obj.addProperty("longitude", 0.0)
-                    obj.addProperty("location", "수락산역 3번 출구")
-                    obj.addProperty("cost", selectCost)*/
-
-
                     temp = AddPostData(editTitle, detailContent, selectFormattedDate, selectFormattedTime, school, participateNumberOfPeople, 0, false, latitude, longitude, location, selectCost.toInt())
-                    Log.d("NoticeBoardEditActivityTempTest ", temp.toString())
+                    Log.d("edit add Temp ", temp.toString())
                     CoroutineScope(Dispatchers.IO).launch {
                         /*"application/json; charset=UTF-8",*/
                         api.addPostData(temp!!, selectCategoryId).enqueue(object : Callback<AddPostResponse> {
@@ -969,7 +931,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                                 response: Response<AddPostResponse>
                             ) {
                                 if (response.isSuccessful) {
-                                    println("NoticeBoardEditActivityTempTest response succcc")
+                                    Log.d("NoticeBoardEdit", "response succcc")
                                 } else {
                                     println("NoticeBoardEditActivityTempTest fafafafaf")
                                     Log.d("NoticeBoardEditActivityTempTest aa", response.errorBody()?.string()!!)
@@ -985,16 +947,16 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                         })
                     }
                     if (selectCategoryId == 1) {
-                        val intent = Intent(this, CarpoolTabFragment::class.java).apply {
+                        val intent = Intent(this, NoticeBoardReadActivity::class.java).apply {
                             putExtra("postData", temp)
                             putExtra("flag", 0)
                         }
                         setResult(RESULT_OK, intent)
                         finish()
                     } else {
-                        val intent = Intent(this, TaxiTabFragment::class.java).apply {
+                        val intent = Intent(this, NoticeBoardReadActivity::class.java).apply {
                             putExtra("postData", temp)
-                            putExtra("flag", 0)
+                            putExtra("flag", 1)
                         }
                         setResult(RESULT_OK, intent)
                         finish()
@@ -1006,6 +968,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 }
 
             } else if (type.equals("EDIT")) {
+
+                Log.e("editactivity", "edit")
                 if (isFirst) {
                     var school = false
                     var smoke = false
@@ -1020,11 +984,11 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                         gender = true
                     }
 
-                    temp = AddPostData(editTitle, detailContent, selectFormattedDate, selectFormattedTime, school, participateNumberOfPeople, 0, false, 0.0, 0.0, "수락산역 3번 출구", selectCost.toInt())
-
+                    val temp2 = EditPostData(editTitle, detailContent, selectCategoryId, selectFormattedDate, selectFormattedTime, participateNumberOfPeople, latitude, longitude, location, selectCost.toInt())
+                    Log.e("edit temp", temp2.toString())
                     CoroutineScope(Dispatchers.IO).launch {
-                        /*"application/json; charset=UTF-8",*/
-                        api.editPostData(temp!!, eTemp!!.postID).enqueue(object : Callback<AddPostResponse> {
+                        val postId = eTemp?.postID ?: return@launch // postID가 null이면 실행 종료
+                        api.editPostData(postId, temp2).enqueue(object : Callback<AddPostResponse> {
                             override fun onResponse(
                                 call: Call<AddPostResponse>,
                                 response: Response<AddPostResponse>
@@ -1042,19 +1006,28 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                             override fun onFailure(call: Call<AddPostResponse>, t: Throwable) {
                                 Log.d("error", t.toString())
                             }
-
                         })
+                    }
+                    if (selectCategoryId == 1) {
+                        val intent = Intent(this, CarpoolTabFragment::class.java).apply {
+                            putExtra("postData", temp)
+                            putExtra("flag", 0)
+                        }
+                        setResult(RESULT_OK, intent)
+                        finish()
+                    } else {
+                        val intent = Intent(this, TaxiTabFragment::class.java).apply {
+                            putExtra("postData", temp)
+                            putExtra("flag", 0)
+                        }
+                        setResult(RESULT_OK, intent)
+                        finish()
                     }
                 } else {
                     Toast.makeText(this, "빈 칸이 존재합니다. 빈 칸을 채워주세요!", Toast.LENGTH_SHORT).show()
                 }
 
-                val intent = Intent(this, TaxiTabFragment::class.java).apply {
-                    putExtra("postData", temp)
-                    putExtra("flag", 1)
-                }
-                setResult(RESULT_OK, intent)
-                finish()
+
             }
             /*
             * if (type.equals("ADD")) {
@@ -1120,8 +1093,17 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 }
             }
             mBinding.editNext.setOnClickListener {
+                if (currentPage == 2 && countPage == 1) {
+                    returnStatusbar()
+                }
                 mBinding.editViewflipper.showNext()
+                isComplete = !isComplete
+                myViewModel.postCheckComplete(false)
+                currentPage += 1
+                Log.d("edit currentpage", currentPage.toString())
+                myViewModel.postCheckPage(currentPage)
             }
+            isFirst = true
         }
 
         mBinding.editPre.setOnClickListener {

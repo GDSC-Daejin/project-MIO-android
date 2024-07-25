@@ -242,6 +242,7 @@ class SearchFragment : Fragment() {
                     postID = location.postId,
                     postTitle = location.title,
                     postContent = location.content,
+                    postCreateDate = location.createDate,
                     postTargetDate = location.targetDate,
                     postTargetTime = location.targetTime,
                     postCategory = location.category?.categoryName!!,

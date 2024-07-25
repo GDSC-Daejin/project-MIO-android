@@ -5,6 +5,7 @@ data class PostData(
     var postID : Int, //position
     var postTitle : String,
     var postContent : String,
+    var postCreateDate : String,
     var postTargetDate : String,
     var postTargetTime : String,
     var postCategory : String,

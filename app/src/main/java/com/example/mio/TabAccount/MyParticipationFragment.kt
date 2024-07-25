@@ -1,6 +1,8 @@
 package com.example.mio.TabAccount
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -50,6 +52,8 @@ class MyParticipationFragment : Fragment() {
 
 
     private lateinit var mpBinding : FragmentMyParticipationBinding
+    //로딩창
+    private var loadingDialog : LoadingProgressDialog? = null
 
     private var myAdapter : MyAccountParticipationAdapter? = null
     //자신이 신청한 예약의 게시글 정보를 순서대로 담은 데이터 변수
@@ -103,6 +107,17 @@ class MyParticipationFragment : Fragment() {
         return mpBinding.root
     }
     private fun initMyParticipationRecyclerView() {
+        //로딩창 실행
+        loadingDialog = LoadingProgressDialog(activity)
+        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        //로딩창
+        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
+        loadingDialog?.window!!.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        loadingDialog?.show()
         setMyParticipationData()
         myAdapter = MyAccountParticipationAdapter()
         myAdapter!!.myPostItemData = myParticipationAllData
@@ -202,6 +217,8 @@ class MyParticipationFragment : Fragment() {
                             mpBinding.participationPostRv.visibility = View.GONE
                         }
                         Log.d("mypartipationFragment", myParticipationAllData.toString())
+
+                        loadingDialog?.dismiss()
                     } else {
                         Log.e("f", response.code().toString())
                     }
@@ -263,6 +280,7 @@ class MyParticipationFragment : Fragment() {
                             responseData.postId,
                             responseData.title,
                             responseData.content,
+                            responseData.createDate,
                             responseData.targetDate,
                             responseData.targetTime,
                             responseData.category.categoryName,

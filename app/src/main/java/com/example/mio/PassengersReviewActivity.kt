@@ -31,13 +31,13 @@ class PassengersReviewActivity : AppCompatActivity() {
     private var mannerCount = ""
 
     private var type = ""
-    private var passengersData = ArrayList<Participants>()
+    private var passengersData: ArrayList<Participants>? = null
     private var driverData : User? = null
     private var passengersChipList = ArrayList<Chip>()
     private var passengersChipItemData = ArrayList<ChipData>()
     private var passengersReviewData = ArrayList<String?>()
 
-    private var postData : AlarmPost? = null
+    private var postData : PostData? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,31 +49,33 @@ class PassengersReviewActivity : AppCompatActivity() {
 
         if (type == "PASSENGER") { //내가 손님일때
             driverData = intent.getSerializableExtra("postDriver") as User
-            postData = intent.getSerializableExtra("Data") as AlarmPost?
+            postData = intent.getSerializableExtra("Data") as PostData?
 
         } else if (type == "DRIVER") { //내가 운전자일때
-            passengersData = intent.getSerializableExtra("postPassengers") as ArrayList<Participants>
-            postData = intent.getSerializableExtra("Data") as AlarmPost?
+            postData = intent.getSerializableExtra("Data") as PostData?
+            passengersData = intent.getSerializableExtra("postPassengers") as ArrayList<Participants>?
 
-            //여기에 인원 수 만큼 chip? 추가하기 Todo
-            for (j in passengersData.indices) {
-                passengersChipList.add(createNewChip(
-                    passengersData[j].studentId
-                ))
-                passengersChipItemData.add(ChipData(passengersData[j].studentId, j))
-            }
+            if (passengersData != null) {
+                //여기에 인원 수 만큼 chip? 추가하기 Todo
+                for (j in passengersData!!.indices) {
+                    passengersChipList.add(createNewChip(
+                        passengersData!![j].studentId
+                    ))
+                    passengersChipItemData.add(ChipData(passengersData!![j].studentId, j))
+                }
 
-            for (i in passengersChipList.indices) {
-                // 마지막 Chip 뷰의 인덱스를 계산
-                val lastChildIndex = prBinding.reviewSetPassengersCg.childCount - 1
+                for (i in passengersChipList.indices) {
+                    // 마지막 Chip 뷰의 인덱스를 계산
+                    val lastChildIndex = prBinding.reviewSetPassengersCg.childCount - 1
 
-                // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
-                // 현재 Chip을 바로 그 앞에 추가
-                if (lastChildIndex >= 0) {
-                    prBinding.reviewSetPassengersCg.addView(passengersChipList[i], lastChildIndex)
-                } else {
-                    // ChipGroup에 자식이 없는 경우, 그냥 추가
-                    prBinding.reviewSetPassengersCg.addView(passengersChipList[i])
+                    // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
+                    // 현재 Chip을 바로 그 앞에 추가
+                    if (lastChildIndex >= 0) {
+                        prBinding.reviewSetPassengersCg.addView(passengersChipList[i], lastChildIndex)
+                    } else {
+                        // ChipGroup에 자식이 없는 경우, 그냥 추가
+                        prBinding.reviewSetPassengersCg.addView(passengersChipList[i])
+                    }
                 }
             }
         }
@@ -267,35 +269,37 @@ class PassengersReviewActivity : AppCompatActivity() {
         val api = retrofit2.create(MioInterface::class.java)
         ///
         if (type == "DRIVER") { //내가 운전자일 때 손님들의 리뷰데이터를 전송
-            for (i in passengersData.indices) {
-                val temp = PassengersReviewData(mannerCount, reviewEditText, postData?.id!!)
-                CoroutineScope(Dispatchers.IO).launch {
-                    api.addPassengersReview(passengersData[i].id, temp).enqueue(object : Callback<PassengersReviewData> {
-                        override fun onResponse(
-                            call: Call<PassengersReviewData>,
-                            response: Response<PassengersReviewData>
-                        ) {
-                            if (response.isSuccessful) {
-                                Log.d("SUCCESS review", "탑승자들의 review를 잘보냄 : ${response.code()}")
+            if (passengersData != null) {
+                for (i in passengersData!!.indices) {
+                    val temp = PassengersReviewData(mannerCount, reviewEditText, postData?.postID!!)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        api.addPassengersReview(passengersData!![i].id, temp).enqueue(object : Callback<PassengersReviewData> {
+                            override fun onResponse(
+                                call: Call<PassengersReviewData>,
+                                response: Response<PassengersReviewData>
+                            ) {
+                                if (response.isSuccessful) {
+                                    Log.d("SUCCESS review", "탑승자들의 review를 잘보냄 : ${response.code()}")
 
 
-                            } else {
-                                Log.e("ERROR", "review1 : ${response.errorBody().toString()}")
-                                Log.e("ERROR", "review2 : ${response.message().toString()}")
-                                Log.e("ERROR", "review3 : ${response.code().toString()}")
+                                } else {
+                                    Log.e("ERROR", "review1 : ${response.errorBody().toString()}")
+                                    Log.e("ERROR", "review2 : ${response.message().toString()}")
+                                    Log.e("ERROR", "review3 : ${response.code().toString()}")
+                                }
                             }
-                        }
 
-                        override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
-                            Log.e("ERROR", "review : ${t.message.toString()}")
-                        }
-                    })
+                            override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
+                                Log.e("ERROR", "review : ${t.message.toString()}")
+                            }
+                        })
+                    }
                 }
             }
         } else { //내가 손님일 때 운전자의 리뷰데이터를 전송
             val temp = DriversReviewData(mannerCount, reviewEditText)
             CoroutineScope(Dispatchers.IO).launch {
-                api.addDriversReview(postData?.id!!, temp).enqueue(object : Callback<PassengersReviewData> {
+                api.addDriversReview(postData?.postID!!, temp).enqueue(object : Callback<PassengersReviewData> {
                     override fun onResponse(
                         call: Call<PassengersReviewData>,
                         response: Response<PassengersReviewData>

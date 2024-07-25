@@ -19,6 +19,8 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
@@ -35,8 +37,7 @@ import com.example.mio.*
 import com.example.mio.Adapter.NoticeBoardReadAdapter
 import com.example.mio.BottomSheetFragment.BottomSheetCommentFragment
 import com.example.mio.BottomSheetFragment.ReadSettingBottomSheet2Fragment
-import com.example.mio.Helper.AlertReceiver
-import com.example.mio.Helper.SharedPref
+import com.example.mio.Helper.*
 import com.example.mio.Model.*
 import com.example.mio.TabAccount.ProfileActivity
 import com.example.mio.TabCategory.MoreCarpoolTabActivity
@@ -50,17 +51,23 @@ import kotlinx.coroutines.launch
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import com.launchdarkly.eventsource.ConnectStrategy
+import com.launchdarkly.eventsource.EventSource
+import com.launchdarkly.eventsource.background.BackgroundEventSource
+import okhttp3.internal.closeQuietly
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 class NoticeBoardReadActivity : AppCompatActivity() {
@@ -146,25 +153,48 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
     private var adRequest : AdRequest? = null
 
+    //실시간 sse 통신
+    private lateinit var sseClient: SSEClient
+    private lateinit var eventSource:BackgroundEventSource
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nbrBinding = ActivityNoticeBoardReadBinding.inflate(layoutInflater)
         sharedPref = SharedPref(this)
         sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.toString()
-
+        sseClient = SSEClient()
         createChannel()
-
-
+        /////
         val type = intent.getStringExtra("type")
         tabType = intent.getStringExtra("tabType").toString()
+        temp = intent.getSerializableExtra("postItem") as PostData?
+        startEventSource(temp?.user?.id!!.toLong())
+        /*val eventSource: BackgroundEventSource = BackgroundEventSource //백그라운드에서 이벤트를 처리하기위한 EVENTSOURCE의 하위 클래스
+            .Builder(
+                SseHandler(this@NoticeBoardReadActivity),
+                EventSource.Builder(
+                    ConnectStrategy
+                        .http(URL("https://mioserver.o-r.kr/subscribe/${temp?.user?.id}"))
+                        // 서버와의 연결을 설정하는 타임아웃
+                        .connectTimeout(3, TimeUnit.SECONDS)
+                        // 서버로부터 데이터를 읽는 타임아웃 시간
+                        .readTimeout(600, TimeUnit.SECONDS)
+                )
+            )
+            .threadPriority(Thread.MAX_PRIORITY) //백그라운드 이벤트 처리를 위한 스레드 우선 순위를 최대로 설정합니다.
+            .build()
+        // EventSource 연결 시작
+        eventSource.start()*/
 
         if (type.equals("READ")) {
-            temp = intent.getSerializableExtra("postItem") as PostData?
+
             writerEmail = temp!!.user.email
             //tempProfile = intent.getSerializableExtra("uri") as String
             tempProfile = temp?.user?.profileImageUrl.toString()
             isCategory = temp!!.postCategory == "carpool"
+
+
+
             initParticipationCheck()
             if (temp?.user?.gender != null && temp?.user?.verifySmoker != null && temp?.postVerifyGoReturn != null) {
                 chipList.add(createNewChip(text = if (temp?.user?.verifySmoker == true) {
@@ -233,7 +263,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             }
 
 
-
+            initMyBookmarkData()
             nbrBinding.readContent.text = temp!!.postContent
             nbrBinding.readUserId.text = temp!!.accountID
             nbrBinding.readCost.text = temp!!.postCost.toString()
@@ -257,7 +287,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             val currentDate = sdf.format(date)
 
 
-            val postDateTime = this.getString(R.string.setText, temp!!.postTargetDate, temp!!.postTargetTime)
+            val postDateTime = "${temp?.postCreateDate}".replace("T", " ").split(".")[0] ?: ""
 
             val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
             val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)
@@ -266,22 +296,14 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             val diffMinutes = diffMilliseconds?.div((60 * 1000))
             val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
             val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
-            if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
 
-                if(diffSeconds > -1){
-                    nbrBinding.readTimeCheck.text = "방금전"
-                }
-                if (diffSeconds > 0) {
-                    nbrBinding.readTimeCheck.text = "${diffSeconds.toString()}초전"
-                }
-                if (diffMinutes > 0) {
-                    nbrBinding.readTimeCheck.text = "${diffMinutes.toString()}분전"
-                }
-                if (diffHours > 0) {
-                    nbrBinding.readTimeCheck.text = "${diffHours.toString()}시간전"
-                }
-                if (diffDays > 0) {
-                    nbrBinding.readTimeCheck.text = "${diffDays.toString()}일전"
+            if (diffMilliseconds != null && diffSeconds != null && diffMinutes != null && diffHours != null && diffDays != null) {
+                when {
+                    diffSeconds <= 0 -> nbrBinding.readTimeCheck.text = "방금전"
+                    diffSeconds < 60 -> nbrBinding.readTimeCheck.text = "${diffSeconds}초전"
+                    diffMinutes < 60 -> nbrBinding.readTimeCheck.text = "${diffMinutes}분전"
+                    diffHours < 24 -> nbrBinding.readTimeCheck.text = "${diffHours}시간전"
+                    else -> nbrBinding.readTimeCheck.text = "${diffDays}일전"
                 }
             }
 
@@ -306,51 +328,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
         nbrBinding.readSetting.setOnClickListener {
             if (email == temp!!.user.email) {
-                /* val popUpMenu = PopupMenu(this, nbrBinding.readSetting)
-                 popUpMenu.menuInflater.inflate(R.menu.noticeboard_option_menu, popUpMenu.menu)
-                 popUpMenu.setOnMenuItemClickListener {
-                     when (it.itemId) {
-                         R.id.read_menu_edit -> {
-                             Toast.makeText(this, "수정", Toast.LENGTH_SHORT).show()
-                             val intent = Intent(this, NoticeBoardEditActivity::class.java).apply {
-                                 putExtra("type", "EDIT")
-                                 putExtra("editPostData", temp)
-                             }
-                             startActivity(intent)
-                         }
-
-                         R.id.read_menu_delete -> {
-                             Toast.makeText(this, "삭제", Toast.LENGTH_SHORT).show()
-                             val builder : AlertDialog.Builder = AlertDialog.Builder(this)
-                             val ad : AlertDialog = builder.create()
-                             val deleteData = temp
-                             builder.setMessage("정말로 삭제하시겠습니까?")
-                             builder.setNegativeButton("예",
-                                 DialogInterface.OnClickListener { dialog, which ->
-                                     ad.dismiss()
-                                     //temp = listData[holder.adapterPosition]!!
-                                     //extraditeData()
-                                     //testData.add(temp)
-                                     //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
-
-
-
-                                     //removeServerData(deleteServerData!!)
-                                     //println(deleteServerData)
-                                     deletePostData()
-                                 })
-
-                             builder.setPositiveButton("아니오",
-                                 DialogInterface.OnClickListener { dialog, which ->
-                                     ad.dismiss()
-                                 })
-                             builder.show()
-                         }
-                     }
-                     return@setOnMenuItemClickListener true
-                 }
-                 popUpMenu.show()*/
-
                 //이건 내 게시글 눌렀을 때
                 val bottomSheet = ReadSettingBottomSheetFragment()
                 bottomSheet.show(this.supportFragmentManager, bottomSheet.tag)
@@ -366,7 +343,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         putExtra("type", "EDIT")
                                         putExtra("editPostData", temp)
                                     }
-                                    startActivity(intent)
+                                    requestActivity.launch(intent)
                                 }
 
                                 "삭제" -> {
@@ -865,7 +842,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             }
             //댓글 수정 및 삭제할 때
             override fun onLongClick(view: View, position: Int, itemId: Int) {
-                if (email == commentAllData[itemId]?.user?.email) {
+                val checkData = commentAllData.find { it?.commentId == itemId}
+                if (email == checkData?.user?.email && checkData.content != "삭제된 댓글입니다.") {
                     //수정용
                     commentPosition = itemId
                     val bottomSheet = ReadSettingBottomSheetFragment()
@@ -1086,12 +1064,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             val retrofit2: Retrofit = retrofit.build()
             val api = retrofit2.create(MioInterface::class.java)
 
-            //println(userId)
-            Log.d("NoticeReadGetParticipation", userId.toString())
+
+            Log.d("NoticeReadGetParticipation", temp?.postID!!.toString())
             api.addBookmark(postId = temp?.postID!!).enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
                         Log.d("noticeboardread", response.code().toString())
+                        initMyBookmarkData()
                     } else {
                         println(response.errorBody().toString())
                         println(response.message().toString())
@@ -1121,23 +1100,208 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             finish()
         }
 
-
-
-        /*val observer: ViewTreeObserver = nbrBinding.root.viewTreeObserver
-        observer.addOnPreDrawListener {
-            val currentHeight = nbrBinding.root.height
-            if (previousHeight - currentHeight > 100) {
-                // 키보드가 나타남
-                //nbrBinding ..visibility = View.GONE
-            } else if (currentHeight - previousHeight > 100) {
-                // 키보드가 사라짐
-                nbrBinding.readCommentLl.visibility = View.GONE
+        onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val intent = Intent(this@NoticeBoardReadActivity, MainActivity::class.java).apply {
+                    //flag넣고 resultok
+                    putExtra("flag", 22)
+                    putExtra("selectedTab", tabType)
+                }
+                setResult(RESULT_OK, intent)
+                finish()
             }
-            previousHeight = currentHeight
-            true
-        }*/
+        })
 
         setContentView(nbrBinding.root)
+    }
+
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+        when (it.resultCode) {
+            AppCompatActivity.RESULT_OK -> {
+                val post = it.data?.getSerializableExtra("postData") as PostData?
+                Log.d("read post", post.toString())
+                when(it.data?.getIntExtra("flag", -1)) {
+                    //carpool
+                    0 -> {
+                        if (post != null) {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                temp = post
+                                nbrBinding.readContent.text = post.postContent
+                                nbrBinding.readUserId.text = post.accountID
+                                nbrBinding.readCost.text = post.postCost.toString()
+                                nbrBinding.readTitle.text = post.postTitle
+                                nbrBinding.readNumberOfPassengersTotal.text = post.postParticipationTotal.toString()
+                                nbrBinding.readNumberOfPassengers.text = post.postParticipation.toString()
+                                nbrBinding.readLocation.text = if (post.postLocation.split("/").last().isEmpty()) {
+                                    temp!!.postLocation.split("/").first()
+                                } else {
+                                    temp!!.postLocation.split("/").last().toString()
+                                }
+                                nbrBinding.readDetailLocation.text = post.postLocation.split("/").dropLast(1).joinToString(" ")
+                                nbrBinding.readDateTime.text = this@NoticeBoardReadActivity.getString(R.string.setText, post.postTargetDate, post.postTargetTime)
+
+                                chipList.clear()
+                                nbrBinding.readSetFilterCg.removeAllViewsInLayout()
+                                chipList.add(createNewChip(text = if (post.user?.verifySmoker == true) {
+                                    "흡연 O"
+                                } else {
+                                    "흡연 X"
+                                }))
+                                chipList.add(createNewChip(text = if (post.user?.gender == true) {
+                                    "여성"
+                                } else {
+                                    "남성"
+                                }))
+                                chipList.add(createNewChip(text = if (post.postVerifyGoReturn == true) {
+                                    "등교"
+                                } else {
+                                    "하교"
+                                }))
+
+
+                                for (i in chipList.indices) {
+                                    // 마지막 Chip 뷰의 인덱스를 계산
+                                    val lastChildIndex = nbrBinding.readSetFilterCg.childCount - 1
+
+                                    // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
+                                    // 현재 Chip을 바로 그 앞에 추가
+                                    if (lastChildIndex >= 0) {
+                                        nbrBinding.readSetFilterCg.addView(chipList[i], lastChildIndex)
+                                    } else {
+                                        // ChipGroup에 자식이 없는 경우, 그냥 추가
+                                        nbrBinding.readSetFilterCg.addView(chipList[i])
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                    //taxi
+                    1 -> {
+                        if (post != null) {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                temp = post
+                                nbrBinding.readContent.text = post.postContent
+                                nbrBinding.readUserId.text = post.accountID
+                                nbrBinding.readCost.text = post.postCost.toString()
+                                nbrBinding.readTitle.text = post.postTitle
+                                nbrBinding.readNumberOfPassengersTotal.text = post.postParticipationTotal.toString()
+                                nbrBinding.readNumberOfPassengers.text = post.postParticipation.toString()
+                                nbrBinding.readLocation.text = if (post.postLocation.split("/").last().isEmpty()) {
+                                    temp!!.postLocation.split("/").first()
+                                } else {
+                                    temp!!.postLocation.split("/").last().toString()
+                                }
+                                nbrBinding.readDetailLocation.text = post.postLocation.split("/").dropLast(1).joinToString(" ")
+                                nbrBinding.readDateTime.text = this@NoticeBoardReadActivity.getString(R.string.setText, post.postTargetDate, post.postTargetTime)
+
+                                chipList.clear()
+                                nbrBinding.readSetFilterCg.removeAllViewsInLayout()
+                                chipList.add(createNewChip(text = if (post.user?.verifySmoker == true) {
+                                    "흡연 O"
+                                } else {
+                                    "흡연 X"
+                                }))
+                                chipList.add(createNewChip(text = if (post.user?.gender == true) {
+                                    "여성"
+                                } else {
+                                    "남성"
+                                }))
+                                chipList.add(createNewChip(text = if (post.postVerifyGoReturn == true) {
+                                    "등교"
+                                } else {
+                                    "하교"
+                                }))
+
+
+                                for (i in chipList.indices) {
+                                    // 마지막 Chip 뷰의 인덱스를 계산
+                                    val lastChildIndex = nbrBinding.readSetFilterCg.childCount - 1
+
+                                    // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
+                                    // 현재 Chip을 바로 그 앞에 추가
+                                    if (lastChildIndex >= 0) {
+                                        nbrBinding.readSetFilterCg.addView(chipList[i], lastChildIndex)
+                                    } else {
+                                        // ChipGroup에 자식이 없는 경우, 그냥 추가
+                                        nbrBinding.readSetFilterCg.addView(chipList[i])
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+    }
+
+    private fun initMyBookmarkData() {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+
+
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(this, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                    startActivity(intent)
+                    this.finish()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+
+        //println(userId)
+        var thisData : kotlin.collections.List<BookMarkResponseData>? = null
+        api.getBookmark().enqueue(object : Callback<List<BookMarkResponseData>> {
+            override fun onResponse(call: Call<List<BookMarkResponseData>>, response: Response<List<BookMarkResponseData>>) {
+                if (response.isSuccessful) {
+                    Log.e("success getBookmark", response.code().toString())
+                    val responseData = response.body()
+                    Log.d("success getBookmark", responseData.toString())
+                    responseData.let {
+                        thisData = it
+                    }
+                    if (thisData?.find { it.postId == temp?.postID } != null) {
+                        nbrBinding.readBookmark.apply {
+                            setBackgroundResource(R.drawable.read_update_bookmark_icon)
+                        }
+                    } else {
+                        nbrBinding.readBookmark.apply {
+                            setBackgroundResource(R.drawable.read_bookmark_icon)
+                        }
+                    }
+                } else {
+                    Log.e("f", response.code().toString())
+                }
+            }
+
+            override fun onFailure(call: Call<List<BookMarkResponseData>>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
     }
     private fun initParticipationCheck() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
@@ -1809,7 +1973,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     }
 
                                     override fun onLongClick(view: View, position: Int, itemId: Int) {
-                                        if (email == commentAllData[itemId]?.user?.email) {
+                                        val checkData = commentAllData.find { it?.commentId == itemId}
+                                        if (email == checkData?.user?.email && checkData.content != "삭제된 댓글입니다.") {
                                             commentPosition = itemId
                                             val bottomSheet = ReadSettingBottomSheetFragment()
                                             bottomSheet.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet.tag)
@@ -2249,17 +2414,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         ///////////////////////////////
-        val now = System.currentTimeMillis()
-        val date = Date(now)
-        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-        val currentDate = sdf.format(date)
-        val formatter = DateTimeFormatter
-            .ofPattern("yyyy-MM-dd HH:mm:ss")
-            .withZone(ZoneId.systemDefault())
-        val result: Instant = Instant.from(formatter.parse(currentDate))
-
         //userId 가 알람 받는 사람
-        val temp = AddAlarmData(result.toString(), "${status}${content}", data?.postID!!, data.user.id)
+        val temp = AddAlarmData("${status}${content}", data?.postID!!, data.user.id)
 
         //entity가 알람 받는 사람, user가 알람 전송한 사람
         CoroutineScope(Dispatchers.IO).launch {
@@ -2284,7 +2440,84 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             })
         }
     }
+    private fun startEventSource(user_id : Long?) {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
 
+        /////////interceptor
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        //Authorization jwt토큰 로그인
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                    startActivity(intent)
+                    finish()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        /////////
+        val url = URL("https://mioserver.o-r.kr/subscribe/$user_id")
+        eventSource = BackgroundEventSource //백그라운드에서 이벤트를 처리하기위한 EVENTSOURCE의 하위 클래스
+            .Builder(
+                SseHandler(this@NoticeBoardReadActivity),
+                EventSource.Builder(
+                    ConnectStrategy
+                        .http(URL("https://mioserver.o-r.kr/subscribe/$user_id"))
+                        .header("Accept", "text/event-stream")
+                        // 서버와의 연결을 설정하는 타임아웃
+                        .connectTimeout(10, TimeUnit.SECONDS)
+                        // 서버로부터 데이터를 읽는 타임아웃 시간
+                        .readTimeout(10, TimeUnit.SECONDS)
+                )
+            )
+            .threadPriority(Thread.MAX_PRIORITY) //백그라운드 이벤트 처리를 위한 스레드 우선 순위를 최대로 설정합니다.
+            .build()
+        // EventSource 연결 시작
+        eventSource.start()
+
+        if (user_id != null) {
+            api.getRealTimeBookMarkAlarm(user_id).enqueue(object : Callback<SSEData> {
+                override fun onResponse(call: Call<SSEData>, response: Response<SSEData>) {
+                    if (response.isSuccessful) {
+                        Log.d("realTime", "success")
+
+                    } else {
+                        Log.e("realTime", "fail")
+                        Log.e("realTime", response.code().toString())
+                        Log.e("realTime", response.errorBody()?.string()!!)
+                    }
+                }
+
+                override fun onFailure(call: Call<SSEData>, t: Throwable) {
+                    Log.e("realTimeFailuer", t.message.toString())
+                }
+
+            })
+        }
+    }
     private fun getManager() : NotificationManager {
         return getSystemService(NOTIFICATION_SERVICE) as NotificationManager
     }

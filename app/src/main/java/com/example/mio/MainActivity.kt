@@ -602,7 +602,7 @@ class MainActivity : AppCompatActivity() {
 
                 } else {
                     Log.e("MainActivitu Notification", response.code().toString())
-                    Log.e("MainActivitu Notification", response.errorBody().toString())
+                    Log.e("MainActivitu Notification", response.errorBody()?.string()!!)
                     Log.e("MainActivitu Notification", response.message().toString())
                 }
             }

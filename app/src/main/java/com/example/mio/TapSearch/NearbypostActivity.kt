@@ -41,6 +41,7 @@ class NearbypostActivity  : AppCompatActivity() { //게시글 더보기 이동 �
                 postID = post.postId,
                 postTitle = post.title,
                 postContent = post.content,
+                postCreateDate = post.createDate,
                 postTargetDate = post.targetDate,
                 postTargetTime = post.targetTime,
                 postCategory = post.category?.categoryName!!,

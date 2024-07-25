@@ -2,23 +2,19 @@ package com.example.mio.Model
 
 import com.google.gson.annotations.SerializedName
 
-data class AddPostData(
+data class EditPostData(
     @SerializedName("title")
     var title: String,
     @SerializedName("content")
     var content: String,
+    @SerializedName("categoryId")
+    var categoryId: Int,
     @SerializedName("targetDate")
     var targetDate: String,
     @SerializedName("targetTime")
     var targetTime: String,
-    @SerializedName("verifyGoReturn")
-    var verifyGoReturn: Boolean,
     @SerializedName("numberOfPassengers")
     var numberOfPassengers: Int,
-    @SerializedName("viewCount")
-    var viewCount: Int,
-    @SerializedName("verifyFinish")
-    var verifyFinish: Boolean,
     @SerializedName("latitude")
     var latitude: Double?,
     @SerializedName("longitude")
@@ -30,4 +26,3 @@ data class AddPostData(
 ) : java.io.Serializable {
 
 }
-

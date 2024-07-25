@@ -177,6 +177,7 @@ class PostSearchFragment : Fragment() {
                                     response.body()!!.content[i].postId,
                                     title,
                                     content,
+                                    response.body()!!.content[i].createDate,
                                     targetDate,
                                     targetTime,
                                     categoryName,

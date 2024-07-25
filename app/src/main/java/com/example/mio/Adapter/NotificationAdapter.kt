@@ -38,7 +38,7 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
 
     //알람의 내용
     private var notificationContentAdapter : NotificationContentAdapter? = null
-    var notificationContentItemData = ArrayList<AlarmPost?>()
+    var notificationContentItemData = ArrayList<PostData?>()
     init {
         setHasStableIds(true)
         for (i in notificationContentItemData.indices) {
@@ -54,7 +54,7 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
         fun bind(notification : AddAlarmResponseData, position : Int) {
             this.position = position
             //여기 카풀신청, 예약, 댓글 시 받은 알림의 content를 사용하여 알림만들기 Todo
-            val category = if (notification.post.category.categoryName == "carpool") {
+            val category = if (notificationContentItemData[position]!!.postCategory == "carpool") {
                 "카풀"
             } else {
                 "택시"
@@ -69,12 +69,12 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
             val currentDate = sdf.format(date)
 
 
-            val postDateTime = context.getString(R.string.setText, notification.createDate.substring(0 .. 9), notification.createDate.substring(11 .. 18))
+            val postDateTime = notification.createDate.replace("T", " ").split(".")[0] ?: ""
 
             val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
             val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime) //위 두개는 알림이 온 시간체크용용
 
-            val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(notification.post.targetDate + " " + notification.post.targetTime) //이건 게시글과의 차이를 계산해 카풀종료 알림인지 확인하기위함
+            val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(notificationContentItemData[position]?.postTargetDate + " " + notificationContentItemData[position]?.postTargetTime) //이건 게시글과의 차이를 계산해 카풀종료 알림인지 확인하기위함
             val diff = nowFormat?.time?.minus(format?.time!!)
 
             if (notification.content.substring(0..1) == "신청") {
@@ -82,10 +82,10 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
                 notificationContentText.text = notification.content.removeRange(0..9)
             } else if (notification.content.substring(0..1) == "예약") {
                 notificationTitleText.text = context.getString(R.string.setReservationNotificationText, notification.content.substring(2..9), category)
-                notificationContentText.text = notification.post.title
+                notificationContentText.text = notificationContentItemData[position]?.postTitle
             } else if (notification.content.substring(0..1) == "취소") {
                 notificationTitleText.text = context.getString(R.string.setReservationNotificationText, notification.content.substring(2..9), category)
-                notificationContentText.text = notification.post.title
+                notificationContentText.text = notificationContentItemData[position]?.postTitle
             } else if (notification.content.substring(0..1) == "댓글") {
                 notificationTitleText.text = context.getString(R.string.setCommentNotificationText, notification.content.substring(2..9))
                 notificationContentText.text = notification.content.removeRange(0..9)
@@ -147,17 +147,17 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
         identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
 
         //본인이 작성자(운전자) 이면서 카풀이 완료
-        if (identification == notificationItemData[holder.adapterPosition].post.user.email && hashMapCurrentPostItemData[holder.adapterPosition] == NotificationStatus.Driver) {
+        if (identification == notificationContentItemData[holder.adapterPosition]?.user?.email && hashMapCurrentPostItemData[holder.adapterPosition] == NotificationStatus.Driver) {
             holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, notificationContentItemData[holder.adapterPosition]?.id, NotificationStatus.Driver)
+                itemClickListener.onClick(it, holder.adapterPosition, notificationContentItemData[holder.adapterPosition]?.postID, NotificationStatus.Driver)
             }
         } else if (hashMapCurrentPostItemData[holder.adapterPosition] == NotificationStatus.Passenger) { //본인은 운전자가 아니고 손님
             holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, notificationContentItemData[holder.adapterPosition]?.id, NotificationStatus.Passenger)
+                itemClickListener.onClick(it, holder.adapterPosition, notificationContentItemData[holder.adapterPosition]?.postID, NotificationStatus.Passenger)
             }
         } else { //그냥 자기 게시글 확인
             holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, notificationContentItemData[holder.adapterPosition]?.id, NotificationStatus.Neither)
+                itemClickListener.onClick(it, holder.adapterPosition, notificationContentItemData[holder.adapterPosition]?.postID, NotificationStatus.Neither)
             }
         }
     }

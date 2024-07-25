@@ -1,6 +1,8 @@
 package com.example.mio.TabAccount
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -67,6 +69,8 @@ class MyPostFragment : Fragment() {
     private var getExpireDate = ""
     private var email = ""
     private var userId = ""
+    //로딩창
+    private var loadingDialog : LoadingProgressDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -253,6 +257,7 @@ class MyPostFragment : Fragment() {
                                     response.body()!!.content[i].postId,
                                     title,
                                     content,
+                                    response.body()!!.content[i].createDate,
                                     targetDate,
                                     targetTime,
                                     categoryName,
@@ -279,6 +284,7 @@ class MyPostFragment : Fragment() {
                             pBinding.accountSwipe.visibility = View.GONE
                             pBinding.myAccountPostRv.visibility = View.GONE
                         }
+                        loadingDialog?.dismiss()
 
                     } else {
                         Log.d("f", response.code().toString())
@@ -293,6 +299,17 @@ class MyPostFragment : Fragment() {
     }
 
     private fun initMyRecyclerView() {
+        //로딩창 실행
+        loadingDialog = LoadingProgressDialog(activity)
+        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        //로딩창
+        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
+        loadingDialog?.window!!.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        loadingDialog?.show()
         setMyPostData()
         myAdapter = MyAccountPostAdapter()
         myAdapter!!.myPostItemData = myAccountPostAllData
@@ -674,6 +691,7 @@ class MyPostFragment : Fragment() {
                                             response.body()!!.content[i].postId,
                                             title,
                                             content,
+                                            response.body()!!.content[i].createDate,
                                             targetDate,
                                             targetTime,
                                             categoryName,

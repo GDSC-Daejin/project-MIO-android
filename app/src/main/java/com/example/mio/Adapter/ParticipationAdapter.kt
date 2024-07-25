@@ -490,17 +490,9 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         ///////////////////////////////
-        val now = System.currentTimeMillis()
-        val date = Date(now)
-        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-        val currentDate = sdf.format(date)
-        val formatter = DateTimeFormatter
-            .ofPattern("yyyy-MM-dd HH:mm:ss")
-            .withZone(ZoneId.systemDefault())
-        val result: Instant = Instant.from(formatter.parse(currentDate))
 
         //userId 가 알람 받는 사람
-        val temp = AddAlarmData(result.toString(), "${status}${participantsUserData[dataPos]?.studentId}", data.postId, data.userId)
+        val temp = AddAlarmData("${status}${participantsUserData[dataPos]?.studentId}", data.postId, data.userId)
 
         //entity가 알람 받는 사람, user가 알람 전송한 사람
         CoroutineScope(Dispatchers.IO).launch {

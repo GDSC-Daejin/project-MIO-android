@@ -169,6 +169,7 @@ class TaxiTabFragment : Fragment() {
                                 putExtra("type", "PASSENGER")
                                 putExtra("postDriver", temp.user)
                                 putExtra("postData", currentTaxiAllData[position])
+                                putExtra("category", "taxi")
                             }
                             sendAlarmData("PASSENGER", position, currentTaxiAllData[position])
                             patchVerifyFinish(temp.postID)
@@ -179,6 +180,7 @@ class TaxiTabFragment : Fragment() {
                             intent = Intent(activity, CompleteActivity::class.java).apply {
                                 putExtra("type", "DRIVER")
                                 putExtra("postData", currentTaxiAllData[position])
+                                putExtra("category", "taxi")
                             }
                             sendAlarmData("DRIVER", position, currentTaxiAllData[position])
                             patchVerifyFinish(temp.postID)
@@ -671,6 +673,7 @@ class TaxiTabFragment : Fragment() {
                                     response.body()!!.content[i].postId,
                                     title,
                                     content,
+                                    response.body()!!.content[i].createDate,
                                     targetDate,
                                     targetTime,
                                     categoryName,
@@ -892,6 +895,7 @@ class TaxiTabFragment : Fragment() {
                                 i.postId,
                                 i.title,
                                 i.content,
+                                i.createDate,
                                 i.targetDate,
                                 i.targetTime,
                                 i.category.categoryName,
@@ -1090,12 +1094,6 @@ class TaxiTabFragment : Fragment() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         ///////////////////////////////
-        val now = System.currentTimeMillis()
-        val date = Date(now)
-        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-        val currentDate = sdf.format(date)
-        val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
-        val nowDate = nowFormat?.toString()
 
         var thisParticipationData : kotlin.collections.List<ParticipationData>? = null
         api.getParticipationData(postData.postID).enqueue(object : Callback<List<ParticipationData>> {
@@ -1130,7 +1128,7 @@ class TaxiTabFragment : Fragment() {
                 val filterData = thisParticipationData?.filter { it.approvalOrReject == "APPROVAL" }
                 for (i in filterData?.indices!!) {
                     //userId 가 알람 받는 사람
-                    val temp = AddAlarmData(nowDate!!, "운전자님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
+                    val temp = AddAlarmData("운전자님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
 
                     //entity가 알람 받는 사람, user가 알람 전송한 사람
                     CoroutineScope(Dispatchers.IO).launch {
@@ -1159,7 +1157,7 @@ class TaxiTabFragment : Fragment() {
             }
         } else {
             //내가 손님일 때 후기를 써주길 원하는 운전자에게 쓰도록 유도
-            val temp = AddAlarmData(nowDate!!, "손님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
+            val temp = AddAlarmData("손님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
 
             //entity가 알람 받는 사람, user가 알람 전송한 사람
             CoroutineScope(Dispatchers.IO).launch {
@@ -1218,64 +1216,15 @@ class TaxiTabFragment : Fragment() {
                         noticeBoardAdapter!!.notifyItemChanged(post?.postID!!)
                     }
 
+                    123 -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            setCurrentTaxiData()
+                        }
+                    }
+
                 }
-                //getSerializableExtra = intent의 값을 보내고 받을때사용
-                //타입 변경을 해주지 않으면 Serializable객체로 만들어지니 as로 캐스팅해주자
-                /*val pill = it.data?.getSerializableExtra("pill") as PillData
-                val selectCategory = it.data?.getSerializableExtra("cg") as String*/
-
-                //선택한 카테고리 및 데이터 추가
 
 
-                /*if (selectCategory.isNotEmpty()) {
-                    selectCategoryData[selectCategory] = categoryArr
-                }*/
-
-
-                //api 33이후 아래로 변경됨
-                /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    getSerializable(key, T::class.java)
-                } else {
-                    getSerializable(key) as? T
-                }*/
-                /*when(it.data?.getIntExtra("flag", -1)) {
-                    //add
-                    0 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            data.add(pill)
-                            categoryArr.add(pill)
-                            //add면 그냥 추가
-                            selectCategoryData[selectCategory] = categoryArr
-                            //전
-                            //println( categoryArr[dataPosition])
-                        }
-                        println("전 ${selectCategoryData[selectCategory]}")
-                        //livedata
-                        sharedViewModel!!.setCategoryLiveData("add", selectCategoryData)
-
-
-                        homeAdapter!!.notifyDataSetChanged()
-                        Toast.makeText(activity, "추가되었습니다.", Toast.LENGTH_SHORT).show()
-                    }
-                    //edit
-                    1 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            data[dataPosition] = pill
-                            categoryArr[dataPosition] = pill
-                            selectCategoryData.clear()
-                            selectCategoryData[selectCategory] = categoryArr
-                            //후
-                            //println(categoryArr[dataPosition])
-                        }
-                        println("선택 $selectCategory")
-                        //livedata
-                        sharedViewModel!!.categoryLiveData.value = selectCategoryData
-                        println(testselectCategoryData)
-                        homeAdapter!!.notifyDataSetChanged()
-                        //Toast.makeText(activity, "수정되었습니다.", Toast.LENGTH_SHORT).show()
-                        Toast.makeText(activity, "$testselectCategoryData", Toast.LENGTH_SHORT).show()
-                    }
-                }*/
             }
         }
     }

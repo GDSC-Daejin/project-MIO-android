@@ -168,6 +168,7 @@ class CarpoolTabFragment : Fragment() {
                                 putExtra("type", "PASSENGER")
                                 putExtra("postDriver", temp.user)
                                 putExtra("postData", currentTaxiAllData[position])
+                                putExtra("category", "carpool")
                             }
                             sendAlarmData("PASSENGER", position, currentTaxiAllData[position])
                             patchVerifyFinish(temp.postID)
@@ -178,6 +179,7 @@ class CarpoolTabFragment : Fragment() {
                             intent = Intent(activity, CompleteActivity::class.java).apply {
                                 putExtra("type", "DRIVER")
                                 putExtra("postData", currentTaxiAllData[position])
+                                putExtra("category", "carpool")
                             }
                             sendAlarmData("DRIVER", position, currentTaxiAllData[position])
                             patchVerifyFinish(temp.postID)
@@ -189,6 +191,7 @@ class CarpoolTabFragment : Fragment() {
                                 putExtra("type", "READ")
                                 putExtra("postItem", temp)
                                 putExtra("uri", temp.user.profileImageUrl)
+                                putExtra("tabType", "카풀")
                             }
                         }
                         else -> {
@@ -677,6 +680,7 @@ class CarpoolTabFragment : Fragment() {
                                     response.body()!!.content[i].postId,
                                     title,
                                     content,
+                                    response.body()!!.content[i].createDate,
                                     targetDate,
                                     targetTime,
                                     categoryName,
@@ -923,6 +927,7 @@ class CarpoolTabFragment : Fragment() {
                                 i.postId,
                                 i.title,
                                 i.content,
+                                i.createDate,
                                 i.targetDate,
                                 i.targetTime,
                                 i.category.categoryName,
@@ -1017,6 +1022,7 @@ class CarpoolTabFragment : Fragment() {
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {
             AppCompatActivity.RESULT_OK -> {
+                val post = it.data?.getSerializableExtra("postData") as PostData?
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {
@@ -1037,11 +1043,24 @@ class CarpoolTabFragment : Fragment() {
                     }
                     //edit
                     1 -> {
-
+                        CoroutineScope(Dispatchers.IO).launch {
+                            carpoolAllData[dataPosition] = post!!
+                        }
+                        noticeBoardAdapter!!.notifyItemChanged(post?.postID!!)
                     }
 
-                    9 -> {
+                    123 -> {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            /*taxiAllData.add(post)
+                            calendarTaxiAllData.add(post) //데이터 전부 들어감
 
+                            //들어간 데이터를 key로 분류하여 저장하도록함
+                            selectCalendarData[post.postTargetDate] = arrayListOf()
+                            selectCalendarData[post.postTargetDate]!!.add(post)
+
+                            println(selectCalendarData)*/
+                            setCurrentCarpoolData()
+                        }
                     }
 
                 }
@@ -1154,12 +1173,6 @@ class CarpoolTabFragment : Fragment() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         ///////////////////////////////
-        val now = System.currentTimeMillis()
-        val date = Date(now)
-        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-        val currentDate = sdf.format(date)
-        val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
-        val nowDate = nowFormat?.toString()
 
         var thisParticipationData : kotlin.collections.List<ParticipationData>? = null
         api.getParticipationData(postData.postID).enqueue(object : Callback<List<ParticipationData>> {
@@ -1194,7 +1207,7 @@ class CarpoolTabFragment : Fragment() {
                 val filterData = thisParticipationData?.filter { it.approvalOrReject == "APPROVAL" }
                 for (i in filterData?.indices!!) {
                     //userId 가 알람 받는 사람
-                    val temp = AddAlarmData(nowDate!!, "운전자님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
+                    val temp = AddAlarmData("운전자님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
 
                     //entity가 알람 받는 사람, user가 알람 전송한 사람
                     CoroutineScope(Dispatchers.IO).launch {
@@ -1223,7 +1236,7 @@ class CarpoolTabFragment : Fragment() {
             }
         } else {
             //내가 손님일 때 후기를 써주길 원하는 운전자에게 쓰도록 유도
-            val temp = AddAlarmData(nowDate!!, "손님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
+            val temp = AddAlarmData("손님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
 
             //entity가 알람 받는 사람, user가 알람 전송한 사람
             CoroutineScope(Dispatchers.IO).launch {

@@ -14,9 +14,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import com.example.mio.Model.PostData
 import com.example.mio.Model.User
+import com.example.mio.TabCategory.CarpoolTabFragment
+import com.example.mio.TabCategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityCompleteBinding
 
 class CompleteActivity : AppCompatActivity() {
@@ -28,6 +31,7 @@ class CompleteActivity : AppCompatActivity() {
     private var postCost : Int? = null
     private var driverData : User? = null
     private var postData : PostData? = null
+    private var category : String? = null
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +39,7 @@ class CompleteActivity : AppCompatActivity() {
         setContentView(cBinding.root)
 
         type = intent.getStringExtra("type") as String
-
+        category = intent.getStringExtra("category") as String
         if (type == "PASSENGER") {
             postData = intent.getSerializableExtra("postData") as PostData
             driverData = intent.getSerializableExtra("postDriver") as User
@@ -101,8 +105,39 @@ class CompleteActivity : AppCompatActivity() {
         }
 
         cBinding.closeScreen.setOnClickListener {
-            this.finish()
+            if (category == "carpool") {
+                val intent = Intent(this@CompleteActivity, CarpoolTabFragment::class.java).apply {
+                    putExtra("flag", 123)
+                }
+                setResult(RESULT_OK, intent)
+                finish()
+            } else {
+                val intent = Intent(this@CompleteActivity, TaxiTabFragment::class.java).apply {
+                    putExtra("flag", 123)
+                }
+                setResult(RESULT_OK, intent)
+                finish()
+            }
         }
+
+        // 뒤로가기 동작 핸들링
+        onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (category == "carpool") {
+                    val intent = Intent(this@CompleteActivity, CarpoolTabFragment::class.java).apply {
+                        putExtra("flag", 123)
+                    }
+                    setResult(RESULT_OK, intent)
+                    finish()
+                } else {
+                    val intent = Intent(this@CompleteActivity, TaxiTabFragment::class.java).apply {
+                        putExtra("flag", 123)
+                    }
+                    setResult(RESULT_OK, intent)
+                    finish()
+                }
+            }
+        })
     }
 
 

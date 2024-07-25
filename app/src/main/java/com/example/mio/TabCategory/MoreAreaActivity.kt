@@ -511,6 +511,7 @@ class MoreAreaActivity : AppCompatActivity() {
                                     response.body()!![i].postId,
                                     title,
                                     content,
+                                    response.body()!![i].createDate,
                                     targetDate,
                                     targetTime,
                                     categoryName,

@@ -56,25 +56,16 @@ class NotificationContentAdapter : RecyclerView.Adapter<NotificationContentAdapt
             val diffMinutes = diffMilliseconds?.div((60 * 1000))
             val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
             val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
-            if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
 
-                if(diffSeconds > -1){
-                    binding.notificationItemDateTv.text = "방금전"
-                }
-                if (diffSeconds > 0) {
-                    binding.notificationItemDateTv.text = "${diffSeconds.toString()}초전"
-                }
-                if (diffMinutes > 0) {
-                    binding.notificationItemDateTv.text = "${diffMinutes.toString()}분전"
-                }
-                if (diffHours > 0) {
-                    binding.notificationItemDateTv.text = "${diffHours.toString()}시간전"
-                }
-                if (diffDays > 0) {
-                    binding.notificationItemDateTv.text = "${diffDays.toString()}일전"
+            if (diffMilliseconds != null && diffSeconds != null && diffMinutes != null && diffHours != null && diffDays != null) {
+                when {
+                    diffSeconds <= 0 -> binding.notificationItemDateTv.text = "방금전"
+                    diffSeconds < 60 -> binding.notificationItemDateTv.text = "${diffSeconds}초전"
+                    diffMinutes < 60 -> binding.notificationItemDateTv.text = "${diffMinutes}분전"
+                    diffHours < 24 -> binding.notificationItemDateTv.text = "${diffHours}시간전"
+                    else -> binding.notificationItemDateTv.text = "${diffDays}일전"
                 }
             }
-
 
 
             //accountProfile.setImageURI() = pillData.pillTakeTime

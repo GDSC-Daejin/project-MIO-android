@@ -21,7 +21,7 @@ import androidx.work.WorkerParameters
 import com.example.mio.BuildConfig
 import com.example.mio.MioInterface
 import com.example.mio.Model.AddAlarmResponseData
-import com.example.mio.Model.AlarmPost
+import com.example.mio.Model.PostData
 import com.example.mio.Navigation.NotificationFragment
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
@@ -43,7 +43,7 @@ class MyWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
 
     private var beforeNotificationAllData = ArrayList<AddAlarmResponseData>()
     private var notificationAllData = ArrayList<AddAlarmResponseData>()
-    private var notificationPostAllData = ArrayList<AlarmPost>()
+    private var notificationPostAllData = ArrayList<PostData>()
     private var workContext: Context = appContext.applicationContext
     private var sharedPreference = SaveSharedPreferenceGoogleLogin()
     private var sharedPref: SharedPref? = SharedPref(workContext)
@@ -101,30 +101,6 @@ class MyWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
 
                         response.body()?.let { responseData ->
                             notificationAllData.addAll(responseData)
-                            notificationPostAllData.addAll(responseData.map { data ->
-                                AlarmPost(
-                                    data.post.id,
-                                    data.post.title,
-                                    data.post.content,
-                                    data.post.createDate,
-                                    data.post.targetDate,
-                                    data.post.targetTime,
-                                    data.post.verifyGoReturn,
-                                    data.post.numberOfPassengers,
-                                    data.post.viewCount,
-                                    data.post.verifyFinish,
-                                    data.post.latitude,
-                                    data.post.longitude,
-                                    data.post.bookMarkCount,
-                                    data.post.participantsCount,
-                                    data.post.location,
-                                    data.post.cost,
-                                    data.post.category,
-                                    data.post.commentList,
-                                    data.post.user,
-                                    data.post.participants
-                                )
-                            })
                         }
 
                         if (beforeNotificationAllData.size < notificationAllData.size) {

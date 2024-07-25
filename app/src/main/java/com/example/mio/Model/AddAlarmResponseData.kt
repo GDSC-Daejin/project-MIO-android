@@ -9,12 +9,13 @@ data class AddAlarmResponseData(
     var createDate : String,
     @SerializedName("content")
     var content : String,
-    @SerializedName("post")
-    var post : AlarmPost,
-    @SerializedName("userEntity")
-    var userEntity: AlarmUserEntity
+    @SerializedName("postId")
+    var postId : Int,
+    @SerializedName("userId")
+    var userId : Int,
 )
 
+/*
 data class AlarmPost(
     @SerializedName("id")
     var id : Int,
@@ -123,4 +124,4 @@ data class AlarmCommentList(
     var parentComment : String,
     @SerializedName("childComments")
     var childComments : ArrayList<String>,
-)
+)*/

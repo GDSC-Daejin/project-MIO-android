@@ -3,18 +3,18 @@ package com.example.mio
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
-import android.util.Base64
 import android.util.Log
 import android.view.*
 import android.view.animation.AnticipateInterpolator
 import android.widget.Toast
-import android.window.SplashScreenView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -38,8 +38,6 @@ import kotlinx.coroutines.*
 import okhttp3.*
 import java.io.IOException
 import java.util.concurrent.TimeUnit
-import com.example.mio.R
-import java.security.MessageDigest
 
 
 class LoginActivity : AppCompatActivity() {
@@ -62,17 +60,6 @@ class LoginActivity : AppCompatActivity() {
     //로딩
     private var loadingDialog : LoadingProgressDialog? = null
 
-
-    //init 벡엔드 연결
-    /*val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-    val service = retrofit.create(MioInterface::class.java)
-    val interceptor = HttpLoggingInterceptor()*/
-    /* interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-     val client = OkHttpClient.Builder().addInterceptor(interceptor).build()
- */
-
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         //상태바 지우기(이 activity만)
@@ -86,9 +73,9 @@ class LoginActivity : AppCompatActivity() {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN
             )
         }*/
-        initSplashScreen()
+        //initSplashScreen()
         super.onCreate(savedInstanceState)
-        initData()
+        //initData()
         setContentView(mBinding.root)
         MobileAds.initialize(this@LoginActivity) {}
         setResultSignUp()
@@ -120,7 +107,7 @@ class LoginActivity : AppCompatActivity() {
 
     }
 
-    private fun initData() {
+    /*private fun initData() {
         // 별도의 데이터 처리가 없기 때문에 3초의 딜레이를 줌.
         // 선행되어야 하는 작업이 있는 경우, 이곳에서 처리 후 isReady를 변경.
         CoroutineScope(Dispatchers.IO).launch {
@@ -130,9 +117,9 @@ class LoginActivity : AppCompatActivity() {
                 isReady = true
             }
         }
-    }
+    }*/
 
-    private fun initSplashScreen() {
+  /*  private fun initSplashScreen() {
         val splashScreen = installSplashScreen()
         val content: View = findViewById(android.R.id.content)
 
@@ -173,11 +160,11 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
         }
-    }
+    }*/
 
-    private fun removeSplashScreen(splashScreenView: SplashScreenViewProvider) {
+    /*private fun removeSplashScreen(splashScreenView: SplashScreenViewProvider) {
         splashScreenView.remove()
-    }
+    }*/
 
     private fun signInCheck(userInfoToken : TokenRequest) {
         println("signInCheck")
@@ -206,39 +193,28 @@ class LoginActivity : AppCompatActivity() {
 
                         //5초
                         val builder =  OkHttpClient.Builder()
-                            .connectTimeout(3, TimeUnit.SECONDS)
-                            .readTimeout(3, TimeUnit.SECONDS)
-                            .writeTimeout(3, TimeUnit.SECONDS)
+                            .connectTimeout(5, TimeUnit.SECONDS)
+                            .readTimeout(5, TimeUnit.SECONDS)
+                            .writeTimeout(5, TimeUnit.SECONDS)
                             .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
                         /*intent.apply {
                             putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
                             putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
                         }*/
                         builder.build()
-
-                        Log.d("Login accessTokenExpiresIn check", accessTokenExpiresIn.toString())
-                        Log.d("Login RefreshToken check", refreshToken)
-                        // AccessToken 만료 시간 확인
-                        if (accessTokenExpiresIn <= System.currentTimeMillis()) {
-                            Log.d("Login accessTokenExpiresIn", accessTokenExpiresIn.toString())
-                            // AccessToken 만료된 경우 refreshToken을 사용하여 갱신
-                            Log.d("Login RefreshToken", refreshToken)
-                            refreshAccessToken(refreshToken)
-                        } else {
-                            // AccessToken 유효한 경우 MainActivity로 이동
-                            Log.d("Login accessTokenExpiresIn 유효", accessTokenExpiresIn.toString())
-                            Log.d("Login RefreshToken 유효", refreshToken)
+                        // AccessToken 유효한 경우 MainActivity로 이동
+                        Log.d("Login accessTokenExpiresIn 유효", accessTokenExpiresIn.toString())
+                        Log.d("Login RefreshToken 유효", refreshToken)
+                        loadingDialog?.dismiss()
+                        if (loadingDialog != null && loadingDialog!!.isShowing) {
                             loadingDialog?.dismiss()
-                            if (loadingDialog != null && loadingDialog!!.isShowing) {
-                                loadingDialog?.dismiss()
-                                loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                            }
-
-                            Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
-                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                            startActivity(intent)
-                            this@LoginActivity.finish()
+                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
                         }
+
+                        Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                        startActivity(intent)
+                        this@LoginActivity.finish()
                     }
                 } else {
                     println("fail")
@@ -246,7 +222,6 @@ class LoginActivity : AppCompatActivity() {
                     Log.e("LoginTestResponseError", response.code().toString())
                     Log.e("LoginTestResponseError", response.message().toString())
 
-                    loadingDialog?.dismiss()
                     if (loadingDialog != null && loadingDialog!!.isShowing) {
                         loadingDialog?.dismiss()
                         loadingDialog = null // 다이얼로그 인스턴스 참조 해제
@@ -255,13 +230,12 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
             override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
-                println("실패" + t.message.toString())
-                loadingDialog?.dismiss()
+                Log.e("실패", t.toString())
                 if (loadingDialog != null && loadingDialog!!.isShowing) {
                     loadingDialog?.dismiss()
                     loadingDialog = null // 다이얼로그 인스턴스 참조 해제
                 }
-                Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@LoginActivity, "로그인에 오류가 발생하였습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -283,7 +257,14 @@ class LoginActivity : AppCompatActivity() {
         resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                handleSignInResult(task)
+                val userEmailMap = task.result.email?.split("@")?.map { it.toString() }
+                //회원가입과 함께 새로운 계정 정보 저장
+                if (userEmailMap?.contains("daejin.ac.kr") == true) {
+                    handleSignInResult(task)
+                } else {
+                    loadingDialog?.dismiss()
+                    Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -313,9 +294,15 @@ class LoginActivity : AppCompatActivity() {
                 println(email)
                 println(authCode.toString())
                 println("idToken " + idToken)
+
                 //getAccessToken(authCode!!)
                 val userInfoToken = TokenRequest(idToken.toString())
                 signInCheck(userInfoToken)
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    createClipData(idToken.toString())
+
+                }
 
                 /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
                 startActivity(intent)
@@ -334,9 +321,11 @@ class LoginActivity : AppCompatActivity() {
                 //getAccessToken(authCode!!)
                 val userInfoToken = TokenRequest(idToken.toString())
                 signInCheck(userInfoToken)
-            } else {
-                loadingDialog?.dismiss()
-                Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    createClipData(idToken.toString())
+                }
+
             }
 
         } catch (e : ApiException) {
@@ -353,7 +342,7 @@ class LoginActivity : AppCompatActivity() {
         resultLauncher.launch(signIntent)
     }
 
-    private fun refreshAccessToken(refreshToken: String) {
+    fun refreshAccessToken(refreshToken: String) {
         val call = RetrofitServerConnect.service
         val refreshTokenRequest = RefreshTokenRequest(refreshToken)
         Log.e("LoginActivity", "순서체크refresh")
@@ -480,15 +469,14 @@ class LoginActivity : AppCompatActivity() {
     }
 
     //클립보드에 복사하기
-    /*private fun createClipData(message : String) {
-        val clipManager = applicationContext.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+    private fun createClipData(message : String) {
+        val clipManager = this@LoginActivity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
         val clipData = ClipData.newPlainText("message", message)
 
         clipManager.setPrimaryClip(clipData)
 
-        //Toast.makeText(this, "복사되었습니다.", Toast.LENGTH_SHORT).show()
-    }*/
+    }
 
     override fun onStart() {
         super.onStart()
@@ -530,7 +518,6 @@ class LoginActivity : AppCompatActivity() {
         if (loadingDialog != null && loadingDialog!!.isShowing) {
             loadingDialog?.dismiss()
             loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-            Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
         }
     }
 

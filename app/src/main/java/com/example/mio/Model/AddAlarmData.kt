@@ -3,8 +3,6 @@ package com.example.mio.Model
 import com.google.gson.annotations.SerializedName
 
 data class AddAlarmData(
-    @SerializedName("createDate")
-    var createDate : String,
     @SerializedName("content")
     var content : String,
     @SerializedName("postId")

@@ -131,6 +131,9 @@ dependencies {
     //okhttp
     // define a BOM and its version
     implementation(platform("com.squareup.okhttp3:okhttp-bom:4.11.0"))
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation 'com.squareup.okhttp3:okhttp-sse:4.9.3'
+    implementation 'com.launchdarkly:okhttp-eventsource:4.1.0'
 
     // define any required OkHttp artifacts without version
     implementation("com.squareup.okhttp3:okhttp")

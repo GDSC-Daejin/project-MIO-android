@@ -461,7 +461,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                             if (response.isSuccessful) {
                                                 Log.d("noticeboardread", response.code().toString())
                                             } else {
-                                                println(response.errorBody().toString())
+                                                Log.e("read addbookmark",response.errorBody()?.string()!!)
                                                 println(response.message().toString())
                                                 println("실패")
                                                 println("faafa")
@@ -1065,7 +1065,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         Log.d("noticeboardread", response.code().toString())
                         initMyBookmarkData()
                     } else {
-                        println(response.errorBody().toString())
+                        Log.e("read addbookmark", response.errorBody()?.string()!!)
                         println(response.message().toString())
                         println("실패")
                         println("faafa")
@@ -1350,12 +1350,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         participantApplyBtnSet(isParticipation!!)
                     }
                 } else {
-                    println(response.errorBody().toString())
+                    Log.e("read participation", response.errorBody()?.string()!!)
                     println(response.message().toString())
-                    println("실패")
-                    println("faafa")
-                    Log.d("add", response.errorBody()?.string()!!)
-                    Log.d("message", call.request().toString())
                     Log.d("f", response.code().toString())
                 }
             }
@@ -1637,6 +1633,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             Log.d("error", t.toString())
                         }
                     })
+                    alertDialog.dismiss()
                 }
                 alertDialog.show()
             }
@@ -2118,7 +2115,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             }
                         }
                     } else {
-                        Log.e("ERROR COMMENT", response.errorBody().toString())
+                        Log.e("ERROR COMMENT", response.errorBody()?.string()!!)
                     }
                 }
 

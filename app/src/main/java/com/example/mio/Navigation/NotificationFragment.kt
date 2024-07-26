@@ -1,11 +1,13 @@
 package com.example.mio.Navigation
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.activity.result.contract.ActivityResultContracts
@@ -32,6 +34,12 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.*
+import kotlin.collections.ArrayList
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -142,6 +150,93 @@ class NotificationFragment : Fragment() {
                     requestActivity.launch(intent)
                 }
             }
+
+            //position -> 리사이클러뷰 위치, itemId -> 알람 id값, postId -> postdata찾기위한 값인디 없을수도
+            override fun onLongClick(view: View, position: Int, itemId: Int, postId: Int?) {
+                //사용할 곳
+                val layoutInflater = LayoutInflater.from(context)
+                val dialogView = layoutInflater.inflate(R.layout.dialog_layout, null)
+                val alertDialog = AlertDialog.Builder(context, R.style.CustomAlertDialog)
+                    .setView(dialogView)
+                    .create()
+                val dialogContent = dialogView.findViewById<TextView>(R.id.dialog_tv)
+                val dialogLeftBtn = dialogView.findViewById<View>(R.id.dialog_left_btn)
+                val dialogRightBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
+
+                dialogContent.text = "정말로 삭제하시겠습니까?"
+                //아니오
+                dialogLeftBtn.setOnClickListener {
+                    alertDialog.dismiss()
+                }
+
+                dialogRightBtn.setOnClickListener {
+                    val now = System.currentTimeMillis()
+                    val date = Date(now)
+                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+                    val currentDate = sdf.format(date)
+                    val formatter = DateTimeFormatter
+                        .ofPattern("yyyy-MM-dd HH:mm:ss")
+                        .withZone(ZoneId.systemDefault())
+                    val result: Instant = Instant.from(formatter.parse(currentDate))
+
+                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                    val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
+                    val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
+
+                    /////////interceptor
+                    val SERVER_URL = BuildConfig.server_URL
+                    val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                        .addConverterFactory(GsonConverterFactory.create())
+                    //Authorization jwt토큰 로그인
+                    val interceptor = Interceptor { chain ->
+                        var newRequest: Request
+                        if (token != null && token != "") { // 토큰이 없는 경우
+                            // Authorization 헤더에 토큰 추가
+                            newRequest =
+                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                            val expireDate: Long = getExpireDate.toLong()
+                            if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                                //refresh 들어갈 곳
+                                /*newRequest =
+                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                val intent = Intent(requireActivity(), LoginActivity::class.java)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                                startActivity(intent)
+                                requireActivity().finish()
+                                return@Interceptor chain.proceed(newRequest)
+                            }
+
+                        } else newRequest = chain.request()
+                        chain.proceed(newRequest)
+                    }
+                    val builder = OkHttpClient.Builder()
+                    builder.interceptors().add(interceptor)
+                    val client: OkHttpClient = builder.build()
+                    retrofit.client(client)
+                    val retrofit2: Retrofit = retrofit.build()
+                    val api = retrofit2.create(MioInterface::class.java)
+                    /////////
+                    api.deleteMyAlarm(itemId).enqueue(object : Callback<Void> {
+                        override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                            if (response.isSuccessful) {
+                                Log.d("check deleteAlarm", response.code().toString())
+                            } else {
+                                println("faafa")
+                                println(response.code())
+                                Log.e("comment", response.errorBody()?.string()!!)
+                                Log.e("message", call.request().toString())
+                                response.errorBody().toString()
+                            }
+                        }
+
+                        override fun onFailure(call: Call<Void>, t: Throwable) {
+                            Log.d("error", t.toString())
+                        }
+                    })
+                }
+                alertDialog.show()
+            }
         })
 
         return nfBinding.root
@@ -203,6 +298,8 @@ class NotificationFragment : Fragment() {
                                 response.body()!![i].userId
                             ))
                         }
+
+
 
 
                         Log.d("Notification Fragment Data", notificationAllData.toString())
@@ -295,7 +392,9 @@ class NotificationFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
         /////////////////////////////////////////////////
 
+        var shouldBreak = false
         for (i in notificationAllData) {
+            if (shouldBreak) break
             api.getPostIdDetailSearch(i.postId).enqueue(object : Callback<Content> {
                 override fun onResponse(call: Call<Content>, response: Response<Content>) {
                     if (response.isSuccessful) {
@@ -325,20 +424,24 @@ class NotificationFragment : Fragment() {
                                 notificationPostParticipationAllData.add(Pair(it.postId,it.participants))
                             }
                         }
-                        if (loadingDialog != null && loadingDialog!!.isShowing) {
-                            loadingDialog?.dismiss()
-                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                        }
                     } else {
                         Log.e("fail notififrag", response.code().toString())
-                        Log.e("fail notififrag", response.errorBody().toString())
+                        Log.e("fail notififrag", response.errorBody()?.string()!!)
+                        shouldBreak = true
                     }
                 }
 
                 override fun onFailure(call: Call<Content>, t: Throwable) {
                     Log.e("Failure notification", t.toString())
+                    shouldBreak = true
                 }
             })
+        }
+
+        loadingDialog?.dismiss()
+        if (loadingDialog != null && loadingDialog!!.isShowing) {
+            loadingDialog?.dismiss()
+            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
         }
         nAdapter.notifyDataSetChanged()
 

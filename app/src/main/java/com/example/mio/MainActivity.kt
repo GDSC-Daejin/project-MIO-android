@@ -174,13 +174,7 @@ class MainActivity : AppCompatActivity() {
             //actionSetting?.isVisible = false
         }
 
-        if (isSettingClicked) {
-            Log.e("isSettingClicked", isSettingClicked.toString())
-            actionSetting?.isVisible = false
-        } else {
-            Log.e("isSettingClicked", isSettingClicked.toString())
-            actionSetting?.isVisible = true
-        }
+        actionSetting?.isVisible = !isSettingClicked
 
         return true
     }
@@ -575,7 +569,7 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     Log.e("MainActivity set user", response.message().toString())
                     Log.e("MainActivity set user", response.code().toString())
-                    Log.e("MainActivity set user", response.errorBody().toString())
+                    Log.e("MainActivity set user", response.errorBody()?.string()!!)
                 }
             }
 

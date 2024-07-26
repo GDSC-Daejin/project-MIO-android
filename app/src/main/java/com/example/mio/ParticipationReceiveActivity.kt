@@ -141,11 +141,17 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                             CoroutineScope(Dispatchers.IO).launch {
                                 setParticipantsUserData(userId = response.body()!![i].userId)
                             }
-                        } else {
-                            loadingDialog.dismiss()
-                            pBinding.nonParticipation.visibility = View.VISIBLE
-                            pBinding.participationRv.visibility = View.GONE
                         }
+                    }
+
+                    if (participationItemAllData.isNotEmpty()) {
+                        loadingDialog.dismiss()
+                        pBinding.nonParticipation.visibility = View.GONE
+                        pBinding.participationRv.visibility = View.VISIBLE
+                    } else {
+                        loadingDialog.dismiss()
+                        pBinding.nonParticipation.visibility = View.VISIBLE
+                        pBinding.participationRv.visibility = View.GONE
                     }
 
 
@@ -156,7 +162,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                     Log.e("ParticipationReceiveActivity PostId Test", participationItemAllData.toString())
 
                 } else {
-                    println(response.errorBody().toString())
+                    Log.e("parcici receive", response.errorBody()?.string()!!)
                     println(response.code())
                 }
             }
@@ -230,7 +236,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                     pBinding.participationRv.visibility = View.VISIBLE
                     loadingDialog.dismiss()
                 } else {
-                    Log.e("PARTICIPATION RESPONSE ERROR", response.errorBody().toString())
+                    Log.e("PARTICIPATION RESPONSE ERROR",response.errorBody()?.string()!!)
                     Log.i("response code", response.code().toString())
                     Log.d("part", response.message().toString())
                 }

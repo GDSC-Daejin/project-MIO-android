@@ -848,7 +848,7 @@ class CarpoolTabFragment : Fragment() {
 
                     } else {
                         Log.e("carpool areaeaerera", response.code().toString())
-                        Log.e("carpool areaeaerera", response.errorBody().toString())
+                        Log.e("carpool areaeaerera", response.errorBody()?.string()!!)
                         Log.e("carpool areaeaerera", response.message().toString())
                     }
                 }
@@ -965,11 +965,9 @@ class CarpoolTabFragment : Fragment() {
                     loadingDialog?.dismiss()
 
                 } else {
-                    println(response.errorBody().toString())
-                    println(response.message().toString())
-                    println("실패")
+
                     println("faafa")
-                    Log.d("add", response.errorBody()?.string()!!)
+                    Log.e("add", response.errorBody()?.string()!!)
                     Log.d("message", call.request().toString())
                     Log.d("f", response.code().toString())
 
@@ -1321,7 +1319,7 @@ class CarpoolTabFragment : Fragment() {
                     Log.d("patchVerifyFinishSuccess", response.code().toString())
                 } else {
                     Log.e("patchVerifyFinishSuccess", response.code().toString())
-                    Log.e("patchVerifyFinishSuccess", response.errorBody().toString())
+                    Log.e("patchVerifyFinishSuccess", response.errorBody()?.string()!!)
                 }
             }
 

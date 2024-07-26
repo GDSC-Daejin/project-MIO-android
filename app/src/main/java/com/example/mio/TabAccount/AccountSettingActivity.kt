@@ -212,7 +212,7 @@ class AccountSettingActivity : AppCompatActivity() {
                     }
 
                 } else {
-                    Log.e("Account Set ERROR", response.errorBody().toString())
+                    Log.e("Account Set ERROR", response.errorBody()?.string()!!)
                     Log.e("Account Set Error", response.code().toString())
                     Log.e("Account Set Error", response.message().toString())
                     Toast.makeText(this@AccountSettingActivity, "사용자 정보를 불러오지 못했습니다. 연결을 확인해주세요", Toast.LENGTH_SHORT).show()
@@ -293,7 +293,7 @@ class AccountSettingActivity : AppCompatActivity() {
                         }
                     } else {
                         Log.d("f", response.code().toString())
-                        Log.d("error", response.errorBody().toString())
+                        Log.e("error", response.errorBody()?.string()!!)
                         Log.d("message", call.request().toString())
                     }
                 }

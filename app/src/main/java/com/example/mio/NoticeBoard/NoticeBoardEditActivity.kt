@@ -1253,7 +1253,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                         } else {
                             Log.e("Search Error", response.code().toString())
                             Log.e("Search Error", response.body().toString())
-                            Log.e("Search Error", response.errorBody().toString())
+                            Log.e("Search Error", response.errorBody()?.string()!!)
 
 
                         }
@@ -1261,7 +1261,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                         Log.e("Search Error", response.code().toString())
                         Log.e("Search Error", response.message().toString())
                         Log.e("Search Error", response.body().toString())
-                        Log.e("Search Error", response.errorBody().toString())
+                        Log.e("Search Error", response.errorBody()?.string()!!)
                     }
                     /*if (result != null) {
 
@@ -1270,7 +1270,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     }*/
                 } else {
                     Log.e("EDIT Search", response.code().toString())
-                    Log.e("EDIT Search", response.errorBody().toString())
+                    Log.e("EDIT Search", response.errorBody()?.string()!!)
                     Log.e("EDIT Search", response.errorBody()?.string() ?: "Unknown error")
                     Log.e("EDIT Search", call.request().toString())
                     Log.e("EDIT Search", response.message().toString())

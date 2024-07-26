@@ -335,7 +335,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                         Log.d("PART Remove Success ", response.code().toString())
                     } else {
                         Log.e("PART Remove ERROR ", response.code().toString())
-                        Log.e("PART Remove ERROR ", response.errorBody().toString())
+                        Log.e("PART Remove ERROR ", response.errorBody()?.string()!!)
                         Log.e("PART Remove ERROR ", response.message().toString())
                     }
                 }

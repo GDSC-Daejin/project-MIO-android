@@ -283,7 +283,7 @@ class PassengersReviewActivity : AppCompatActivity() {
 
 
                                 } else {
-                                    Log.e("ERROR", "review1 : ${response.errorBody().toString()}")
+                                    Log.e("ERROR", "review1 : ${response.errorBody()?.string()!!}")
                                     Log.e("ERROR", "review2 : ${response.message().toString()}")
                                     Log.e("ERROR", "review3 : ${response.code().toString()}")
                                 }
@@ -309,7 +309,7 @@ class PassengersReviewActivity : AppCompatActivity() {
 
 
                         } else {
-                            Log.e("ERROR", "review1 : ${response.errorBody().toString()}")
+                            Log.e("ERROR", "review1 : ${response.errorBody()?.string()!!}")
                             Log.e("ERROR", "review2 : ${response.message().toString()}")
                             Log.e("ERROR", "review3 : ${response.code().toString()}")
                         }

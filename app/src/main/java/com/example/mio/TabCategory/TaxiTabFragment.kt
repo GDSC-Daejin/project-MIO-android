@@ -817,7 +817,7 @@ class TaxiTabFragment : Fragment() {
 
                     } else {
                         Log.e("carpool areaeaerera", response.code().toString())
-                        Log.e("carpool areaeaerera", response.errorBody().toString())
+                        Log.e("carpool areaeaerera", response.errorBody()?.string()!!)
                         Log.e("carpool areaeaerera", response.message().toString())
                     }
                 }
@@ -930,9 +930,6 @@ class TaxiTabFragment : Fragment() {
                     loadingDialog.dismiss()
 
                 } else {
-                    println(response.errorBody().toString())
-                    println(response.message().toString())
-                    println("실패")
                     println("faafa")
                     Log.d("add", response.errorBody()?.string()!!)
                     Log.d("message", call.request().toString())
@@ -1042,7 +1039,7 @@ class TaxiTabFragment : Fragment() {
                     Log.d("patchVerifyFinishSuccess", response.code().toString())
                 } else {
                     Log.e("patchVerifyFinishSuccess", response.code().toString())
-                    Log.e("patchVerifyFinishSuccess", response.errorBody().toString())
+                    Log.e("patchVerifyFinishSuccess", response.errorBody()?.string()!!)
                     Log.e("patchVerifyFinishSuccess", response.message().toString())
                 }
             }

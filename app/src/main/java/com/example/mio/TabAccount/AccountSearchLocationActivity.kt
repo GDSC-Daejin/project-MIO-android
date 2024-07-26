@@ -274,7 +274,7 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                     }
                 } else {
                     Log.e("search Result", response.code().toString())
-                    Log.e("search Result", response.errorBody().toString())
+                    Log.e("search Result", response.errorBody()?.string()!!)
                     Log.e("search Result", response.errorBody()?.string()!!)
                     Log.e("search Result", call.request().toString())
                     Log.e("search Result", response.message().toString())

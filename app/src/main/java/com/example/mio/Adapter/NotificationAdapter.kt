@@ -160,6 +160,11 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
                 itemClickListener.onClick(it, holder.adapterPosition, notificationContentItemData[holder.adapterPosition]?.postID, NotificationStatus.Neither)
             }
         }
+
+        binding.root.setOnLongClickListener {
+            itemClickListener.onLongClick(it, holder.adapterPosition, notificationItemData[holder.adapterPosition].id, notificationContentItemData[holder.adapterPosition]?.postID)
+            return@setOnLongClickListener true
+        }
     }
 
     override fun getItemCount(): Int {
@@ -179,6 +184,7 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
 
     interface ItemClickListener {
         fun onClick(view: View,position: Int, itemId: Int?,status : NotificationStatus )
+        fun onLongClick(view: View, position: Int, itemId: Int, postId : Int?) //position -> 리사이클러뷰 위치, itemId -> 알람 id값, postId -> postdata찾기위한 값인디 없을수도
     }
 
     private lateinit var itemClickListener: ItemClickListener

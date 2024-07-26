@@ -219,9 +219,10 @@ class MyBookmarkFragment : Fragment() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         /////
-
+        var shouldBreak = false
         if (bookMarkList != null) {
             for (i in bookMarkList) {
+                if (shouldBreak) break
                 api.getPostIdDetailSearch(i.postId).enqueue(object : Callback<Content> {
                     override fun onResponse(call: Call<Content>, response: Response<Content>) {
                         if (response.isSuccessful) {
@@ -249,33 +250,35 @@ class MyBookmarkFragment : Fragment() {
                                     )
                                 )
                             }
-                            if (loadingDialog != null && loadingDialog!!.isShowing) {
-                                loadingDialog?.dismiss()
-                                loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                            }
-                            myAdapter!!.notifyDataSetChanged()
-
-                            if (myBookmarkAllData.isNotEmpty()) {
-                                binding.bookmarkPostNotDataLl.visibility = View.GONE
-                                binding.bookmarkSwipe.visibility = View.VISIBLE
-                                binding.bookmarkRv.visibility = View.VISIBLE
-                            } else {
-                                binding.bookmarkPostNotDataLl.visibility = View.VISIBLE
-                                binding.bookmarkSwipe.visibility = View.GONE
-                                binding.bookmarkRv.visibility = View.GONE
-                            }
-                            loadingDialog?.dismiss()
                         } else {
                             Log.e("fail notififrag", response.code().toString())
-                            Log.e("fail notififrag", response.errorBody().toString())
+                            Log.e("fail notififrag", response.errorBody()?.string()!!)
+                            shouldBreak =true
                         }
                     }
 
                     override fun onFailure(call: Call<Content>, t: Throwable) {
                         Log.e("Failure notification", t.toString())
+                        shouldBreak = true
                     }
                 })
             }
+            if (loadingDialog != null && loadingDialog!!.isShowing) {
+                loadingDialog?.dismiss()
+                loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+            }
+            myAdapter!!.notifyDataSetChanged()
+
+            if (myBookmarkAllData.isNotEmpty()) {
+                binding.bookmarkPostNotDataLl.visibility = View.GONE
+                binding.bookmarkSwipe.visibility = View.VISIBLE
+                binding.bookmarkRv.visibility = View.VISIBLE
+            } else {
+                binding.bookmarkPostNotDataLl.visibility = View.VISIBLE
+                binding.bookmarkSwipe.visibility = View.GONE
+                binding.bookmarkRv.visibility = View.GONE
+            }
+            loadingDialog?.dismiss()
         }
     }
     private fun initSwipeRefresh() {

@@ -112,7 +112,7 @@ class MyWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
                             isSendCheck = false
                         }
                     } else {
-                        Log.d("comment", response.errorBody()?.string() ?: "Unknown error")
+                        Log.e("comment", response.errorBody()?.string()!!)
                     }
                 }
 

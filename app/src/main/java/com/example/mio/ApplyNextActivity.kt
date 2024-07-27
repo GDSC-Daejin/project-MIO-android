@@ -334,7 +334,7 @@ class ApplyNextActivity : AppCompatActivity() {
                         if (response.isSuccessful) {
                             println("succcc")
                             //postData?.let { it1 -> setNotification("참여 신청이 완료되었습니다!", it1) }
-                            sendAlarmData()
+                            //sendAlarmData()
                             Toast.makeText(this@ApplyNextActivity, "참여 신청 하셨습니다!", Toast.LENGTH_SHORT).show()
                         } else {
                             println("faafa")

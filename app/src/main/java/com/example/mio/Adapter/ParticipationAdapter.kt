@@ -221,7 +221,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             //cancelItem = -1
             selectedItem = approvalPosition
             notifyDataSetChanged()
-            sendAlarmData("예약", position, item)
+            //sendAlarmData("예약", position, item)
         }
 
         binding.participationRefuse.setOnClickListener {
@@ -234,7 +234,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             notifyDataSetChanged()
             println(participationItemData[position].approvalOrReject)
             removeData(participationItemData[position].participantId, position)
-            sendAlarmData("취소", position, item)
+            //sendAlarmData("취소", position, item)
         }
 
         /*binding.participationCancel.setOnClickListener {

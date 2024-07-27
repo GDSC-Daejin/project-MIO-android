@@ -37,6 +37,9 @@ import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class MoreCarpoolTabActivity : AppCompatActivity() {
@@ -189,268 +192,18 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                 "최신 순" -> {
                     mttBinding.moreSearchTv.text = "최신 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    val call = RetrofitServerConnect.service
-                    CoroutineScope(Dispatchers.IO).launch {
-                        call.getCategoryPostData(1,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
-                            override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                                if (response.isSuccessful) {
-
-                                    //println(response.body()!!.content)
-                                    /*val start = SystemClock.elapsedRealtime()
-
-                                    // 함수 실행시간
-                                    val date = Date(start)
-                                    val mFormat = SimpleDateFormat("HH:mm:ss")
-                                    val time = mFormat.format(date)
-                                    println(start)
-                                    println(time)*/
-                                    /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                                    s.add(PostReadAllResponse())*/
-
-                                    moreCarpoolAllData.clear()
-                                    for (i in response.body()!!.content.indices) {
-                                        //탑승자 null체크
-                                        var part = 0
-                                        var location = ""
-                                        var title = ""
-                                        var content = ""
-                                        var targetDate = ""
-                                        var targetTime = ""
-                                        var categoryName = ""
-                                        var cost = 0
-                                        var verifyGoReturn = false
-                                        if (response.isSuccessful) {
-                                            part = try {
-                                                response.body()!!.content[i].participantsCount
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                0
-                                            }
-                                            location = try {
-                                                response.body()!!.content[i].location.isEmpty()
-                                                response.body()!!.content[i].location
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "수락산역 3번 출구"
-                                            }
-                                            title = try {
-                                                response.body()!!.content[i].title.isEmpty()
-                                                response.body()!!.content[i].title
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "null"
-                                            }
-                                            content = try {
-                                                response.body()!!.content[i].content.isEmpty()
-                                                response.body()!!.content[i].content
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "null"
-                                            }
-                                            targetDate = try {
-                                                response.body()!!.content[i].targetDate.isEmpty()
-                                                response.body()!!.content[i].targetDate
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "null"
-                                            }
-                                            targetTime = try {
-                                                response.body()!!.content[i].targetTime.isEmpty()
-                                                response.body()!!.content[i].targetTime
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "null"
-                                            }
-                                            categoryName = try {
-                                                response.body()!!.content[i].category.categoryName.isEmpty()
-                                                response.body()!!.content[i].category.categoryName
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "null"
-                                            }
-                                            cost = try {
-                                                response.body()!!.content[i].cost
-                                                response.body()!!.content[i].cost
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                0
-                                            }
-                                            verifyGoReturn = try {
-                                                response.body()!!.content[i].verifyGoReturn
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                false
-                                            }
-                                        }
-
-                                        //println(response!!.body()!!.content[i].user.studentId)
-                                        moreCarpoolAllData.add(
-                                            PostData(
-                                                response.body()!!.content[i].user.studentId,
-                                                response.body()!!.content[i].postId,
-                                                title,
-                                                content,
-                                                response.body()!!.content[i].createDate,
-                                                targetDate,
-                                                targetTime,
-                                                categoryName,
-                                                location,
-                                                //participantscount가 현재 참여하는 인원들
-                                                part,
-                                                //numberOfPassengers은 총 탑승자 수
-                                                response.body()!!.content[i].numberOfPassengers,
-                                                cost,
-                                                verifyGoReturn,
-                                                response.body()!!.content[i].user,
-                                                response.body()!!.content[i].latitude,
-                                                response.body()!!.content[i].longitude
-                                            ))
-
-                                        mtAdapter!!.notifyDataSetChanged()
-                                    }
-                                } else {
-                                    Log.d("f", response.code().toString())
-                                }
-                            }
-
-                            override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                                Log.d("error", t.toString())
-                            }
-                        })
-                    }
+                    moreCarpoolAllData.sortByDescending { it?.postCreateDate }
+                    mtAdapter?.notifyDataSetChanged()
                 }
                 "마감 임박 순" -> {
                     mttBinding.moreSearchTv.text = "마감 임박 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    val call = RetrofitServerConnect.service
-                    CoroutineScope(Dispatchers.IO).launch {
-                        call.getServerDateData().enqueue(object : Callback<PostReadAllResponse> {
-                            override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                                if (response.isSuccessful) {
-                                    println("마감")
-                                    //println(response.body()!!.content)
-                                    /*val start = SystemClock.elapsedRealtime()
+                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
-                                    // 함수 실행시간
-                                    val date = Date(start)
-                                    val mFormat = SimpleDateFormat("HH:mm:ss")
-                                    val time = mFormat.format(date)
-                                    println(start)
-                                    println(time)*/
-                                    /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                                    s.add(PostReadAllResponse())*/
-
-                                    moreCarpoolAllData.clear()
-                                    for (i in response.body()!!.content.indices) {
-                                        //탑승자 null체크
-                                        var part = 0
-                                        var location = ""
-                                        var title = ""
-                                        var content = ""
-                                        var targetDate = ""
-                                        var targetTime = ""
-                                        var categoryName = ""
-                                        var cost = 0
-                                        var verifyGoReturn = false
-                                        if (response.isSuccessful) {
-                                            part = try {
-                                                response.body()!!.content[i].participantsCount
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                0
-                                            }
-                                            location = try {
-                                                response.body()!!.content[i].location.isEmpty()
-                                                response.body()!!.content[i].location
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "수락산역 3번 출구"
-                                            }
-                                            title = try {
-                                                response.body()!!.content[i].title.isEmpty()
-                                                response.body()!!.content[i].title
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "null"
-                                            }
-                                            content = try {
-                                                response.body()!!.content[i].content.isEmpty()
-                                                response.body()!!.content[i].content
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "null"
-                                            }
-                                            targetDate = try {
-                                                response.body()!!.content[i].targetDate.isEmpty()
-                                                response.body()!!.content[i].targetDate
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "null"
-                                            }
-                                            targetTime = try {
-                                                response.body()!!.content[i].targetTime.isEmpty()
-                                                response.body()!!.content[i].targetTime
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "null"
-                                            }
-                                            categoryName = try {
-                                                response.body()!!.content[i].category.categoryName.isEmpty()
-                                                response.body()!!.content[i].category.categoryName
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                "null"
-                                            }
-                                            cost = try {
-                                                response.body()!!.content[i].cost
-                                                response.body()!!.content[i].cost
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                0
-                                            }
-                                            verifyGoReturn = try {
-                                                response.body()!!.content[i].verifyGoReturn
-                                            } catch (e : java.lang.NullPointerException) {
-                                                Log.d("null", e.toString())
-                                                false
-                                            }
-                                        }
-
-                                        //println(response!!.body()!!.content[i].user.studentId)
-                                        moreCarpoolAllData.add(
-                                            PostData(
-                                                response.body()!!.content[i].user.studentId,
-                                                response.body()!!.content[i].postId,
-                                                title,
-                                                content,
-                                                response.body()!!.content[i].createDate,
-                                                targetDate,
-                                                targetTime,
-                                                categoryName,
-                                                location,
-                                                //participantscount가 현재 참여하는 인원들
-                                                part,
-                                                //numberOfPassengers은 총 탑승자 수
-                                                response.body()!!.content[i].numberOfPassengers,
-                                                cost,
-                                                verifyGoReturn,
-                                                response.body()!!.content[i].user,
-                                                response.body()!!.content[i].latitude,
-                                                response.body()!!.content[i].longitude
-                                            ))
-
-                                        mtAdapter!!.notifyDataSetChanged()
-                                    }
-                                } else {
-                                    Log.d("f", response.code().toString())
-                                }
-                            }
-
-                            override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                                Log.d("error", t.toString())
-                            }
-                        })
-                    }
+                    // 리스트를 날짜(date) 먼저, 시간(time) 다음으로 정렬
+                    moreCarpoolAllData.sortedWith(compareBy<PostData?> { sdf.parse(it?.postTargetDate + " " + it?.postTargetTime) }
+                        .thenBy { it?.postTargetTime })
+                    mtAdapter?.notifyDataSetChanged()
                 }
                 "낮은 가격 순" -> {
                     mttBinding.moreSearchTv.text = "낮은 가격 순"

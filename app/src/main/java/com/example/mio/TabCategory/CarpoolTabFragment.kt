@@ -170,7 +170,7 @@ class CarpoolTabFragment : Fragment() {
                                 putExtra("postData", currentTaxiAllData[position])
                                 putExtra("category", "carpool")
                             }
-                            sendAlarmData("PASSENGER", position, currentTaxiAllData[position])
+                            //sendAlarmData("PASSENGER", position, currentTaxiAllData[position])
                             patchVerifyFinish(temp.postID)
                         }
 
@@ -181,7 +181,7 @@ class CarpoolTabFragment : Fragment() {
                                 putExtra("postData", currentTaxiAllData[position])
                                 putExtra("category", "carpool")
                             }
-                            sendAlarmData("DRIVER", position, currentTaxiAllData[position])
+                            //sendAlarmData("DRIVER", position, currentTaxiAllData[position])
                             patchVerifyFinish(temp.postID)
                         }
 

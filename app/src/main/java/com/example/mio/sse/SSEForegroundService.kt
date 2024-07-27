@@ -59,7 +59,7 @@ class SSEForegroundService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         Log.e("SERVICE","MyService onDestroy")
-
+        eventSource?.close()
         serviceIntent = null
         setAlarmTimer()
     }

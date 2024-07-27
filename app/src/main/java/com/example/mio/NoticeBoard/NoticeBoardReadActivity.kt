@@ -572,7 +572,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                             println("대댓글달기성공")
                                             //한 번 달고 끝내야하니 false전달
                                             sharedViewModel!!.postReply(reply = false)
-                                            sendAlarmData("댓글 ", commentEditText, temp)
+                                            //sendAlarmData ("댓글 ", commentEditText, temp)
                                             commentEditText = ""
                                         } else {
                                             println("faafa")
@@ -679,7 +679,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                             //setCommentData()
                                             println("scucuc")
                                             fetchAllComments()
-                                            sendAlarmData("댓글", commentEditText, temp)
+                                            //sendAlarmData("댓글", commentEditText, temp)
                                             commentEditText = ""
                                             nbrBinding.readCommentTotal.text = commentAllData.size.toString()
                                         } else {
@@ -810,7 +810,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                                 println("대댓글달기성공")
                                                 //한 번 달고 끝내야하니 false전달
                                                 sharedViewModel!!.postReply(reply = false)
-                                                sendAlarmData("댓글 ", commentEditText, temp)
+                                                //sendAlarmData("댓글 ", commentEditText, temp)
                                                 commentEditText = ""
                                             } else {
                                                 println("faafa")
@@ -1938,7 +1938,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                                                         println("대댓글달기성공")
                                                                         //한 번 달고 끝내야하니 false전달
                                                                         sharedViewModel!!.postReply(reply = false)
-                                                                        sendAlarmData("댓글 ", commentEditText, temp)
+                                                                        //sendAlarmData("댓글 ", commentEditText, temp)
                                                                         commentEditText = ""
                                                                     } else {
                                                                         println("faafa")

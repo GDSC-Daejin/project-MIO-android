@@ -148,7 +148,7 @@ class MoreAreaActivity : AppCompatActivity() {
                 "최신 순" -> {
                     mttBinding.moreSearchTv.text = "최신 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    moreAreaData.sortByDescending { it?.postTargetDate }
+                    moreAreaData.sortByDescending { it?.postCreateDate }
                     mtAdapter?.notifyDataSetChanged()
                 }
                 "마감 임박 순" -> {

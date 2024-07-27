@@ -278,12 +278,16 @@
                 android:id="@+id/more_area_Btn"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:backgroundTint="@color/mio_gray_3"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
                 android:fontFamily="@font/pretendard_medium"
+                android:backgroundTint="@color/mio_gray_4"
+                android:stateListAnimator="@null"
+                android:layout_gravity="center"
                 android:text="더보기"
-                android:visibility="visible"
-                android:textColor="@color/mio_gray_8" />
+                android:textColor="@color/mio_gray_8"
+                android:visibility="visible" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

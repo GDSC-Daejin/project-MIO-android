@@ -67,7 +67,9 @@ data class Content(
     @SerializedName("location")
     var location : String,
     @SerializedName("cost")
-    var cost : Int
+    var cost : Int,
+    @SerializedName("isDeleteYN")
+    var isDeleteYN : String?
 ): java.io.Serializable {
 
 }

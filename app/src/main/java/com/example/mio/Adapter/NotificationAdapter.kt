@@ -3,6 +3,7 @@ import android.app.AlertDialog
 import android.app.Notification
 import android.content.Context
 import android.content.DialogInterface
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,35 +34,21 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
     var sharedPref : SharedPref? = null
 
     private var identification = ""
-    private var hashMapCurrentPostItemData = HashMap<Int,NotificationStatus>()
-
-
-    //알람의 내용
-    private var notificationContentAdapter : NotificationContentAdapter? = null
-    var notificationContentItemData = ArrayList<PostData?>()
+    //var notificationContentItemData = ArrayList<PostData?>()
     init {
         setHasStableIds(true)
-        for (i in notificationContentItemData.indices) {
+       /* for (i in notificationContentItemData.indices) {
             hashMapCurrentPostItemData[i] = NotificationStatus.Neither
         }
+        Log.e("xcxccxcxcx", notificationContentItemData.toString())
+        Log.e("sdsfsdfsdfs", notificationItemData.toString())*/
     }
 
     inner class NotificationViewHolder(private val binding : NotificationItemBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
-        var notificationContentText = binding.notificationContentTv
-        var notificationTitleText = binding.notificationItemTitleTv
 
         fun bind(notification : AddAlarmResponseData, position : Int) {
             this.position = position
-            //여기 카풀신청, 예약, 댓글 시 받은 알림의 content를 사용하여 알림만들기 Todo
-            val category = if (notificationContentItemData[position]!!.postCategory == "carpool") {
-                "카풀"
-            } else {
-                "택시"
-            }
-
-
-
             //accountProfile.setImageURI() = pillData.pillTakeTime
             val now = System.currentTimeMillis()
             val date = Date(now)
@@ -74,38 +61,26 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
             val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
             val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime) //위 두개는 알림이 온 시간체크용용
 
-            val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(notificationContentItemData[position]?.postTargetDate + " " + notificationContentItemData[position]?.postTargetTime) //이건 게시글과의 차이를 계산해 카풀종료 알림인지 확인하기위함
-            val diff = nowFormat?.time?.minus(format?.time!!)
 
-            if (notification.content.substring(0..1) == "신청") {
-                notificationTitleText.text = context.getString(R.string.setNotificationTitleText, notification.content.substring(2..9), category)
-                notificationContentText.text = notification.content.removeRange(0..9)
-            } else if (notification.content.substring(0..1) == "예약") {
-                notificationTitleText.text = context.getString(R.string.setReservationNotificationText, notification.content.substring(2..9), category)
-                notificationContentText.text = notificationContentItemData[position]?.postTitle
-            } else if (notification.content.substring(0..1) == "취소") {
-                notificationTitleText.text = context.getString(R.string.setReservationNotificationText, notification.content.substring(2..9), category)
-                notificationContentText.text = notificationContentItemData[position]?.postTitle
-            } else if (notification.content.substring(0..1) == "댓글") {
-                notificationTitleText.text = context.getString(R.string.setCommentNotificationText, notification.content.substring(2..9))
-                notificationContentText.text = notification.content.removeRange(0..9)
-            } else if (diff?.div((60 * 1000))!! > 0) {
-                if (identification == notificationContentItemData[position]?.user?.email) {
+            binding.notificationContentTv.text = notification.content
 
-                    val endText = context.getString(R.string.setEndNotificationText, notification.content.substring(0..7), category )
-
-                    hashMapCurrentPostItemData[position] = NotificationStatus.Driver
-                    //driver이면서 게시글이 종료되었을 때는 후기니까 알람때보낸 content로
-                    notificationTitleText.text = endText //님과의 카풀(택시)은/는 어떠셨나요?
-                    notificationContentText.text = notification.content //2202020님이 후기를 기다리고 있어요
-                } else {
-                    val endText = context.getString(R.string.setEndNotificationText, notification.content.substring(0..7), category )
-
-                    hashMapCurrentPostItemData[position] = NotificationStatus.Passenger
-                    notificationTitleText.text = endText //님과의 카풀(택시)은/는 어떠셨나요?
-                    notificationContentText.text = notification.content //2202020님이 후기를 기다리고 있어요
-                }
+            val temp = if (notification.content.contains("후기")) {
+                "후기 알림"
+            } else if (notification.content.contains("신청") && notification.content.contains("승인")) {
+                "승인 알림"
+            } else if (notification.content.contains("신청")) {
+                "신청 알림"
+            } else if (notification.content.contains("취소")) {
+                "취소 알림"
+            } else if (notification.content.contains("거절")) {
+                "거절 알림"
+            } else if (notification.content.contains("댓글")){
+                "댓글 알림"
+            } else {
+                "기타 알림"
             }
+
+            binding.notificationItemTitleTv.text = temp
 
             val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time!!)
             val diffSeconds = diffMilliseconds?.div(1000)
@@ -141,28 +116,17 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
     }
 
     override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
-        holder.bind(notificationItemData[holder.adapterPosition], holder.adapterPosition)
+        holder.bind(notificationItemData[position], position)
 
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
 
-        //본인이 작성자(운전자) 이면서 카풀이 완료
-        if (identification == notificationContentItemData[holder.adapterPosition]?.user?.email && hashMapCurrentPostItemData[holder.adapterPosition] == NotificationStatus.Driver) {
-            holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, notificationContentItemData[holder.adapterPosition]?.postID, NotificationStatus.Driver)
-            }
-        } else if (hashMapCurrentPostItemData[holder.adapterPosition] == NotificationStatus.Passenger) { //본인은 운전자가 아니고 손님
-            holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, notificationContentItemData[holder.adapterPosition]?.postID, NotificationStatus.Passenger)
-            }
-        } else { //그냥 자기 게시글 확인
-            holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, notificationContentItemData[holder.adapterPosition]?.postID, NotificationStatus.Neither)
-            }
+        binding.root.setOnClickListener {
+            itemClickListener.onClick(it, holder.adapterPosition, notificationItemData[holder.adapterPosition].id, NotificationStatus.Neither)
         }
 
         binding.root.setOnLongClickListener {
-            itemClickListener.onLongClick(it, holder.adapterPosition, notificationItemData[holder.adapterPosition].id, notificationContentItemData[holder.adapterPosition]?.postID)
+            itemClickListener.onLongClick(it, holder.adapterPosition, notificationItemData[holder.adapterPosition].id, notificationItemData[holder.adapterPosition].postId)
             return@setOnLongClickListener true
         }
     }
@@ -180,6 +144,14 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
         notificationItemData.removeAt(position)
         //sharedPref!!.setNotify(context, setKey, notificationItemData)
         notifyItemRemoved(position)
+    }
+
+    fun updateData(newItems: List<AddAlarmResponseData>) {
+        notificationItemData.clear()
+        notificationItemData.addAll(newItems)
+        Log.d("updateData", newItems.toString())
+        Log.d("updateData", notificationItemData.toString())
+        notifyDataSetChanged()
     }
 
     interface ItemClickListener {

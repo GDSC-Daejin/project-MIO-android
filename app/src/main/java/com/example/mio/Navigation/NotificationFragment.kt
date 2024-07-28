@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
@@ -39,6 +40,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.CountDownLatch
 import kotlin.collections.ArrayList
 
 // TODO: Rename parameter arguments, choose names that match
@@ -74,6 +76,10 @@ class NotificationFragment : Fragment() {
     private var dataPosition = 0
     //로딩
     private var loadingDialog : LoadingProgressDialog? = null
+    private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+    private var identification : String? = null
+    //private var hashMapCurrentPostItemData = HashMap<Int, NotificationAdapter.NotificationStatus>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -89,7 +95,7 @@ class NotificationFragment : Fragment() {
         //activity?.requestWindowFeature(Window.FEATURE_NO_TITLE);
         nfBinding = FragmentNotificationBinding.inflate(inflater, container, false)
         sharedPref = SharedPref(requireContext())
-
+        identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
         if (arguments != null) {
             title = requireArguments().getString("title")
         }
@@ -108,17 +114,29 @@ class NotificationFragment : Fragment() {
         nAdapter.setItemClickListener(object : NotificationAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int?, status : NotificationAdapter.NotificationStatus) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val temp = notificationPostAllData[position]
-                    val temp2 = notificationPostParticipationAllData.find { it.first == temp!!.postID }?.second
+                    val temp = notificationAllData.find { it.id == itemId }?.postId
+                    val contentPost = notificationPostAllData.find { it?.postID == temp } //선택한 알람의 포스터
+                    //본인이 작성자(운전자) 이면서 카풀이 완료
+                    // 카풀 종료시 운전자에게 후기 작성하라는 알림 발송
+                    val statusSet = if (identification == contentPost?.user?.email &&  notificationAllData.find { it.id == itemId }?.content?.contains("탑승자") == true) {
+                        NotificationAdapter.NotificationStatus.Driver
+                    } else if (notificationAllData.find { it.id == itemId }?.content?.contains("님과") == true) { //본인은 운전자가 아니고 손님
+                        NotificationAdapter.NotificationStatus.Passenger
+                    } else { //그냥 자기 게시글 확인
+                        NotificationAdapter.NotificationStatus.Neither
+                    }
+
+                    //손님 리스트
+                    val temp2 = notificationPostParticipationAllData.find { it.first == temp }?.second
                     var intent : Intent? = null
                     dataPosition = position
                     //여기 구현 완료하기 클릭 시 해당 read로 이동해야함
-                    when(status) {
+                    when(statusSet) {
                         NotificationAdapter.NotificationStatus.Passenger -> {//내가 손님으로 카풀이 완료되었을 떄
                             intent = Intent(activity, PassengersReviewActivity::class.java).apply {
                                 putExtra("type", "PASSENGER")
-                                putExtra("postDriver", temp?.user)
-                                putExtra("Data", temp)
+                                putExtra("postDriver", contentPost?.user)
+                                putExtra("Data", contentPost)
                             }
                         }
 
@@ -127,7 +145,7 @@ class NotificationFragment : Fragment() {
                                 intent = Intent(activity, PassengersReviewActivity::class.java).apply {
                                     putExtra("type", "DRIVER")
                                     putExtra("postPassengers", temp2)
-                                    putExtra("Data", temp)
+                                    putExtra("Data", contentPost)
                                 }
                             } else {
                                 Toast.makeText(requireContext(), "탑승자가 없습니다.", Toast.LENGTH_SHORT).show()
@@ -137,10 +155,7 @@ class NotificationFragment : Fragment() {
                         NotificationAdapter.NotificationStatus.Neither -> {
                             intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
                                 putExtra("type", "READ")
-                                putExtra("postItem", temp)
-                                if (temp != null) {
-                                    putExtra("uri", temp.user.profileImageUrl)
-                                }
+                                putExtra("postItem", contentPost)
                             }
                         }
                         else -> {
@@ -242,6 +257,40 @@ class NotificationFragment : Fragment() {
         return nfBinding.root
     }
 
+    private fun initNotificationRV() {
+        //로딩창 실행
+        loadingDialog = LoadingProgressDialog(requireActivity())
+        loadingDialog?.setCancelable(false)
+        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        //로딩창
+        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
+        loadingDialog?.window!!.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        loadingDialog?.show()
+        CoroutineScope(Dispatchers.IO).launch {
+            setNotificationData()
+        }
+        nAdapter = NotificationAdapter()
+        nAdapter.notificationItemData = notificationAllData
+        //nAdapter.notificationContentItemData = notificationPostAllData
+        nfBinding.notificationRV.adapter = nAdapter
+        //레이아웃 뒤집기 안씀
+        //manager.reverseLayout = true
+        //manager.stackFromEnd = true
+        nfBinding.notificationRV.setHasFixedSize(true)
+        nfBinding.notificationRV.layoutManager = manager
+
+
+        /*if (notificationAllData.isEmpty()) {
+            nfBinding.notNotificationLl.visibility = View.VISIBLE
+        } else {
+            nfBinding.notNotificationLl.visibility = View.GONE
+        }*/
+    }
+
     private fun setNotificationData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
@@ -281,170 +330,189 @@ class NotificationFragment : Fragment() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         /////////
-        CoroutineScope(Dispatchers.IO).launch {
-            api.getMyAlarm().enqueue(object : Callback<List<AddAlarmResponseData>> {
-                override fun onResponse(call: Call<List<AddAlarmResponseData>>, response: Response<List<AddAlarmResponseData>>) {
-                    if (response.isSuccessful) {
-                        println("scssucsucsucs")
+        api.getMyAlarm().enqueue(object : Callback<List<AddAlarmResponseData>> {
+            override fun onResponse(call: Call<List<AddAlarmResponseData>>, response: Response<List<AddAlarmResponseData>>) {
+                if (response.isSuccessful) {
+                    println("scssucsucsucs")
+                    val responseData = response.body()
+                    Log.d("taxi", response.code().toString())
+                    //데이터 청소
+                    notificationAllData.clear()
 
-                        notificationAllData.clear()
-
-                        for (i in response.body()!!.indices) {
-                            notificationAllData.add(AddAlarmResponseData(
-                                response.body()!![i].id,
-                                response.body()!![i].createDate,
-                                response.body()!![i].content,
-                                response.body()!![i].postId,
-                                response.body()!![i].userId
-                            ))
+                    if (responseData != null) {
+                        for (i in responseData) {
+                            notificationAllData.add(
+                                AddAlarmResponseData(
+                                    i.id,
+                                    i.createDate,
+                                    i.content,
+                                    i.postId,
+                                    i.userId
+                                )
+                            )
                         }
-
-
-
-
-                        Log.d("Notification Fragment Data", notificationAllData.toString())
-                        initNotificationPostData()
-                        nAdapter.notifyDataSetChanged()
-                    } else {
-                        println("faafa")
-                        Log.d("comment", response.errorBody()?.string()!!)
-                        println(response.code())
                     }
+                    Log.d("Notification Fragment Data", "Received data: $notificationAllData")
+                    nAdapter.notifyDataSetChanged()
+                    updateUI()
+                    CoroutineScope(Dispatchers.IO).launch {
+                        initNotificationPostData(notificationAllData)
+                    }
+                } else {
+                    println("faafa")
+                    Log.d("comment", response.errorBody()?.string()!!)
+                    println(response.code())
                 }
+            }
 
-                override fun onFailure(call: Call<List<AddAlarmResponseData>>, t: Throwable) {
-                    Log.d("error", t.toString())
-                }
-            })
-        }
+            override fun onFailure(call: Call<List<AddAlarmResponseData>>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
     }
 
 
-
-    private fun initNotificationRV() {
-        //로딩창 실행
-        loadingDialog = LoadingProgressDialog(requireActivity())
-        loadingDialog?.setCancelable(false)
-        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        //로딩창
-        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-        loadingDialog?.window!!.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        loadingDialog?.show()
-
-        setNotificationData()
-        nAdapter = NotificationAdapter()
-        /*if (notificationAllData.isEmpty()) {
-            nfBinding.notNotificationLl.visibility = View.VISIBLE
-        } else {
-            nfBinding.notNotificationLl.visibility = View.GONE
-        }*/
-
-        nAdapter.notificationItemData = notificationAllData
-        nAdapter.notificationContentItemData = notificationPostAllData
-        nfBinding.notificationRV.adapter = nAdapter
-        //레이아웃 뒤집기 안씀
-        //manager.reverseLayout = true
-        //manager.stackFromEnd = true
-        nfBinding.notificationRV.setHasFixedSize(true)
-        nfBinding.notificationRV.layoutManager = manager
-    }
-
-    private fun initNotificationPostData() {
+    private fun initNotificationPostData(alarmList: ArrayList<AddAlarmResponseData>?) {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
 
         /////////interceptor
         val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+        val retrofit = Retrofit.Builder()
+            .baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
-        //Authorization jwt토큰 로그인
+            .build()
+
         val interceptor = Interceptor { chain ->
             var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+            if (token.isNotEmpty()) { // 토큰이 있는 경우
+                newRequest = chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer $token")
+                    .build()
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
                 }
-            } else newRequest = chain.request()
+            } else {
+                newRequest = chain.request()
+            }
             chain.proceed(newRequest)
         }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
+
+        val client = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+
+        val retrofit2 = retrofit.newBuilder().client(client).build()
         val api = retrofit2.create(MioInterface::class.java)
         /////////////////////////////////////////////////
 
         var shouldBreak = false
-        for (i in notificationAllData) {
-            if (shouldBreak) break
-            api.getPostIdDetailSearch(i.postId).enqueue(object : Callback<Content> {
-                override fun onResponse(call: Call<Content>, response: Response<Content>) {
-                    if (response.isSuccessful) {
-                        response.body().let {
-                            notificationPostAllData.add(PostData(
-                                it!!.user.studentId,
-                                it.postId,
-                                it.title,
-                                it.content,
-                                it.createDate,
-                                it.targetDate,
-                                it.targetTime,
-                                it.category.categoryName,
-                                it.location,
-                                //participantscount가 현재 참여하는 인원들
-                                it.participantsCount,
-                                //numberOfPassengers은 총 탑승자 수
-                                it.numberOfPassengers,
-                                it.cost,
-                                it.verifyGoReturn,
-                                it.user,
-                                it.latitude,
-                                it.longitude
-                            ))
-
-                            if (it.participants != null) {
-                                notificationPostParticipationAllData.add(Pair(it.postId,it.participants))
+        Log.e("alarmList", alarmList.toString())
+        var latch : CountDownLatch? = null
+        if (alarmList?.isNotEmpty() == true) {
+            for (i in alarmList.indices) {
+                //요청의 수와 동일한 초기 카운트를 가진 CountDownLatch를 생성합니다.
+                latch = CountDownLatch(alarmList.size)
+                if (shouldBreak) break
+                Log.e("alarm", alarmList[i].toString())
+                api.getPostIdDetailSearch(alarmList[i].postId).enqueue(object : Callback<Content> {
+                    override fun onResponse(call: Call<Content>, response: Response<Content>) {
+                        if (response.isSuccessful) {
+                            val responseData = response.body()
+                            Log.e("indexout check", response.body().toString())
+                            if (responseData != null) {
+                                if (responseData.isDeleteYN == "N") {
+                                    CoroutineScope(Dispatchers.IO).launch {
+                                        response.body()?.let {
+                                            notificationPostAllData.add(
+                                                PostData(
+                                                    responseData.user.studentId,
+                                                    responseData.postId,
+                                                    responseData.title,
+                                                    responseData.content,
+                                                    responseData.createDate,
+                                                    responseData.targetDate,
+                                                    responseData.targetTime,
+                                                    responseData.category.categoryName,
+                                                    responseData.location,
+                                                    responseData.participantsCount,
+                                                    responseData.numberOfPassengers,
+                                                    responseData.cost,
+                                                    responseData.verifyGoReturn,
+                                                    responseData.user,
+                                                    responseData.latitude,
+                                                    responseData.longitude
+                                                )
+                                            )
+                                            if (responseData.participants != null) {
+                                                notificationPostParticipationAllData.add(Pair(responseData.postId, responseData.participants))
+                                            }
+                                            Log.e("indexout check post", notificationPostAllData.toString())
+                                        }
+                                    }
+                                }
                             }
+                        } else {
+                            Log.e("fail notififrag", response.code().toString())
+                            Log.e("fail notififrag", response.errorBody()?.string()!!)
+                            shouldBreak = true
                         }
-                    } else {
-                        Log.e("fail notififrag", response.code().toString())
-                        Log.e("fail notififrag", response.errorBody()?.string()!!)
-                        shouldBreak = true
+                        latch.countDown() // 요청 완료 시 감소
                     }
-                }
 
-                override fun onFailure(call: Call<Content>, t: Throwable) {
-                    Log.e("Failure notification", t.toString())
-                    shouldBreak = true
-                }
-            })
+                    override fun onFailure(call: Call<Content>, t: Throwable) {
+                        Log.e("Failure notification", t.toString())
+                        shouldBreak = true
+                        latch.countDown() // 요청 완료 시 감소
+                    }
+
+                })
+            }
         }
+        // UI 업데이트는 메인 스레드에서
+        // 비동기 요청이 모두 완료될 때까지 기다림
+        //요청 완료 대기: 모든 요청이 완료될 때까지 latch.await()로 대기합니다. 모든 요청이 완료되면 UI를 업데이트합니다.
+        /*Thread {
+            latch?.await()
+            requireActivity().runOnUiThread {
 
+            }
+        }.start()*/
+
+        /*// UI 업데이트는 메인 스레드에서
+        requireActivity().runOnUiThread {
+
+            nAdapter.notifyDataSetChanged()
+
+            if (notificationAllData.isEmpty()) {
+                nfBinding.notNotificationLl.visibility = View.VISIBLE
+                nfBinding.nestedScrollView.visibility = View.GONE
+            } else {
+                val dataSize = notificationAllData.size.toString().ifEmpty {
+                    "0"
+                }
+
+                saveSharedPreferenceGoogleLogin.setNotification(requireActivity(), dataSize)
+                nfBinding.notNotificationLl.visibility = View.GONE
+                nfBinding.nestedScrollView.visibility = View.VISIBLE
+            }
+        }*/
+    }
+
+    private fun updateUI() {
+        Log.e("updateui", "in ui")
         loadingDialog?.dismiss()
         if (loadingDialog != null && loadingDialog!!.isShowing) {
             loadingDialog?.dismiss()
             loadingDialog = null // 다이얼로그 인스턴스 참조 해제
         }
         nAdapter.notifyDataSetChanged()
-
         if (notificationAllData.isEmpty()) {
             nfBinding.notNotificationLl.visibility = View.VISIBLE
             nfBinding.nestedScrollView.visibility = View.GONE
@@ -452,7 +520,7 @@ class NotificationFragment : Fragment() {
             val dataSize = notificationAllData.size.toString().ifEmpty {
                 "0"
             }
-
+            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
             saveSharedPreferenceGoogleLogin.setNotification(requireActivity(), dataSize)
             nfBinding.notNotificationLl.visibility = View.GONE
             nfBinding.nestedScrollView.visibility = View.VISIBLE

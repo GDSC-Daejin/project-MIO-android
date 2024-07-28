@@ -632,16 +632,17 @@ class MainActivity : AppCompatActivity() {
                 response: Response<List<AddAlarmResponseData>>
             ) {
                 if (response.isSuccessful) {
+                    Log.e("MainActivitu Notification??0", notificationCheck.toString())
                     if (response.body().isNullOrEmpty() && response.body()?.toString() == "") {
                         menuItem?.setIcon(R.drawable.top_menu_notification)
-                        Log.e("MainActivitu Notification??", notificationCheck.toString())
+                        Log.e("MainActivitu Notification??1", notificationCheck.toString())
                     } else {
                        if (response.body()?.size!! > notificationCheck.toInt()) { //사이즈가 달라짐 = 데이터가 더 추가되었다
                            menuItem?.setIcon(R.drawable.notification_update_icon)
-                           Log.e("MainActivitu Notification??", notificationCheck.toString())
+                           Log.e("MainActivitu Notification??2", notificationCheck.toString())
                        } else { //달라진게없으면? 다시 원상태 즉 봣다는거니
                            menuItem?.setIcon(R.drawable.top_menu_notification)
-                           Log.e("MainActivitu Notification??", notificationCheck.toString())
+                           Log.e("MainActivitu Notification??3", notificationCheck.toString())
                        }
                         /*Log.e("MainActivitu Notification", response.body()?.size.toString())
                         Log.e("MainActivitu Notification", notificationCheck.toString())*/

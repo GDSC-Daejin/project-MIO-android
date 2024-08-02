@@ -1,6 +1,7 @@
 package com.example.mio
 
 import android.app.ActivityManager
+import android.app.ProgressDialog.show
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -15,7 +16,10 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.example.mio.Model.AddAlarmResponseData
@@ -76,6 +80,10 @@ class MainActivity : AppCompatActivity() {
         sharedViewModel!!.getCalendarLiveData().observe(this)
         */
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestNotificationPermission()
+        }
+
         //foreground실행행
        serviceIntent =
             Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
@@ -120,7 +128,51 @@ class MainActivity : AppCompatActivity() {
         saveSettingData()
     }
 
-    fun foregroundServiceRunning(): Boolean {
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun requestNotificationPermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            )) {
+            // 사용자에게 권한이 필요한 이유를 설명하는 UI를 보여줍니다.
+            showPermissionRationaleDialog()
+        } else {
+            // 권한 요청
+            requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // 알림 권한이 허용되었습니다.
+            Toast.makeText(this, "알림 권한이 허용되었습니다", Toast.LENGTH_SHORT).show()
+        } else {
+            // 알림 권한이 거부되었습니다.
+            Toast.makeText(this, "알림 권한이 거부되었습니다", Toast.LENGTH_SHORT).show()
+
+        }
+    }
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun showPermissionRationaleDialog() {
+        AlertDialog.Builder(this).apply {
+            setTitle("알림 권한 요청")
+            setMessage("이 앱에서 알림을 받으려면 알림 권한이 필요합니다. 알림을 통해 중요한 정보를 놓치지 않도록 권한을 허용해 주세요.")
+            setPositiveButton("권한 허용") { _, _ ->
+                requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+            setNegativeButton("취소") { dialog, _ ->
+                // 알림 권한이 거부되었습니다.
+                Toast.makeText(this@MainActivity, "알림 권한이 거부되었습니다", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+            create()
+            show()
+        }
+    }
+
+    private fun foregroundServiceRunning(): Boolean {
         val activityManager =
             this.getSystemService(ACTIVITY_SERVICE) as ActivityManager // 액티비티 매니져를 통해 작동중인 서비스 가져오기
 
@@ -637,6 +689,7 @@ class MainActivity : AppCompatActivity() {
                         menuItem?.setIcon(R.drawable.top_menu_notification)
                         Log.e("MainActivitu Notification??1", notificationCheck.toString())
                     } else {
+                        Log.e("MainActivitu Notification??0-1", response.body()?.size.toString())
                        if (response.body()?.size!! > notificationCheck.toInt()) { //사이즈가 달라짐 = 데이터가 더 추가되었다
                            menuItem?.setIcon(R.drawable.notification_update_icon)
                            Log.e("MainActivitu Notification??2", notificationCheck.toString())
@@ -646,7 +699,6 @@ class MainActivity : AppCompatActivity() {
                        }
                         /*Log.e("MainActivitu Notification", response.body()?.size.toString())
                         Log.e("MainActivitu Notification", notificationCheck.toString())*/
-
                     }
 
                 } else {

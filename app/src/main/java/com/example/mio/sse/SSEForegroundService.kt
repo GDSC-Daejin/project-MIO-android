@@ -21,6 +21,7 @@ class SSEForegroundService : Service() {
     private var userId : Long? = null
     private var eventSource : BackgroundEventSource? = null
     var serviceIntent: Intent? = null
+    private var isGetAlarm : Boolean? = null
 
 
 
@@ -31,9 +32,12 @@ class SSEForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         sharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         userId = sharedPreferenceGoogleLogin!!.getUserId(this)?.toLong()
-        Log.e("Service", "서비스가 실행 중입니다...")
-        Log.e("Service on Start", userId.toString())
-        if (userId != null) {
+        isGetAlarm = sharedPreferenceGoogleLogin!!.getSharedAlarm(this)
+
+
+        if (userId != null && isGetAlarm == true) {
+            Log.e("Service", "서비스가 실행 중입니다...")
+            Log.e("Service on Start", userId.toString())
             eventSource = BackgroundEventSource //백그라운드에서 이벤트를 처리하기위한 EVENTSOURCE의 하위 클래스
                 .Builder(
                     SseHandler(context = this),
@@ -51,6 +55,8 @@ class SSEForegroundService : Service() {
                 .build()
             // EventSource 연결 시작
             eventSource!!.start()
+        } else {
+            Log.e("Service", "서비스 종료입니다...")
         }
 
         return super.onStartCommand(intent, flags, startId)

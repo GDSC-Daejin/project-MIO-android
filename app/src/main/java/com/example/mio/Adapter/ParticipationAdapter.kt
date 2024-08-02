@@ -124,43 +124,6 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
                 handler.post(r)
             }
-            /*when (partData.approvalOrReject) {
-                "APPROVAL" -> {
-                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) //승인
-
-                    // 배경색 변경
-                    binding.participationCsl.backgroundTintList = colorStateList
-                    binding.participationItemLl.backgroundTintList = colorStateList
-
-                    binding.participationCancel.visibility = View.VISIBLE
-                    binding.participationRefuse.visibility = View.GONE
-                    binding.participationApproval.visibility = View.GONE
-
-                }
-                "REJECT" -> {
-                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
-
-                    // 배경색 변경
-                    binding.participationCsl.backgroundTintList = colorStateList
-                    binding.participationItemLl.backgroundTintList = colorStateList
-
-                    binding.participationCancel.visibility = View.GONE
-                    binding.participationRefuse.visibility = View.VISIBLE
-                    binding.participationApproval.visibility = View.VISIBLE
-
-                }
-                else -> {
-                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
-
-                    // 배경색 변경
-                    binding.participationCsl.backgroundTintList = colorStateList
-                    binding.participationItemLl.backgroundTintList = colorStateList
-
-                    binding.participationCancel.visibility = View.GONE
-                    binding.participationRefuse.visibility = View.VISIBLE
-                    binding.participationApproval.visibility = View.VISIBLE
-                }
-            }*/
         }
     }
 
@@ -218,6 +181,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             val item = participationItemData[position]
             // 아이템 정보를 사용하여 서버 요청 보내기
             fetchItemDetails(item.participantId)
+            itemClickListener.onApprovalClick(position, participationItemData[position].participantId.toString())
             //cancelItem = -1
             selectedItem = approvalPosition
             notifyDataSetChanged()
@@ -234,10 +198,11 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             notifyDataSetChanged()
             println(participationItemData[position].approvalOrReject)
             removeData(participationItemData[position].participantId, position)
+            itemClickListener.onRefuseClick(position, participationItemData[position].participantId.toString())
             //sendAlarmData("취소", position, item)
         }
 
-        /*binding.participationCancel.setOnClickListener {
+        binding.participationCancel.setOnClickListener {
             println("cancleellelelelelelelelee")
             val cancelPosition = position
             selectedItem = -1
@@ -245,8 +210,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             //cancelItem = cancelPosition
             notifyDataSetChanged()
             removeData(participationItemData[position].participantId, position)
-            sendAlarmData("취소", position, item)
-        }*/
+            itemClickListener.onRefuseClick(position, participationItemData[position].participantId.toString())
+        }
 
 
 
@@ -522,7 +487,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
 
     interface ItemClickListener {
-        fun onClick(view: View, position: Int, itemId: Int)
+        fun onApprovalClick(position: Int, participantId: String)
+        fun onRefuseClick(position: Int, participantId: String)
     }
 
     //약한 참조로 참조하는 객체가 사용되지 않을 경우 가비지 콜렉션에 의해 자동해제

@@ -59,41 +59,46 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
             eventData
         }
 
-        // Android 8.0 이상에서는 Notification Channel을 설정해야 합니다.
-        val tapResultIntent = Intent(context, LoginActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        Log.e("SSE Comment", comment.toString())
+        if (!comment.contains("EventStream")) {
+            // Android 8.0 이상에서는 Notification Channel을 설정해야 합니다.
+            val tapResultIntent = Intent(context, LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+
+            val pendingIntent = PendingIntent.getActivity(
+                context,
+                0,
+                tapResultIntent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(channelId, channelName, importance).apply {
+                description = "descriptionText"
+            }
+            val notificationManager: NotificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+
+            val builder = NotificationCompat.Builder(context, channelId)
+                .setSmallIcon(R.drawable.top_icon_vector)
+                .setContentTitle("알림")
+                .setContentText(comment)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+
+            try {
+                notificationManager.notify(1, builder.build())
+                Log.d("Notification", "Notification created successfully")
+            } catch (e: Exception) {
+                Log.e("Notification", "Failed to create notification: ${e.message}")
+            }
         }
 
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            0,
-            tapResultIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
 
-
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
-        val channel = NotificationChannel(channelId, channelName, importance).apply {
-            description = "descriptionText"
-        }
-        val notificationManager: NotificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
-
-        val builder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.top_icon_vector)
-            .setContentTitle("알림")
-            .setContentText(comment)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(pendingIntent)
-            .setAutoCancel(true)
-
-        try {
-            notificationManager.notify(1, builder.build())
-            Log.d("Notification", "Notification created successfully")
-        } catch (e: Exception) {
-            Log.e("Notification", "Failed to create notification: ${e.message}")
-        }
 
     }
 

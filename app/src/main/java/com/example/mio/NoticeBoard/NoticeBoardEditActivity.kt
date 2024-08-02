@@ -1543,6 +1543,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
 
                 kakaoMapValue!!.setOnMapClickListener { _, latLng, _, poi ->
                     //showInfoWindow(position, poi)
+                    kakaoMapValue?.labelManager?.removeAllLabelLayer()
                     trackingManager?.stopTracking()
                     latitude = latLng.latitude
                     longitude = latLng.longitude
@@ -1555,17 +1556,6 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                     isAllCheck.isSecondVF.isPlaceName = true
                     isAllCheck.isSecondVF.isPlaceRode = true
                     myViewModel.postCheckValue(isAllCheck)
-
-                    /*marker = MapPOIItem().apply {
-                        itemName = "선택 위치"
-                        this.mapPoint = mapPoint //MapPoint.mapPointWithGeoCoord(tlatitude, tlongitude)
-                        markerType = MapPOIItem.MarkerType.CustomImage
-                        customImageResourceId = R.drawable.map_poi_icon
-                        isCustomImageAutoscale = true
-                        isDraggable = false
-                        setCustomImageAnchor(0.5f, 1.0f)
-                    }
-                    mapView?.addPOIItem(marker)*/
 
                     if (Build.VERSION.SDK_INT < 33) { // SDK 버전이 33보다 큰 경우에만 아래 함수를 씁니다.
                         val addresses = geocoder.getFromLocation(latitude!!, longitude!!, 1)?.first()
@@ -1602,24 +1592,6 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                                     val detailedAddress =
                                         "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
 
-                                    //mBinding.placeName.text =
-                                    //mBinding.placeRoad.text = "현재 마커 주소 : " + detailedAddress // 텍스트뷰에 주소 정보 표시
-                                    //getAddressFromCoordinates(longitude, latitude)
-                                    /* val latitude = latitude
-                                     val longitude = longitude
-                                     val apiKey = API_KEY*/
-
-                                    /*getAddressFromCoordinates(latitude, longitude, apiKey) { address ->
-                                        if (address != null) {
-                                            *//*val address = address[0].*//*
-                                //val name = address.split(" ").map { it.toString() }
-
-                                println("주소: $address") //buildingName포함
-                            } else {
-                                println("주소를 가져올 수 없습니다.")
-                            }
-                        }*/
-                                    // 도로명 주소 검색
 
                                     if (addresses.isNotEmpty()) {
                                         address = addresses[0]
@@ -1681,77 +1653,49 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                         geocoder.getFromLocation(latitude!!, longitude!!, 10, geocodeListener)
                     }
                     if (poi.name.isNotEmpty()) {
-                        if (preLabel == null) { //눌러진 poi 또는 label이없으면
-                            labelLatLng = LatLng.from(latLng.latitude, latLng.longitude)
-                            Log.e("labelLatLng1", "$labelLatLng")
 
-                            // 레이어 가져오기
-                            //val labelLayer = kakaoMap.labelManager?.layer
+                        labelLatLng = LatLng.from(latLng.latitude, latLng.longitude)
+                        Log.e("labelLatLng1", "$labelLatLng")
 
-                            // 스타일 지정
-                            val style = kakaoMap.labelManager?.addLabelStyles(
-                                LabelStyles.from(
-                                    LabelStyle.from(R.drawable.map_poi_black_icon).apply {
-                                        setAnchorPoint(0.5f, 0.5f)
-                                        isApplyDpScale = true
-                                    }
-                                )
+                        // 레이어 가져오기
+                        //val labelLayer = kakaoMap.labelManager?.layer
+
+                        // 스타일 지정
+                        val style = kakaoMap.labelManager?.addLabelStyles(
+                            LabelStyles.from(
+                                LabelStyle.from(R.drawable.map_poi_black_icon).apply {
+                                    setAnchorPoint(0.5f, 0.5f)
+                                    isApplyDpScale = true
+                                }
                             )
+                        )
 
-                            // 라벨 옵션 지정
-                            val options = LabelOptions.from(labelLatLng).setStyles(style)
+                        // 라벨 옵션 지정
+                        val options = LabelOptions.from(labelLatLng).setStyles(style)
 
-                            // 라벨 추가
-                            val label = labelLayerObject?.addLabel(options)
-                            preLabel = label
-                            mBinding.placeName.text = poi.name
-                            // 라벨로 트래킹 시작
-                            if (label != null) {
-                                trackingManager?.startTracking(label)
-                                val handler = Handler(Looper.getMainLooper())
-                                handler.postDelayed(java.lang.Runnable {
-                                    trackingManager?.stopTracking()
-                                },1000)
-                            } else {
-                                Log.e("kakaoMapValue", "Label is null, tracking cannot be started.")
-                            }
-                        } else { //만약 누른 poi나 label이 있다면? 지우고 그리기
-                            // 레이어 가져오기
-                            //val labelLayer = kakaoMap.labelManager?.layer
-                            // 스타일 지정
-                            val style = kakaoMap.labelManager?.addLabelStyles(
-                                LabelStyles.from(
-                                    LabelStyle.from(R.drawable.map_poi_black_icon).apply {
-                                        setAnchorPoint(0.5f, 0.5f)
-                                        isApplyDpScale = true
-                                    }
-                                )
-                            )
-                            labelLatLng = LatLng.from(latLng.latitude, latLng.longitude)
-                            Log.e("labelLatLng2", "$labelLatLng")
-                            //이전 값 지우고?
-                            labelLayerObject?.remove(preLabel)
-                            // 라벨 옵션 지정
-                            val options = LabelOptions.from(labelLatLng).setStyles(style)
-                            // 라벨 추가
-                            val label = labelLayerObject?.addLabel(options)
-                            mBinding.placeName.text = poi.name
-                            // 라벨로 트래킹 시작
-                            if (label != null) {
-                                trackingManager?.startTracking(label)
-                                val handler = Handler(Looper.getMainLooper())
-                                handler.postDelayed(java.lang.Runnable {
-                                    trackingManager?.stopTracking()
-                                },1000)
-                            } else {
-                                Log.e("kakaoMapValue", "Label is null, tracking cannot be started.")
-                            }
+                        // 라벨 추가
+                        val label = labelLayerObject?.addLabel(options)
+                        mBinding.placeName.text = poi.name
+                        // 라벨로 트래킹 시작
+                        if (label != null) {
+                            trackingManager?.startTracking(label)
+                            val handler = Handler(Looper.getMainLooper())
+                            handler.postDelayed(java.lang.Runnable {
+                                trackingManager?.stopTracking()
+                            },1000)
+                        } else {
+                            Log.e("kakaoMapValue", "Label is null, tracking cannot be started.")
                         }
                     }
                 }
 
                 kakaoMapValue!!.setOnLabelClickListener { _, _, label ->
-                    trackingManager?.startTracking(label)
+                    if (label != null) { //return 값이 true 이면, 이벤트가 OnLabelClickListener 에서 끝난다.
+                        trackingManager?.startTracking(label)
+                        return@setOnLabelClickListener true
+                    } else { //return 값이 false 이면, 이벤트가 OnPoiClickListener, OnMapClickListener 까지 전달된다.
+                        return@setOnLabelClickListener false
+                    }
                 }
             }
         })

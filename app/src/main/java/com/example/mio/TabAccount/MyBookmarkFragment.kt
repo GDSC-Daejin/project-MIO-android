@@ -107,7 +107,11 @@ class MyBookmarkFragment : Fragment() {
             ViewGroup.LayoutParams.MATCH_PARENT
         )
         loadingDialog?.show()
-        setMyBookmarkData()
+
+        CoroutineScope(Dispatchers.IO).launch {
+            setMyBookmarkData()
+        }
+
         myAdapter = MyAccountPostAdapter()
         myAdapter!!.myPostItemData = myBookmarkAllData
         binding.bookmarkRv.adapter = myAdapter
@@ -157,22 +161,44 @@ class MyBookmarkFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
 
         //println(userId)
-        var thisData : kotlin.collections.List<BookMarkResponseData>? = null
+        val thisData : ArrayList<BookMarkResponseData>? = ArrayList()
         api.getBookmark().enqueue(object : Callback<List<BookMarkResponseData>> {
             override fun onResponse(call: Call<List<BookMarkResponseData>>, response: Response<List<BookMarkResponseData>>) {
                 if (response.isSuccessful) {
                     Log.e("success getBookmark", response.code().toString())
                     val responseData = response.body()
                     Log.d("success getBookmark", responseData.toString())
-                    responseData.let {
-                        thisData = it
-                        if (thisData?.isNotEmpty() == true) {
+                    //데이터 청소
+                    if (responseData?.isNotEmpty() == true) {
+                        responseData.let {
+                            thisData?.clear()
+                            thisData?.addAll(it)
+                        }
+                        Log.d("Notification Fragment Data", "Received data: $thisData")
+                        //updateUI()
+                        CoroutineScope(Dispatchers.IO).launch {
                             initBookMarkPostData(thisData)
                         }
+                    } else {
+                        Log.e("updateui", "in ui")
+                        if (loadingDialog != null && loadingDialog!!.isShowing) {
+                            loadingDialog?.dismiss()
+                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                        }
+                        if (myBookmarkAllData.isNotEmpty()) {
+                            binding.bookmarkPostNotDataLl.visibility = View.GONE
+                            binding.bookmarkSwipe.visibility = View.VISIBLE
+                            binding.bookmarkRv.visibility = View.VISIBLE
+                        } else {
+                            binding.bookmarkPostNotDataLl.visibility = View.VISIBLE
+                            binding.bookmarkSwipe.visibility = View.GONE
+                            binding.bookmarkRv.visibility = View.GONE
+                        }
+                        loadingDialog?.dismiss()
                     }
-
                 } else {
                     Log.e("f", response.code().toString())
+                    Log.e("f", response.errorBody()?.string()!!)
                 }
             }
 
@@ -220,40 +246,45 @@ class MyBookmarkFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
         /////
         var shouldBreak = false
-        if (bookMarkList != null) {
+        if (bookMarkList?.isNotEmpty() == true) {
             for (i in bookMarkList) {
                 if (shouldBreak) break
                 api.getPostIdDetailSearch(i.postId).enqueue(object : Callback<Content> {
                     override fun onResponse(call: Call<Content>, response: Response<Content>) {
                         if (response.isSuccessful) {
-                            response.body().let {
-                                myBookmarkAllData.add(
-                                    PostData(
-                                        it!!.user.studentId,
-                                        it.postId,
-                                        it.title,
-                                        it.content,
-                                        it.createDate,
-                                        it.targetDate,
-                                        it.targetTime,
-                                        it.category.categoryName,
-                                        it.location,
-                                        //participantscount가 현재 참여하는 인원들
-                                        it.participantsCount,
-                                        //numberOfPassengers은 총 탑승자 수
-                                        it.numberOfPassengers,
-                                        it.cost,
-                                        it.verifyGoReturn,
-                                        it.user,
-                                        it.latitude,
-                                        it.longitude
-                                    )
-                                )
+                            val responseData = response.body()
+                            Log.e("indexout check", response.body().toString())
+                            if (responseData != null) {
+                                if (responseData.isDeleteYN == "N") {
+                                    responseData.let {
+                                        myBookmarkAllData.add(
+                                            PostData(
+                                                responseData.user.studentId,
+                                                responseData.postId,
+                                                responseData.title,
+                                                responseData.content,
+                                                responseData.createDate,
+                                                responseData.targetDate,
+                                                responseData.targetTime,
+                                                responseData.category.categoryName,
+                                                responseData.location,
+                                                responseData.participantsCount,
+                                                responseData.numberOfPassengers,
+                                                responseData.cost,
+                                                responseData.verifyGoReturn,
+                                                responseData.user,
+                                                responseData.latitude,
+                                                responseData.longitude
+                                            ))
+                                    }
+                                    updateUI()
+                                    Log.e("indexout check post", myBookmarkAllData.toString())
+                                }
                             }
                         } else {
                             Log.e("fail notififrag", response.code().toString())
                             Log.e("fail notififrag", response.errorBody()?.string()!!)
-                            shouldBreak =true
+                            shouldBreak = true
                         }
                     }
 
@@ -263,24 +294,32 @@ class MyBookmarkFragment : Fragment() {
                     }
                 })
             }
-            if (loadingDialog != null && loadingDialog!!.isShowing) {
-                loadingDialog?.dismiss()
-                loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+            CoroutineScope(Dispatchers.Main).launch {
+                updateUI()
             }
-            myAdapter!!.notifyDataSetChanged()
-
-            if (myBookmarkAllData.isNotEmpty()) {
-                binding.bookmarkPostNotDataLl.visibility = View.GONE
-                binding.bookmarkSwipe.visibility = View.VISIBLE
-                binding.bookmarkRv.visibility = View.VISIBLE
-            } else {
-                binding.bookmarkPostNotDataLl.visibility = View.VISIBLE
-                binding.bookmarkSwipe.visibility = View.GONE
-                binding.bookmarkRv.visibility = View.GONE
-            }
-            loadingDialog?.dismiss()
         }
     }
+
+    private fun updateUI() {
+        Log.e("updateui", "in ui")
+        if (loadingDialog != null && loadingDialog!!.isShowing) {
+            loadingDialog?.dismiss()
+            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+        }
+        myAdapter!!.notifyDataSetChanged()
+
+        if (myBookmarkAllData.isNotEmpty()) {
+            binding.bookmarkPostNotDataLl.visibility = View.GONE
+            binding.bookmarkSwipe.visibility = View.VISIBLE
+            binding.bookmarkRv.visibility = View.VISIBLE
+        } else {
+            binding.bookmarkPostNotDataLl.visibility = View.VISIBLE
+            binding.bookmarkSwipe.visibility = View.GONE
+            binding.bookmarkRv.visibility = View.GONE
+        }
+        loadingDialog?.dismiss()
+    }
+
     private fun initSwipeRefresh() {
         binding.bookmarkSwipe.setOnRefreshListener {
             //새로고침 시 터치불가능하도록

@@ -158,7 +158,7 @@ interface MioInterface {
 
     //같은 날 신청하려고 하는 등/하교가 있는지 (수정 해야함)
     @GET("/{postId}/check")
-    fun checkParticipate(@Path("postId") postId : Int) : Call<Boolean>
+    fun checkParticipate(@Path("postId") postId : Int) : Call<CheckParticipateData>
 
     //전부 + 작성자 제거
     @GET("/user/participants")

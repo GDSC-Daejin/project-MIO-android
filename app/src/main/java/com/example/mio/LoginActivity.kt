@@ -259,18 +259,29 @@ class LoginActivity : AppCompatActivity() {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 val userEmailMap = task.result.email?.split("@")?.map { it.toString() }
                 //회원가입과 함께 새로운 계정 정보 저장
-                if (userEmailMap?.contains("daejin.ac.kr") == true) {
+                Toast.makeText(this, "로그인 계정 $userEmailMap", Toast.LENGTH_SHORT).show()
+                if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true) {
+                    Log.e("resultOk", userEmailMap.toString())
                     handleSignInResult(task)
                 } else {
                     loadingDialog?.dismiss()
                     Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                    mGoogleSignInClient.signOut().addOnCompleteListener {
+                        signIn() // Prompt for sign-in again
+                    }
+                }
+            } else {
+                loadingDialog?.dismiss()
+                Toast.makeText(this, "로그인에 실패하였습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                mGoogleSignInClient.signOut().addOnCompleteListener {
+                    signIn() // Prompt for sign-in again
                 }
             }
         }
     }
 
 
-    private fun handleSignInResult(completedTask : Task<GoogleSignInAccount>) {
+    private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             Log.d("handleSignInResult", "handleSignInResult")
             val account = completedTask.getResult(ApiException::class.java)
@@ -280,55 +291,19 @@ class LoginActivity : AppCompatActivity() {
 
             userEmail = email
             val userEmailMap = userEmail.split("@").map { it.toString() }
+            saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
 
-            //회원가입과 함께 새로운 계정 정보 저장
-            if (userEmailMap.contains("daejin.ac.kr")) {
-                //Toast.makeText(this, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
-                saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
+            println(email)
+            println(authCode.toString())
+            println("idToken " + idToken)
 
-                Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
-                /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                startActivity(intent)
-                this@LoginActivity.finish()*/
+            val userInfoToken = TokenRequest(idToken.toString())
+            signInCheck(userInfoToken)
 
-                println(email)
-                println(authCode.toString())
-                println("idToken " + idToken)
-
-                //getAccessToken(authCode!!)
-                val userInfoToken = TokenRequest(idToken.toString())
-                signInCheck(userInfoToken)
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    createClipData(idToken.toString())
-
-                }
-
-                /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                startActivity(intent)
-                this@LoginActivity.finish()*/
-            } else if (userEmailMap.contains("anes53027")) {
-                saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
-
-                Log.d("LoginActivity", "새로운유저, ${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity).toString()}")
-                /*val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                startActivity(intent)
-                this@LoginActivity.finish()*/
-
-                println(email)
-                println(authCode.toString())
-                println("idToken " + idToken)
-                //getAccessToken(authCode!!)
-                val userInfoToken = TokenRequest(idToken.toString())
-                signInCheck(userInfoToken)
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    createClipData(idToken.toString())
-                }
-
+            CoroutineScope(Dispatchers.IO).launch {
+                createClipData(idToken.toString())
             }
-
-        } catch (e : ApiException) {
+        } catch (e: ApiException) {
             Log.e("catch failed", "signinresultfalied code = " + e.statusCode)
             loadingDialog?.dismiss()
             Toast.makeText(this, "로그인에 오류가 발생했습니다. ${e.statusCode}", Toast.LENGTH_SHORT).show()

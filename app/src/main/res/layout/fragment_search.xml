@@ -23,15 +23,15 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <com.kakao.vectormap.MapView
+          <com.kakao.vectormap.MapView
                 android:id="@+id/map_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                />
+                app:layout_constraintTop_toTopOf="parent" />
 
             <!-- <net.daum.mf.map.api.MapView
                 android:id="@+id/search_mapView"
@@ -120,11 +120,12 @@
 
                 <LinearLayout
                     android:id="@+id/post_ll"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/round_horizontal"
                     android:gravity="center"
                     android:orientation="horizontal"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
@@ -152,7 +153,10 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="25dp"
+                            android:ellipsize="end"
+                            android:ems="7"
                             android:fontFamily="@font/pretendard_medium"
+                            android:maxLines="1"
                             android:text="택시 N빵 할 머진인 구해요"
                             android:textColor="@color/black" />
 
@@ -191,10 +195,11 @@
 
                             <TextView
                                 android:id="@+id/post_location"
-                                android:layout_width="match_parent"
+                                android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
                                 android:layout_marginStart="4dp"
                                 android:ellipsize="end"
+                                android:ems="7"
                                 android:fontFamily="@font/pretendard_medium"
                                 android:maxLines="1"
                                 android:text="수락산역 3번출구"
@@ -250,58 +255,35 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/post_more_layout"
+            <LinearLayout
+                android:id="@+id/post_more"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
                 android:layout_marginEnd="5dp"
                 android:layout_marginBottom="5dp"
+                android:background="@drawable/round_layout3_search"
+                android:gravity="center"
                 android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/post_data">
+                app:layout_constraintHorizontal_weight="1"
+                app:layout_constraintStart_toEndOf="@+id/post_data"
+                app:layout_constraintTop_toTopOf="@+id/post_data">
 
-                <ImageButton
-                    android:id="@+id/post_more"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/round_more"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/textView6"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
+                    android:layout_marginStart="5dp"
                     android:fontFamily="@font/pretendard_medium"
-                    android:text="게시글 더보기"
+                    android:text="더보기"
                     android:textColor="@color/mio_gray_7"
+                    app:drawableEndCompat="@drawable/front_arrow"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="@+id/post_more"
                     app:layout_constraintTop_toTopOf="@+id/post_more" />
-
-                <ImageView
-                    android:id="@+id/imageView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginEnd="5dp"
-
-                    android:src="@drawable/front_arrow"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintHorizontal_bias="0.0"
-                    app:layout_constraintStart_toEndOf="@+id/textView6"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.504" />
-
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>

@@ -35,6 +35,7 @@ import com.kakao.vectormap.label.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.internal.sse.ServerSentEventReader.Companion.options
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -80,6 +81,8 @@ class SearchFragment : Fragment() {
     //
     private var isGrantedCheck : Boolean? = null
 
+    private var hashMapPoiAndPostData : HashMap<String, LocationReadAllResponse>? = HashMap()
+
     //private var eventListener : MarkerEventListener? = null   // 마커 클릭 이벤트 리스너
 
     val sharedViewModel: FragSharedViewModel by lazy {
@@ -112,7 +115,7 @@ class SearchFragment : Fragment() {
         // test 했는데 됨 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
         //getPostsByLocation(37.870684661337016, 127.15612168310325)
 
-        val resources = context?.resources
+        /*val resources = context?.resources
         val resourceId = resources?.getIdentifier("navigation_bar_height", "dimen", "android")
         if (resourceId != null && resourceId > 0) {
             val navigationBarHeight = resources.getDimensionPixelSize(resourceId)
@@ -149,7 +152,7 @@ class SearchFragment : Fragment() {
                 }
             }
             //activity?.window?.decorView?.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        }
+        }*/
 
         sBinding?.btSearchField?.setOnClickListener {
 /*            val transaction = parentFragmentManager.beginTransaction()
@@ -233,7 +236,7 @@ class SearchFragment : Fragment() {
             sBinding?.postParticipation?.text = location.participantsCount.toString()
             sBinding?.postParticipationTotal?.text = location.numberOfPassengers.toString()
 
-            sBinding?.postLl?.setOnClickListener {
+            sBinding?.postData?.setOnClickListener {
 /*                val intent = Intent(context, NoticeBoardReadActivity::class.java)
                 intent.putExtra("POST_ID", location.postId)  // 게시글의 ID 또는 유일한 키를 전달
                 startActivity(intent)*/
@@ -266,7 +269,7 @@ class SearchFragment : Fragment() {
 
 
         // 더보기 부분분
-        sBinding?.postMoreLayout?.apply {
+        sBinding?.postMore?.apply {
             visibility = View.VISIBLE
 
             sBinding?.postMore?.setOnClickListener {
@@ -303,17 +306,24 @@ class SearchFragment : Fragment() {
 
                             }*/
                             //주위에 있는 게시글 표시 여러개찍기
+                            Log.d("requestActivity loadNearbyPostData", "loadNearbyPostData")
                             for (i in response.body()!!.filter { it.postId != postId }) {
                                 //latLngList.add(LatLng.from(i.latitude, i.longitude))
+                                //labelLayer.addLabel(LabelOptions.from("centerLabel", centerPosition)
                                 // 스타일 지정. LabelStyle.from()안에 원하는 이미지 넣기
                                 val style = kakaoMapValue?.labelManager?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.map_poi_srn)))
                                 // 라벨 옵션 지정. 위경도와 스타일 넣기
-                                val options = LabelOptions.from(LatLng.from(i.latitude, i.longitude)).setStyles(style)
+                                val options = LabelOptions.from("${i.postId}", LatLng.from(i.latitude, i.longitude)).setStyles(style)
                                 // 레이어 가져오기
                                 val layer = kakaoMapValue?.labelManager?.layer
                                 // 레이어에 라벨 추가
                                 layer?.addLabel(options)
+                                if (layer?.layerId != null) {
+                                    hashMapPoiAndPostData?.set(options.labelId, i)
+                                }
+                                Log.d("requestActivity loadNearbyPostData", "$i")
                             }
+                            Log.d("requestActivity loadNearbyPostData","$hashMapPoiAndPostData")
                         }
                     }
                     else {
@@ -543,7 +553,7 @@ class SearchFragment : Fragment() {
                     // LabelLayer에 라벨을 추가합니다. 카카오 지도 API 공식 문서에 지도에서 사용하는 이미지는 drawable-nodpi/ 에 넣는 것을 권장합니다.
                     //Label 을 생성하기 위해 초기화 값을 설정하는 클래스.
                     centerLabel = layer!!.addLabel(
-                        LabelOptions.from("centerLabel", startPosition)
+                        LabelOptions.from(pendingLocationData!!.postId.toString(), startPosition)
                             .setStyles(
                                 LabelStyle.from(R.drawable.map_poi_sr2).setAnchorPoint(0.5f, 0.5f)
                             )
@@ -555,93 +565,79 @@ class SearchFragment : Fragment() {
                         trackingManager.stopTracking()
                     },1000)
                 }
-                //trackingManager?.stopTracking()
-
-
 
                 kakaoMapValue!!.setOnMapClickListener { kakaoMap, latLng, pointF, poi ->
                     // POI 정보창 표시
                     //showInfoWindow(position, poi)
-                    showInfoWindow(poi, pointF)
+                    //showInfoWindow(poi, pointF)
 
                     Log.e("kakaoMapValue", "$latLng $pointF ${poi.name}")
-
-                    if (poi.name.isNotEmpty()) {
-                        if (preLabel == null) { //눌러진 poi 또는 label이없으면
-                            labelLatLng = LatLng.from(latLng.latitude, latLng.longitude)
-                            Log.e("labelLatLng", "$labelLatLng")
-
-                            // 레이어 가져오기
-                            val labelLayer = kakaoMap.labelManager?.layer
-
-                            // 스타일 지정
-                            val style = kakaoMap.labelManager?.addLabelStyles(
-                                LabelStyles.from(
-                                    LabelStyle.from(R.drawable.map_poi_sr2).apply {
-                                        setAnchorPoint(0.5f, 0.5f)
-                                        isApplyDpScale = true
-                                    }
-                                )
-                            )
-
-                            // 라벨 옵션 지정
-                            val options = LabelOptions.from(labelLatLng).setStyles(style)
-
-                            // 라벨 추가
-                            val label = labelLayer?.addLabel(options)
-                            preLabel = label
-
-                            // 라벨로 트래킹 시작
-                            if (label != null) {
-                                trackingManager?.startTracking(label)
-                                val handler = Handler(Looper.getMainLooper())
-                                handler.postDelayed(java.lang.Runnable {
-                                    trackingManager?.stopTracking()
-                                },1000)
-                            } else {
-                                Log.e("kakaoMapValue", "Label is null, tracking cannot be started.")
-                            }
-                        } else { //만약 누른 poi나 label이 있다면? 지우고 그리기
-                            // 레이어 가져오기
-                            val labelLayer = kakaoMap.labelManager?.layer
-                            // 스타일 지정
-                            val style = kakaoMap.labelManager?.addLabelStyles(
-                                LabelStyles.from(
-                                    LabelStyle.from(R.drawable.map_poi_sr2).apply {
-                                        setAnchorPoint(0.5f, 0.5f)
-                                        isApplyDpScale = true
-                                    }
-                                )
-                            )
-                            labelLatLng = LatLng.from(latLng.latitude, latLng.longitude)
-                            Log.e("labelLatLng", "$labelLatLng")
-                            //이전 값 지우고?
-                            labelLayer?.remove(preLabel)
-                            // 라벨 옵션 지정
-                            val options = LabelOptions.from(labelLatLng).setStyles(style)
-                            // 라벨 추가
-                            val label = labelLayer?.addLabel(options)
-                            // 라벨로 트래킹 시작
-                            if (label != null) {
-                                trackingManager?.startTracking(label)
-                                val handler = Handler(Looper.getMainLooper())
-                                handler.postDelayed(java.lang.Runnable {
-                                    trackingManager?.stopTracking()
-                                },1000)
-                            } else {
-                                Log.e("kakaoMapValue", "Label is null, tracking cannot be started.")
-                            }
-                        }
-                    }
+                    Log.e("poi click", poi.poiId)
+                    Log.e("poi click", poi.isPoi.toString())
+                    Log.e("poi click", poi.isPoi().toString())
+                    Log.e("poi click", poi.getPoiId())
+                    /*if (poi.isPoi()) {
+                        Log.e("poi click", "popopipipipiopoiipio")
+                    }*/
                 }
 
-                kakaoMapValue!!.setOnLabelClickListener { kakaoMap, labelLayer, label ->
+                /*kakaoMapValue!!.setOnLabelClickListener { kakaoMap, labelLayer, label ->
                     //trackingManager.stopTracking()
                     trackingManager?.startTracking(label)
-                }
+                }*/
 
                 kakaoMapValue!!.setOnCameraMoveStartListener { kakaoMap, gestureType ->
                     sBinding?.poiInfoText?.visibility = View.GONE
+                }
+
+                //kakaoMap - KakaoMap
+                //position - 클릭한 POI 의 좌표
+                //layerId - 클릭한 POI 의 Layer Id
+                //poiId - 클릭한 POI 의 Id
+                kakaoMapValue!!.setOnPoiClickListener { kakaoMap, latLng, layerId, poiId ->
+                    val setPostData = hashMapPoiAndPostData?.get(poiId)
+                    if (setPostData != null) {
+                        Log.e("poi click", hashMapPoiAndPostData.toString())
+                        Log.e("poi click", setPostData.toString())
+                        Log.e("poi click", poiId.toString())
+                        CoroutineScope(Dispatchers.Main).launch {
+                            sBinding?.postData?.visibility = View.VISIBLE
+                            sBinding?.postTitle?.text = setPostData?.title
+                            sBinding?.postDate?.text = setPostData?.targetDate + " " + setPostData?.targetTime
+                            sBinding?.postLocation?.text = setPostData?.location
+                            sBinding?.postParticipation?.text = setPostData?.participantsCount.toString()
+                            sBinding?.postParticipationTotal?.text = setPostData?.numberOfPassengers.toString()
+                        }
+                        sBinding?.postData?.setOnClickListener {
+/*                val intent = Intent(context, NoticeBoardReadActivity::class.java)
+                intent.putExtra("POST_ID", location.postId)  // 게시글의 ID 또는 유일한 키를 전달
+                startActivity(intent)*/
+                            val postData = PostData(
+                                accountID = setPostData?.user?.studentId!!,
+                                postID = setPostData.postId,
+                                postTitle = setPostData.title,
+                                postContent = setPostData.content,
+                                postCreateDate = setPostData.createDate,
+                                postTargetDate = setPostData.targetDate,
+                                postTargetTime = setPostData.targetTime,
+                                postCategory = setPostData.category?.categoryName!!,
+                                postLocation = setPostData.location,
+                                postParticipation = setPostData.participantsCount,
+                                postParticipationTotal = setPostData.numberOfPassengers,
+                                postCost = setPostData.cost,
+                                postVerifyGoReturn = setPostData.verifyGoReturn,
+                                user = setPostData.user!!,
+                                postlatitude = setPostData.latitude,
+                                postlongitude = setPostData.longitude
+                            )
+
+                            // Intent를 통해 NoticeBoardReadActivity로 전달
+                            val intent = Intent(context, NoticeBoardReadActivity::class.java)
+                            intent.putExtra("type", "READ")
+                            intent.putExtra("postItem", postData)
+                            startActivity(intent)
+                        }
+                    }
                 }
             }
         })

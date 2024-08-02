@@ -15,6 +15,7 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -77,8 +78,21 @@ class ApplyNextActivity : AppCompatActivity() {
 
         //뒤로가기
         anaBinding.applyBackArrow.setOnClickListener {
-            finish()
+            val intent = Intent().apply {
+                putExtra("flag", 33)
+            }
+            setResult(RESULT_OK, intent)
+            finish() // 액티비티 종료
         }
+        onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val intent = Intent().apply {
+                    putExtra("flag", 33)
+                }
+                setResult(RESULT_OK, intent)
+                finish() // 액티비티 종료
+            }
+        })
 
 
         applyFirstVF()

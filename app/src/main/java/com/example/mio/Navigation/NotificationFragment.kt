@@ -471,7 +471,6 @@ class NotificationFragment : Fragment() {
                         shouldBreak = true
                         latch.countDown() // 요청 완료 시 감소
                     }
-
                 })
             }
         }

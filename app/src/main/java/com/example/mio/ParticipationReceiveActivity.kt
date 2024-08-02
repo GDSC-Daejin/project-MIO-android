@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.animation.OvershootInterpolator
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NoticeBoardAdapter
@@ -44,13 +46,47 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         setContentView(pBinding.root)
         postId = intent.getIntExtra("postId", 0) as Int
         Log.d("ParticipationReceiveActivity PostId Test", postId.toString()) //ok완료
+        //기기의 뒤로가기 콜백
+        onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val intent = Intent().apply {
+                    putExtra("flag", 33)
+                }
+                setResult(RESULT_OK, intent)
+                finish() // 액티비티 종료
+            }
+        })
 
         initParticipationRecyclerView()
 
         pBinding.backArrow.setOnClickListener {
+            val intent = Intent().apply {
+                putExtra("flag", 33)
+            }
+            setResult(RESULT_OK, intent)
             finish()
         }
 
+
+        participationAdapter.setItemClickListener(object : ParticipationAdapter.ItemClickListener {
+            override fun onApprovalClick(position: Int, participantId: String) {
+                loadingDialog = LoadingProgressDialog(this@ParticipationReceiveActivity)
+                loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+                loadingDialog.show()
+                CoroutineScope(Dispatchers.IO).launch {
+                    setParticipationData()
+                }
+            }
+
+            override fun onRefuseClick(position: Int, participantId: String) {
+                loadingDialog = LoadingProgressDialog(this@ParticipationReceiveActivity)
+                loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+                loadingDialog.show()
+                CoroutineScope(Dispatchers.IO).launch {
+                    setParticipationData()
+                }
+            }
+        })
 
     }
 
@@ -60,7 +96,9 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
         loadingDialog.show()
 
-        setParticipationData()
+        CoroutineScope(Dispatchers.IO).launch {
+            setParticipationData()
+        }
         //setParticipantsUserData()
 
         participationAdapter = ParticipationAdapter()
@@ -118,48 +156,66 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         val api = retrofit2.create(MioInterface::class.java)
         /////////
         //val call = RetrofitServerConnect.service
-
+        val thisData : ArrayList<ParticipationData>? = ArrayList()
         api.getParticipationData(postId).enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                 if (response.isSuccessful) {
-                    participationItemAllData.clear()
-                    for (i in response.body()!!.indices) {
-                        if (response.body()!![i].content != "작성자") {
-                            participationItemAllData.add(
-                                ParticipationData(
-                                    response.body()!![i].participantId,
-                                    response.body()!![i].postId,
-                                    response.body()!![i].userId,
-                                    response.body()!![i].postUserId,
-                                    response.body()!![i].content,
-                                    response.body()!![i].approvalOrReject,
-                                    response.body()!![i].driverMannerFinish,
-                                    response.body()!![i].passengerMannerFinish,
-                                    response.body()!![i].verifyFinish
-                                )
-                            )
+                    val responseData = response.body()
+                    println("scssucsucsucs")
+                    Log.d("getParticipationData", response.code().toString())
+                    Log.d("getParticipationData", responseData.toString())
+
+                    if (responseData?.isNotEmpty() == true) {
+                        responseData.let {
+                            thisData?.clear()
+                            thisData?.addAll(it)
+                            participationItemAllData.clear()
+                            participationItemAllData.addAll(it)
+                        }
+                        Log.d("Notification Fragment Data", "Received data: $participationItemAllData")
+                        if (participationItemAllData.any { it.content != "작성자" }) {
                             CoroutineScope(Dispatchers.IO).launch {
-                                setParticipantsUserData(userId = response.body()!![i].userId)
+                                setParticipantsUserData(postList = participationItemAllData.filter { it.content != "작성자" })
+                            }
+                        } else {
+                            Log.e("updateui", "in ui")
+                            Log.e("PARTICIPATION RESPONSE DATA", participantsUserAllData.toString())
+                            loadingDialog.dismiss()
+                            if (participantsUserAllData.isNotEmpty()) {
+                                pBinding.participationRv.visibility = View.VISIBLE
+                                pBinding.nonParticipation.visibility = View.GONE
+                            } else {
+                                pBinding.participationRv.visibility = View.GONE
+                                pBinding.nonParticipation.visibility = View.VISIBLE
+                            }
+                            //participationAdapter.notifyDataSetChanged()
+                        }
+                        //participationAdapter.notifyDataSetChanged()
+
+                        Log.e("ParticipationReceiveActivity PostId Test", participationItemAllData.toString())
+                    }
+
+                    /*if (responseData != null) {
+                        for (i in responseData) {
+                            if (i.content != "작성자") {
+                                participationItemAllData.add(
+                                    ParticipationData(
+                                        i.participantId,
+                                        i.postId,
+                                        i.userId,
+                                        i.postUserId,
+                                        i.content,
+                                        i.approvalOrReject,
+                                        i.driverMannerFinish,
+                                        i.passengerMannerFinish,
+                                        i.verifyFinish
+                                    )
+                                )
                             }
                         }
-                    }
-
-                    if (participationItemAllData.isNotEmpty()) {
-                        loadingDialog.dismiss()
-                        pBinding.nonParticipation.visibility = View.GONE
-                        pBinding.participationRv.visibility = View.VISIBLE
-                    } else {
-                        loadingDialog.dismiss()
-                        pBinding.nonParticipation.visibility = View.VISIBLE
-                        pBinding.participationRv.visibility = View.GONE
-                    }
-
-
-
+                    }*/
                     //participationItemAllData = participationItemAllData.filter { it.content != "작성자" }
 
-
-                    Log.e("ParticipationReceiveActivity PostId Test", participationItemAllData.toString())
 
                 } else {
                     Log.e("parcici receive", response.errorBody()?.string()!!)
@@ -174,8 +230,23 @@ class ParticipationReceiveActivity : AppCompatActivity() {
 
     }
 
-    private fun setParticipantsUserData(userId : Int) {
+    private fun updateUI() {
+        Log.e("updateui", "in ui")
+        Log.e("PARTICIPATION RESPONSE DATA", participantsUserAllData.toString())
+        loadingDialog.dismiss()
+        if (participantsUserAllData.isNotEmpty()) {
+            pBinding.participationRv.visibility = View.VISIBLE
+            pBinding.nonParticipation.visibility = View.GONE
+        } else {
+            pBinding.participationRv.visibility = View.GONE
+            pBinding.nonParticipation.visibility = View.VISIBLE
+        }
+        participationAdapter.notifyDataSetChanged()
+    }
+
+    private fun setParticipantsUserData(postList: List<ParticipationData>?) {
         Log.e("ParticipationReceiveActivity PostId Test", "진입완료")
+        Log.e("setParticipantsUserData", postList.toString())
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
@@ -215,36 +286,51 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         ///////////////////////////////////////////////////
         ///
         //val call = RetrofitServerConnect.service
-        api.getUserProfileData(userId).enqueue(object : Callback<User>{
-            override fun onResponse(call: Call<User>, response: Response<User>) {
-                if (response.isSuccessful) {
-                    Log.d("part response", "success ${response.code()}")
-                    response.body().let {
-                        participantsUserAllData.add(it)
-                    }
-                    Log.e("PARTICIPATION RESPONSE DATA", participantsUserAllData.toString())
-                    if (participantsUserAllData.isNotEmpty()) {
-                        pBinding.participationRv.visibility = View.VISIBLE
-                        pBinding.nonParticipation.visibility = View.GONE
-                    } else {
-                        pBinding.participationRv.visibility = View.GONE
-                        pBinding.nonParticipation.visibility = View.VISIBLE
+        var shouldBreak = false
+        if (postList?.isNotEmpty() == true) {
+            Log.e("indexout check post", participantsUserAllData.toString())
+            Log.e("indexout check post", postList.toString())
+            for (i in postList) {
+                if (shouldBreak) break
+                api.getUserProfileData(i.userId).enqueue(object : Callback<User>{
+                    override fun onResponse(call: Call<User>, response: Response<User>) {
+                        if (response.isSuccessful) {
+                            val responseData = response.body()
+                            Log.e("indexout check", response.body().toString())
+                            if (responseData != null) {
+                                responseData.let {
+                                    participantsUserAllData.add(
+                                        User(
+                                            responseData.id,
+                                            responseData.email,
+                                            responseData.studentId,
+                                            responseData.profileImageUrl,
+                                            responseData.name,
+                                            responseData.accountNumber,
+                                            responseData.gender,
+                                            responseData.verifySmoker,
+                                            responseData.roleType,
+                                            responseData.status,
+                                            responseData.mannerCount,
+                                            responseData.grade,
+                                            responseData.activityLocation,
+                                        ))
+
+                                }
+                                updateUI()
+                            }
+                        } else {
+                            Log.e("PARTICIPATION RESPONSE ERROR",response.errorBody()?.string()!!)
+                            Log.i("response code", response.code().toString())
+                            Log.d("part", response.message().toString())
+                        }
                     }
 
-                    participationAdapter.notifyDataSetChanged()
-                    pBinding.nonParticipation.visibility = View.GONE
-                    pBinding.participationRv.visibility = View.VISIBLE
-                    loadingDialog.dismiss()
-                } else {
-                    Log.e("PARTICIPATION RESPONSE ERROR",response.errorBody()?.string()!!)
-                    Log.i("response code", response.code().toString())
-                    Log.d("part", response.message().toString())
-                }
+                    override fun onFailure(call: Call<User>, t: Throwable) {
+                        Log.e("PARTICIPATION ERROR", t.message.toString())
+                    }
+                })
             }
-
-            override fun onFailure(call: Call<User>, t: Throwable) {
-                Log.e("PARTICIPATION ERROR", t.message.toString())
-            }
-        })
+        }
     }
 }

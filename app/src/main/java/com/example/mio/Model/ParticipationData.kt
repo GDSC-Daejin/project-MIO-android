@@ -21,7 +21,9 @@ data class ParticipationData(
     @SerializedName("passengerMannerFinish")
     var passengerMannerFinish : Boolean,
     @SerializedName("verifyFinish")
-    var verifyFinish : Boolean
+    var verifyFinish : Boolean,
+    @SerializedName("isDeleteYN")
+    var isDeleteYN : String?,
 
 ) : java.io.Serializable {
 

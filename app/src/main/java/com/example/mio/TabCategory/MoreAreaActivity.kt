@@ -13,17 +13,12 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mio.*
 import com.example.mio.Adapter.MoreTaxiTabAdapter
 import com.example.mio.BottomSheetFragment.AnotherBottomSheetFragment
 import com.example.mio.BottomSheetFragment.BottomSheetFragment
-import com.example.mio.MainActivity
-import com.example.mio.Model.LocationReadAllResponse
-import com.example.mio.Model.PostData
-import com.example.mio.Model.PostReadAllResponse
-import com.example.mio.Model.SharedViewModel
+import com.example.mio.Model.*
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
-import com.example.mio.R
-import com.example.mio.RetrofitServerConnect
 import com.example.mio.databinding.ActivityMoreAreaBinding
 import com.example.mio.databinding.ActivityMoreCarpoolBinding
 import com.google.android.material.chip.Chip
@@ -31,9 +26,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -404,158 +404,111 @@ class MoreAreaActivity : AppCompatActivity() {
 
     }
     private fun setSelectData() {
-        val call = RetrofitServerConnect.service
-        CoroutineScope(Dispatchers.IO).launch {
-            call.getLocationPostData(myArea!!).enqueue(object :
-                Callback<List<LocationReadAllResponse>> {
-                override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
-                    if (response.isSuccessful) {
-                        val responseData = response.body()!!
-                        //println(response.body()!!.content)
-                        /*val start = SystemClock.elapsedRealtime()
+        //저장된 값
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+        //통신
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        //.client(clientBuilder)
 
-                        // 함수 실행시간
-                        val date = Date(start)
-                        val mFormat = SimpleDateFormat("HH:mm:ss")
-                        val time = mFormat.format(date)
-                        println(start)
-                        println(time)*/
-                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                        s.add(PostReadAllResponse())*/
-                        moreAreaData.clear()
-                        if (responseData.isNotEmpty()) {
-                            totalPages = if (moreAreaData.size % 5 == 0) {
-                                moreAreaData.size / 5
-                            } else {
-                                moreAreaData.size / 5 + 1
-                            }
-                            for (i in responseData.indices) {
-                                //탑승자 null체크
-                                var part = 0
-                                var location = ""
-                                var title = ""
-                                var content = ""
-                                var targetDate = ""
-                                var targetTime = ""
-                                var categoryName = ""
-                                var cost = 0
-                                var verifyGoReturn = false
-                                if (response.isSuccessful) {
-                                    part = try {
-                                        /*response.body()!!.content[i].participants.isEmpty()
-                                        response.body()!!.content[i].participants.size*/
-                                        response.body()!![i].participantsCount
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        0
-                                    }
-                                    location = try {
-                                        response.body()!![i].location.isEmpty()
-                                        response.body()!![i].location
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "수락산역 3번 출구"
-                                    }
-                                    title = try {
-                                        response.body()!![i].title.isEmpty()
-                                        response.body()!![i].title
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "null"
-                                    }
-                                    content = try {
-                                        response.body()!![i].content.isEmpty()
-                                        response.body()!![i].content
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "null"
-                                    }
-                                    targetDate = try {
-                                        response.body()!![i].targetDate.isEmpty()
-                                        response.body()!![i].targetDate
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "null"
-                                    }
-                                    targetTime = try {
-                                        response.body()!![i].targetTime.isEmpty()
-                                        response.body()!![i].targetTime
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "null"
-                                    }
-                                    categoryName = try {
-                                        response.body()!![i].category?.categoryName?.isEmpty()
-                                        response.body()!![i].category?.categoryName!!
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        "null"
-                                    }
-                                    cost = try {
-                                        response.body()!![i].cost
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        0
-                                    }
-                                    verifyGoReturn = try {
-                                        response.body()!![i].verifyGoReturn
-                                    } catch (e : java.lang.NullPointerException) {
-                                        Log.d("null", e.toString())
-                                        false
-                                    }
-                                }
+        //Authorization jwt토큰 로그인
+        val interceptor = Interceptor { chain ->
 
-                                //println(response!!.body()!!.content[i].user.studentId)
-                                moreAreaData.add(PostData(
-                                    response.body()!![i].user?.studentId!!,
-                                    response.body()!![i].postId,
-                                    title,
-                                    content,
-                                    response.body()!![i].createDate,
-                                    targetDate,
-                                    targetTime,
-                                    categoryName,
-                                    location,
-                                    //participantscount가 현재 참여하는 인원들
-                                    part,
-                                    //numberOfPassengers은 총 탑승자 수
-                                    response.body()!![i].numberOfPassengers,
-                                    cost,
-                                    verifyGoReturn,
-                                    response.body()!![i].user!!,
-                                    response.body()!![i].latitude,
-                                    response.body()!![i].longitude
-                                ))
-                            }
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest = chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer $token")
+                    .addHeader("Content-Type", "application/json; charset=utf-8")
+                    .build()
 
-                            currentData.addAll(moreAreaData.take(5))
-                            mtAdapter!!.moreTaxiData = currentData
-                            mtAdapter!!.notifyDataSetChanged()
-                        }
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(this@MoreAreaActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
 
-                        //tempFilterPostData = moreCarpoolAllData
-
-                        //moreTempCarpoolAllData.addAll(moreCarpoolAllData)
-                        if (moreAreaData.isEmpty()) {
-                            mttBinding.moreNonfilterTv.text = "등록된 지역 게시글이 존재하지 않습니다"
-                            mttBinding.moreNonfilterTv.visibility = View.VISIBLE
-                            mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
-                        } else {
-                            mttBinding.moreNonfilterTv.text = "검색된 게시글이 없습니다"
-                            mttBinding.moreNonfilterTv.visibility = View.GONE
-                            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
-                        }
-
-                    } else {
-                        Log.d("f", response.code().toString())
-                    }
+                    startActivity(intent)
+                    finish()
+                    return@Interceptor chain.proceed(newRequest)
                 }
 
-                override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
-                    Log.d("error", t.toString())
-                }
-            })
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
         }
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        ///
+        api.getActivityLocation("createDate,desc", 0, 5).enqueue(object :
+            Callback<PostReadAllResponse> {
+            override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                if (response.isSuccessful) {
+                    val responseData = response.body()
+                    moreAreaData.clear()
+                    if (responseData != null) {
+                        totalPages = responseData.totalPages
+
+                        for (i in responseData.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
+                            //println(response!!.body()!!.content[i].user.studentId)
+                            moreAreaData.add(PostData(
+                                responseData.content[i].user.studentId,
+                                responseData.content[i].postId,
+                                responseData.content[i].title,
+                                responseData.content[i].content,
+                                responseData.content[i].createDate,
+                                responseData.content[i].targetDate,
+                                responseData.content[i].targetTime,
+                                responseData.content[i].category.categoryName,
+                                responseData.content[i].location,
+                                //participantscount가 현재 참여하는 인원들
+                                responseData.content[i].participantsCount,
+                                //numberOfPassengers은 총 탑승자 수
+                                responseData.content[i].numberOfPassengers,
+                                responseData.content[i].cost,
+                                responseData.content[i].verifyGoReturn,
+                                responseData.content[i].user,
+                                responseData.content[i].latitude,
+                                responseData.content[i].longitude
+                                ))
+                        }
+
+                        //currentData.addAll(moreAreaData.take(5))
+                        Log.e("morearea", moreAreaData.toString())
+                        mtAdapter!!.moreTaxiData = moreAreaData
+                        mtAdapter!!.notifyDataSetChanged()
+                    }
+
+                    //tempFilterPostData = moreCarpoolAllData
+
+                    //moreTempCarpoolAllData.addAll(moreCarpoolAllData)
+                    if (moreAreaData.isEmpty()) {
+                        mttBinding.moreNonfilterTv.text = "등록된 지역 게시글이 존재하지 않습니다"
+                        mttBinding.moreNonfilterTv.visibility = View.VISIBLE
+                        mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
+                    } else {
+                        mttBinding.moreNonfilterTv.text = "검색된 게시글이 없습니다"
+                        mttBinding.moreNonfilterTv.visibility = View.GONE
+                        mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+                    }
+
+                } else {
+                    Log.d("f", response.code().toString())
+                }
+            }
+
+            override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
     }
     private fun createNewChip(text: String): Chip {
         val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, null, false) as Chip
@@ -615,6 +568,43 @@ class MoreAreaActivity : AppCompatActivity() {
     }
 
     private fun getMoreItem() {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
+
+        val interceptor = Interceptor { chain ->
+            var newRequest: Request
+            if (token != null && token != "") { // 토큰이 없는 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(this@MoreAreaActivity, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                    startActivity(intent)
+                    finish()
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+        ////////////////////////////////////////////////////
+
         val runnable = kotlinx.coroutines.Runnable {
             moreAreaData.add(null)
             mtAdapter?.notifyItemInserted(moreAreaData.size - 1)
@@ -637,13 +627,67 @@ class MoreAreaActivity : AppCompatActivity() {
                 currentPage += 1
 
                 CoroutineScope(Dispatchers.IO).launch {
-                    val start = currentPage * 5
-                    val end = minOf(start + 5, moreAreaData.size)
-                    val nextData = moreAreaData.subList(start, end)
+                    api.getActivityLocation("createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                        override fun onResponse(
+                            call: Call<PostReadAllResponse>,
+                            response: Response<PostReadAllResponse>
+                        ) {
+                            if (response.isSuccessful) {
+                                val responseData = response.body()
+                                if (responseData != null) {
+                                    totalPages = responseData.totalPages
 
-                    withContext(Dispatchers.Main) {
-                        mtAdapter!!.addMoreData(nextData)
-                    }
+                                    for (i in responseData.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
+                                        //println(response!!.body()!!.content[i].user.studentId)
+                                        moreAreaData.add(PostData(
+                                            responseData.content[i].user.studentId,
+                                            responseData.content[i].postId,
+                                            responseData.content[i].title,
+                                            responseData.content[i].content,
+                                            responseData.content[i].createDate,
+                                            responseData.content[i].targetDate,
+                                            responseData.content[i].targetTime,
+                                            responseData.content[i].category.categoryName,
+                                            responseData.content[i].location,
+                                            //participantscount가 현재 참여하는 인원들
+                                            responseData.content[i].participantsCount,
+                                            //numberOfPassengers은 총 탑승자 수
+                                            responseData.content[i].numberOfPassengers,
+                                            responseData.content[i].cost,
+                                            responseData.content[i].verifyGoReturn,
+                                            responseData.content[i].user,
+                                            responseData.content[i].latitude,
+                                            responseData.content[i].longitude
+                                        ))
+                                    }
+                                    Log.e("morearea", moreAreaData.toString())
+                                    //currentData.addAll(moreAreaData.take(5))
+                                    mtAdapter!!.notifyDataSetChanged()
+                                }
+
+                                //tempFilterPostData = moreCarpoolAllData
+
+                                //moreTempCarpoolAllData.addAll(moreCarpoolAllData)
+                                if (moreAreaData.isEmpty()) {
+                                    mttBinding.moreNonfilterTv.text = "등록된 지역 게시글이 존재하지 않습니다"
+                                    mttBinding.moreNonfilterTv.visibility = View.VISIBLE
+                                    mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
+                                } else {
+                                    mttBinding.moreNonfilterTv.text = "검색된 게시글이 없습니다"
+                                    mttBinding.moreNonfilterTv.visibility = View.GONE
+                                    mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+                                }
+
+                            } else {
+                                Log.e("f", response.code().toString())
+                                Log.e("morearea", response.errorBody()?.string()!!)
+                            }
+                        }
+
+                        override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                            Log.e("f", t.toString())
+                        }
+                    })
                 }
             }
 

@@ -375,6 +375,13 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     currentPage += 1
                     Log.d("edit currentpage", currentPage.toString())
                     myViewModel.postCheckPage(currentPage)
+                    // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                    val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                    if (inputMethodManager.isActive) {
+                        // 가상 키보드가 올라가 있다면 내립니다.
+                        inputMethodManager.hideSoftInputFromWindow(mBinding.editNext.windowToken, 0)
+                    }
                 }
             } else {
                 CoroutineScope(Dispatchers.Main).launch {
@@ -615,6 +622,13 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
         recentSearchAdapter.setItemClickListener(object : PlaceAdapter.OnItemClickListener {
             override fun onClick(v: View, position: Int) {
+                // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                val inputMethodManager = this@NoticeBoardEditActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                if (inputMethodManager.isActive) {
+                    // 가상 키보드가 올라가 있다면 내립니다.
+                    inputMethodManager.hideSoftInputFromWindow(mBinding.btnSearch.windowToken, 0)
+                }
                 mBinding.editViewflipper.showNext()
                 changeStatusbar()
                 countPage += 1
@@ -623,22 +637,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 )
                 latitude = recentSearchItems[position].y
                 longitude = recentSearchItems[position].x
-
-               /* mapView?.setMapCenterPointAndZoomLevel(mapPoint, 1, true)
-
-                if (marker != null) {
-                    mapView?.removePOIItem(marker)
-                }
-                marker = MapPOIItem().apply {
-                    itemName = recentSearchItems[position].name
-                    this.mapPoint = mapPoint
-                    markerType = MapPOIItem.MarkerType.BluePin
-                    selectedMarkerType = MapPOIItem.MarkerType.CustomImage
-                    customSelectedImageResourceId = R.drawable.map_poi_icon
-                    isCustomImageAutoscale = false
-                    setCustomImageAnchor(0.5f, 1.0f)
-                }
-                mapView?.addPOIItem(marker)*/
 
                 //여기서 name고정됨
                 mBinding.placeName.text = recentSearchItems[position].name
@@ -671,14 +669,29 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         })
 
         mBinding.btnSearch.setOnClickListener {
+            // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+            val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+            if (inputMethodManager.isActive) {
+                // 가상 키보드가 올라가 있다면 내립니다.
+                inputMethodManager.hideSoftInputFromWindow(mBinding.btnSearch.windowToken, 0)
+            }
             searchKeyword(keyword)
             Log.d("edit btn click", keyword)
             mBinding.rvRecentSearchList.visibility = View.INVISIBLE
             map?.resume()
+
         }
 
         mBinding.etSearchField.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                if (inputMethodManager.isActive) {
+                    // 가상 키보드가 올라가 있다면 내립니다.
+                    inputMethodManager.hideSoftInputFromWindow(mBinding.etSearchField.windowToken, 0)
+                }
                 // 검색 버튼을 눌렀을 때 수행할 작업을 여기에 작성
                 searchKeyword(keyword)
                 mBinding.rvRecentSearchList.visibility = View.INVISIBLE
@@ -837,7 +850,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
                 detailContent = editable.toString()
                 isAllCheck.isFourthVF.isContent = editable.isNotEmpty()
-                mBinding.editDetailContent.isCursorVisible = false
+                mBinding.editDetailContent.isCursorVisible = true
                 mBinding.editDetailContent.movementMethod = null
                 myViewModel.postCheckValue(isAllCheck)
             }
@@ -850,22 +863,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
             val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
             val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-            /*var interceptor = HttpLoggingInterceptor()
-        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-        val client = OkHttpClient.Builder().addInterceptor(interceptor).build()*/
-
-            /*val retrofit = Retrofit.Builder().baseUrl("url 주소")
-                .addConverterFactory(GsonConverterFactory.create())
-                //.client(client) 이걸 통해 통신 오류 log찍기 가능
-                .build()
-            val service = retrofit.create(MioInterface::class.java)*/
-            //통신로그
-
-            /*val loggingInterceptor = HttpLoggingInterceptor()
-            loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY)
-            val clientBuilder = OkHttpClient.Builder().addInterceptor(loggingInterceptor).build()*/
-
-
             //통신
             val SERVER_URL = BuildConfig.server_URL
             val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
@@ -921,7 +918,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     if (isAllCheck.isThirdVF.isMGender) {
                         gender = true
                     }
-                    temp = AddPostData(editTitle, detailContent, selectFormattedDate, selectFormattedTime, school, participateNumberOfPeople, 0, false, latitude, longitude, location, selectCost.toInt())
+                    val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(this@NoticeBoardEditActivity).toString()
+                    temp = AddPostData(editTitle, detailContent, selectFormattedDate, selectFormattedTime, school, participateNumberOfPeople, 0, false, latitude, longitude, location, selectCost.toInt(), myAreaData)
                     Log.d("edit add Temp ", temp.toString())
                     CoroutineScope(Dispatchers.IO).launch {
                         /*"application/json; charset=UTF-8",*/
@@ -954,9 +952,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                         setResult(RESULT_OK, intent)
                         finish()
                     } else {
-                        val intent = Intent(this, NoticeBoardReadActivity::class.java).apply {
-                            putExtra("postData", temp)
-                            putExtra("flag", 1)
+                        val intent = Intent(this, MainActivity::class.java).apply {
+                            putExtra("flag", 1234)
                         }
                         setResult(RESULT_OK, intent)
                         finish()
@@ -983,8 +980,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     if (isAllCheck.isThirdVF.isMGender) {
                         gender = true
                     }
-
-                    val temp2 = EditPostData(editTitle, detailContent, selectCategoryId, selectFormattedDate, selectFormattedTime, participateNumberOfPeople, latitude, longitude, location, selectCost.toInt())
+                    val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(this@NoticeBoardEditActivity).toString()
+                    val temp2 = EditPostData(editTitle, detailContent, selectCategoryId, selectFormattedDate, selectFormattedTime, participateNumberOfPeople, latitude, longitude, location, selectCost.toInt(), myAreaData)
                     Log.e("edit temp", temp2.toString())
                     CoroutineScope(Dispatchers.IO).launch {
                         val postId = eTemp?.postID ?: return@launch // postID가 null이면 실행 종료
@@ -1008,68 +1005,18 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                             }
                         })
                     }
-                    if (selectCategoryId == 1) {
-                        val intent = Intent(this, CarpoolTabFragment::class.java).apply {
-                            putExtra("postData", temp)
-                            putExtra("flag", 0)
-                        }
-                        setResult(RESULT_OK, intent)
-                        finish()
-                    } else {
-                        val intent = Intent(this, TaxiTabFragment::class.java).apply {
-                            putExtra("postData", temp)
-                            putExtra("flag", 0)
-                        }
-                        setResult(RESULT_OK, intent)
-                        finish()
+                    val intent = Intent(this, NoticeBoardReadActivity::class.java).apply {
+                        putExtra("postData", temp2)
+                        putExtra("flag", 33)
                     }
+                    setResult(RESULT_OK, intent)
+                    finish()
                 } else {
                     Toast.makeText(this, "빈 칸이 존재합니다. 빈 칸을 채워주세요!", Toast.LENGTH_SHORT).show()
                 }
 
 
             }
-            /*
-            * if (type.equals("ADD")) {
-                if (contentPost.isNotEmpty() && contentTitle.isNotEmpty() && selectTargetDate.isNotEmpty()) {
-                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                    //현재 로그인된 유저 email 가져오기
-                    userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
-                    //데이터 세팅 후 임시저장
-                    temp = PostData(userEmail, pos, contentTitle, contentPost, selectTargetDate, categorySelect, "location", "targetTime" ,1, 4)
-                    selectCalendarDataNoticeBoard[selectTargetDate] = arrayListOf()
-                    selectCalendarDataNoticeBoard[selectTargetDate]!!.add(temp!!)
-                    //pos는 현재 저장되지 않지만 나중에 짜피 백엔드에 데이터 넣을 거니 괜찮을듯
-                    //나중에 api연결할때 여기 바꾸기
-                    sharedViewModel!!.setCalendarLiveData("add", selectCalendarDataNoticeBoard)
-
-                    val intent = Intent().apply {
-                        putExtra("postData", temp)
-                        putExtra("flag", 0)
-                    }
-                   *//*val intent = Intent(this, TaxiTabFragment::class.java).apply {
-                        putExtra("postData", temp)
-                        putExtra("flag", 0)
-                    }*//*
-                    pos += 1
-                    setResult(RESULT_OK, intent)
-                    finish()
-                } else {
-                    if (contentTitle.isEmpty()) {
-                        Toast.makeText(this, "제목을 입력해주세요.", Toast.LENGTH_SHORT) .show()
-                    } else if (contentPost.isEmpty()) {
-                        Toast.makeText(this, "내용을 입력해주세요.", Toast.LENGTH_SHORT) .show()
-                    } else if (selectTargetDate.isEmpty()) {
-                        Toast.makeText(this, "날짜를 선택해주세요.", Toast.LENGTH_SHORT) .show()
-                    }
-                }
-            } else { //edit
-                if (contentPost.isNotEmpty() && contentTitle.isNotEmpty()) {
-                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                    //현재 로그인된 유저 email 가져오기
-                    userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
-                }
-            }*/
         }
     }
     class HeaderInterceptor constructor(private val token: String) : Interceptor {
@@ -1128,6 +1075,14 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 currentPage -= 1
                 myViewModel.postCheckComplete(true)
                 mBinding.editViewflipper.showPrevious()
+            }
+
+            // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+            val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+            if (inputMethodManager.isActive) {
+                // 가상 키보드가 올라가 있다면 내립니다.
+                inputMethodManager.hideSoftInputFromWindow(mBinding.editPre.windowToken, 0)
             }
         }
 
@@ -1468,7 +1423,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
 
     }*/
     // Kakao Map API를 호출하여 주변 빌딩 정보를 검색하는 함수
-    private fun searchNearbyBuildings(query : String, latitude: Double, longitude: Double, callback: (List<PlaceDocument>?) -> Unit) {
+    /*private fun searchNearbyBuildings(query : String, latitude: Double, longitude: Double, callback: (List<PlaceDocument>?) -> Unit) {
         val retrofit = Retrofit.Builder()
             .baseUrl("https://dapi.kakao.com")
             .addConverterFactory(GsonConverterFactory.create())
@@ -1493,7 +1448,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                 callback(null)
             }
         })
-    }
+    }*/
     private fun startMapLifeCycle() {
         map?.start(object : MapLifeCycleCallback() {
             override fun onMapDestroy() {
@@ -1543,7 +1498,8 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
 
                 kakaoMapValue!!.setOnMapClickListener { _, latLng, _, poi ->
                     //showInfoWindow(position, poi)
-                    kakaoMapValue?.labelManager?.removeAllLabelLayer()
+                    labelLayerObject?.removeAll()
+
                     trackingManager?.stopTracking()
                     latitude = latLng.latitude
                     longitude = latLng.longitude
@@ -1689,11 +1645,16 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                     }
                 }
 
-                kakaoMapValue!!.setOnLabelClickListener { _, _, label ->
+                //KakaoMap kakaoMap, LabelLayer layer, Label label
+                kakaoMapValue!!.setOnLabelClickListener { kakaoMap, layer, label ->
+                    Log.e("kakao map value", "label?")
                     if (label != null) { //return 값이 true 이면, 이벤트가 OnLabelClickListener 에서 끝난다.
+
+                        Log.e("kakao map value", "label")
                         trackingManager?.startTracking(label)
                         return@setOnLabelClickListener true
                     } else { //return 값이 false 이면, 이벤트가 OnPoiClickListener, OnMapClickListener 까지 전달된다.
+                        Log.e("kakao map value", "label x")
                         return@setOnLabelClickListener false
                     }
                 }

@@ -124,7 +124,6 @@ class LocationActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         Log.e("LocationActivity", "onREsume")
-        mapView?.resume()
         startMapLifeCycle()
     }
 

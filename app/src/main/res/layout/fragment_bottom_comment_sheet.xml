@@ -63,6 +63,7 @@
                 android:padding="8dp"
                 android:scrollHorizontally="false"
                 android:textColorHint="@color/mio_gray_6"
+                android:scrollbars="vertical"
                 android:textSize="14sp"
                 android:visibility="visible" />
 

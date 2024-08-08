@@ -136,7 +136,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="185dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="40dp"
             android:layout_marginEnd="20dp"
@@ -147,9 +147,7 @@
                 android:id="@+id/passengers_review_et"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginStart="15dp"
-                android:layout_marginEnd="15dp"
-                android:layout_marginTop="5dp"
+                android:layout_margin="10dp"
                 android:gravity="top"
                 android:autofillHints=""
                 android:background="@drawable/round_layout"
@@ -157,11 +155,14 @@
                 android:fontFamily="@font/pretendard_medium"
                 android:hint="후기를 입력해주세요"
                 android:textColorHint="@color/mio_gray_6"
-                android:textSize="16sp" />
+                android:inputType="textMultiLine"
+                android:scrollHorizontally="false"
+                android:textSize="16sp"
+                />
         </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
+    <HorizontalScrollView
         android:id="@+id/review_participants_id_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -194,7 +195,7 @@
             android:textAlignment="center"
             />-->
 
-    </LinearLayout>
+    </HorizontalScrollView>
 
     <Button
         android:id="@+id/passengers_review_registration_btn"

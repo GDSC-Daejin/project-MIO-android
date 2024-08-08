@@ -16,8 +16,8 @@ interface MioInterface {
     fun addCarpoolPostData(@Body postData : AddPostData) : Call<AddPostResponse>
     */
     //게시글 삭제
-    @DELETE("/post/{id}")
-    fun deletePostData(@Path("id") postId : Int) : Call<PostReadAllResponse>
+    @PATCH("/post/delete/{id}")
+    fun deletePostData(@Path("id") postId : Int) : Call<Void>
 
     //게시글 수정
     @PATCH("/post/{id}")
@@ -54,10 +54,21 @@ interface MioInterface {
 /*    @GET("/post/location")
     fun getLocationPostData(@Query("latitude") latitude : Double, @Query("longitude") longitude : Double) : Call<List<LocationReadAllResponse>>*/
 
+    //게시글 상태 변경 deadline verfi
+
     @PATCH("/post/verfiyFinish/{id}")
     fun patchVerifyFinish(@Body verifyFinish : VerifyFinishData, @Path("id") id : Int) : Call<AddPostResponse>
 
-    @GET("/post/location2") //활동
+    //마감기한 지난거 또는 마감할때
+    @PATCH("/post/deadLine/{postId}")
+    fun patchDeadLinePost(@Path("postId") postId : Int) : Call<Content>
+
+    //카풀완료 후
+    @PATCH("/post/complete/{id}")
+    fun patchCompletePost(@Path("id") id : Int) : Call<Content>
+
+
+    @GET("/post/location2") //위치로 게시글 조회
     fun getLocationPostData(@Query("location") location : String) : Call<List<LocationReadAllResponse>>
 
     @GET("/post/distance/{postId}")
@@ -142,6 +153,12 @@ interface MioInterface {
                       @Query("longitude") longitude : Double) : Call<List<LocationReadAllResponse>>
 
 
+    //유저 활동 지역에서 가져오기
+    @GET("/activityLocation")
+    fun getActivityLocation(@Query("sort") sort : String,
+                      @Query("page") page : Int,
+                      @Query("size") size : Int) : Call<PostReadAllResponse>
+
 
 
     ///////////////////////////////
@@ -162,8 +179,7 @@ interface MioInterface {
 
     //전부 + 작성자 제거
     @GET("/user/participants")
-    fun getMyParticipantsData(@Query("page") page : Int,
-                              @Query("size") size : Int) : Call<List<ParticipationData>>
+    fun getMyParticipantsData() : Call<List<ParticipationData>>
 
     //승인된 참여 + 작성자 제거안함
     @GET("/user/participants/carpool")

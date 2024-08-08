@@ -146,10 +146,11 @@
                 android:text="등/하교"
                 android:textColor="@color/mio_gray_9" />
 
-            <LinearLayout
-                android:layout_width="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:orientation="horizontal">
 
                 <Button
@@ -158,12 +159,10 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/edit_check_btn"
                     android:text="등교"
-                    android:textColor="@color/mio_gray_11" />
-
-                <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp" />
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <Button
                     android:id="@+id/apply_aschool_btn"
@@ -171,8 +170,11 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/edit_check_btn"
                     android:text="하교"
-                    android:textColor="@color/mio_gray_11" />
-            </LinearLayout>
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
 
             <!--성별-->
@@ -185,10 +187,11 @@
                 android:text="성별"
                 android:textColor="@color/mio_gray_9" />
 
-            <LinearLayout
-                android:layout_width="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:orientation="horizontal">
 
                 <Button
@@ -198,12 +201,10 @@
                     android:background="@drawable/edit_check_btn"
                     android:contentDescription="남성"
                     android:text="남성"
-                    android:textColor="@color/mio_gray_11" />
-
-                <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp" />
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <Button
                     android:id="@+id/apply_woman_btn"
@@ -211,8 +212,11 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/edit_check_btn"
                     android:text="여성"
-                    android:textColor="@color/mio_gray_11" />
-            </LinearLayout>
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -223,10 +227,11 @@
                 android:text="흡연여부"
                 android:textColor="@color/mio_gray_9" />
 
-            <LinearLayout
-                android:layout_width="wrap_content"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
                 android:orientation="horizontal">
 
                 <Button
@@ -235,12 +240,10 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/edit_check_btn"
                     android:text="O"
-                    android:textColor="@color/mio_gray_11" />
-
-                <Space
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp" />
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <Button
                     android:id="@+id/apply_nsmoker_btn"
@@ -248,8 +251,11 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/edit_check_btn"
                     android:text="X"
-                    android:textColor="@color/mio_gray_11" />
-            </LinearLayout>
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>
 
@@ -326,6 +332,7 @@
                     android:fontFamily="@font/pretendard_medium"
                     android:hint="약속 시간 잘 지킵니다."
                     android:inputType="textMultiLine"
+                    android:scrollHorizontally="false"
                     android:textColorHint="@color/mio_gray_6" />
             </LinearLayout>
 

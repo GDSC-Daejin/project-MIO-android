@@ -22,7 +22,9 @@ data class EditPostData(
     @SerializedName("location")
     var location: String,
     @SerializedName("cost")
-    var cost: Int
+    var cost: Int,
+    @SerializedName("region3Depth")
+    var region3Depth: String,
 ) : java.io.Serializable {
 
 }

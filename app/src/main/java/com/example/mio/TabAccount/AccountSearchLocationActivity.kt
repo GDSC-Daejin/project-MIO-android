@@ -9,6 +9,7 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.AccountSearchLocationAdapter
@@ -59,15 +60,19 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                 override fun onItemClicked(location: LocationReadAllResponse) {
                     sharedViewModel.selectedAccountLocation.value = location
                     Log.e("searchAdapterTESTST", location.location)
-                    val locationJson = convertAccountLocationToJSON(location)
-                    SharedPrefManager.saveAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
-                    Log.e("searchAdapterTESTST", location.location)
-                    val intent = Intent(this@AccountSearchLocationActivity, AccountSettingActivity::class.java).apply {
-                        putExtra("flag", 4)
-                        putExtra("locationData2", location.location.split(",").last())
+                    if (location.location.split(" ").size < 2) {
+                        val locationJson = convertAccountLocationToJSON(location)
+                        SharedPrefManager.saveAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
+                        Log.e("searchAdapterTESTST", location.location)
+                        val intent = Intent(this@AccountSearchLocationActivity, AccountSettingActivity::class.java).apply {
+                            putExtra("flag", 4)
+                            putExtra("locationData2", location.location.split(" ")[2])
+                        }
+                        setResult(RESULT_OK, intent)
+                        finish()
+                    } else {
+                        Toast.makeText(this@AccountSearchLocationActivity, "동으로 검색해주세요", Toast.LENGTH_SHORT).show()
                     }
-                    setResult(RESULT_OK, intent)
-                    finish()
                 }
                 override fun onItemRemove(location: LocationReadAllResponse) {
                     // 선택된 위치를 SharedPref에서 제거합니다.
@@ -154,11 +159,11 @@ class AccountSearchLocationActivity : AppCompatActivity() {
         })
 
         adapter.setOnItemClickListener(object : AccountSearchLocationAdapter.OnItemClickListener{
-            override fun onItemClicked(location: Place?) {
+            override fun onItemClicked(location: AddressData?) {
                 if (location != null) {
-                    val setL = location.address_name + "," + location.place_name
+                    val setL = location.address_name //+ "," + location.place_name
                     sharedViewModel.selectedAccountLocation.value = LocationReadAllResponse(
-                        location.id.toInt(),
+                        -1,
                         "",
                         "",
                         "",
@@ -176,10 +181,12 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                         -1,
                         -1,
                         setL,
-                        -1
+                        -1,
+                        "N",
+                        "BEFORE_DEADLINE"
                     )
                     val locationJson = SharedPrefManager.convertAccountLocationToJSON(LocationReadAllResponse(
-                        location.id.toInt(),
+                        -1,
                         "",
                         "",
                         "",
@@ -197,7 +204,9 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                         -1,
                         -1,
                         setL,
-                        -1
+                        -1,
+                        "N",
+                        "BEFORE_DEADLINE"
                     ))
 
                     if (SharedPrefManager.isAccountLocationInRecentSearch(this@AccountSearchLocationActivity, locationJson)) {
@@ -225,7 +234,7 @@ class AccountSearchLocationActivity : AppCompatActivity() {
         })
     }
 
-    private fun initRecyclerView(items: List<Place>) {
+    private fun initRecyclerView(items: List<AddressData>) {
         adapter = AccountSearchLocationAdapter(items)
         binding.rvSearchList.adapter = adapter
         binding.rvSearchList.setHasFixedSize(true)
@@ -247,13 +256,13 @@ class AccountSearchLocationActivity : AppCompatActivity() {
           .addConverterFactory(GsonConverterFactory.create())
           .build()
       val api = retrofit.create(KakaoAPI::class.java)
-      val call = api.getSearchKeyword(API_KEY, keyword)
+      val call = api.getAddressSearch(API_KEY, keyword)
 
-      call.enqueue(object: Callback<ResultSearchKeyword> {
-          override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
+      call.enqueue(object: Callback<ResultSearchAddress> {
+          override fun onResponse(call: Call<ResultSearchAddress>, response: Response<ResultSearchAddress>) {
               if (response.isSuccessful) {
                   val responseData = response.body()?.documents
-                  println("search Result" + response.body()?.documents)
+                  Log.e("search Result", response.body()?.documents.toString())
                   if (responseData?.isEmpty() == true) {
                       binding.textView4.visibility = View.VISIBLE
                       binding.textView5.visibility = View.VISIBLE
@@ -281,7 +290,7 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
+            override fun onFailure(call: Call<ResultSearchAddress>, t: Throwable) {
                 Log.w("LocalSearch", "통신 실패: ${t.message}")
             }
         })

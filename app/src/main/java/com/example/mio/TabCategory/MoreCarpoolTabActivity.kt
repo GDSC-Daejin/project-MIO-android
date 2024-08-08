@@ -531,7 +531,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         //이 부분에 프로그래스바가 들어올거라 알림
         //mttBinding.moreTaxiTabRv.adapter!!.notifyItemInserted(moreCarpoolAllData.size-1)
         //성공//
-        val call = RetrofitServerConnect.service
 
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed(java.lang.Runnable {
@@ -544,7 +543,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
             if (currentPage < totalPages - 1) {
                 currentPage += 1
                 CoroutineScope(Dispatchers.IO).launch {
-                    call.getCategoryPostData(1,"createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                    RetrofitServerConnect.create(this@MoreCarpoolTabActivity).getCategoryPostData(1,"createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
                         override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                             if (response.isSuccessful) {
 
@@ -560,7 +559,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 /*val s : ArrayList<PostReadAllResponse> = ArrayList()
                                 s.add(PostReadAllResponse())*/
 
-                                for (i in response.body()!!.content.indices) {
+                                for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
                                     //탑승자 null체크
                                     var part = 0
                                     var location = ""
@@ -705,9 +704,8 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
     }
 
     private fun setSelectData() {
-        val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getCategoryPostData(1, "createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            RetrofitServerConnect.create(this@MoreCarpoolTabActivity).getCategoryPostData(1, "createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
 
@@ -724,7 +722,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                         s.add(PostReadAllResponse())*/
                         moreCarpoolAllData.clear()
                         totalPages = response.body()!!.totalPages
-                        for (i in response.body()!!.content.indices) {
+                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
                             //탑승자 null체크
                             var part = 0
                             var location = ""

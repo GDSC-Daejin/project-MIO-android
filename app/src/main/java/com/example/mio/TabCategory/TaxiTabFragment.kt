@@ -83,7 +83,7 @@ class TaxiTabFragment : Fragment() {
     private var noticeBoardMyAreaAdapter : NoticeBoardMyAreaAdapter? = null
 
     //나의 활동 지역
-    private var myAreaItemData : List<LocationReadAllResponse>? = null
+    private var myAreaItemData = ArrayList<Content?>()
 
 
     //캘린더
@@ -520,41 +520,8 @@ class TaxiTabFragment : Fragment() {
 
 
     private fun setData() {
-
-        /*val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.substring(0 until 8)
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
-
-        val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            RetrofitServerConnect.create(requireContext()).getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
 
@@ -573,7 +540,7 @@ class TaxiTabFragment : Fragment() {
                         //데이터 청소
                         taxiAllData.clear()
 
-                        for (i in response.body()!!.content.indices) {
+                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
                             //탑승자 null체크
                             var part = 0
                             var location = ""
@@ -776,53 +743,66 @@ class TaxiTabFragment : Fragment() {
                 taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
                 taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
             }
-
         } else {
-            api.getLocationPostData(myAreaData).enqueue(object : Callback<kotlin.collections.List<LocationReadAllResponse>> {
-                override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
+            api.getActivityLocation("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
+                        val responseData = response.body()
+                        Log.e("myAreaItemData", response.code().toString())
+                        Log.e("myAreaItemData", responseData?.content.toString())
+                        if (responseData != null) {
+                            for (i in responseData.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
+                                myAreaItemData.add(
+                                    Content(
+                                        responseData.content[i].postId,
+                                        responseData.content[i].title,
+                                        responseData.content[i].content,
+                                        responseData.content[i].createDate,
+                                        responseData.content[i].targetDate,
+                                        responseData.content[i].targetTime,
+                                        responseData.content[i].category,
+                                        responseData.content[i].verifyGoReturn,
+                                        responseData.content[i].numberOfPassengers,
+                                        responseData.content[i].user,
+                                        responseData.content[i].viewCount,
+                                        responseData.content[i].verifyFinish,
+                                        responseData.content[i].participants,
+                                        responseData.content[i].latitude,
+                                        responseData.content[i].longitude,
+                                        responseData.content[i].bookMarkCount,
+                                        responseData.content[i].participantsCount,
+                                        responseData.content[i].location,
+                                        responseData.content[i].cost,
+                                        responseData.content[i].isDeleteYN,
+                                        responseData.content[i].postType,
+                                    )
+                                )
+                            }
+                            Log.e("myAreaItemDatataxi", myAreaItemData.toString())
 
-                        //println(response.body()!!.content)
-                        /*val start = SystemClock.elapsedRealtime()
+                            noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
 
-                        // 함수 실행시간
-                        val date = Date(start)
-                        val mFormat = SimpleDateFormat("HH:mm:ss")
-                        val time = mFormat.format(date)
-                        println(start)
-                        println(time)*/
-                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                        s.add(PostReadAllResponse())*/
-
-                        //데이터 청소
-                        myAreaItemData = null
-
-                        response.body().let {
-                            myAreaItemData = it
+                            loadingDialog.dismiss()
                         }
 
-                        noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
-
-                        loadingDialog.dismiss()
-
-                        if (myAreaItemData?.isEmpty() == true) {
-                            taxiTabBinding.areaRvLl.visibility = View.GONE
-                            taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
-                            taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
-                        } else {
+                        if (myAreaItemData?.isNotEmpty() == true) {
                             taxiTabBinding.areaRvLl.visibility = View.VISIBLE
                             taxiTabBinding.nonAreaRvTv.visibility = View.GONE
                             taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                        } else {
+                            taxiTabBinding.areaRvLl.visibility = View.GONE
+                            taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
                         }
 
                     } else {
-                        Log.e("carpool areaeaerera", response.code().toString())
-                        Log.e("carpool areaeaerera", response.errorBody()?.string()!!)
-                        Log.e("carpool areaeaerera", response.message().toString())
+                        Log.e("taxi areaeaerera", response.code().toString())
+                        Log.e("taxi areaeaerera", response.errorBody()?.string()!!)
+                        Log.e("taxi areaeaerera", response.message().toString())
                     }
                 }
 
-                override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
+                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                     Log.d("error", t.toString())
                 }
             })
@@ -890,27 +870,29 @@ class TaxiTabFragment : Fragment() {
 
                     if (responseData != null) {
                         for (i in responseData) {
-                            currentTaxiAllData.add(PostData(
-                                i.user.studentId,
-                                i.postId,
-                                i.title,
-                                i.content,
-                                i.createDate,
-                                i.targetDate,
-                                i.targetTime,
-                                i.category.categoryName,
-                                i.location,
-                                //participantscount가 현재 참여하는 인원들
-                                i.participantsCount,
-                                //numberOfPassengers은 총 탑승자 수
-                                i.numberOfPassengers,
-                                i.cost,
-                                i.verifyGoReturn,
-                                i.user,
-                                i.latitude,
-                                i.longitude
-                            ))
-                            taxiParticipantsData.add(i.participants)
+                            if (i.isDeleteYN != "Y" && i.postType == "BEFORE_DEADLINE") {
+                                currentTaxiAllData.add(PostData(
+                                    i.user.studentId,
+                                    i.postId,
+                                    i.title,
+                                    i.content,
+                                    i.createDate,
+                                    i.targetDate,
+                                    i.targetTime,
+                                    i.category.categoryName,
+                                    i.location,
+                                    //participantscount가 현재 참여하는 인원들
+                                    i.participantsCount,
+                                    //numberOfPassengers은 총 탑승자 수
+                                    i.numberOfPassengers,
+                                    i.cost,
+                                    i.verifyGoReturn,
+                                    i.user,
+                                    i.latitude,
+                                    i.longitude
+                                ))
+                                taxiParticipantsData.add(i.participants)
+                            }
                         }
                     }
                     currentNoticeBoardAdapter!!.notifyDataSetChanged()

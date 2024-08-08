@@ -18,7 +18,7 @@ class NearbyPostAdapter(private val onItemClick: (LocationReadAllResponse) -> Un
         val postTitle = binding.postTitle
         val postDate = binding.postDate
         val postLocation= binding.postLocation
-        val postMoney = binding.postMoney
+        val postMoney = binding.postCost
         val postParticipantsCount = binding.postParticipation
         val postParticipantsTotal = binding.postParticipationTotal
 

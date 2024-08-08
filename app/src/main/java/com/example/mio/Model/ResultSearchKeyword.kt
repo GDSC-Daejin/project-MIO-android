@@ -1,5 +1,7 @@
 package com.example.mio.Model
 
+import com.google.gson.annotations.SerializedName
+
 // 검색 결과를 담는 클래스
 data class ResultSearchKeyword(
     var meta: PlaceMeta, // 장소 메타데이터
@@ -27,9 +29,28 @@ data class Place(
     var category_group_name: String, // 중요 카테고리만 그룹핑한 카테고리 그룹명
     var phone: String, // 전화번호
     var address_name: String, // 전체 지번 주소
+    @SerializedName("road_address_name")
     var road_address_name: String, // 전체 도로명 주소
     var x: String, // X 좌표값 혹은 longitude
     var y: String, // Y 좌표값 혹은 latitude
     var place_url: String, // 장소 상세페이지 URL
-    var distance: String // 중심좌표까지의 거리. 단, x,y 파라미터를 준 경우에만 존재. 단위는 meter
+    var distance: String, // 중심좌표까지의 거리. 단, x,y 파라미터를 준 경우에만 존재. 단위는 meter
+    //var address : Address?,
 ) : java.io.Serializable
+
+
+/*
+data class Address(
+    var address_name : String, //전체 지번 주소
+    var region_1depth_name : String, //지역 1 Depth, 시도 단위
+    var region_2depth_name : String, //지역 2 Depth, 구 단위
+    var region_3depth_name : String, //지역 3 Depth, 동 단위
+    var region_3depth_h_name : String, //지역 3 Depth, 행정동 명칭
+    var h_code : String,
+    var b_code : String,
+    var mountain_yn : String,
+    var main_address_no : String,
+    var sub_address_no : String,
+    var x : String, //longitude
+    var y : String, //latitude
+)*/

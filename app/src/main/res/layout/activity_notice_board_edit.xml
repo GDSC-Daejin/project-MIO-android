@@ -174,6 +174,7 @@
                         android:fontFamily="@font/pretendard_medium"
                         android:hint="제목을 입력해주세요"
                         android:inputType="textMultiLine"
+                        android:scrollHorizontally="false"
                         android:textColorHint="@color/mio_gray_6"
                         android:textSize="18sp" />
 
@@ -864,6 +865,7 @@
                     android:hint="약속 시간 철저히 지키시는 분 좋아요"
                     android:inputType="textMultiLine"
                     android:scrollHorizontally="false"
+                    android:scrollbars="vertical"
                     android:textColorHint="@color/mio_gray_6"
                     android:textSize="18sp" />
             </LinearLayout>

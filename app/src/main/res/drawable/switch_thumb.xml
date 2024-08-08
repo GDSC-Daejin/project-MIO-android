@@ -4,8 +4,8 @@
     android:shape="oval">
 
     <size
-        android:width="25dp"
-        android:height="25dp" />
+        android:width="21dp"
+        android:height="21dp" />
 
     <solid
         android:color="@color/mio_gray_1" />

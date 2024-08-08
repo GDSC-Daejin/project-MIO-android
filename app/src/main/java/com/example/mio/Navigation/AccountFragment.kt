@@ -121,9 +121,9 @@ class AccountFragment : Fragment() {
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity).toString()
         aBinding.accountUserId.text = email.split("@").map { it }.first()
 
-        val call = RetrofitServerConnect.service
+
         CoroutineScope(Dispatchers.IO).launch {
-            call.getAccountData(email).enqueue(object : Callback<User> {
+            RetrofitServerConnect.create(requireContext()).getAccountData(email).enqueue(object : Callback<User> {
                 override fun onResponse(call: Call<User>, response: Response<User>) {
                     if (response.isSuccessful) {
                         gender = try {

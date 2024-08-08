@@ -9,6 +9,7 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import com.example.mio.Adapter.AccountTabAdapter
 import com.example.mio.Adapter.ProfileTabAdapter
 import com.example.mio.Model.User
@@ -56,9 +57,9 @@ class ProfileActivity : AppCompatActivity() {
     private fun setProfile() {
         profileId =  intent.getIntExtra("studentId", 0)
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val call = RetrofitServerConnect.service
+
         CoroutineScope(Dispatchers.IO).launch {
-            call.getUserProfileData(profileId).enqueue(object : Callback<User> {
+            RetrofitServerConnect.create(this@ProfileActivity).getUserProfileData(profileId).enqueue(object : Callback<User> {
                 override fun onResponse(call: Call<User>, response: Response<User>) {
 
                     if (response.isSuccessful) {

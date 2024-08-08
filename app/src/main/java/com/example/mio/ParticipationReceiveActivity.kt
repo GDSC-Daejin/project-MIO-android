@@ -1,6 +1,7 @@
 package com.example.mio
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -8,6 +9,7 @@ import android.view.View
 import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NoticeBoardAdapter
@@ -17,6 +19,7 @@ import com.example.mio.databinding.ActivityParticipationReceiveBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -87,6 +90,71 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                 }
             }
         })
+
+        pBinding.receiveDeadlineBtn.setOnClickListener {
+            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+            val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+
+            /////////interceptor
+            val SERVER_URL = BuildConfig.server_URL
+            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+            //Authorization jwt토큰 로그인
+            val interceptor = Interceptor { chain ->
+                var newRequest: Request
+                if (token != null && token != "") { // 토큰이 없는 경우
+                    // Authorization 헤더에 토큰 추가
+                    newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                    val expireDate: Long = getExpireDate.toLong()
+                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                        //refresh 들어갈 곳
+                        /*newRequest =
+                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                        val intent = Intent(this@ParticipationReceiveActivity, LoginActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                        startActivity(intent)
+                        finish()
+                        return@Interceptor chain.proceed(newRequest)
+                    }
+
+                } else newRequest = chain.request()
+                chain.proceed(newRequest)
+            }
+            val builder = OkHttpClient.Builder()
+            builder.interceptors().add(interceptor)
+            val client: OkHttpClient = builder.build()
+            retrofit.client(client)
+            val retrofit2: Retrofit = retrofit.build()
+            val api = retrofit2.create(MioInterface::class.java)
+            /////////
+            RetrofitServerConnect.create(this@ParticipationReceiveActivity).patchDeadLinePost(postId).enqueue(object : Callback<Content> {
+                override fun onResponse(call: Call<Content>, response: Response<Content>) {
+                    if (response.isSuccessful) {
+                        Log.e("RetrofitServerConnect", response.code().toString())
+                        val responseData = response.body()
+                        if (responseData != null) {
+                            if (responseData.postType != "BEFORE_DEADLINE") {
+                                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_gray_4)) //마감
+                                pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
+                                pBinding.receiveDeadlineBtn.text = "마감완료"
+                                pBinding.receiveDeadlineBtn.isClickable = false
+                            }
+                        }
+                    } else {
+                        Log.e("fff", response.code().toString())
+                        Log.e("fff", response.errorBody()?.string()!!)
+                    }
+                }
+
+                override fun onFailure(call: Call<Content>, t: Throwable) {
+                    Log.e("ffffail", t.toString())
+                }
+            })
+
+        }
 
     }
 
@@ -175,7 +243,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                         Log.d("Notification Fragment Data", "Received data: $participationItemAllData")
                         if (participationItemAllData.any { it.content != "작성자" }) {
                             CoroutineScope(Dispatchers.IO).launch {
-                                setParticipantsUserData(postList = participationItemAllData.filter { it.content != "작성자" })
+                                setParticipantsUserData(postList = participationItemAllData.filter { it.content != "작성자" && it.isDeleteYN != "Y"})
                             }
                         } else {
                             Log.e("updateui", "in ui")
@@ -184,39 +252,25 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                             if (participantsUserAllData.isNotEmpty()) {
                                 pBinding.participationRv.visibility = View.VISIBLE
                                 pBinding.nonParticipation.visibility = View.GONE
+                                pBinding.receiveDeadlineBtn.visibility = View.GONE
                             } else {
                                 pBinding.participationRv.visibility = View.GONE
                                 pBinding.nonParticipation.visibility = View.VISIBLE
                             }
-                            //participationAdapter.notifyDataSetChanged()
                         }
-                        //participationAdapter.notifyDataSetChanged()
-
                         Log.e("ParticipationReceiveActivity PostId Test", participationItemAllData.toString())
-                    }
-
-                    /*if (responseData != null) {
-                        for (i in responseData) {
-                            if (i.content != "작성자") {
-                                participationItemAllData.add(
-                                    ParticipationData(
-                                        i.participantId,
-                                        i.postId,
-                                        i.userId,
-                                        i.postUserId,
-                                        i.content,
-                                        i.approvalOrReject,
-                                        i.driverMannerFinish,
-                                        i.passengerMannerFinish,
-                                        i.verifyFinish
-                                    )
-                                )
-                            }
+                    } else {
+                        Log.e("updateui", "in ui")
+                        Log.e("PARTICIPATION RESPONSE DATA", participantsUserAllData.toString())
+                        loadingDialog.dismiss()
+                        if (participantsUserAllData.isNotEmpty()) {
+                            pBinding.participationRv.visibility = View.VISIBLE
+                            pBinding.nonParticipation.visibility = View.GONE
+                        } else {
+                            pBinding.participationRv.visibility = View.GONE
+                            pBinding.nonParticipation.visibility = View.VISIBLE
                         }
-                    }*/
-                    //participationItemAllData = participationItemAllData.filter { it.content != "작성자" }
-
-
+                    }
                 } else {
                     Log.e("parcici receive", response.errorBody()?.string()!!)
                     println(response.code())
@@ -237,9 +291,11 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         if (participantsUserAllData.isNotEmpty()) {
             pBinding.participationRv.visibility = View.VISIBLE
             pBinding.nonParticipation.visibility = View.GONE
+            pBinding.receiveDeadlineBtn.visibility = View.GONE
         } else {
             pBinding.participationRv.visibility = View.GONE
             pBinding.nonParticipation.visibility = View.VISIBLE
+            pBinding.receiveDeadlineBtn.visibility = View.VISIBLE
         }
         participationAdapter.notifyDataSetChanged()
     }

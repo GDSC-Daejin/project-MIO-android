@@ -33,6 +33,7 @@ class SSEForegroundService : Service() {
         sharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         userId = sharedPreferenceGoogleLogin!!.getUserId(this)?.toLong()
         isGetAlarm = sharedPreferenceGoogleLogin!!.getSharedAlarm(this)
+        Log.e("onStartCommand", isGetAlarm.toString())
 
 
         if (userId != null && isGetAlarm == true) {

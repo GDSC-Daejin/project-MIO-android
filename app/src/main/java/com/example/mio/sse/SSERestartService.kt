@@ -20,15 +20,15 @@ class SSERestartService : Service() {
         Log.i("정보태그", "RestartService")
 
         val builder = NotificationCompat.Builder(this, "default")
-        builder.setSmallIcon(com.example.mio.R.drawable.top_icon_vector)
+        /*builder.setSmallIcon(com.example.mio.R.drawable.top_icon_vector)
         builder.setContentTitle(null)
-        builder.setContentText(null)
+        builder.setContentText(null)*/
         val notificationIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
         builder.setContentIntent(pendingIntent)
 
-        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        //val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             manager.createNotificationChannel(
                 NotificationChannel(
                     "default",
@@ -36,7 +36,7 @@ class SSERestartService : Service() {
                     NotificationManager.IMPORTANCE_NONE
                 )
             )
-        }
+        }*/
 
         val notification: Notification = builder.build()
         startForeground(9, notification)

@@ -46,7 +46,7 @@ private const val ARG_PARAM2 = "param2"
  * Use the [MyParticipationFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class MyParticipationFragment : Fragment() {
+class MyParticipationFragment : Fragment() { //두번쨰
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
@@ -66,11 +66,11 @@ class MyParticipationFragment : Fragment() {
     private var dataPosition = 0
 
     //로딩 즉 item의 끝이며 스크롤의 끝인지
-    private var isLoading = false
+    //private var isLoading = false
     //데이터의 현재 페이지 수
-    private var currentPage = 0
+    //private var currentPage = 0
     //데이터의 전체 페이지 수
-    private var totalPages = 0
+    //private var totalPages = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,7 +88,7 @@ class MyParticipationFragment : Fragment() {
 
         initMyParticipationRecyclerView()
         initSwipeRefresh()
-        initScrollListener()
+        //initScrollListener()
 
         myAdapter!!.setItemClickListener(object : MyAccountParticipationAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int) {
@@ -192,14 +192,14 @@ class MyParticipationFragment : Fragment() {
 
         //println(userId)
 
-        api.getMyParticipantsData(0, 5).enqueue(object : Callback<List<ParticipationData>> {
+        api.getMyParticipantsData().enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                 if (response.isSuccessful) {
                     //데이터 청소
                     Log.d("myparticipationFragment", response.code().toString())
                     Log.d("myparticipationFragment", response.body().toString())
                     val responseData = response.body()
-                    totalPages = responseData?.size?.toInt()?.div(5) ?: 0
+                    //totalPages = responseData?.size?.toInt()?.div(5) ?: 0
                     myParticipationAllData.clear()
 
                     if (responseData.isNullOrEmpty()) {
@@ -220,13 +220,15 @@ class MyParticipationFragment : Fragment() {
                         Log.d("mypartipationFragment", myParticipationAllData.toString())
                     } else {
                         for (i in responseData) {
-                            myParticipationApprovalOrRejectAllData.add(
-                                i.approvalOrReject
-                            )
+                            if (i.isDeleteYN == "N") {
+                                myParticipationApprovalOrRejectAllData.add(
+                                    i.approvalOrReject
+                                )
+                            }
                         }
                         Log.d("Notification Fragment Data", "Received data: $myParticipationApprovalOrRejectAllData")
                         CoroutineScope(Dispatchers.IO).launch {
-                            setPostUserData(postList = responseData)
+                            setPostUserData(postList = responseData.filter { it.isDeleteYN != "Y" })
                         }
                     }
 
@@ -358,7 +360,7 @@ class MyParticipationFragment : Fragment() {
 
 
 
-    private fun initScrollListener(){
+    /*private fun initScrollListener(){
         mpBinding.participationPostRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -380,9 +382,9 @@ class MyParticipationFragment : Fragment() {
                 }
             }
         })
-    }
+    }*/
 
-    private fun getMoreItem() {
+    /*private fun getMoreItem() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
@@ -396,8 +398,8 @@ class MyParticipationFragment : Fragment() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
 
@@ -436,7 +438,7 @@ class MyParticipationFragment : Fragment() {
             //page수가 totalpages 보다 작거나 같다면 데이터 더 가져오기 가능
             if (currentPage < totalPages - 1) {
                 currentPage += 1
-                api.getMyParticipantsData(currentPage, 5).enqueue(object : Callback<List<ParticipationData>> {
+                api.getMyParticipantsData().enqueue(object : Callback<List<ParticipationData>> {
                     override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                         if (response.isSuccessful) {
                             //데이터 청소
@@ -472,7 +474,7 @@ class MyParticipationFragment : Fragment() {
             }
             isLoading = false
         }, 2000)
-    }
+    }*/
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {

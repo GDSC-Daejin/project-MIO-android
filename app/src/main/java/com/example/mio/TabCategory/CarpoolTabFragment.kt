@@ -80,7 +80,7 @@ class CarpoolTabFragment : Fragment() {
     private var noticeBoardMyAreaAdapter : NoticeBoardMyAreaAdapter? = null
 
     //나의 활동 지역
-    private var myAreaItemData : List<LocationReadAllResponse>? = null
+    private var myAreaItemData = ArrayList<Content?>()
 
 
     //캘린더
@@ -171,7 +171,7 @@ class CarpoolTabFragment : Fragment() {
                                 putExtra("category", "carpool")
                             }
                             //sendAlarmData("PASSENGER", position, currentTaxiAllData[position])
-                            patchVerifyFinish(temp.postID)
+                            //patchCompletePost(temp.postID)
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Driver -> { //내가 운전자로 카풀이 완료되었을 떄
@@ -182,7 +182,7 @@ class CarpoolTabFragment : Fragment() {
                                 putExtra("category", "carpool")
                             }
                             //sendAlarmData("DRIVER", position, currentTaxiAllData[position])
-                            patchVerifyFinish(temp.postID)
+                            patchCompletePost(temp.postID)
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Neither -> {
@@ -578,9 +578,8 @@ class CarpoolTabFragment : Fragment() {
 
 
     private fun setData() {
-        val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getCategoryPostData(1,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            RetrofitServerConnect.create(requireContext()).getCategoryPostData(1,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
 
@@ -599,7 +598,7 @@ class CarpoolTabFragment : Fragment() {
                         //데이터 청소
                         carpoolAllData.clear()
 
-                        for (i in response.body()!!.content.indices) {
+                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
                             //탑승자 null체크
                             var part = 0
                             var location = ""
@@ -750,31 +749,33 @@ class CarpoolTabFragment : Fragment() {
     }
 
     private fun setMyAreaData() {
+        //저장된 값
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
         val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity()).toString()
+        //통신
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        //.client(clientBuilder)
 
+        //Authorization jwt토큰 로그인
         val interceptor = Interceptor { chain ->
+
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
                 // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
+                newRequest = chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer $token")
+                    .addHeader("Content-Type", "application/json; charset=utf-8")
+                    .build()
 
-                if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                    Log.d("Carpool myarea", expireDate.toString())
-
-                    // UI 스레드에서 Toast 실행
-                    requireActivity().runOnUiThread {
-                        Toast.makeText(requireActivity(), "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
-                    }
-
-                    // Log.d("MainActivitu Notification", expireDate.toString())
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
 
@@ -786,17 +787,12 @@ class CarpoolTabFragment : Fragment() {
             } else newRequest = chain.request()
             chain.proceed(newRequest)
         }
-
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
         val builder = OkHttpClient.Builder()
         builder.interceptors().add(interceptor)
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
-        /////
 
         if (myAreaData.isEmpty() || myAreaData == "") {
             CoroutineScope(Dispatchers.Main).launch {
@@ -807,43 +803,58 @@ class CarpoolTabFragment : Fragment() {
                 taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
                 taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
             }
-
         } else {
-            api.getLocationPostData(myAreaData).enqueue(object : Callback<kotlin.collections.List<LocationReadAllResponse>> {
-                override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
+            api.getActivityLocation("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
-
-                        //println(response.body()!!.content)
-                        /*val start = SystemClock.elapsedRealtime()
-
-                        // 함수 실행시간
-                        val date = Date(start)
-                        val mFormat = SimpleDateFormat("HH:mm:ss")
-                        val time = mFormat.format(date)
-                        println(start)
-                        println(time)*/
-                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                        s.add(PostReadAllResponse())*/
-
-                        //데이터 청소
-                        myAreaItemData = null
-
-                        response.body().let {
-                            myAreaItemData = it
+                        val responseData = response.body()
+                        Log.e("myAreaItemData", response.code().toString())
+                        Log.e("myAreaItemData", responseData.toString())
+                        myAreaItemData.clear()
+                        if (responseData != null) {
+                            Log.e("myAreaItemData", "not null")
+                            for (i in responseData.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
+                                myAreaItemData.add(
+                                    Content(
+                                        responseData.content[i].postId,
+                                        responseData.content[i].title,
+                                        responseData.content[i].content,
+                                        responseData.content[i].createDate,
+                                        responseData.content[i].targetDate,
+                                        responseData.content[i].targetTime,
+                                        responseData.content[i].category,
+                                        responseData.content[i].verifyGoReturn,
+                                        responseData.content[i].numberOfPassengers,
+                                        responseData.content[i].user,
+                                        responseData.content[i].viewCount,
+                                        responseData.content[i].verifyFinish,
+                                        responseData.content[i].participants,
+                                        responseData.content[i].latitude,
+                                        responseData.content[i].longitude,
+                                        responseData.content[i].bookMarkCount,
+                                        responseData.content[i].participantsCount,
+                                        responseData.content[i].location,
+                                        responseData.content[i].cost,
+                                        responseData.content[i].isDeleteYN,
+                                        responseData.content[i].postType,
+                                    )
+                                )
+                            }
+                            Log.e("myAreaItemData", myAreaItemData.toString())
+                            //Log.e("morearea", moreAreaData.toString())
+                            noticeBoardMyAreaAdapter!!.postAreaItemData = myAreaItemData
+                            noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
+                            loadingDialog?.dismiss()
                         }
 
-                        noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
-
-                        loadingDialog?.dismiss()
-
-                        if (myAreaItemData?.isEmpty() == true) {
-                            taxiTabBinding.areaRvLl.visibility = View.GONE
-                            taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
-                            taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
-                        } else {
+                        if (myAreaItemData?.isNotEmpty() == true) {
                             taxiTabBinding.areaRvLl.visibility = View.VISIBLE
                             taxiTabBinding.nonAreaRvTv.visibility = View.GONE
                             taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                        } else {
+                            taxiTabBinding.areaRvLl.visibility = View.GONE
+                            taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
                         }
 
                     } else {
@@ -853,7 +864,7 @@ class CarpoolTabFragment : Fragment() {
                     }
                 }
 
-                override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
+                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                     Log.d("error", t.toString())
                 }
             })
@@ -922,27 +933,31 @@ class CarpoolTabFragment : Fragment() {
 
                     if (responseData != null) {
                         for (i in responseData) {
-                            currentTaxiAllData.add(PostData(
-                                i.user.studentId,
-                                i.postId,
-                                i.title,
-                                i.content,
-                                i.createDate,
-                                i.targetDate,
-                                i.targetTime,
-                                i.category.categoryName,
-                                i.location,
-                                //participantscount가 현재 참여하는 인원들
-                                i.participantsCount,
-                                //numberOfPassengers은 총 탑승자 수
-                                i.numberOfPassengers,
-                                i.cost,
-                                i.verifyGoReturn,
-                                i.user,
-                                i.latitude,
-                                i.longitude
-                            ))
-                            carpoolParticipantsData.add(i.participants)
+                            if (i.isDeleteYN != "Y" && i.postType == "BEFORE_DEADLINE") {
+                                currentTaxiAllData.add(
+                                    PostData(
+                                        i.user.studentId,
+                                        i.postId,
+                                        i.title,
+                                        i.content,
+                                        i.createDate,
+                                        i.targetDate,
+                                        i.targetTime,
+                                        i.category.categoryName,
+                                        i.location,
+                                        //participantscount가 현재 참여하는 인원들
+                                        i.participantsCount,
+                                        //numberOfPassengers은 총 탑승자 수
+                                        i.numberOfPassengers,
+                                        i.cost,
+                                        i.verifyGoReturn,
+                                        i.user,
+                                        i.latitude,
+                                        i.longitude
+                                    )
+                                )
+                                carpoolParticipantsData.add(i.participants)
+                            }
                         }
                     }
 
@@ -1267,7 +1282,7 @@ class CarpoolTabFragment : Fragment() {
         taxiTabBinding.carpoolAd.loadAd(adRequest!!)
     }
 
-    private fun patchVerifyFinish(postId : Int) {
+    private fun patchCompletePost(postId : Int) {
         //저장된 값
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
@@ -1310,20 +1325,22 @@ class CarpoolTabFragment : Fragment() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         ///
-        api.patchVerifyFinish(verifyFinish = VerifyFinishData(true), postId).enqueue(object : Callback<AddPostResponse> {
+        api.patchCompletePost(postId).enqueue(object : Callback<Content> {
             override fun onResponse(
-                call: Call<AddPostResponse>,
-                response: Response<AddPostResponse>
+                call: Call<Content>,
+                response: Response<Content>
             ) {
                 if (response.isSuccessful) {
                     Log.d("patchVerifyFinishSuccess", response.code().toString())
+                    currentTaxiAllData.removeIf { it.postID == postId }
+                    currentNoticeBoardAdapter?.notifyDataSetChanged()
                 } else {
                     Log.e("patchVerifyFinishSuccess", response.code().toString())
                     Log.e("patchVerifyFinishSuccess", response.errorBody()?.string()!!)
                 }
             }
 
-            override fun onFailure(call: Call<AddPostResponse>, t: Throwable) {
+            override fun onFailure(call: Call<Content>, t: Throwable) {
                 Log.e("patchVerifyFinishSuccess", t.toString())
             }
         })

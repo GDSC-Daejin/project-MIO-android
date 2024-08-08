@@ -15,6 +15,7 @@ import android.widget.LinearLayout.LayoutParams
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -503,7 +504,6 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         //이 부분에 프로그래스바가 들어올거라 알림
         mttBinding.moreTaxiTabRv.adapter!!.notifyItemInserted(moreTaxiAllData.size-1)
         //성공//
-        val call = RetrofitServerConnect.service
 
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
@@ -516,7 +516,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             if (currentPage < totalPages - 1) {
                 currentPage += 1
                 CoroutineScope(Dispatchers.IO).launch {
-                    call.getCategoryPostData(2,"createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                    RetrofitServerConnect.create(this@MoreTaxiTabActivity).getCategoryPostData(2,"createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
                         override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                             if (response.isSuccessful) {
 
@@ -532,7 +532,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                 /*val s : ArrayList<PostReadAllResponse> = ArrayList()
                                 s.add(PostReadAllResponse())*/
 
-                                for (i in response.body()!!.content.indices) {
+                                for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
                                     //탑승자 null체크
                                     var part = 0
                                     var location = ""
@@ -695,9 +695,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
     }
 
     private fun setSelectData() {
-        val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            RetrofitServerConnect.create(this@MoreTaxiTabActivity).getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
 
@@ -715,7 +714,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
 
                         moreTaxiAllData.clear()
                         totalPages = response.body()!!.totalPages
-                        for (i in response.body()!!.content.indices) {
+                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
                             //탑승자 null체크
                             var part = 0
                             var location = ""

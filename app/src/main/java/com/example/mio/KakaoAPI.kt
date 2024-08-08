@@ -2,10 +2,12 @@ package com.example.mio
 
 // REST API 통신 인터페이스
 import androidx.annotation.Keep
+import com.example.mio.Model.ResultSearchAddress
 import com.example.mio.Model.ResultSearchKeyword
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface KakaoAPI {
@@ -17,4 +19,12 @@ interface KakaoAPI {
         // @Query("category_group_code") category: String
 
     ): Call<ResultSearchKeyword>    // 받아온 정보가 ResultSearchKeyword 클래스의 구조로 담김
+
+
+    @GET("v2/local/search/address.json")
+    @Headers("Content-Type: application/json; charset=utf-8")
+    fun getAddressSearch(
+        @Header("Authorization") key: String,
+        @Query("query") query: String
+    ) : Call<ResultSearchAddress>
 }

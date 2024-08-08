@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NearbyPostAdapter
 import com.example.mio.Model.LocationReadAllResponse
@@ -72,9 +73,8 @@ class NearbypostActivity  : AppCompatActivity() { //게시글 더보기 이동 �
 
     private fun loadNearbyPostData(postId: Int) {
 
-        val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getNearByPostData(postId).enqueue(object : Callback<List<LocationReadAllResponse>> {
+            RetrofitServerConnect.create(this@NearbypostActivity).getNearByPostData(postId).enqueue(object : Callback<List<LocationReadAllResponse>> {
                 override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
                     if (response.isSuccessful) {
                         val posts = response.body()

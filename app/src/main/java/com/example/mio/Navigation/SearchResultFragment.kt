@@ -26,7 +26,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class SearchResultFragment : Fragment() {
+class SearchResultFragment : Fragment() { //안씀
 
     private var srbinding: FragmentSearchResultBinding? = null
     private lateinit var sradapter: SearchResultAdapter
@@ -64,14 +64,6 @@ class SearchResultFragment : Fragment() {
                 transaction.replace(R.id.fragment_content, SearchFragment())
                 //transaction.addToBackStack(null)
                 transaction.commit()
-
-/*                // 게시글 아이템을 클릭하면 SearchFragment로 전환하고 위치 정보를 전달한다.
-                val bundle = Bundle()
-                bundle.putDouble("latitude", location.latitude)
-                bundle.putDouble("longitude", location.longitude)
-                val searchFragment = SearchFragment.newInstance("", "")
-                searchFragment.arguments = bundle
-                parentFragmentManager.beginTransaction().replace(R.id.fragment_content, searchFragment).addToBackStack(null).commit()*/
 
             }
         })
@@ -127,9 +119,8 @@ class SearchResultFragment : Fragment() {
     }
 
     private fun filterAndHighlightText(query: String) {
-        val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getLocationPostData(query).enqueue(object :
+            RetrofitServerConnect.create(requireContext()).getLocationPostData(query).enqueue(object :
                 Callback<List<LocationReadAllResponse>> {
                 override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
                     if (response.isSuccessful) {

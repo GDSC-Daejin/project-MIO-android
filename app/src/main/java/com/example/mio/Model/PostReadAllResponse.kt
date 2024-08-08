@@ -69,7 +69,9 @@ data class Content(
     @SerializedName("cost")
     var cost : Int,
     @SerializedName("isDeleteYN")
-    var isDeleteYN : String?
+    var isDeleteYN : String?,
+    @SerializedName("postType")
+    var postType : String? //BEFORE_DEADLINE, DEADLINE, COMPLETED
 ): java.io.Serializable {
 
 }

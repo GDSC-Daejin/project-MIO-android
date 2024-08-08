@@ -146,7 +146,6 @@ class ProfilePostFragment : Fragment() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         ///////////////////////////////////////////////////
-        val call = RetrofitServerConnect.service
 
         CoroutineScope(Dispatchers.IO).launch {
             api.getMyPostData(profileUserId,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
@@ -156,7 +155,7 @@ class ProfilePostFragment : Fragment() {
                         //데이터 청소
                         profilePostAllData.clear()
 
-                        for (i in response.body()!!.content.indices) {
+                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
                             //탑승자 null체크
                             var part = 0
                             var location = ""

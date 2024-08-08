@@ -181,7 +181,7 @@ class ApplyNextActivity : AppCompatActivity() {
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_1))
             }
             anaBinding.applyAschoolBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_11))
             }
         }
@@ -195,7 +195,7 @@ class ApplyNextActivity : AppCompatActivity() {
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_1))
             }
             anaBinding.applyGtschoolBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_11))
             }
         }
@@ -210,7 +210,7 @@ class ApplyNextActivity : AppCompatActivity() {
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_1))
             }
             anaBinding.applyWomanBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_11))
             }
         }
@@ -224,7 +224,7 @@ class ApplyNextActivity : AppCompatActivity() {
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_1))
             }
             anaBinding.applyManBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_11))
             }
         }
@@ -239,7 +239,7 @@ class ApplyNextActivity : AppCompatActivity() {
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_1))
             }
             anaBinding.applyNsmokerBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_11))
             }
         }
@@ -253,7 +253,7 @@ class ApplyNextActivity : AppCompatActivity() {
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_1))
             }
             anaBinding.applySmokerBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_layout)
+                setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_11))
             }
         }
@@ -349,7 +349,7 @@ class ApplyNextActivity : AppCompatActivity() {
                             println("succcc")
                             //postData?.let { it1 -> setNotification("참여 신청이 완료되었습니다!", it1) }
                             //sendAlarmData()
-                            Toast.makeText(this@ApplyNextActivity, "참여 신청 하셨습니다!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@ApplyNextActivity, "참여 신청이 완료되었습니다!", Toast.LENGTH_SHORT).show()
                         } else {
                             println("faafa")
                             Log.d("add", response.errorBody()?.string()!!)

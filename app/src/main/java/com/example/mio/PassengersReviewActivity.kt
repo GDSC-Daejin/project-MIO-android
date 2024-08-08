@@ -152,7 +152,7 @@ class PassengersReviewActivity : AppCompatActivity() {
 
     private fun setIcon() {
         prBinding.passengersSatisfactionIv.setOnClickListener {
-            mannerCount = "good"
+            mannerCount = "GOOD"
 
             prBinding.passengersSatisfactionIv.apply {
                 setImageResource(R.drawable.review_satisfaction_update_icon)
@@ -177,7 +177,7 @@ class PassengersReviewActivity : AppCompatActivity() {
         }
 
         prBinding.passengersCommonlyIv.setOnClickListener {
-            mannerCount = "normal"
+            mannerCount = "NORMAL"
 
             prBinding.passengersCommonlyIv.apply {
                 setImageResource(R.drawable.review_commonly_update_icon)
@@ -204,7 +204,7 @@ class PassengersReviewActivity : AppCompatActivity() {
 
 
         prBinding.passengersDissatisfactionIv.setOnClickListener {
-            mannerCount = "bad"
+            mannerCount = "BAD"
 
             prBinding.passengersDissatisfactionIv.apply {
                 setImageResource(R.drawable.review_dissatisfaction_update_icon)

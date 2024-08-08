@@ -76,9 +76,8 @@ class PostSearchFragment : Fragment() {
     }
 
     private fun setSearchData() {
-        val call = RetrofitServerConnect.service
         CoroutineScope(Dispatchers.IO).launch {
-            call.getServerPostData("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            RetrofitServerConnect.create(requireContext()).getServerPostData("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
                         //println(response.body()!!.content)
@@ -94,7 +93,7 @@ class PostSearchFragment : Fragment() {
                         s.add(PostReadAllResponse())*/
 
 
-                        for (i in response.body()!!.content.indices) {
+                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
                             //탑승자 null체크
                             var part = 0
                             var location = ""

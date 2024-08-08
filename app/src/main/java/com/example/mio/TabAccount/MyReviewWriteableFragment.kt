@@ -135,8 +135,9 @@ class MyReviewWriteableFragment : Fragment() {
                     if (response.isSuccessful) {
                         //데이터 청소
                         reviewWriteableReadAllData.clear()
-
-                        for (i in response.body()!!.content.indices) {
+                        
+                        //데드라인 체크안함
+                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" }.indices) {
                             //탑승자 null체크
                             var part = 0
                             var location = ""

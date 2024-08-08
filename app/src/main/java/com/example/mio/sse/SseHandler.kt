@@ -97,9 +97,6 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
                 Log.e("Notification", "Failed to create notification: ${e.message}")
             }
         }
-
-
-
     }
 
     override fun onComment(comment: String?) {
@@ -111,10 +108,10 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
         //java.net.SocketTimeoutException: timeout
     }
 
-    private fun sendNotification(title: String, message: String) {
-        /*createChannel()
-        setNotification(message, context)*/
-        /*val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+   /* private fun sendNotification(title: String, message: String) {
+        *//*createChannel()
+        setNotification(message, context)*//*
+        *//*val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "sse_channel_id"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -131,8 +128,8 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .build()
 
-        notificationManager.notify(0, notification)*/
-       /* val builder = NotificationCompat.Builder(context, "channelId")
+        notificationManager.notify(0, notification)*//*
+       *//* val builder = NotificationCompat.Builder(context, "channelId")
             .setSmallIcon(R.drawable.top_icon_vector)
             .setContentTitle("알림")
             .setContentText(message)
@@ -144,8 +141,8 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
             Log.d("Notification", "Notification created successfully")
         } catch (e: Exception) {
             Log.e("Notification", "Failed to create notification: ${e.message}")
-        }*/
-    }
+        }*//*
+    }*/
 
     /*private fun createChannel() {
         val channel = NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_DEFAULT).apply {

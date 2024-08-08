@@ -84,33 +84,35 @@ class MainActivity : AppCompatActivity() {
             requestNotificationPermission()
         }
 
-        //foreground실행행
-       serviceIntent =
-            Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
+       if (saveSharedPreferenceGoogleLogin.getSharedAlarm(this)) {
+           //foreground실행행
+           serviceIntent =
+               Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
 
 
-        //절전사용금지앱
-        val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
-        var isWhiteListing = false
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            isWhiteListing = pm.isIgnoringBatteryOptimizations(applicationContext.packageName)
-        }
-        if (!isWhiteListing) {
-            val intent = Intent()
-            intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-            intent.data = Uri.parse("package:" + applicationContext.packageName)
-            startActivity(intent)
-        }
+           //절전사용금지앱
+           val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
+           var isWhiteListing = false
+           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+               isWhiteListing = pm.isIgnoringBatteryOptimizations(applicationContext.packageName)
+           }
+           if (!isWhiteListing) {
+               val intent = Intent()
+               intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+               intent.data = Uri.parse("package:" + applicationContext.packageName)
+               startActivity(intent)
+           }
 
-        if (!foregroundServiceRunning()) { // 이미 작동중인 동일한 서비스가 없다면 실행
-            serviceIntent =
-                Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // 빌드 버전코드 "O" 보다 높은 버전일 경우
-                startService(serviceIntent) // 서비스 인텐트를 전달한 서비스 시작 메서드 실행
-            }
-        } else {
-            serviceIntent = SSEForegroundService().serviceIntent
-        }
+           if (!foregroundServiceRunning()) { // 이미 작동중인 동일한 서비스가 없다면 실행
+               serviceIntent =
+                   Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
+               if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // 빌드 버전코드 "O" 보다 높은 버전일 경우
+                   startService(serviceIntent) // 서비스 인텐트를 전달한 서비스 시작 메서드 실행
+               }
+           } else {
+               serviceIntent = SSEForegroundService().serviceIntent
+           }
+       }
 
 
 
@@ -248,7 +250,7 @@ class MainActivity : AppCompatActivity() {
                 isSettingClicked = true
 
                 //setFragment(TAG_SETTING, SettingsFragment())
-                changeFragment(SettingsFragment())
+                changeFragment(SettingFragment())
                 toolbarType = "설정"
                 setToolbarView(toolbarType)
 
@@ -461,6 +463,18 @@ class MainActivity : AppCompatActivity() {
                 setFragment(TAG_HOME, homeFragment)
 
                 mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
+            }
+
+            1234 -> {
+                Log.e("flag", "1234")
+                // HomeFragment로 전환
+                oldFragment = HomeFragment()
+                oldTAG = TAG_HOME
+                mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
+
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_content, HomeFragment())
+                    .commit()
             }
         }
     }

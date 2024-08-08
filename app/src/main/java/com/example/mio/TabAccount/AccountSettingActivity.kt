@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mio.*
+import com.example.mio.Model.AddressData
 import com.example.mio.Model.EditAccountData
 import com.example.mio.Model.Place
 import com.example.mio.Model.User
@@ -34,7 +35,7 @@ class AccountSettingActivity : AppCompatActivity() {
     private var sendAccountData: EditAccountData? = null
     private var isGender = false //false남 true여
     private var isSmoker = false //false비흡, true 흡
-    private var setLocation: Place? = null
+    private var setLocation: AddressData? = null
     private var setLocation2: String? = null
     private var setAccountNumber : String? = null
 
@@ -266,7 +267,7 @@ class AccountSettingActivity : AppCompatActivity() {
         //println(userId)
 
         sendAccountData = if (setLocation != null) {
-            EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation?.place_name.toString())
+            EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation?.address?.region_3depth_name.toString())
         } else {
             EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation2.toString())
         }
@@ -310,11 +311,11 @@ class AccountSettingActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
             when (it.resultCode) {
                 AppCompatActivity.RESULT_OK -> {
-                    val locationData : Place? = it.data?.getSerializableExtra("locationData") as Place?
+                    val locationData : AddressData? = it.data?.getSerializableExtra("locationData") as AddressData?
                     val locationData2 = it.data?.getStringExtra("locationData2")
 
                     Log.e("AccountSettingREquestAc", locationData2.toString()) //서울 노원구 상계동
-                    Log.e("AccountSettingREquestAc", locationData.toString()) //place데이터
+                    Log.e("AccountSettingREquestAc", locationData.toString()) //AddressData
 
                     val accountNumber = it.data?.getStringExtra("AccountNumber") ?: ""
                     val handler = Handler(Looper.getMainLooper())
@@ -337,7 +338,7 @@ class AccountSettingActivity : AppCompatActivity() {
                         3 -> { //검색해서 선택
                             handler.post {
                                 setLocation = locationData
-                                aBinding?.asLocationTv?.text = setLocation?.road_address_name.toString() + " " + setLocation?.place_name.toString()
+                                aBinding?.asLocationTv?.text = locationData?.address?.region_3depth_name//setLocation?.road_address_name.toString() + " " + setLocation?.place_name.toString()
                                 Log.e("AccountSettingREquestAc3", locationData2.toString())
                                 Log.e("AccountSettingREquestAc3", locationData.toString())
                             }

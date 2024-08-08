@@ -168,9 +168,8 @@ class LoginActivity : AppCompatActivity() {
 
     private fun signInCheck(userInfoToken : TokenRequest) {
         println("signInCheck")
-        val call = RetrofitServerConnect.service
 
-        call.addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
+        RetrofitServerConnect.create(this@LoginActivity).addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
             override fun onResponse(
                 call: retrofit2.Call<LoginResponsesData>,
                 response: retrofit2.Response<LoginResponsesData?>
@@ -317,7 +316,7 @@ class LoginActivity : AppCompatActivity() {
         resultLauncher.launch(signIntent)
     }
 
-    fun refreshAccessToken(refreshToken: String) {
+    /*fun refreshAccessToken(refreshToken: String) {
         val call = RetrofitServerConnect.service
         val refreshTokenRequest = RefreshTokenRequest(refreshToken)
         Log.e("LoginActivity", "순서체크refresh")
@@ -329,7 +328,7 @@ class LoginActivity : AppCompatActivity() {
                 response: retrofit2.Response<LoginResponsesData?>
             ) {
                 if (response.isSuccessful) {
-                    /*val builder =  OkHttpClient.Builder()
+                    *//*val builder =  OkHttpClient.Builder()
                         .connectTimeout(1, TimeUnit.SECONDS)
                         .readTimeout(30, TimeUnit.SECONDS)
                         .writeTimeout(15, TimeUnit.SECONDS)
@@ -338,7 +337,7 @@ class LoginActivity : AppCompatActivity() {
                         putExtra("accessToken", saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString())
                         putExtra("expireDate", saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString()).toString())
                     }
-                    builder.build()*/
+                    builder.build()*//*
 
                     saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, response.body()!!.accessToken).toString()
                     saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, response.body()!!.accessTokenExpiresIn.toString())
@@ -375,7 +374,7 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
             }
         })
-        /*val client = OkHttpClient()
+        *//*val client = OkHttpClient()
         val requestBody = FormBody.Builder()
             .add("grant_type", "refresh_token")
             .add("refresh_token", refreshToken)
@@ -396,12 +395,12 @@ class LoginActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call, response: Response) {
                 if (response.isSuccessful) {
-                    *//*val jsonResponse = JSONObject(response.body!!.string())
+                    *//**//*val jsonResponse = JSONObject(response.body!!.string())
                     val newAccessToken = jsonResponse.getString("access_token")
 
                     // TODO: 새로운 액세스 토큰을 저장하고 사용
                     // 여기에서 새로운 액세스 토큰을 저장하고 필요한 요청에 사용합니다.
-                    println(newAccessToken)*//*
+                    println(newAccessToken)*//**//*
                     try {
                         val jsonObject = JSONObject(response.body!!.string())
                         val message = jsonObject.keys() //.toString(5)
@@ -440,8 +439,8 @@ class LoginActivity : AppCompatActivity() {
                     Log.e("Refresh Token", "Failed to refresh access token")
                 }
             }
-        })*/
-    }
+        })*//*
+    }*/
 
     //클립보드에 복사하기
     private fun createClipData(message : String) {

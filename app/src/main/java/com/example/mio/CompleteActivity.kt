@@ -85,8 +85,6 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.accountTransferLl.setOnClickListener {
                 createClipData(cBinding.completeDriverAccountNumber.text as String)
             }
-
-
         } else if (type == "DRIVER") {
             val layoutParams = cBinding.completeEntireLl.layoutParams as ViewGroup.MarginLayoutParams
             val newMarginTop = 180
@@ -105,37 +103,21 @@ class CompleteActivity : AppCompatActivity() {
         }
 
         cBinding.closeScreen.setOnClickListener {
-            if (category == "carpool") {
-                val intent = Intent(this@CompleteActivity, CarpoolTabFragment::class.java).apply {
-                    putExtra("flag", 123)
-                }
-                setResult(RESULT_OK, intent)
-                finish()
-            } else {
-                val intent = Intent(this@CompleteActivity, TaxiTabFragment::class.java).apply {
-                    putExtra("flag", 123)
-                }
-                setResult(RESULT_OK, intent)
-                finish()
+            val intent = Intent(this@CompleteActivity, MainActivity::class.java).apply {
+                putExtra("flag", 1234)
             }
+            setResult(RESULT_OK, intent)
+            finish()
         }
 
         // 뒤로가기 동작 핸들링
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (category == "carpool") {
-                    val intent = Intent(this@CompleteActivity, CarpoolTabFragment::class.java).apply {
-                        putExtra("flag", 123)
-                    }
-                    setResult(RESULT_OK, intent)
-                    finish()
-                } else {
-                    val intent = Intent(this@CompleteActivity, TaxiTabFragment::class.java).apply {
-                        putExtra("flag", 123)
-                    }
-                    setResult(RESULT_OK, intent)
-                    finish()
+                val intent = Intent(this@CompleteActivity, MainActivity::class.java).apply {
+                    putExtra("flag", 1234)
                 }
+                setResult(RESULT_OK, intent)
+                finish()
             }
         })
     }

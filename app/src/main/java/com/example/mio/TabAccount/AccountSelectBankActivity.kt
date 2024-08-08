@@ -1,5 +1,6 @@
 package com.example.mio.TabAccount
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
@@ -7,6 +8,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -104,7 +106,21 @@ class AccountSelectBankActivity : AppCompatActivity() {
             if (currentPage > 0) {
                 binding.accountVf.showPrevious()
                 currentPage -= 1
+                // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                if (inputMethodManager.isActive) {
+                    // 가상 키보드가 올라가 있다면 내립니다.
+                    inputMethodManager.hideSoftInputFromWindow(binding.backArrow.windowToken, 0)
+                }
             } else {
+                // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                if (inputMethodManager.isActive) {
+                    // 가상 키보드가 올라가 있다면 내립니다.
+                    inputMethodManager.hideSoftInputFromWindow(binding.backArrow.windowToken, 0)
+                }
                 this@AccountSelectBankActivity.finish()
             }
         }

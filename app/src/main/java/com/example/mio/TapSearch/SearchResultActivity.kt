@@ -10,6 +10,7 @@ import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.RecentSearchAdapter
 import com.example.mio.Adapter.SearchResultAdapter
@@ -174,8 +175,7 @@ class SearchResultActivity : AppCompatActivity() { //검색창
 
 
     private fun filterAndHighlightText(query: String) {
-        val call = RetrofitServerConnect.service
-        call.getLocationPostData(query).enqueue(object :
+        RetrofitServerConnect.create(this@SearchResultActivity).getLocationPostData(query).enqueue(object :
             Callback<List<LocationReadAllResponse>> {
             override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
                 if (response.isSuccessful) {

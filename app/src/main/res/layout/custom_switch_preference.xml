@@ -15,6 +15,7 @@
         android:track="@drawable/switch_track_selector"
         android:checked="true"
         android:switchMinWidth="35dp"
+        android:clickable="true"
         tools:ignore="UseSwitchCompatOrMaterialXml" />
 
 </RelativeLayout>

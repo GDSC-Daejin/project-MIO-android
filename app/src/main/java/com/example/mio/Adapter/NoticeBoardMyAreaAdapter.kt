@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mio.Model.Content
 import com.example.mio.Model.LocationReadAllResponse
 import com.example.mio.Model.PostData
 import com.example.mio.R
@@ -14,7 +15,7 @@ import java.lang.ref.WeakReference
 
 class NoticeBoardMyAreaAdapter : RecyclerView.Adapter<NoticeBoardMyAreaAdapter.NoticeBoardMyAreaViewHolder>(){
     private lateinit var binding : PostItemBinding
-    var postAreaItemData : List<LocationReadAllResponse>? = null
+    var postAreaItemData = ArrayList<Content?>()
     private lateinit var context : Context
 
     init {
@@ -32,14 +33,14 @@ class NoticeBoardMyAreaAdapter : RecyclerView.Adapter<NoticeBoardMyAreaAdapter.N
         var postParticipantTotal = binding.postParticipationTotal
         var postCost = binding.postCost
 
-        fun bind(areaData: LocationReadAllResponse, position : Int) {
+        fun bind(areaData: Content, position : Int) {
             this.position = position
             //accountId.text = accountData.accountID
             val s = context.getString(R.string.setText, areaData.targetDate, areaData.targetTime)
             postTitle.text = areaData.title
             postDate.text = s
             postLocation.text = areaData.location
-            postParticipation.text = areaData.participants?.size.toString()
+            postParticipation.text = areaData.participantsCount.toString()
             postParticipantTotal.text = areaData.numberOfPassengers.toString()
             postCost.text = context.getString(R.string.setCost, areaData.cost.toString())
 
@@ -55,10 +56,10 @@ class NoticeBoardMyAreaAdapter : RecyclerView.Adapter<NoticeBoardMyAreaAdapter.N
     }
 
     override fun onBindViewHolder(holder: NoticeBoardMyAreaViewHolder, position: Int) {
-        holder.bind(postAreaItemData!![holder.adapterPosition], position)
+        holder.bind(postAreaItemData[position]!!, position)
 
         holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, postAreaItemData!![holder.adapterPosition].postId)
+            itemClickListener.onClick(it, holder.adapterPosition, postAreaItemData[holder.adapterPosition]!!.postId)
         }
 
     /*binding.homeRemoveIv.setOnClickListener {
@@ -88,7 +89,7 @@ class NoticeBoardMyAreaAdapter : RecyclerView.Adapter<NoticeBoardMyAreaAdapter.N
     }
 
     override fun getItemCount(): Int {
-        return postAreaItemData?.size ?: 0
+        return postAreaItemData.size
     }
 
     override fun getItemId(position: Int): Long {

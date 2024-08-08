@@ -85,6 +85,7 @@
                     android:layout_marginEnd="30dp"
                     android:layout_weight="1"
                     android:background="@null"
+                    android:ems = "7"
                     android:ellipsize="end"
                     android:gravity="start|center_vertical"
                     android:hint="장소를 입력해주세요"
@@ -252,6 +253,20 @@
 
                 </LinearLayout>
 
+                <TextView
+                    android:id="@+id/post_more_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="15dp"
+                    android:fontFamily="@font/pretendard_extrabold"
+                    android:text="+2"
+                    android:textColor="@color/mio_blue_4"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -263,7 +278,7 @@
                 android:layout_marginBottom="5dp"
                 android:background="@drawable/round_layout3_search"
                 android:gravity="center"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_weight="1"

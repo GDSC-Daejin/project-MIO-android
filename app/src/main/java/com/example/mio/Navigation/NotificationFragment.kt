@@ -427,7 +427,7 @@ class NotificationFragment : Fragment() {
                             val responseData = response.body()
                             Log.e("indexout check", response.body().toString())
                             if (responseData != null) {
-                                if (responseData.isDeleteYN == "N") {
+                                if (responseData.isDeleteYN == "N" && responseData.postType == "BEFORE_DEADLINE") {
                                     CoroutineScope(Dispatchers.IO).launch {
                                         response.body()?.let {
                                             notificationPostAllData.add(

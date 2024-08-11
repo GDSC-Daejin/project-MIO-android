@@ -142,6 +142,7 @@
             android:name=".MainActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:hardwareAccelerated="true"
             tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".NoticeBoard.NoticeBoardEditActivity"

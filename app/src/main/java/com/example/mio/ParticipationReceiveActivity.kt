@@ -49,6 +49,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         setContentView(pBinding.root)
         postId = intent.getIntExtra("postId", 0) as Int
         Log.d("ParticipationReceiveActivity PostId Test", postId.toString()) //ok완료
+        initPostDeadLine()
         //기기의 뒤로가기 콜백
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -158,6 +159,32 @@ class ParticipationReceiveActivity : AppCompatActivity() {
 
     }
 
+    private fun initPostDeadLine() {
+        RetrofitServerConnect.create(this@ParticipationReceiveActivity).getPostIdDetailSearch(postId).enqueue(object : Callback<Content> {
+            override fun onResponse(call: Call<Content>, response: Response<Content>) {
+                if (response.isSuccessful) {
+                    val responseData = response.body()
+                    Log.e("indexout check", response.body().toString())
+                    if (responseData != null) {
+                        if (responseData.postType != "BEFORE_DEADLINE") {
+                            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_gray_4)) //마감
+                            pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
+                            pBinding.receiveDeadlineBtn.text = "마감완료"
+                            pBinding.receiveDeadlineBtn.isClickable = false
+                        }
+                    }
+                } else {
+                    Log.e("fail receive", response.code().toString())
+                    Log.e("fail receive", response.errorBody()?.string()!!)
+                }
+            }
+
+            override fun onFailure(call: Call<Content>, t: Throwable) {
+                Log.e("Failure receive", t.toString())
+            }
+        })
+    }
+
     private fun initParticipationRecyclerView() {
         //로딩창 실행
         loadingDialog = LoadingProgressDialog(this)
@@ -252,7 +279,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                             if (participantsUserAllData.isNotEmpty()) {
                                 pBinding.participationRv.visibility = View.VISIBLE
                                 pBinding.nonParticipation.visibility = View.GONE
-                                pBinding.receiveDeadlineBtn.visibility = View.GONE
+                                //pBinding.receiveDeadlineBtn.visibility = View.GONE
                             } else {
                                 pBinding.participationRv.visibility = View.GONE
                                 pBinding.nonParticipation.visibility = View.VISIBLE
@@ -291,11 +318,11 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         if (participantsUserAllData.isNotEmpty()) {
             pBinding.participationRv.visibility = View.VISIBLE
             pBinding.nonParticipation.visibility = View.GONE
-            pBinding.receiveDeadlineBtn.visibility = View.GONE
+            //pBinding.receiveDeadlineBtn.visibility = View.GONE
         } else {
             pBinding.participationRv.visibility = View.GONE
             pBinding.nonParticipation.visibility = View.VISIBLE
-            pBinding.receiveDeadlineBtn.visibility = View.VISIBLE
+            //pBinding.receiveDeadlineBtn.visibility = View.VISIBLE
         }
         participationAdapter.notifyDataSetChanged()
     }

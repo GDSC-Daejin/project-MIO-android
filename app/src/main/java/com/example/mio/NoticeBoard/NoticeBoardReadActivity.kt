@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.*
 import android.util.Log
 import android.view.*
+import android.view.ViewGroup.LayoutParams
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.LinearLayout
@@ -152,17 +153,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
     private var adRequest : AdRequest? = null
 
-    //실시간 sse 통신
-    private lateinit var sseClient: SSEClient
-    private lateinit var eventSource:BackgroundEventSource
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nbrBinding = ActivityNoticeBoardReadBinding.inflate(layoutInflater)
         sharedPref = SharedPref(this)
         sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.toString()
-        sseClient = SSEClient()
-        createChannel()
+
         /////
         val type = intent.getStringExtra("type")
         tabType = intent.getStringExtra("tabType").toString()
@@ -1836,10 +1833,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             override fun onResponse(call: Call<CheckParticipateData>, response: Response<CheckParticipateData>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
+                    //true가 예약된 게 없음
                     if (responseData?.check == true) {
                         Log.d("setApplyNoticeBoard", "API call success")
                         Log.d("setApplyNoticeBoard", "Response body: ${response.body()}")
-
+                        Log.d("setApplyNoticeBoard", "Response body: $isNotDeadLine")
                         //예약된 게 없음
                         //현재 시간이 타겟 시간 이전이면 true, 그렇지 않으면 false
                         if (isNotDeadLine == true) {
@@ -1873,9 +1871,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 }
                                 alertDialog.show()
                             } else {
-                                //예약된 것이 있음
-                                checkResponseBody = "이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
-
+                                checkResponseBody = "마감된 게시글입니다."
+                                //사용할 곳
                                 val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
                                 val view = layoutInflater.inflate(R.layout.dialog_layout, null)
                                 val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
@@ -1883,28 +1880,27 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     .create()
                                 val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
                                 val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
-                                val dialogRightBtn =  view.findViewById<View>(R.id.dialog_right_btn)
+                                val dialogRightBtn =  view.findViewById<Button>(R.id.dialog_right_btn)
+                                dialogLeftBtn.visibility = View.GONE
+                                dialogRightBtn.text = "확인"
+
+                                // 다이얼로그의 버튼을 가운데 정렬
+                                val params = dialogRightBtn.layoutParams as LinearLayout.LayoutParams
+                                params.width = LayoutParams.MATCH_PARENT
+                                dialogRightBtn.layoutParams = params
+
 
                                 dialogContent.text = checkResponseBody //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
-                                //아니오
-                                dialogLeftBtn.setOnClickListener {
-                                    alertDialog.dismiss()
-                                }
-                                //예
+                                //확인
                                 dialogRightBtn.setOnClickListener {
                                     alertDialog.dismiss()
-                                    val intent = Intent(this@NoticeBoardReadActivity, ApplyNextActivity::class.java).apply {
-                                        putExtra("postId", temp!!.postID)
-                                    }
-                                    startActivity(intent)
-                                    finish()
-                                    //this@NoticeBoardReadActivity.finish()
                                 }
                                 alertDialog.show()
                             }
                         } else {
-                            checkResponseBody = "마감된 게시글입니다."
-                            //사용할 곳
+                            //예약된 것이 있음
+                            checkResponseBody = "이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
+
                             val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
                             val view = layoutInflater.inflate(R.layout.dialog_layout, null)
                             val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
@@ -1912,14 +1908,22 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 .create()
                             val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
                             val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
-                            val dialogRightBtn =  view.findViewById<Button>(R.id.dialog_right_btn)
-                            dialogLeftBtn.visibility = View.GONE
-                            dialogRightBtn.text = "확인"
+                            val dialogRightBtn =  view.findViewById<View>(R.id.dialog_right_btn)
 
                             dialogContent.text = checkResponseBody //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
-                            //확인
+                            //아니오
+                            dialogLeftBtn.setOnClickListener {
+                                alertDialog.dismiss()
+                            }
+                            //예
                             dialogRightBtn.setOnClickListener {
                                 alertDialog.dismiss()
+                                val intent = Intent(this@NoticeBoardReadActivity, ApplyNextActivity::class.java).apply {
+                                    putExtra("postId", temp!!.postID)
+                                }
+                                startActivity(intent)
+                                finish()
+                                //this@NoticeBoardReadActivity.finish()
                             }
                             alertDialog.show()
                         }
@@ -2625,7 +2629,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         return chip
     }
 
-    private fun sendAlarmData(status : String, content : String?, data : PostData?) {
+   /* private fun sendAlarmData(status : String, content : String?, data : PostData?) {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
@@ -2645,8 +2649,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
 
@@ -2689,54 +2693,15 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 }
             })
         }
-    }
-    private fun startEventSource(user_id : Long?) {
-        val userId = user_id.toString()
-        eventSource = BackgroundEventSource //백그라운드에서 이벤트를 처리하기위한 EVENTSOURCE의 하위 클래스
-            .Builder(
-                SseHandler(this@NoticeBoardReadActivity),
-                EventSource.Builder(
-                    ConnectStrategy
-                        .http(URL("https://mioserver.o-r.kr/v1/subscribe/${userId}"))
-                        .header("Accept", "text/event-stream")
-                        // 서버와의 연결을 설정하는 타임아웃
-                        .connectTimeout(10, TimeUnit.SECONDS)
-                        // 서버로부터 데이터를 읽는 타임아웃 시간
-                        .readTimeout(600, TimeUnit.SECONDS)
-                )
-            )
-            .threadPriority(Thread.MAX_PRIORITY) //백그라운드 이벤트 처리를 위한 스레드 우선 순위를 최대로 설정합니다.
-            .build()
-        // EventSource 연결 시작
-        eventSource.start()
-    }
-    private fun getManager() : NotificationManager {
+    }*/
+
+   /* private fun getManager() : NotificationManager {
         return getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-    }
-
-    private fun createChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelID, channelName,
-                NotificationManager.IMPORTANCE_DEFAULT).apply {
-                description = "참여 알림"
-            }
-            //이 채널에 게시된 알림이 해당 기능을 지원하는 장치에서 알림 표시등을 표시할지 여부를 설정합니다.
-            channel.enableLights(true)
-            //이 채널에 게시된 알림이 해당 기능을 지원하는 장치에서 진동 등을 표시할지 여부를 설정합니다.
-            channel.enableVibration(true)
-            //이 채널에 게시된 알림에 대한 알림 표시등 색상을 설정
-            channel.lightColor = Color.GREEN
-            //이 채널에 게시된 알림이 전체 또는 수정된 형태로 잠금 화면에 표시되는지 여부를 설정
-            channel.lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-
-            //채널생성
-            getManager().createNotificationChannel(channel)
-        }
-    }
+    }*/
 
 
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    /*@RequiresApi(Build.VERSION_CODES.O)
     private fun setNotification(content : String?, data : PostData) {
 
         //var alarmManager : AlarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -2780,7 +2745,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         getManager().notify(notificationChannelID, notificationCreate)
         //alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, setAlarmTime!!.timeInMillis, pendingIntent)
-    }
+    }*/
 
 
     private fun initAd() {

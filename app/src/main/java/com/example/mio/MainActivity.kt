@@ -43,7 +43,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), FinishAdInterface {
     private lateinit var mBinding : ActivityMainBinding
 
     private val TAG_HOME = "home_fragment"
@@ -759,7 +759,9 @@ class MainActivity : AppCompatActivity() {
 
             if (System.currentTimeMillis() > backPressedTime + 2000) {
                 backPressedTime = System.currentTimeMillis()
-                Toast.makeText(this@MainActivity, "뒤로 버튼을 한 번 더 누르시면 종료됩니다.", Toast.LENGTH_SHORT).show()
+                val dialog = FinishAdFragment(this@MainActivity, this@MainActivity)
+                dialog.isCancelable = false
+                dialog.show(this@MainActivity.supportFragmentManager, "FinishAdDialog")
                 return
             }
 
@@ -780,5 +782,9 @@ class MainActivity : AppCompatActivity() {
                 this@MainActivity.finishAffinity()
             }
         }
+    }
+
+    override fun onYesButtonClick() {
+        this@MainActivity.finishAffinity()
     }
 }

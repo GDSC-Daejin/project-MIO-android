@@ -10,12 +10,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.example.mio.R
 import com.example.mio.databinding.FragmentBottomAdBinding
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdLoader
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.*
 import com.google.android.gms.ads.nativead.MediaView
 import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.android.gms.ads.nativead.NativeAdView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -126,6 +124,8 @@ class BottomAdFragment : BottomSheetDialogFragment() {
         return dialog
     }
     private fun initAd() { //전면광고
+        val videoOptions = VideoOptions.Builder().setStartMuted(true).build()
+        val nativeAdOptions = NativeAdOptions.Builder().setVideoOptions(videoOptions).build()
         val adLoader = AdLoader.Builder(requireContext(), "ca-app-pub-3940256099942544/2247696110")
             .forNativeAd { ad ->
                 // 네이티브 광고 로드 완료 시 실행되는 콜백
@@ -140,6 +140,12 @@ class BottomAdFragment : BottomSheetDialogFragment() {
                     Log.e("ad test", adError.message)
                 }
             })
+            .withNativeAdOptions(
+                NativeAdOptions.Builder()
+                    // Methods in the NativeAdOptions.Builder class can be
+                    // used here to specify individual options settings.
+                    .setVideoOptions(videoOptions).build()
+            )
             .build()
 
         adLoader.loadAd(AdRequest.Builder().build())

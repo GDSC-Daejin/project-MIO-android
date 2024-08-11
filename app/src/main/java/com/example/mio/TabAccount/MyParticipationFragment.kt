@@ -483,20 +483,6 @@ class MyParticipationFragment : Fragment() { //두번쨰
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            /*taxiAllData.add(post)
-                            calendarTaxiAllData.add(post) //데이터 전부 들어감
-
-                            //들어간 데이터를 key로 분류하여 저장하도록함
-                            selectCalendarData[post.postTargetDate] = arrayListOf()
-                            selectCalendarData[post.postTargetDate]!!.add(post)
-
-                            println(selectCalendarData)*/
-                            //setData()
-                        }
-                        //livemodel을 통해 저장
-                        //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
-                        //noticeBoardAdapter!!.notifyDataSetChanged()
                     }
                     //edit
                     1 -> {

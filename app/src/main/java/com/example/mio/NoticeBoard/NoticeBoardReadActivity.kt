@@ -1296,12 +1296,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         /////
-
+        initParticipationCheck()
         api.getPostIdDetailSearch(temp?.postID!!).enqueue(object : Callback<Content> {
             override fun onResponse(call: Call<Content>, response: Response<Content>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
-                    if (responseData != null && responseData.isDeleteYN == "N" && responseData.postType == "BEFORE_DEADLINE") {
+                    if (responseData != null && responseData.isDeleteYN == "N") {
                         responseData.let {
                             temp = PostData(
                                 it.user.studentId,
@@ -1324,10 +1324,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 it.longitude
                             )
                             // 글쓴이가 자기자신 이라면 , 게시글 참가 + 글쓴이가 자기 자신이라면 받은 신청 보러가기고
-                            Log.e("NoticeBoardRead WriterCheck", email)
-                            Log.e("NoticeBoardRead WriterCheck", temp!!.user.email)
-                            Log.e("NoticeBoardRead WriterCheck", isParticipation.toString())
-                            Log.e("NoticeBoardRead WriterCheck", (email == temp!!.user.email).toString())
+                            Log.e("NoticeBoardRead refresh", email)
+                            Log.e("NoticeBoardRead refresh", temp!!.user.email)
+                            Log.e("NoticeBoardRead refresh", isParticipation.toString())
+                            Log.e("NoticeBoardRead refresh", (email == temp!!.user.email).toString())
 
                             writerEmail = temp!!.user.email
                             //tempProfile = intent.getSerializableExtra("uri") as String
@@ -1404,7 +1404,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             nbrBinding.readTitle.text = temp!!.postTitle
                             nbrBinding.readNumberOfPassengersTotal.text = temp!!.postParticipationTotal.toString()
                             nbrBinding.readNumberOfPassengers.text = temp!!.postParticipation.toString()
-                            Log.e("READ", temp!!.postLocation.split(" ").toString())
+                            //Log.e("READ", temp!!.postLocation.split(" ").toString())
                             nbrBinding.readLocation.text = if (temp!!.postLocation.split("/").last().isEmpty()) {
                                 temp!!.postLocation.split("/").first()
                             } else {
@@ -1441,9 +1441,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 }
                             }
                         }
-                    } else { //지워지거나 마감기한지나거나 이미 완료된 게시글
-                        finish()
                     }
+                /*else { //지워지거나 마감기한지나거나 이미 완료된 게시글
+                        finish()
+                    }*/
                 } else {
                     Log.e("notice read detail", response.code().toString())
                     Log.e("notice read detail", response.errorBody()?.string()!!)
@@ -1630,10 +1631,42 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     nbrBinding.readApplyBtn.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@NoticeBoardReadActivity, R.color.mio_blue_5))
                 }
             }
-            nbrBinding.readApplyBtn.setOnClickListener {
-                Log.e("readApplyBtn2", "clickckckckckckckckck")
-                setApplyNoticeBoard()
+
+            if (isNotDeadLine == true) {
+                nbrBinding.readApplyBtn.setOnClickListener {
+                    Log.e("readApplyBtn2", "clickckckckckckckckck")
+                    setApplyNoticeBoard()
+                }
+            } else {
+                nbrBinding.readApplyBtn.setOnClickListener {
+                    checkResponseBody = "마감된 게시글입니다."
+                    //사용할 곳
+                    val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
+                    val view = layoutInflater.inflate(R.layout.dialog_layout, null)
+                    val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
+                        .setView(view)
+                        .create()
+                    val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
+                    val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
+                    val dialogRightBtn =  view.findViewById<Button>(R.id.dialog_right_btn)
+                    dialogLeftBtn.visibility = View.GONE
+                    dialogRightBtn.text = "확인"
+
+                    // 다이얼로그의 버튼을 가운데 정렬
+                    val params = dialogRightBtn.layoutParams as LinearLayout.LayoutParams
+                    params.width = LayoutParams.MATCH_PARENT
+                    dialogRightBtn.layoutParams = params
+
+
+                    dialogContent.text = checkResponseBody //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
+                    //확인
+                    dialogRightBtn.setOnClickListener {
+                        alertDialog.dismiss()
+                    }
+                    alertDialog.show()
+                }
             }
+
         } else if (isParticipation && email != temp?.user?.email) { //신청은 되있으나 글쓴이가 아닐 때는 신청취소쪽으로
             Log.e("participantApplyBtnSet", isParticipation.toString())
             Log.e("participantApplyBtnSet", email)
@@ -1654,109 +1687,139 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 }
             }
 
-            nbrBinding.readApplyBtn.setOnClickListener {
-                Log.e("readApplyBtn3", "clickckckckckckckckck")
-                val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
-                val view = layoutInflater.inflate(R.layout.dialog_layout, null)
-                val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
-                    .setView(view)
-                    .create()
-                val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
-                val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
-                val dialogRightBtn = view.findViewById<View>(R.id.dialog_right_btn)
+            if (isNotDeadLine == true) {
+                nbrBinding.readApplyBtn.setOnClickListener {
+                    Log.e("readApplyBtn3", "clickckckckckckckckck")
+                    val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
+                    val view = layoutInflater.inflate(R.layout.dialog_layout, null)
+                    val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
+                        .setView(view)
+                        .create()
+                    val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
+                    val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
+                    val dialogRightBtn = view.findViewById<View>(R.id.dialog_right_btn)
 
 // 다이얼로그가 보여진 후에 루트 뷰의 레이아웃 파라미터를 수정
-                alertDialog.setOnShowListener {
-                    val window = alertDialog.window
-                    window?.setBackgroundDrawableResource(android.R.color.transparent)
+                    alertDialog.setOnShowListener {
+                        val window = alertDialog.window
+                        window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-                    val layoutParams = window?.attributes
-                    layoutParams?.width = ViewGroup.LayoutParams.MATCH_PARENT // 다이얼로그의 폭을 MATCH_PARENT로 설정
-                    window?.attributes = layoutParams
+                        val layoutParams = window?.attributes
+                        layoutParams?.width = ViewGroup.LayoutParams.MATCH_PARENT // 다이얼로그의 폭을 MATCH_PARENT로 설정
+                        window?.attributes = layoutParams
 
-                    // 루트 뷰의 마진을 설정
-                    val rootView = view.parent as View
-                    val params = rootView.layoutParams as ViewGroup.MarginLayoutParams
-                    val marginInDp = 20
-                    val scale = this@NoticeBoardReadActivity.resources.displayMetrics.density
-                    val marginInPx = (marginInDp * scale + 0.5f).toInt()
-                    params.setMargins(marginInPx, 0, marginInPx, 0)
-                    rootView.layoutParams = params
-                }
-                dialogContent.text = "신청을 취소하시겠습니까?" //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
-                //아니오
-                dialogLeftBtn.setOnClickListener {
-                    alertDialog.dismiss()
-                }
-                //예
-                dialogRightBtn.setOnClickListener {
-                    val now = System.currentTimeMillis()
-                    val date = Date(now)
-                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-                    val currentDate = sdf.format(date)
-                    val formatter = DateTimeFormatter
-                        .ofPattern("yyyy-MM-dd HH:mm:ss")
-                        .withZone(ZoneId.systemDefault())
-                    val result: Instant = Instant.from(formatter.parse(currentDate))
-
-                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                    val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-                    val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-
-                    /////////interceptor
-                    val SERVER_URL = BuildConfig.server_URL
-                    val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                        .addConverterFactory(GsonConverterFactory.create())
-                    //Authorization jwt토큰 로그인
-                    val interceptor = Interceptor { chain ->
-                        var newRequest: Request
-                        if (token != null && token != "") { // 토큰이 없는 경우
-                            // Authorization 헤더에 토큰 추가
-                            newRequest =
-                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                            val expireDate: Long = getExpireDate.toLong()
-                            if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                                //refresh 들어갈 곳
-                                /*newRequest =
-                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                                val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
-                                startActivity(intent)
-                                finish()
-                                return@Interceptor chain.proceed(newRequest)
-                            }
-
-                        } else newRequest = chain.request()
-                        chain.proceed(newRequest)
+                        // 루트 뷰의 마진을 설정
+                        val rootView = view.parent as View
+                        val params = rootView.layoutParams as ViewGroup.MarginLayoutParams
+                        val marginInDp = 20
+                        val scale = this@NoticeBoardReadActivity.resources.displayMetrics.density
+                        val marginInPx = (marginInDp * scale + 0.5f).toInt()
+                        params.setMargins(marginInPx, 0, marginInPx, 0)
+                        rootView.layoutParams = params
                     }
-                    val builder = OkHttpClient.Builder()
-                    builder.interceptors().add(interceptor)
-                    val client: OkHttpClient = builder.build()
-                    retrofit.client(client)
-                    val retrofit2: Retrofit = retrofit.build()
-                    val api = retrofit2.create(MioInterface::class.java)
-                    /////////
-                    api.deleteParticipate(postId = temp!!.postID).enqueue(object : Callback<Void> {
-                        override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                            if (response.isSuccessful) {
-                                Log.d("check", response.code().toString())
-                            } else {
-                                println("faafa")
-                                Log.d("comment", response.errorBody()?.string()!!)
-                                Log.d("message", call.request().toString())
-                                println(response.code())
-                            }
-                        }
+                    dialogContent.text = "신청을 취소하시겠습니까?" //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
+                    //아니오
+                    dialogLeftBtn.setOnClickListener {
+                        alertDialog.dismiss()
+                    }
+                    //예
+                    dialogRightBtn.setOnClickListener {
+                        val now = System.currentTimeMillis()
+                        val date = Date(now)
+                        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
+                        val currentDate = sdf.format(date)
+                        val formatter = DateTimeFormatter
+                            .ofPattern("yyyy-MM-dd HH:mm:ss")
+                            .withZone(ZoneId.systemDefault())
+                        val result: Instant = Instant.from(formatter.parse(currentDate))
 
-                        override fun onFailure(call: Call<Void>, t: Throwable) {
-                            Log.d("error", t.toString())
+                        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+                        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
+                        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
+
+                        /////////interceptor
+                        val SERVER_URL = BuildConfig.server_URL
+                        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+                            .addConverterFactory(GsonConverterFactory.create())
+                        //Authorization jwt토큰 로그인
+                        val interceptor = Interceptor { chain ->
+                            var newRequest: Request
+                            if (token != null && token != "") { // 토큰이 없는 경우
+                                // Authorization 헤더에 토큰 추가
+                                newRequest =
+                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                                val expireDate: Long = getExpireDate.toLong()
+                                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                                    //refresh 들어갈 곳
+                                    /*newRequest =
+                                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                    val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                                    startActivity(intent)
+                                    finish()
+                                    return@Interceptor chain.proceed(newRequest)
+                                }
+
+                            } else newRequest = chain.request()
+                            chain.proceed(newRequest)
                         }
-                    })
-                    alertDialog.dismiss()
-                    refreshNoticeBoardReadData()
+                        val builder = OkHttpClient.Builder()
+                        builder.interceptors().add(interceptor)
+                        val client: OkHttpClient = builder.build()
+                        retrofit.client(client)
+                        val retrofit2: Retrofit = retrofit.build()
+                        val api = retrofit2.create(MioInterface::class.java)
+                        /////////
+                        RetrofitServerConnect.create(this).deleteParticipate(postId = temp!!.postID).enqueue(object : Callback<Void> {
+                            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                                if (response.isSuccessful) {
+                                    Log.d("check", response.code().toString())
+                                } else {
+                                    println("faafa")
+                                    Log.d("comment", response.errorBody()?.string()!!)
+                                    Log.d("message", call.request().toString())
+                                    println(response.code())
+                                }
+                            }
+
+                            override fun onFailure(call: Call<Void>, t: Throwable) {
+                                Log.d("error", t.toString())
+                            }
+                        })
+                        alertDialog.dismiss()
+                        refreshNoticeBoardReadData()
+                    }
+                    alertDialog.show()
                 }
-                alertDialog.show()
+            } else {
+                nbrBinding.readApplyBtn.setOnClickListener {
+                    checkResponseBody = "마감된 게시글입니다."
+                    //사용할 곳
+                    val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
+                    val view = layoutInflater.inflate(R.layout.dialog_layout, null)
+                    val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
+                        .setView(view)
+                        .create()
+                    val dialogContent = view.findViewById<TextView>(R.id.dialog_tv)
+                    val dialogLeftBtn = view.findViewById<View>(R.id.dialog_left_btn)
+                    val dialogRightBtn =  view.findViewById<Button>(R.id.dialog_right_btn)
+                    dialogLeftBtn.visibility = View.GONE
+                    dialogRightBtn.text = "확인"
+
+                    // 다이얼로그의 버튼을 가운데 정렬
+                    val params = dialogRightBtn.layoutParams as LinearLayout.LayoutParams
+                    params.width = LayoutParams.MATCH_PARENT
+                    dialogRightBtn.layoutParams = params
+
+
+                    dialogContent.text = checkResponseBody //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
+                    //확인
+                    dialogRightBtn.setOnClickListener {
+                        alertDialog.dismiss()
+                    }
+                    alertDialog.show()
+                }
             }
         }
     }

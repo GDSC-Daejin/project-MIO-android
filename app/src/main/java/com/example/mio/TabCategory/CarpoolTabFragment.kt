@@ -322,6 +322,41 @@ class CarpoolTabFragment : Fragment() {
         }
 
 
+
+        noticeBoardMyAreaAdapter!!.setItemClickListener(object : NoticeBoardMyAreaAdapter.ItemClickListener {
+            override fun onClick(view: View, position: Int, itemId: Int) {
+                val temp = myAreaItemData[position]
+                if (temp != null) {
+                    val tempPostData = PostData(
+                        temp.user.studentId,
+                        temp.postId,
+                        temp.title,
+                        temp.content,
+                        temp.createDate,
+                        temp.targetDate,
+                        temp.targetTime,
+                        temp.category.categoryName,
+                        temp.location,
+                        temp.participantsCount,
+                        temp.numberOfPassengers,
+                        temp.cost,
+                        temp.verifyGoReturn,
+                        temp.user,
+                        temp.latitude,
+                        temp.longitude
+                    )
+                    dataPosition = position
+                    val intent = Intent(requireActivity(), NoticeBoardReadActivity::class.java).apply {
+                        putExtra("type", "READ")
+                        putExtra("postItem", tempPostData)
+                    }
+                    requestActivity.launch(intent)
+                }
+
+            }
+        })
+
+
         return taxiTabBinding.root
     }
 
@@ -809,7 +844,8 @@ class CarpoolTabFragment : Fragment() {
                     if (response.isSuccessful) {
                         val responseData = response.body()
                         Log.e("myAreaItemData", response.code().toString())
-                        Log.e("myAreaItemData", responseData.toString())
+                        Log.e("myAreaItemData", responseData?.content.toString())
+                        //Log.e("myAreaItemData", )
                         myAreaItemData.clear()
                         if (responseData != null) {
                             Log.e("myAreaItemData", "not null")
@@ -982,12 +1018,12 @@ class CarpoolTabFragment : Fragment() {
                 } else {
 
                     println("faafa")
-                    Log.e("add", response.errorBody()?.string()!!)
+                    Log.e("current", response.errorBody()?.string()!!)
                     Log.d("message", call.request().toString())
                     Log.d("f", response.code().toString())
 
                     if (response.code().toString() == "500") {
-                        if (response.errorBody()?.string() != null) {
+                        if (response.message().toString() != null) {
                             taxiTabBinding.currentRv.visibility = View.GONE
                             taxiTabBinding.nonCurrentRvTv.text = "예약된 게시글이 없습니다"
                             taxiTabBinding.nonCurrentRvTv2.text = "미오에서 카풀,택시를 구해보세요!"

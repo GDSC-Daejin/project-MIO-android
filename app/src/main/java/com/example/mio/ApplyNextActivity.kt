@@ -364,6 +364,11 @@ class ApplyNextActivity : AppCompatActivity() {
 
                 })
             }
+
+            val intent = Intent().apply {
+                putExtra("flag", 33)
+            }
+            setResult(RESULT_OK, intent)
             this@ApplyNextActivity.finish()
         }
     }

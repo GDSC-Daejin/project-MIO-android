@@ -169,7 +169,7 @@ interface MioInterface {
     fun addParticipate(@Path("postId") postId: Int, @Body content: ParticipateData) : Call<String?>
 
     //유저가 게시글에 참여를 취소
-    @DELETE("/{postId}/participate")
+    @PATCH("/{postId}/participateCancel")
     fun deleteParticipate(@Path("postId") postId: Int) : Call<Void>
 
 
@@ -186,13 +186,14 @@ interface MioInterface {
     fun getMyParticipantsUserData() : Call<List<Content>>
 
 
-    @PATCH("/{participantId}/participate") //void는 response의 값이 없음을 나타내기 위해 Void를 사용, 성공 코드만 call받기위함
+
+    @PATCH("/{participantId}/participateAccept") //void는 response의 값이 없음을 나타내기 위해 Void를 사용, 성공 코드만 call받기위함
     fun patchParticipantsApproval(@Path("participantId") participantId : Int) : Call<Void>
     //suspend fun fetchData(@Path("participantId") participantId : Int) : Response<ParticipateData>
 
 
     //작성자가 참여한 사람 거절
-    @DELETE("/{participantId}/reject")
+    @PATCH("/{participantId}/reject")
     fun deleteParticipants(@Path("participantId") participantId : Int) : Call<Void>
 
     ////////////////////////////////

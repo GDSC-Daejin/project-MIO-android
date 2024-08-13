@@ -419,7 +419,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         }
     }
 
-    private fun sendAlarmData(status : String, dataPos : Int, data : ParticipationData) {
+    /*private fun sendAlarmData(status : String, dataPos : Int, data : ParticipationData) {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
@@ -482,7 +482,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
             })
         }
-    }
+    }*/
 
 
 

@@ -320,6 +320,38 @@ class TaxiTabFragment : Fragment() {
             requestActivity.launch(intent)
         }
 
+        noticeBoardMyAreaAdapter!!.setItemClickListener(object : NoticeBoardMyAreaAdapter.ItemClickListener {
+            override fun onClick(view: View, position: Int, itemId: Int) {
+                val temp = myAreaItemData[position]
+                if (temp != null) {
+                    val tempPostData = PostData(
+                        temp.user.studentId,
+                        temp.postId,
+                        temp.title,
+                        temp.content,
+                        temp.createDate,
+                        temp.targetDate,
+                        temp.targetTime,
+                        temp.category.categoryName,
+                        temp.location,
+                        temp.participantsCount,
+                        temp.numberOfPassengers,
+                        temp.cost,
+                        temp.verifyGoReturn,
+                        temp.user,
+                        temp.latitude,
+                        temp.longitude
+                    )
+                    dataPosition = position
+                    val intent = Intent(requireActivity(), NoticeBoardReadActivity::class.java).apply {
+                        putExtra("type", "READ")
+                        putExtra("postItem", tempPostData)
+                    }
+                    requestActivity.launch(intent)
+                }
+            }
+        })
+
 
         return taxiTabBinding.root
     }

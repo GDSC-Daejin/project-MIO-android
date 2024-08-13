@@ -33,6 +33,7 @@ import com.example.mio.*
 import com.example.mio.Adapter.PlaceAdapter
 import com.example.mio.Model.*
 import com.example.mio.Navigation.SearchFragment
+import com.example.mio.TabAccount.AccountSearchLocationActivity
 import com.example.mio.TabCategory.CarpoolTabFragment
 import com.example.mio.TabCategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
@@ -103,11 +104,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     private var startPosition: LatLng? = null
     private var labelLayerObject: LabelLayer? = null
     private var labelLatLng : LatLng? = null
-    //전에 찍은 라벨
-    private var preLabel : Label? = null
-
-    private var pendingData: String? = null
-    private var pendingLatLng: String? = null
     //콜백 리스너
     //private var variableChangeListener: VariableChangeListener? = null
     //모든 데이터 값
@@ -143,6 +139,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     private var latitude : Double? = null
     private var longitude : Double? = null
     private var location = ""
+    private var region3Depth = ""
     /*세 번째 vf*/
     //선택한 가격
     private var selectCost = ""
@@ -612,7 +609,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 mBinding.placeRoad.text = listItems[position].road
                 addToRecentSearch(listItems[position])
                 location = listItems[position].road + "/" + listItems[position].name
-
+                getAddress(location)
                 isAllCheck.isSecondVF.isPlaceName = true
                 isAllCheck.isSecondVF.isPlaceRode = true
                 myViewModel.postCheckValue(isAllCheck)
@@ -642,7 +639,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 mBinding.placeName.text = recentSearchItems[position].name
                 mBinding.placeRoad.text = recentSearchItems[position].road
                 location = recentSearchItems[position].road + "/" + recentSearchItems[position].name
-
+                getAddress(location)
                 isAllCheck.isSecondVF.isPlaceName = true
                 isAllCheck.isSecondVF.isPlaceRode = true
                 myViewModel.postCheckValue(isAllCheck)
@@ -918,8 +915,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     if (isAllCheck.isThirdVF.isMGender) {
                         gender = true
                     }
-                    val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(this@NoticeBoardEditActivity).toString()
-                    temp = AddPostData(editTitle, detailContent, selectFormattedDate, selectFormattedTime, school, participateNumberOfPeople, 0, false, latitude, longitude, location, selectCost.toInt(), myAreaData)
+                    /*val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(this@NoticeBoardEditActivity).toString()*/
+                    temp = AddPostData(editTitle, detailContent, selectFormattedDate, selectFormattedTime, school, participateNumberOfPeople, 0, false, latitude, longitude, location, selectCost.toInt(), region3Depth)
                     Log.d("edit add Temp ", temp.toString())
                     CoroutineScope(Dispatchers.IO).launch {
                         /*"application/json; charset=UTF-8",*/
@@ -980,8 +977,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     if (isAllCheck.isThirdVF.isMGender) {
                         gender = true
                     }
-                    val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(this@NoticeBoardEditActivity).toString()
-                    val temp2 = EditPostData(editTitle, detailContent, selectCategoryId, selectFormattedDate, selectFormattedTime, participateNumberOfPeople, latitude, longitude, location, selectCost.toInt(), myAreaData)
+                    /*val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(this@NoticeBoardEditActivity).toString()*/
+                    val temp2 = EditPostData(editTitle, detailContent, selectCategoryId, selectFormattedDate, selectFormattedTime, participateNumberOfPeople, latitude, longitude, location, selectCost.toInt(), region3Depth)
                     Log.e("edit temp", temp2.toString())
                     CoroutineScope(Dispatchers.IO).launch {
                         val postId = eTemp?.postID ?: return@launch // postID가 null이면 실행 종료
@@ -1017,17 +1014,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
 
             }
-        }
-    }
-    class HeaderInterceptor constructor(private val token: String) : Interceptor {
-
-        @Throws(IOException::class)
-        override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
-            val token = "Bearer $token"
-            val newRequest = chain.request().newBuilder()
-                .addHeader("Authorization", token)
-                .build()
-            return chain.proceed(newRequest)
         }
     }
 
@@ -1233,6 +1219,53 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             }
 
             override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
+                Log.w("LocalSearch", "통신 실패: ${t.message}")
+            }
+        })
+    }
+
+
+    private fun getAddress(location2 : String?) {
+        val location = location2?.split("/")?.first()
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val api = retrofit.create(KakaoAPI::class.java)
+        val call2 = api.getAddressSearch(API_KEY, location!!)
+
+        call2.enqueue(object: Callback<ResultSearchAddress> {
+            override fun onResponse(call: Call<ResultSearchAddress>, response: Response<ResultSearchAddress>) {
+                if (response.isSuccessful) {
+                    val responseData = response.body()?.documents
+                    Log.e("search Result", response.body()?.documents.toString())
+                    if (responseData?.isEmpty() == true) {
+                        Toast.makeText(this@NoticeBoardEditActivity, "잘못된 지역입니다 다시 검색해주세요", Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                        if (responseData != null) {
+                            response.body()?.documents.let {
+                                if (it != null) {
+                                    region3Depth = it.take(1).first().address?.region_3depth_name.toString()
+                                }
+                            }
+                            Log.e("region3Depth", region3Depth)
+                            /*adapter.updateData(tempList, keyword)
+                            binding.textView4.visibility = View.GONE
+                            binding.textView5.visibility = View.GONE
+                            binding.rvSearchList.visibility = View.VISIBLE*/
+                        }
+                    }
+                } else {
+                    Log.e("search Result", response.code().toString())
+                    Log.e("search Result", response.errorBody()?.string()!!)
+                    Log.e("search Result", response.errorBody()?.string()!!)
+                    Log.e("search Result", call.request().toString())
+                    Log.e("search Result", response.message().toString())
+                }
+            }
+
+            override fun onFailure(call: Call<ResultSearchAddress>, t: Throwable) {
                 Log.w("LocalSearch", "통신 실패: ${t.message}")
             }
         })
@@ -1498,7 +1531,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
 
                 kakaoMapValue!!.setOnMapClickListener { _, latLng, _, poi ->
                     //showInfoWindow(position, poi)
-                    labelLayerObject?.removeAll()
+
 
                     trackingManager?.stopTracking()
                     latitude = latLng.latitude
@@ -1529,6 +1562,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                                 roadAddress = detailedAddress
                                 mBinding.placeRoad.text = roadAddress
                                 location = roadAddress + "/" + poi.name//listItems[position].road + "/" + listItems[position].name
+                                getAddress(location)
                             }
                         }
                     } else {
@@ -1558,6 +1592,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                                         Log.d("detail", "$detailedAddress")
                                         mBinding.placeRoad.text = roadAddressCheck
                                         location = roadAddressCheck + "/" + poi.name
+                                        getAddress(location)
                                         // Kakao Map API를 호출하여 해당 주소 주변의 빌딩 정보 검색
                                         /*searchNearbyBuildings(detailedAddress,latitude!!, longitude!!) { buildingNames ->
                                             buildingNames?.let { placeDocument ->
@@ -1609,6 +1644,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                         geocoder.getFromLocation(latitude!!, longitude!!, 10, geocodeListener)
                     }
                     if (poi.name.isNotEmpty()) {
+                        labelLayerObject?.removeAll()
 
                         labelLatLng = LatLng.from(latLng.latitude, latLng.longitude)
                         Log.e("labelLatLng1", "$labelLatLng")

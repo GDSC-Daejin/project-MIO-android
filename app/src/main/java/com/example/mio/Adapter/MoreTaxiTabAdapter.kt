@@ -49,8 +49,8 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
             val s = context.getString(R.string.setText, moreData.postTargetDate, moreData.postTargetTime)
             postTitle.text = moreData.postTitle
             postDate.text = s
-            postLocation.text = if (moreData.postLocation.split("/").last().toString() == " ") {
-                moreData.postLocation.split("/").dropLast(1).joinToString(" ")//마지막 빼고 세팅 ex) 경기 선단로 100011 - 1 무슨빌딩 -> 경기 선단로 100011 - 1
+            postLocation.text = if (moreData.postLocation.split("/").last().isEmpty()) {
+                moreData.postLocation.split("/").first()
             } else {
                 moreData.postLocation.split("/").last().toString()
             }

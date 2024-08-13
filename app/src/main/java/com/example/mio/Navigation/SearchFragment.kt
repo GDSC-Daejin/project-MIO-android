@@ -36,10 +36,15 @@ import com.kakao.vectormap.label.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.internal.sse.ServerSentEventReader.Companion.options
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -243,22 +248,59 @@ class SearchFragment : Fragment() {
     }
 
     private fun loadSearchPost(location : String?) {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
 
-        val thisData : ArrayList<LocationReadAllResponse> = ArrayList()
-        RetrofitServerConnect.create(requireContext()).getLocationPostData(location!!).enqueue(object : Callback<List<LocationReadAllResponse>> {
+        val interceptor = Interceptor { chain ->
+            val newRequest: Request
+            if (token != null && token != "") { // 토큰이 없지 않은 경우
+                // Authorization 헤더에 토큰 추가
+                newRequest =
+                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
+                val expireDate: Long = getExpireDate.toLong()
+                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
+                    //refresh 들어갈 곳
+                    /*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    val intent = Intent(context, LoginActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+
+                    requireActivity().startActivity(intent)
+                    return@Interceptor chain.proceed(newRequest)
+                }
+            } else newRequest = chain.request()
+            chain.proceed(newRequest)
+        }
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+        val builder = OkHttpClient.Builder()
+        builder.interceptors().add(interceptor)
+        val client: OkHttpClient = builder.build()
+        retrofit.client(client)
+        val retrofit2: Retrofit = retrofit.build()
+        val api = retrofit2.create(MioInterface::class.java)
+
+        api.getLocationPostData(location!!).enqueue(object : Callback<List<LocationReadAllResponse>> {
             override fun onResponse(
                 call: Call<List<LocationReadAllResponse>>,
                 response: Response<List<LocationReadAllResponse>>
             ) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
+                    Log.e("getLocationPostData", response.code().toString())
+                    Log.e("getLocationPostData", responseData.toString())
 
                     if (responseData?.isNotEmpty() == true) {
                         responseData.let {
-                            thisData.clear()
-                            thisData.addAll(it)
+                            searchPostData?.clear()
+                            searchPostData?.addAll(it.filter { it1 -> it1.isDeleteYN == "N" && it1.postType == "BEFORE_DEADLINE" })
                         }
-                        searchPostData?.addAll(thisData.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" })
+                        Log.e("getLocationPostData", searchPostData.toString())
+                    } else {
+
+                        Toast.makeText(requireContext(), "검색된 게시글이 없습니다.", Toast.LENGTH_SHORT).show()
                     }
 
                     loadingDialog?.dismiss()
@@ -292,7 +334,7 @@ class SearchFragment : Fragment() {
                         if (response.isSuccessful) {
                             val responseData = response.body()
                             if (responseData.isNullOrEmpty()) {
-                                Toast.makeText(requireActivity(), "검색된 게시글이 없습니다", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(requireActivity(), "검색된 주위 게시글이 없습니다", Toast.LENGTH_SHORT).show()
                             } else {
                                 val selectedData = responseData.first { it.postId == postId }
                                 // 마커로 선택된 게시글 위치 표시
@@ -541,7 +583,39 @@ class SearchFragment : Fragment() {
                 val trackingManager = kakaoMap.trackingManager
 
                 //선택한 값을 중심으로 poi찍기
-                if (searchPostData != null) {
+                if (searchPostData?.isNotEmpty() == true) {
+                    Log.e("pendingTest", searchPostData.toString())
+                    loadNearbyPostData(searchPostData?.first()?.postId)
+                    // 현재 위치를 나타낼 label를 그리기 위해 kakaomap 인스턴스에서 LabelLayer를 가져옵니다.
+                    val layer = kakaoMap.labelManager!!.layer
+                    startPosition = LatLng.from(searchPostData?.first()?.latitude!!, searchPostData?.first()?.longitude!!)
+                    // LabelLayer에 라벨을 추가합니다. 카카오 지도 API 공식 문서에 지도에서 사용하는 이미지는 drawable-nodpi/ 에 넣는 것을 권장합니다.
+                    //Label 을 생성하기 위해 초기화 값을 설정하는 클래스.
+                    centerLabel = layer!!.addLabel(
+                        LabelOptions.from(searchPostData?.first()?.postId.toString(), startPosition)
+                            .setStyles(
+                                LabelStyle.from(R.drawable.map_poi_sr2).setAnchorPoint(0.5f, 0.5f)
+                            )
+                            .setRank(1) //우선순위
+                    )
+                    trackingManager!!.startTracking(centerLabel)
+                    val handler = Handler(Looper.getMainLooper())
+                    handler.postDelayed(java.lang.Runnable {
+                        trackingManager.stopTracking()
+                    },1000)
+
+                    hashMapPoiAndPostData?.set(searchPostData?.first()?.postId.toString(),
+                        searchPostData?.first()!!
+                    )
+
+                    if (searchPostData?.isNotEmpty() == true) {
+                        if (searchPostData?.size!! > 1) {
+                            sBinding?.postMoreCount?.visibility = View.VISIBLE
+                            sBinding?.postMoreCount?.text = "+${searchPostData?.size}"
+                        }
+                    }
+                } else {
+                    /*Toast.makeText(requireContext(), "검색된 게시글이 없습니다", Toast.LENGTH_SHORT).show()*/
                     Log.e("pendingTest", searchPostData.toString())
                     loadNearbyPostData(searchPostData?.first()?.postId)
                     // 현재 위치를 나타낼 label를 그리기 위해 kakaomap 인스턴스에서 LabelLayer를 가져옵니다.
@@ -600,23 +674,56 @@ class SearchFragment : Fragment() {
                 kakaoMapValue!!.setOnPoiClickListener { kakaoMap, latLng, layerId, poiId ->
                     val setPostData = hashMapPoiAndPostData?.get(poiId)
                     if (setPostData != null) {
-                        Log.e("poi click", hashMapPoiAndPostData.toString())
-                        Log.e("poi click", setPostData.toString())
-                        Log.e("poi click", poiId.toString())
+                        kakaoMap.labelManager?.removeAllLabelLayer()
+                        Log.e("poi click sear", hashMapPoiAndPostData.toString())
+                        Log.e("poi click sear", setPostData.toString())
+                        Log.e("poi click sear", poiId.toString())
+                        // 현재 위치를 나타낼 label를 그리기 위해 kakaomap 인스턴스에서 LabelLayer를 가져옵니다.
+                        val layer = kakaoMap.labelManager!!.layer
+                        startPosition = LatLng.from(setPostData.latitude, setPostData.longitude)
+                        // LabelLayer에 라벨을 추가합니다. 카카오 지도 API 공식 문서에 지도에서 사용하는 이미지는 drawable-nodpi/ 에 넣는 것을 권장합니다.
+                        //Label 을 생성하기 위해 초기화 값을 설정하는 클래스.
+                        centerLabel = layer!!.addLabel(
+                            LabelOptions.from(setPostData.postId.toString(), startPosition)
+                                .setStyles(
+                                    LabelStyle.from(R.drawable.map_poi_sr2).setAnchorPoint(0.5f, 0.5f)
+                                )
+                                .setRank(1) //우선순위
+                        )
+                        trackingManager!!.startTracking(centerLabel)
+                        val handler = Handler(Looper.getMainLooper())
+                        handler.postDelayed(java.lang.Runnable {
+                            trackingManager.stopTracking()
+                        },1000)
+
+                        for (i in hashMapPoiAndPostData!!.filter { it.key != setPostData.postId.toString() }) {
+                            //latLngList.add(LatLng.from(i.latitude, i.longitude))
+                            //labelLayer.addLabel(LabelOptions.from("centerLabel", centerPosition)
+                            // 스타일 지정. LabelStyle.from()안에 원하는 이미지 넣기
+                            val style = kakaoMapValue?.labelManager?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.map_poi_srn)))
+                            // 라벨 옵션 지정. 위경도와 스타일 넣기
+                            val options = LabelOptions.from(i.key, LatLng.from(i.value.latitude, i.value.longitude)).setStyles(style)
+                            // 레이어 가져오기
+                            val layer = kakaoMap?.labelManager?.layer
+                            // 레이어에 라벨 추가
+                            layer?.addLabel(options)
+                            Log.d("requestActivity loadNearbyPostData", "$i")
+                        }
+
                         CoroutineScope(Dispatchers.Main).launch {
                             sBinding?.postData?.visibility = View.VISIBLE
-                            sBinding?.postTitle?.text = setPostData?.title
+                            sBinding?.postTitle?.text = setPostData.title
                             sBinding?.postDate?.text = setPostData?.targetDate + " " + setPostData?.targetTime
-                            sBinding?.postLocation?.text = setPostData?.location
-                            sBinding?.postParticipation?.text = setPostData?.participantsCount.toString()
-                            sBinding?.postParticipationTotal?.text = setPostData?.numberOfPassengers.toString()
+                            sBinding?.postLocation?.text = setPostData.location
+                            sBinding?.postParticipation?.text = setPostData.participantsCount.toString()
+                            sBinding?.postParticipationTotal?.text = setPostData.numberOfPassengers.toString()
                         }
                         sBinding?.postData?.setOnClickListener {
 /*                val intent = Intent(context, NoticeBoardReadActivity::class.java)
                 intent.putExtra("POST_ID", location.postId)  // 게시글의 ID 또는 유일한 키를 전달
                 startActivity(intent)*/
                             val postData = PostData(
-                                accountID = setPostData?.user?.studentId!!,
+                                accountID = setPostData.user?.studentId!!,
                                 postID = setPostData.postId,
                                 postTitle = setPostData.title,
                                 postContent = setPostData.content,
@@ -640,6 +747,19 @@ class SearchFragment : Fragment() {
                             intent.putExtra("postItem", postData)
                             startActivity(intent)
                         }
+                    }
+                }
+
+                //KakaoMap kakaoMap, LabelLayer layer, Label label
+                kakaoMapValue!!.setOnLabelClickListener { kakaoMap, layer, label ->
+                    if (label != null) { //return 값이 true 이면, 이벤트가 OnLabelClickListener 에서 끝난다.
+
+                        Log.e("kakao map sear", "label")
+                        //trackingManager?.startTracking(label)
+                        return@setOnLabelClickListener false
+                    } else { //return 값이 false 이면, 이벤트가 OnPoiClickListener, OnMapClickListener 까지 전달된다.
+                        Log.e("kakao map sear", "label x")
+                        return@setOnLabelClickListener true
                     }
                 }
             }
@@ -700,7 +820,9 @@ class SearchFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         Log.d("searchFragment1", "resume")
-        map?.resume()
+        /*if (map != null) {
+            map?.resume()
+        }*/
         startMapLifeCycle()
     }
 

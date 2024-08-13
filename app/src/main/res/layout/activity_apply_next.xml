@@ -330,6 +330,7 @@
                     android:layout_marginEnd="20dp"
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/pretendard_medium"
+                    android:scrollbars="vertical"
                     android:hint="약속 시간 잘 지킵니다."
                     android:inputType="textMultiLine"
                     android:scrollHorizontally="false"

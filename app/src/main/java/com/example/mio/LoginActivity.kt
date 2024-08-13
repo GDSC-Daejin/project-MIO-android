@@ -36,6 +36,8 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.*
 import okhttp3.*
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -168,8 +170,12 @@ class LoginActivity : AppCompatActivity() {
 
     private fun signInCheck(userInfoToken : TokenRequest) {
         println("signInCheck")
-
-        RetrofitServerConnect.create(this@LoginActivity).addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
+        val SERVER_URL = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val service: MioInterface = retrofit.create(MioInterface::class.java)
+        service.addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
             override fun onResponse(
                 call: retrofit2.Call<LoginResponsesData>,
                 response: retrofit2.Response<LoginResponsesData?>

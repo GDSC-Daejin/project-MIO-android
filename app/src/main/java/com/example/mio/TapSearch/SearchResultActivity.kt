@@ -66,8 +66,10 @@ class SearchResultActivity : AppCompatActivity() { //검색창
                 override fun onItemClicked(location: LocationReadAllResponse) {
                     sharedViewModel.selectedLocation.value = location
                     Log.e("searchresultintent", "click recent")
+                    Log.e("searchresultintent", location.location)
                     val locationJson = convertLocationToJSON(location)
                     SharedPrefManager.saveRecentSearch(this@SearchResultActivity, locationJson)
+                    moveToSearchFragment(location)
 
                     val resultIntent = Intent().apply {
                         putExtra("flag", 103) // 필요한 결과 값을 설정
@@ -296,7 +298,7 @@ class SearchResultActivity : AppCompatActivity() { //검색창
 
     override fun onStart() {
         super.onStart()
-        Log.e("searchresultintent", "click start")
+        //Log.e("searchresultintent", "click start")
     }
 
 /*    private fun getAllPosts(): List<PostReadAllResponse> {

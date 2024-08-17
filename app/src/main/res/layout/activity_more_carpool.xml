@@ -79,7 +79,7 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:fontFamily="@font/pretendard_medium"
-            android:text="가까운 순"
+            android:text="최신 순"
             android:textColor="@color/mio_gray_8" />
 
         <ImageView

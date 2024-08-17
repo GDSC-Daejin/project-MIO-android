@@ -15,6 +15,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -23,6 +24,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -43,19 +45,14 @@ import com.example.mio.sse.SSEData
 import com.example.mio.sse.SseHandler
 import com.google.android.gms.ads.AdRequest
 import com.google.android.material.chip.Chip
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import com.launchdarkly.eventsource.ConnectStrategy
 import com.launchdarkly.eventsource.EventSource
 import com.launchdarkly.eventsource.background.BackgroundEventSource
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
+import kotlinx.coroutines.*
+import retrofit2.*
 import retrofit2.converter.gson.GsonConverterFactory
 import java.net.URL
 import java.text.SimpleDateFormat
@@ -101,7 +98,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     //포스트의 카테고리
     private var isCategory : Boolean? = null //true = 카풀, false = 택시
     //deadline 체크
-    private var isNotDeadLine : Boolean? = null //현재 시간이 타겟 시간 이전이면 true, 그렇지 않으면 false
+    private var isDeadLineCheck2 : Boolean? = null //현재 시간이 타겟 시간 이전이면 true, 그렇지 않으면 false
+    private var isNotDeadLine2 : Boolean? = null //현재 시간이 타겟 시간 이전이면 true, 그렇지 않으면 false
 
 
     //유저확인
@@ -153,6 +151,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
     private var adRequest : AdRequest? = null
 
+    //private var sss = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nbrBinding = ActivityNoticeBoardReadBinding.inflate(layoutInflater)
@@ -164,6 +163,30 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val type = intent.getStringExtra("type")
         tabType = intent.getStringExtra("tabType").toString()
         temp = intent.getSerializableExtra("postItem") as PostData?
+        //isBeforeDeadLine()
+        //someFunction()
+        // Observe LiveData
+        // Fetch data from the ViewModel
+        sharedViewModel!!.fetchIsBeforeDeadLine(this, temp!!.postID)
+
+        // Launch a coroutine to collect state changes
+        lifecycleScope.launch {
+            sharedViewModel!!.isNotDeadLine.collect { isNotDeadLine ->
+                val isBeforeTarget = isBeforeTarget(temp!!.postTargetDate, temp!!.postTargetTime)
+                Log.e("sharedViewmodel", isNotDeadLine.toString())
+                val isDeadLineCheck3 = isBeforeTarget && isNotDeadLine
+                Log.e("sharedViewmodel", isDeadLineCheck3.toString())
+
+                // Update UI based on isDeadLineCheck2 value
+                isDeadLineCheck2 = isDeadLineCheck3
+                Log.e("sharedViewmodel", isDeadLineCheck2.toString())
+                updateUI(isDeadLineCheck3)
+            }
+        }
+
+
+
+        Log.e("isDeadLineCheck", isDeadLineCheck2.toString())
         //startEventSource(temp?.user?.id!!.toLong())
         /*val eventSource: BackgroundEventSource = BackgroundEventSource //백그라운드에서 이벤트를 처리하기위한 EVENTSOURCE의 하위 클래스
             .Builder(
@@ -189,7 +212,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             tempProfile = temp?.user?.profileImageUrl.toString()
             isCategory = temp!!.postCategory == "carpool"
 
-            initParticipationCheck()
+            //initParticipationCheck()
             if (temp?.user?.gender != null && temp?.user?.verifySmoker != null && temp?.postVerifyGoReturn != null) {
                 chipList.add(createNewChip(text = if (temp?.user?.verifySmoker == true) {
                     "흡연 O"
@@ -300,9 +323,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     else -> nbrBinding.readTimeCheck.text = "${diffDays}일전"
                 }
             }
-            //현재 시간이 타겟 시간 이전이면 true, 그렇지 않으면 false
-            isNotDeadLine = isBeforeTarget(temp?.postTargetDate.toString(), temp?.postTargetTime.toString())
-
+            //true면 before, false면 before아닌것들
+            //isNotDeadLine = isBeforeTarget(temp?.postTargetDate.toString(), temp?.postTargetTime.toString()) && isNotDeadLine2 == true
+            Log.e("isNotDeadLine", isDeadLineCheck2.toString())
+            Log.e("isNotDeadLine", isBeforeTarget(temp?.postTargetDate.toString(), temp?.postTargetTime.toString()).toString())
+            Log.e("isNotDeadLine", isNotDeadLine2.toString())
 
 
             // 글쓴이가 자기자신 이라면 , 게시글 참가 + 글쓴이가 자기 자신이라면 받은 신청 보러가기고
@@ -1296,7 +1321,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         /////
-        initParticipationCheck()
+
         api.getPostIdDetailSearch(temp?.postID!!).enqueue(object : Callback<Content> {
             override fun onResponse(call: Call<Content>, response: Response<Content>) {
                 if (response.isSuccessful) {
@@ -1328,7 +1353,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             Log.e("NoticeBoardRead refresh", temp!!.user.email)
                             Log.e("NoticeBoardRead refresh", isParticipation.toString())
                             Log.e("NoticeBoardRead refresh", (email == temp!!.user.email).toString())
-
+                            initParticipationCheck(it.postType == "BEFORE_DEADLINE")
                             writerEmail = temp!!.user.email
                             //tempProfile = intent.getSerializableExtra("uri") as String
                             tempProfile = temp?.user?.profileImageUrl.toString()
@@ -1524,7 +1549,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             }
         })
     }
-    private fun initParticipationCheck() {
+    private fun initParticipationCheck(isDeadLineCheck2: Boolean) {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
@@ -1570,12 +1595,14 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     if (response.body()?.find { it.userId == userId} != null){
                         isParticipation = true
                         Log.d("NoticeReadGetParticipation", isParticipation.toString())
-                        participantApplyBtnSet(isParticipation!!)
+                        participantApplyBtnSet(isParticipation!!, isDeadLineCheck2)
+                        Log.d("NoticeReadGetParticipation", isDeadLineCheck2.toString())
                     } else {
                         isParticipation = false
                         Log.d("NoticeReadGetParticipation", isParticipation.toString())
                         //participantApplyBtnSet(isParticipation!!)
-                        participantApplyBtnSet(isParticipation!!)
+                        participantApplyBtnSet(isParticipation!!, isDeadLineCheck2)
+                        Log.d("NoticeReadGetParticipation", isDeadLineCheck2.toString())
                     }
                 } else {
                     Log.e("read participation", response.errorBody()?.string()!!)
@@ -1590,7 +1617,20 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         })
     }
 
-    private fun participantApplyBtnSet(isParticipation : Boolean) {
+    private fun updateUI(isDeadLineCheck2: Boolean) {
+        // Implement your UI update logic based on isDeadLineCheck2
+        if (isDeadLineCheck2) {
+            // Actions when deadline check is true
+            Log.d("NoticeBoardReadActivity", "Deadline check is true")
+            initParticipationCheck(isDeadLineCheck2)
+        } else {
+            // Actions when deadline check is false
+            Log.d("NoticeBoardReadActivity", "Deadline check is false")
+            initParticipationCheck(isDeadLineCheck2)
+        }
+    }
+
+    private fun participantApplyBtnSet(isParticipation : Boolean, isDeadLineCheck2: Boolean) {
         //작성자로 참여되어있을 때
         if (email == temp!!.user.email) {
             val typeface = resources.getFont(R.font.pretendard_medium)
@@ -1632,7 +1672,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 }
             }
 
-            if (isNotDeadLine == true) {
+            if (isDeadLineCheck2) {
                 nbrBinding.readApplyBtn.setOnClickListener {
                     Log.e("readApplyBtn2", "clickckckckckckckckck")
                     setApplyNoticeBoard()
@@ -1687,7 +1727,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 }
             }
 
-            if (isNotDeadLine == true) {
+            if (isDeadLineCheck2 == true) {
                 nbrBinding.readApplyBtn.setOnClickListener {
                     Log.e("readApplyBtn3", "clickckckckckckckckck")
                     val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
@@ -1775,11 +1815,37 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                                 if (response.isSuccessful) {
                                     Log.d("check", response.code().toString())
+                                    Toast.makeText(this@NoticeBoardReadActivity, "성공적으로 취소되었습니다", Toast.LENGTH_SHORT).show()
                                 } else {
-                                    println("faafa")
-                                    Log.d("comment", response.errorBody()?.string()!!)
-                                    Log.d("message", call.request().toString())
-                                    println(response.code())
+                                    if (response.code() == 500 && response.errorBody()?.string()!!.any { it in '\uAC00'..'\uD7AF' }) {
+                                        //Toast.makeText(this@NoticeBoardReadActivity)
+                                        //사용할 곳
+                                        val layoutInflater1 = LayoutInflater.from(this@NoticeBoardReadActivity)
+                                        val view1 = layoutInflater1.inflate(R.layout.dialog_layout, null)
+                                        val alertDialog1 = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
+                                            .setView(view1)
+                                            .create()
+                                        val dialogContent1 = view1.findViewById<TextView>(R.id.dialog_tv)
+                                        val dialogLeftBtn1 = view1.findViewById<View>(R.id.dialog_left_btn)
+                                        val dialogRightBtn1 =  view1.findViewById<Button>(R.id.dialog_right_btn)
+                                        dialogLeftBtn1.visibility = View.GONE
+                                        dialogRightBtn1.text = "확인"
+
+                                        // 다이얼로그의 버튼을 가운데 정렬
+                                        val params = dialogRightBtn1.layoutParams as LinearLayout.LayoutParams
+                                        params.width = LayoutParams.MATCH_PARENT
+                                        dialogRightBtn1.layoutParams = params
+
+
+                                        dialogContent1.text = response.errorBody()?.string()!!.toString() //"이미 같은 시간에 예약이 되어있습니다. \n 그래도 예약하시겠습니까?"
+                                        //확인
+                                        dialogRightBtn1.setOnClickListener {
+                                            alertDialog1.dismiss()
+                                        }
+                                        alertDialog1.show()
+                                    } else {
+                                        Log.e("cancel error", response.errorBody()?.string()!!)
+                                    }
                                 }
                             }
 
@@ -1841,6 +1907,50 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         return currentDateTime.isBefore(targetDateTime)
     }
 
+    /*@OptIn(ExperimentalCoroutinesApi::class)
+    private suspend fun isBeforeDeadLine(): Boolean {
+        return suspendCancellableCoroutine { continuation ->
+            RetrofitServerConnect.create(this@NoticeBoardReadActivity)
+                .getPostIdDetailSearch(temp!!.postID)
+                .enqueue(object : Callback<Content> {
+                    override fun onResponse(call: Call<Content>, response: Response<Content>) {
+                        if (response.isSuccessful) {
+                            val responseData = response.body()
+                            Log.e("isbefore", response.code().toString())
+                            if (responseData != null && responseData.isDeleteYN != "Y") {
+                                continuation.resume(responseData.postType == "BEFORE_DEADLINE")
+                            } else {
+                                continuation.resume(false)
+                            }
+                        } else {
+                            Log.e("isbefore", response.code().toString())
+                            Log.e("isbefore", response.errorBody()?.string()!!)
+                            continuation.resume(false)
+                        }
+                    }
+
+                    override fun onFailure(call: Call<Content>, t: Throwable) {
+                        Log.e("isbefore", t.toString())
+                        continuation.resume(false)
+                    }
+                })
+        }
+    }*/
+
+    /*private suspend fun checkConditions(): Boolean {
+        val postTargetDate = temp?.postTargetDate.toString()
+        val postTargetTime = temp?.postTargetTime.toString()
+        val isNotDeadLine1 = isBeforeTarget(postTargetDate, postTargetTime)
+        val isBeforeDeadlineResult = isBeforeDeadLine()
+        return isNotDeadLine1 && isBeforeDeadlineResult
+    }
+
+    private fun someFunction() {
+        lifecycleScope.launch {
+            val isDeadLineCheck = checkConditions()
+            isDeadLineCheck2 = isDeadLineCheck
+        }
+    }*/
 
     private fun setApplyNoticeBoard() {
         Log.d("setApplyNoticeBoard", "setApplyNoticeBoard")
@@ -1900,10 +2010,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     if (responseData?.check == true) {
                         Log.d("setApplyNoticeBoard", "API call success")
                         Log.d("setApplyNoticeBoard", "Response body: ${response.body()}")
-                        Log.d("setApplyNoticeBoard", "Response body: $isNotDeadLine")
+                        Log.d("setApplyNoticeBoard", "Response body: $isDeadLineCheck2")
                         //예약된 게 없음
                         //현재 시간이 타겟 시간 이전이면 true, 그렇지 않으면 false
-                        if (isNotDeadLine == true) {
+                        if (isDeadLineCheck2 == true) {
                             checkResponseBody = "신청하시려는 게시글과 같은 날짜에 승인된 카풀이 없습니다. \n 계속하시겠습니까?"
 
                                 //사용할 곳
@@ -2452,6 +2562,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             })
         }
     }
+
 
     private fun deletePostData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()

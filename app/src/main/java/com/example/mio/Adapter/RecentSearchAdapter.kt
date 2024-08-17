@@ -56,17 +56,15 @@ class RecentSearchAdapter(private var items: List<LocationReadAllResponse>) : Re
         }*/
 
         fun bind(item: LocationReadAllResponse) {
-            binding.tvListName.text = item.location.split(",").last()
-            CoroutineScope(Dispatchers.IO).launch {
-                val address = if (item.cost == -1) {
-                    item.location.split(",").first()
-                } else {
-                    getAddressFromLatLng(item.latitude, item.longitude)
-                }
-                withContext(Dispatchers.Main) {
-                    binding.tvListRoad.text = address
-                }
+            if (item.location.isNotEmpty()) {
+                Log.e("recentSearch", item.location)
+                binding.tvListName.text = item.location.split("/").first()
+                binding.tvListRoad.text = item.location.split("/").last().toString()
             }
+            /*CoroutineScope(Dispatchers.IO).launch {
+                val s = getAddressFromLatLng(item.latitude, item.longitude)
+                Log.e("getAddressFromLatLng", s)
+            }*/
         }
 
         private fun getAddressFromLatLng(latitude: Double, longitude: Double): String {

@@ -1,13 +1,52 @@
 package com.example.mio.Model
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 
 import androidx.lifecycle.MutableLiveData
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.mio.RetrofitServerConnect
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import retrofit2.*
 
 
 class SharedViewModel : ViewModel() {
+
+    private val _isNotDeadLine = MutableStateFlow<Boolean>(false)
+    val isNotDeadLine: StateFlow<Boolean> get() = _isNotDeadLine
+
+    fun fetchIsBeforeDeadLine(context: Context, postId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitServerConnect.create(context)
+                    .getPostIdDetailSearch(postId)
+                    .awaitResponse()
+
+                if (response.isSuccessful) {
+                    val responseData = response.body()
+                    _isNotDeadLine.value = responseData?.postType == "BEFORE_DEADLINE" && responseData.isDeleteYN != "Y"
+
+                    // Log the response data
+                    Log.d("fetchIsBeforeDeadLine", "Response Code: ${response.code()}")
+                    Log.d("fetchIsBeforeDeadLine", "Response Body: ${responseData?.toString()}")
+                } else {
+                    // Log the error body
+                    Log.e("fetchIsBeforeDeadLine", "Response Error Code: ${response.code()}")
+                    Log.e("fetchIsBeforeDeadLine", "Response Error Body: ${response.errorBody()?.string()!!}")
+                    _isNotDeadLine.value = false
+                }
+            } catch (e: Exception) {
+                // Log the exception
+                Log.e("fetchIsBeforeDeadLine", "Exception: ${e.message}")
+                _isNotDeadLine.value = false
+            }
+        }
+    }
     //최신순 등
     private val _checkSearchFilter : MutableLiveData<String> = MutableLiveData()
     val checkSearchFilter : LiveData<String> = _checkSearchFilter

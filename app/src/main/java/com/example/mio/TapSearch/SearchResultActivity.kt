@@ -68,7 +68,8 @@ class SearchResultActivity : AppCompatActivity() { //검색창
                     Log.e("searchresultintent", "click recent")
                     Log.e("searchresultintent", location.location)
                     val locationJson = convertLocationToJSON(location)
-                    SharedPrefManager.saveRecentSearch(this@SearchResultActivity, locationJson)
+                    Log.e("searchresultintent", locationJson)
+                    SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location)
                     moveToSearchFragment(location)
 
                     val resultIntent = Intent().apply {
@@ -81,7 +82,7 @@ class SearchResultActivity : AppCompatActivity() { //검색창
                 override fun onItemRemove(location: LocationReadAllResponse) {
                     // 선택된 위치를 SharedPref에서 제거합니다.
                     val locationJson = SharedPrefManager.convertLocationToJSON(location)
-                    SharedPrefManager.removeRecentSearch(this@SearchResultActivity, locationJson)
+                    SharedPrefManager.removeRecentSearch(this@SearchResultActivity, location.location)
 
                     // 최근 검색어 목록을 다시 로드하여 UI를 업데이트 합니다.
                     loadRecentSearch()
@@ -230,7 +231,7 @@ class SearchResultActivity : AppCompatActivity() { //검색창
 
     private fun moveToSearchFragment(location: LocationReadAllResponse) {
         sharedViewModel.selectedLocation.value = location
-        val locationJson = SharedPrefManager.convertLocationToJSON(location)
+        /*val locationJson = SharedPrefManager.convertLocationToJSON(location)
 
         if (SharedPrefManager.isLocationInRecentSearch(this@SearchResultActivity, locationJson)) {
             SharedPrefManager.removeRecentSearch(this@SearchResultActivity, locationJson)
@@ -241,7 +242,7 @@ class SearchResultActivity : AppCompatActivity() { //검색창
 
         if (!SharedPrefManager.isLocationInRecentSearch(this@SearchResultActivity, locationJson)) {
             SharedPrefManager.saveRecentSearch(this@SearchResultActivity, locationJson)
-        }
+        }*/
     }
 
 
@@ -251,13 +252,9 @@ class SearchResultActivity : AppCompatActivity() { //검색창
                 override fun onItemClicked(location: LocationReadAllResponse) {
                     moveToSearchFragment(location)
                     Log.e("searchresultintent", "back searchfragment")
-/*
-                    // Convert the location object to a JSON string
+                    Log.e("searchresultintent", location.toString())
                     val locationJson = convertLocationToJSON(location)
-
-                    // Save the JSON string representing the location object
-                    SharedPrefManager.saveRecentSearch(this@SearchResultActivity, locationJson)
-*/
+                    SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location)
                     val resultIntent = Intent().apply {
                         putExtra("flag", 103) // 필요한 결과 값을 설정
                         putExtra("location", location)
@@ -273,16 +270,16 @@ class SearchResultActivity : AppCompatActivity() { //검색창
     private fun loadRecentSearch() {
         try {
             // Ensure the return type is List<String> or modify accordingly
-            val recentSearchListJson: List<String> = SharedPrefManager.loadRecentSearch(this) ?: listOf()
+            val recentSearchListJson: List<LocationReadAllResponse> = SharedPrefManager.loadRecentSearch(this) ?: listOf()
 
-            val recentSearchList = recentSearchListJson.map {
+            /*val recentSearchList = recentSearchListJson.map {
                 // Ensure `it` is a String type or modify accordingly
                 SharedPrefManager.convertJSONToLocation(it)
-            }
+            }*/
             //setupAdapter(recentSearchList)
-            recentSearchAdapter.updateData(recentSearchList) // 여기에서 최근 검색 데이터를 업데이트
+            recentSearchAdapter.updateData(recentSearchListJson) // 여기에서 최근 검색 데이터를 업데이트
 
-            if (recentSearchList.isEmpty()) {
+            if (recentSearchListJson.isEmpty()) {
                 //binding.textView4.visibility = View.VISIBLE
                 binding.textView2.visibility = View.VISIBLE
                 binding.textView3.visibility = View.VISIBLE

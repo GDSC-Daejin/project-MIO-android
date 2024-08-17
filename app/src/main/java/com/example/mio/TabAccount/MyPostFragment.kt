@@ -15,6 +15,7 @@ import android.view.WindowManager
 import android.view.animation.OvershootInterpolator
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.*
@@ -35,6 +36,12 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.*
+import kotlin.collections.ArrayList
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -109,25 +116,6 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
         })
 
         return pBinding.root
-    }
-
-    private fun initSwipeRefresh() {
-        pBinding.accountSwipe.setOnRefreshListener {
-            //새로고침 시 터치불가능하도록
-            activity?.window!!.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) // 화면 터치 못하게 하기
-            val handler = Handler(Looper.getMainLooper())
-            handler.postDelayed({
-                setMyPostData()
-                myAdapter!!.myPostItemData = myAccountPostAllData
-                //noticeBoardAdapter.recyclerView.startLayoutAnimation()
-                pBinding.accountSwipe.isRefreshing = false
-                myAdapter!!.notifyDataSetChanged()
-                activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            }, 1000)
-            //터치불가능 해제ss
-            //activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        }
     }
 
 
@@ -274,6 +262,10 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                                     response.body()!!.content[i].longitude
                                 ))
 
+                            // 새로 고침 완료 및 터치 가능하게 설정
+                            pBinding.accountSwipe.isRefreshing = false
+                            requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+
                             myAdapter!!.notifyDataSetChanged()
                         }
                         if (myAccountPostAllData.size > 0) {
@@ -285,6 +277,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                             pBinding.accountSwipe.visibility = View.GONE
                             pBinding.myAccountPostRv.visibility = View.GONE
                         }
+                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                         loadingDialog?.dismiss()
 
                     } else {
@@ -310,6 +303,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
+        loadingDialog?.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
         loadingDialog?.show()
         setMyPostData()
         myAdapter = MyAccountPostAdapter()
@@ -323,33 +317,124 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
 
     }
 
-    private fun initScrollListener(){
+    private fun initSwipeRefresh() {
+        pBinding.accountSwipe.setOnRefreshListener {
+            // 화면 터치 불가능하도록 설정
+            requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+
+            // 데이터 새로 고침
+            refreshData()
+
+            /* // 새로 고침 완료 및 터치 가능하게 설정
+             mttBinding.moreRefreshSwipeLayout.isRefreshing = false
+             this.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)*/
+
+            // 스크롤 리스너 초기화
+            initScrollListener()
+        }
+    }
+
+    private fun refreshData() {
+        isLoading = false
+        currentPage = 0
+        //moreCarpoolAllData.clear() // Clear existing data
+        myAdapter?.notifyDataSetChanged() // Notify adapter of data change
+
+        // Fetch fresh data
+        setMyPostData()
+    }
+
+    private fun initScrollListener() {
         pBinding.myAccountPostRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                //val layoutm = pBinding.myAccountPostRv.layoutManager as LinearLayoutManager
-                //화면에 보이는 마지막 아이템의 position
-                // 어댑터에 등록된 아이템의 총 개수 -1
-                //데이터의 마지막이 아이템의 화면에 뿌려졌는지
+                val layoutManager = recyclerView.layoutManager as? LinearLayoutManager
+                val lastVisibleItemPosition = layoutManager?.findLastCompletelyVisibleItemPosition() ?: -1
+                val itemTotalCount = recyclerView.adapter?.itemCount ?: 0
 
+                // 스크롤이 끝에 도달했는지 확인하고 isLoading 상태 확인
+                if (lastVisibleItemPosition >= itemTotalCount - 1 && !isLoading) {
+                    if (currentPage < totalPages - 1) {
+                        isLoading = true // Set isLoading to true to prevent multiple calls
 
-                if (currentPage < totalPages - 1) {
-                    if(!isLoading){
-                        if ((recyclerView.layoutManager as LinearLayoutManager?)!!.findLastCompletelyVisibleItemPosition() == myAccountPostAllData.size - 1){
-                            Log.e("true", "True")
-                            getMoreItem()
-                            isLoading =  true
+                        // Add a placeholder for the loading item
+                        val runnable = kotlinx.coroutines.Runnable {
+                            myAccountPostAllData.add(null)
+                            myAdapter?.notifyItemInserted(myAccountPostAllData.size - 1)
                         }
+                        pBinding.myAccountPostRv.post(runnable)
+
+                        // Load more items
+                        getMoreItem()
                     }
-                } else {
-                    isLoading = false
                 }
             }
         })
     }
 
     private fun getMoreItem() {
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed({
+            // Remove the loading item placeholder
+            val loadingPosition = myAccountPostAllData.indexOf(null)
+            if (loadingPosition != -1) {
+                myAccountPostAllData.removeAt(loadingPosition)
+                myAdapter?.notifyItemRemoved(loadingPosition)
+            }
+
+            // Fetch more data if necessary
+            if (currentPage < totalPages - 1) {
+                currentPage += 1
+                CoroutineScope(Dispatchers.IO).launch {
+                    RetrofitServerConnect.create(requireActivity()).getMyPostData(userId.toInt(), "createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                        override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                            if (response.isSuccessful) {
+                                val responseData = response.body()
+                                responseData?.let {
+                                    val newItems = it.content.filter { item ->
+                                        item.isDeleteYN == "N"
+                                    }.map { item ->
+                                        PostData(
+                                            item.user.studentId,
+                                            item.postId,
+                                            item.title,
+                                            item.content,
+                                            item.createDate,
+                                            item.targetDate,
+                                            item.targetTime,
+                                            item.category.categoryName,
+                                            item.location,
+                                            item.participantsCount,
+                                            item.numberOfPassengers,
+                                            item.cost,
+                                            item.verifyGoReturn,
+                                            item.user,
+                                            item.latitude,
+                                            item.longitude
+                                        )
+                                    }
+
+                                    myAccountPostAllData.addAll(newItems)
+                                    myAdapter?.notifyDataSetChanged()
+                                }
+                            } else {
+                                Log.d("Error", "Response code: ${response.code()}")
+                            }
+                            isLoading = false
+                        }
+
+                        override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                            Log.d("Error", "Failure: ${t.message}")
+                            isLoading = false
+                        }
+                    })
+                }
+            }
+        }, 2000)
+    }
+
+    /*private fun getMoreItem() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
@@ -364,8 +449,8 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
 
@@ -411,16 +496,16 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                             if (response.isSuccessful) {
 
                                 //println(response.body()!!.content)
-                                /*val start = SystemClock.elapsedRealtime()
+                                *//*val start = SystemClock.elapsedRealtime()
 
                                 // 함수 실행시간
                                 val date = Date(start)
                                 val mFormat = SimpleDateFormat("HH:mm:ss")
                                 val time = mFormat.format(date)
                                 println(start)
-                                println(time)*/
-                                /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                                s.add(PostReadAllResponse())*/
+                                println(time)*//*
+                                *//*val s : ArrayList<PostReadAllResponse> = ArrayList()
+                                s.add(PostReadAllResponse())*//*
 
                                 //데드라인 체크안함
                                 for (i in response.body()!!.content.filter { it.isDeleteYN == "N" }.indices) {
@@ -535,7 +620,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
             }
             isLoading = false
         }, 2000)
-    }
+    }*/
 
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
@@ -545,20 +630,6 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            /*taxiAllData.add(post)
-                            calendarTaxiAllData.add(post) //데이터 전부 들어감
-
-                            //들어간 데이터를 key로 분류하여 저장하도록함
-                            selectCalendarData[post.postTargetDate] = arrayListOf()
-                            selectCalendarData[post.postTargetDate]!!.add(post)
-
-                            println(selectCalendarData)*/
-                            //setData()
-                        }
-                        //livemodel을 통해 저장
-                        //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
-                        //noticeBoardAdapter!!.notifyDataSetChanged()
                     }
                     //edit
                     1 -> {

@@ -153,4 +153,8 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
         moreTaxiData.addAll(newData)
         notifyItemRangeInserted(startPosition, newData.size)
     }
+
+    fun deleteLoading(){
+        moreTaxiData.removeAt(moreTaxiData.lastIndex)
+    }
 }

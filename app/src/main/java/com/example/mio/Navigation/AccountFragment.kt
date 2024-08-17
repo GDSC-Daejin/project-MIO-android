@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -16,12 +17,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.mio.Adapter.AccountTabAdapter
 import com.example.mio.Adapter.CategoryTabAdapter
+import com.example.mio.LoadingProgressDialog
 import com.example.mio.Model.PostReadAllResponse
 import com.example.mio.Model.User
 import com.example.mio.R
@@ -67,6 +70,9 @@ class AccountFragment : Fragment() {
     private var mannerCount = 0
     private var grade : String? = null
     private var activityLocation : String? = null
+
+    //로딩창
+    private var loadingDialog : LoadingProgressDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,6 +127,19 @@ class AccountFragment : Fragment() {
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity).toString()
         aBinding.accountUserId.text = email.split("@").map { it }.first()
 
+        //로딩창 실행
+        loadingDialog = LoadingProgressDialog(activity)
+        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        //로딩창
+        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
+        loadingDialog?.window!!.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        loadingDialog?.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+
+        loadingDialog?.show()
 
         CoroutineScope(Dispatchers.IO).launch {
             RetrofitServerConnect.create(requireContext()).getAccountData(email).enqueue(object : Callback<User> {
@@ -270,7 +289,11 @@ class AccountFragment : Fragment() {
                             aBinding.accountBank.text = ""
                         }
 
-
+                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                        if (loadingDialog != null && loadingDialog!!.isShowing) {
+                            loadingDialog?.dismiss()
+                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                        }
                     } else {
                         println("ff")
                         aBinding.accountGender.text = "기본 세팅"
@@ -279,7 +302,11 @@ class AccountFragment : Fragment() {
                         aBinding.accountAddress.text = "기본 세팅"
 
                         aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 F 입니다"
-
+                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                        if (loadingDialog != null && loadingDialog!!.isShowing) {
+                            loadingDialog?.dismiss()
+                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                        }
 
                         Log.d("add", response.errorBody()?.string()!!)
                         Log.d("message", call.request().toString())

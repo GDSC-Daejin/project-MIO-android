@@ -106,6 +106,7 @@ class MyBookmarkFragment : Fragment() {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.MATCH_PARENT
         )
+        loadingDialog?.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
         loadingDialog?.show()
 
         CoroutineScope(Dispatchers.IO).launch {
@@ -194,6 +195,7 @@ class MyBookmarkFragment : Fragment() {
                             binding.bookmarkSwipe.visibility = View.GONE
                             binding.bookmarkRv.visibility = View.GONE
                         }
+                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                         loadingDialog?.dismiss()
                     }
                 } else {
@@ -302,6 +304,7 @@ class MyBookmarkFragment : Fragment() {
 
     private fun updateUI() {
         Log.e("updateui", "in ui")
+        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
         if (loadingDialog != null && loadingDialog!!.isShowing) {
             loadingDialog?.dismiss()
             loadingDialog = null // 다이얼로그 인스턴스 참조 해제

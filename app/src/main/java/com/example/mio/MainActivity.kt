@@ -749,42 +749,18 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
 
     private val callback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-            // 뒤로가기 클릭 시 실행시킬 코드 입력
-            val transaction = supportFragmentManager.beginTransaction()
-            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_content)
-            oldFragment = null
-            oldTAG = ""
-
-            val fragmentManager = supportFragmentManager
-
             if (System.currentTimeMillis() > backPressedTime + 2000) {
                 backPressedTime = System.currentTimeMillis()
                 val dialog = FinishAdFragment(this@MainActivity, this@MainActivity)
                 dialog.isCancelable = false
                 dialog.show(this@MainActivity.supportFragmentManager, "FinishAdDialog")
-                return
-            }
-
-            if (System.currentTimeMillis() <= backPressedTime + 2000) {
-                if (fragmentManager.backStackEntryCount > 0) {
-                    fragmentManager.popBackStack()
-
-                } else {
-                    this@MainActivity.finishAffinity()
-                }
-
-                if (currentFragment != null) {
-                    transaction.remove(currentFragment)
-
-                    transaction.commit()
-                }
-
-                this@MainActivity.finishAffinity()
+            } else {
+                finishAffinity()
             }
         }
     }
 
     override fun onYesButtonClick() {
-        this@MainActivity.finishAffinity()
+        finishAffinity()
     }
 }

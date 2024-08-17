@@ -41,7 +41,7 @@ class CompleteActivity : AppCompatActivity() {
         type = intent.getStringExtra("type") as String
         category = intent.getStringExtra("category") as String
         if (type == "PASSENGER") {
-            postData = intent.getSerializableExtra("postData") as PostData
+            postData = intent.getSerializableExtra("postData") as PostData?
             driverData = intent.getSerializableExtra("postDriver") as User
             postCost = postData?.postCost
 
@@ -91,7 +91,7 @@ class CompleteActivity : AppCompatActivity() {
             layoutParams.topMargin = newMarginTop
             cBinding.completeEntireLl.layoutParams = layoutParams
 
-            postData = intent.getSerializableExtra("postData") as PostData
+            postData = intent.getSerializableExtra("postData") as PostData?
 
             cBinding.completeEntireLl.visibility = View.VISIBLE
             cBinding.completeEnd2MessageTv.text = "입금여부를 확인하고 후기를 작성하세요"

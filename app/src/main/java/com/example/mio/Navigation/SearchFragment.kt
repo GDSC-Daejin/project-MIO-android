@@ -165,53 +165,30 @@ class SearchFragment : Fragment() {
 
     private fun displaySelectedPostOnMap(location: LocationReadAllResponse) {
         Log.d("DEBUG", "displaySelectedPostOnMap triggered with location: $location")
-        /*val selectedLatLng = MapPoint.mapPointWithGeoCoord(location.latitude, location.longitude)
-
-        // 선택된 게시글 위치 표시
-        val Marker = MapPOIItem().apply {
-            itemName = "Selected Post"
-            mapPoint = selectedLatLng
-            markerType = MapPOIItem.MarkerType.CustomImage
-            customImageResourceId = R.drawable.map_poi_sr2
-            isShowCalloutBalloonOnTouch = false
-        }
-
-        mapView?.addPOIItem(Marker)
-
-
-        // 지도의 중심을 선택된 위치로 이동
-        mapView?.setMapCenterPointAndZoomLevel(selectedLatLng, 2, true)
-*/
         sBinding?.btSearchField?.hint = location.location
 
-        labelLayer = kakaoMapValue?.labelManager!!.layer
-        // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-        // 주변 게시글 데이터를 불러옵니다.
-        //loadNearbyPostData(location.postId)
-        // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
-
+        kakaoMapValue?.labelManager?.layer?.let { layer ->
+            // Add code to display the selected post on the map
+        } ?: Log.e("DEBUG", "Label Manager layer is null")
 
         sBinding?.postData?.apply {
             visibility = View.VISIBLE
             sBinding?.postTitle?.text = location.title
-            sBinding?.postDate?.text = location.targetDate + " " + location.targetTime
+            sBinding?.postDate?.text = "${location.targetDate} ${location.targetTime}"
             sBinding?.postLocation?.text = location.location
             sBinding?.postParticipation?.text = location.participantsCount.toString()
             sBinding?.postParticipationTotal?.text = location.numberOfPassengers.toString()
 
             sBinding?.postData?.setOnClickListener {
-/*                val intent = Intent(context, NoticeBoardReadActivity::class.java)
-                intent.putExtra("POST_ID", location.postId)  // 게시글의 ID 또는 유일한 키를 전달
-                startActivity(intent)*/
                 val postData = PostData(
-                    accountID = location.user?.studentId!!,
+                    accountID = location.user?.studentId ?: "",
                     postID = location.postId,
                     postTitle = location.title,
                     postContent = location.content,
                     postCreateDate = location.createDate,
                     postTargetDate = location.targetDate,
                     postTargetTime = location.targetTime,
-                    postCategory = location.category?.categoryName!!,
+                    postCategory = location.category?.categoryName ?: "",
                     postLocation = location.location,
                     postParticipation = location.participantsCount,
                     postParticipationTotal = location.numberOfPassengers,
@@ -222,27 +199,22 @@ class SearchFragment : Fragment() {
                     postlongitude = location.longitude
                 )
 
-                // Intent를 통해 NoticeBoardReadActivity로 전달
-                val intent = Intent(context, NoticeBoardReadActivity::class.java)
-                intent.putExtra("type", "READ")
-                intent.putExtra("postItem", postData)
+                val intent = Intent(context, NoticeBoardReadActivity::class.java).apply {
+                    putExtra("type", "READ")
+                    putExtra("postItem", postData)
+                }
                 startActivity(intent)
             }
         }
 
-
-        // 더보기 부분분
         sBinding?.postMore?.apply {
             visibility = View.VISIBLE
-
-            sBinding?.postMore?.setOnClickListener {
-                // NearbyPostsActivity로 이동
+            setOnClickListener {
                 val intent = Intent(context, NearbypostActivity::class.java).apply {
                     putExtra("POST_ID", location.postId)
                     putExtra("searchWord", location.location)
                 }
                 startActivity(intent)
-
             }
         }
     }
@@ -298,6 +270,7 @@ class SearchFragment : Fragment() {
                             searchPostData?.addAll(it.filter { it1 -> it1.isDeleteYN == "N" && it1.postType == "BEFORE_DEADLINE" })
                         }
                         Log.e("getLocationPostData", searchPostData.toString())
+                        startMapLifeCycle()
                     } else {
 
                         Toast.makeText(requireContext(), "검색된 게시글이 없습니다.", Toast.LENGTH_SHORT).show()
@@ -325,7 +298,6 @@ class SearchFragment : Fragment() {
     // 주변 게시글 데이터를 불러오는 함수
     private fun loadNearbyPostData(postId: Int?) {
         Log.d("requestActivity loadNearbyPostData", "loadNearbyPostData")
-        //val call = RetrofitServerConnect.service
         if (postId != null) {
             CoroutineScope(Dispatchers.IO).launch {
                 RetrofitServerConnect.create(requireContext()).getNearByPostData(postId).enqueue(object :
@@ -336,39 +308,28 @@ class SearchFragment : Fragment() {
                             if (responseData.isNullOrEmpty()) {
                                 Toast.makeText(requireActivity(), "검색된 주위 게시글이 없습니다", Toast.LENGTH_SHORT).show()
                             } else {
-                                val selectedData = responseData.first { it.postId == postId }
-                                // 마커로 선택된 게시글 위치 표시
-                                displaySelectedPostOnMap(selectedData)
-                                //addMarker(response.body()!!) // 지도에 마커 추가 메소드 호출
-                                /*if (latLngList.isNotEmpty()) {
-
-                                }*/
-                                //주위에 있는 게시글 표시 여러개찍기
+                                val selectedData = responseData.firstOrNull { it.postId == postId }
+                                if (selectedData != null) {
+                                    displaySelectedPostOnMap(selectedData)
+                                } else {
+                                    Log.e("requestActivity", "Selected data not found in response")
+                                }
                                 Log.d("requestActivity loadNearbyPostData", "loadNearbyPostData")
-                                for (i in response.body()!!.filter { it.postId != postId }) {
-                                    //latLngList.add(LatLng.from(i.latitude, i.longitude))
-                                    //labelLayer.addLabel(LabelOptions.from("centerLabel", centerPosition)
-                                    // 스타일 지정. LabelStyle.from()안에 원하는 이미지 넣기
+                                for (i in responseData.filter { it.postId != postId && it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE"}) {
                                     val style = kakaoMapValue?.labelManager?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.map_poi_srn)))
-                                    // 라벨 옵션 지정. 위경도와 스타일 넣기
                                     val options = LabelOptions.from("${i.postId}", LatLng.from(i.latitude, i.longitude)).setStyles(style)
-                                    // 레이어 가져오기
                                     val layer = kakaoMapValue?.labelManager?.layer
-                                    // 레이어에 라벨 추가
                                     layer?.addLabel(options)
                                     if (layer?.layerId != null) {
                                         hashMapPoiAndPostData?.set(options.labelId, i)
                                     }
-                                    Log.d("requestActivity loadNearbyPostData", "$i")
                                 }
                                 Log.d("requestActivity loadNearbyPostData","$hashMapPoiAndPostData")
                             }
-                        }
-                        else {
-                            println("loadNearbyPostData!!!!!!!!!!!!!!!!!")
-                            Log.d("comment", response.errorBody()?.string()!!)
+                        } else {
+                            Log.d("comment", response.errorBody()?.string() ?: "Unknown error")
                             Log.d("message", call.request().toString())
-                            println(response.code())
+                            Log.d("response code", response.code().toString())
                         }
                     }
 
@@ -578,13 +539,14 @@ class SearchFragment : Fragment() {
 
             override fun onMapReady(kakaoMap: KakaoMap) {
                 Log.e("searchFragment1", "onMapReady")
+
                 kakaoMapValue = kakaoMap
                 labelLayer = kakaoMap.labelManager!!.layer
                 val trackingManager = kakaoMap.trackingManager
 
                 //선택한 값을 중심으로 poi찍기
                 if (searchPostData?.isNotEmpty() == true) {
-                    Log.e("pendingTest", searchPostData.toString())
+                    Log.e("pendingTest 1", searchPostData.toString())
                     loadNearbyPostData(searchPostData?.first()?.postId)
                     // 현재 위치를 나타낼 label를 그리기 위해 kakaomap 인스턴스에서 LabelLayer를 가져옵니다.
                     val layer = kakaoMap.labelManager!!.layer
@@ -612,10 +574,15 @@ class SearchFragment : Fragment() {
                         if (searchPostData?.size!! > 1) {
                             sBinding?.postMoreCount?.visibility = View.VISIBLE
                             sBinding?.postMoreCount?.text = "+${searchPostData?.size}"
+                            Log.e("sameLocation", searchPostData?.first()!!.location + " " +searchPostData?.size)
+
                         }
                     }
                 } else {
-                    /*Toast.makeText(requireContext(), "검색된 게시글이 없습니다", Toast.LENGTH_SHORT).show()*/
+                    Log.e("pendingTest 2", "no such element")
+                    //map?.pause()
+
+                    /*Toast.makeText(requireContext(), "검색된 게시글이 없습니다", Toast.LENGTH_SHORT).show()*//*
                     Log.e("pendingTest", searchPostData.toString())
                     loadNearbyPostData(searchPostData?.first()?.postId)
                     // 현재 위치를 나타낼 label를 그리기 위해 kakaomap 인스턴스에서 LabelLayer를 가져옵니다.
@@ -645,7 +612,7 @@ class SearchFragment : Fragment() {
                             sBinding?.postMoreCount?.visibility = View.VISIBLE
                             sBinding?.postMoreCount?.text = "+${searchPostData?.size}"
                         }
-                    }
+                    }*/
                 }
 
                 kakaoMapValue!!.setOnMapClickListener { kakaoMap, latLng, pointF, poi ->
@@ -663,9 +630,9 @@ class SearchFragment : Fragment() {
                     }*/
                 }
 
-                kakaoMapValue!!.setOnCameraMoveStartListener { kakaoMap, gestureType ->
+               /* kakaoMapValue!!.setOnCameraMoveStartListener { kakaoMap, gestureType ->
                     sBinding?.poiInfoText?.visibility = View.GONE
-                }
+                }*/
 
                 //kakaoMap - KakaoMap
                 //position - 클릭한 POI 의 좌표
@@ -678,6 +645,16 @@ class SearchFragment : Fragment() {
                         Log.e("poi click sear", hashMapPoiAndPostData.toString())
                         Log.e("poi click sear", setPostData.toString())
                         Log.e("poi click sear", poiId.toString())
+                        if (hashMapPoiAndPostData?.isNotEmpty() == true) {
+                            if (hashMapPoiAndPostData!!.filter { it.value.location == setPostData.location }.size > 1) {
+                                sBinding?.postMoreCount?.visibility = View.VISIBLE
+                                sBinding?.postMoreCount?.text = "+${hashMapPoiAndPostData!!.filter { it.value.location == setPostData.location }.size}"
+                                Log.e("sameLocation", setPostData.location + " " + hashMapPoiAndPostData!!.filter { it.value.location == setPostData.location }.size.toString())
+                            } else {
+                                Log.e("sameLocation no", setPostData.location + " " + hashMapPoiAndPostData!!.filter { it.value.location == setPostData.location }.size.toString())
+                                sBinding?.postMoreCount?.visibility = View.GONE
+                            }
+                        }
                         // 현재 위치를 나타낼 label를 그리기 위해 kakaomap 인스턴스에서 LabelLayer를 가져옵니다.
                         val layer = kakaoMap.labelManager!!.layer
                         startPosition = LatLng.from(setPostData.latitude, setPostData.longitude)
@@ -707,7 +684,7 @@ class SearchFragment : Fragment() {
                             val layer = kakaoMap?.labelManager?.layer
                             // 레이어에 라벨 추가
                             layer?.addLabel(options)
-                            Log.d("requestActivity loadNearbyPostData", "$i")
+                            //Log.d("requestActivity loadNearbyPostData", "$i")
                         }
 
                         CoroutineScope(Dispatchers.Main).launch {
@@ -779,39 +756,29 @@ class SearchFragment : Fragment() {
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == AppCompatActivity.RESULT_OK) {
             val data = result.data?.getSerializableExtra("location") as LocationReadAllResponse?
+            Log.e("location request", data.toString())
             val flag = result.data?.getIntExtra("flag", -1)
             if (flag == 103) {
-                //로딩창 실행
-                loadingDialog = LoadingProgressDialog(activity)
-                //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-                //로딩창
-                loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-                loadingDialog?.window!!.setLayout(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                loadingDialog?.show()
+                // 로딩창 실행
+                loadingDialog = LoadingProgressDialog(activity).apply {
+                    window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    window?.attributes?.windowAnimations = R.style.FullScreenDialog
+                    window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                    show()
+                }
+                map?.finish()
+                kakaoMapValue = null
+                initMapView()
                 CoroutineScope(Dispatchers.IO).launch {
-                    // 맵을 다시 초기화하거나 필요한 작업 수행
-                    //initMapView()
-
-                    Log.d("requestActivity couroutine", "initMapView")
-                    if (data != null) {
-                        loadSearchPost(data.location)
+                    Log.d("requestActivity coroutine", "initMapView")
+                    data?.let {
+                        loadSearchPost(it.location)
                     }
                 }
-                /*sharedViewModel.selectedLocation.observe(viewLifecycleOwner) { location ->
-                    Log.d("DEBUG", "LiveData observed: $location")
-                    location?.let {
-
-                        loadNearbyPostData(location.postId)
-
-                    }
-                }*/
             }
         }
     }
+
     override fun onStart() {
         super.onStart()
         Log.d("searchFragment1", "start")

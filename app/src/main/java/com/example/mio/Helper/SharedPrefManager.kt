@@ -1,6 +1,7 @@
 package com.example.mio.Helper
 
 import android.content.Context
+import android.location.Location
 import android.util.Log
 import com.example.mio.Model.LocationReadAllResponse
 import com.google.gson.Gson
@@ -13,29 +14,44 @@ object SharedPrefManager {
     private const val RECENT_ACCOUNT_LOCATION_SEARCH_PREF = "recent_account_location_search_pref"
     private const val RECENT_ACCOUNT_LOCATION_SEARCH_KEY = "recent_account_location_search_key"
 
-    fun loadRecentSearch(context: Context): List<String>? {
+    fun loadRecentSearch(context: Context): List<LocationReadAllResponse>? {
         val prefs = context.getSharedPreferences(RECENT_SEARCH_PREF, Context.MODE_PRIVATE)
-        val jsonListString = prefs.getString(RECENT_SEARCH_KEY, null) ?: return null
+        val jsonListString = prefs.getString(RECENT_SEARCH_KEY, "[]") ?: return null
 
         // Assuming that the stored JSON represents a list of LocationReadAllResponse objects
-        return Gson().fromJson(jsonListString, object : TypeToken<List<String>>() {}.type)
+        return Gson().fromJson(jsonListString, object : TypeToken<List<LocationReadAllResponse>>() {}.type)
     }
 
-    fun saveRecentSearch(context: Context, newLocation: String) {
+    fun saveRecentSearch(context: Context, newLocation: LocationReadAllResponse) {
         val prefs = context.getSharedPreferences(RECENT_SEARCH_PREF, Context.MODE_PRIVATE)
-        val currentLocations: MutableList<String> = loadRecentSearch(context)?.toMutableList() ?: mutableListOf()
+        val gson = Gson()
 
-        // Remove all occurrences of newLocation to ensure no duplicates
-        currentLocations.removeAll { it == newLocation }
-
-        // Add the new location to the beginning of the list if it is not empty
-        if (newLocation.isNotEmpty()) {
-            currentLocations.add(0, newLocation)
+        // Load recent search list using the modified loadRecentSearch function
+        val recentSearchList: MutableList<LocationReadAllResponse> = try {
+            loadRecentSearch(context)?.toMutableList() ?: mutableListOf()
+        } catch (e: Exception) {
+            Log.e("saveRecentSearch", "Error loading recent searches: ${e.message}")
+            mutableListOf()
         }
 
+        // Check if the new location already exists in the current list
+        val isDuplicate = recentSearchList.any { it.location == newLocation.location }
+
+        Log.e("saveRecentSearch", "Duplicate found: $isDuplicate")
+        Log.e("saveRecentSearch", "New location: ${gson.toJson(newLocation)}")
+        Log.e("saveRecentSearch", "Current locations: ${gson.toJson(recentSearchList)}")
+
+        if (!isDuplicate) {
+            Log.e("saveRecentSearch", "Adding new location")
+            recentSearchList.add(0, newLocation)
+        } else {
+            Log.e("saveRecentSearch", "Duplicate not added")
+        }
+
+        // Save the updated list back to SharedPreferences
+        val updatedJson = gson.toJson(recentSearchList)
         val editor = prefs.edit()
-        val json = Gson().toJson(currentLocations)
-        editor.putString(RECENT_SEARCH_KEY, json)
+        editor.putString(RECENT_SEARCH_KEY, updatedJson)
         editor.apply()
     }
 
@@ -51,22 +67,20 @@ object SharedPrefManager {
 
     fun removeRecentSearch(context: Context, locationToRemove: String) {
         val prefs = context.getSharedPreferences(RECENT_SEARCH_PREF, Context.MODE_PRIVATE)
-        val currentLocations: List<String> = loadRecentSearch(context) ?: listOf()
 
-        // 제거할 위치를 제외한 나머지 위치들을 가져옵니다.
-        val updatedLocations = currentLocations.filter { it != locationToRemove }
+        // Load the current list of recent searches
+        val currentLocations: List<LocationReadAllResponse> = loadRecentSearch(context) ?: listOf()
+
+        // Filter out the location that needs to be removed
+        val updatedLocations = currentLocations.filter { it.location != locationToRemove }
+
+        // Convert the updated list back to JSON and save it
         val editor = prefs.edit()
         val json = Gson().toJson(updatedLocations)
         editor.putString(RECENT_SEARCH_KEY, json)
         editor.apply()
     }
 
-    fun isLocationInRecentSearch(context: Context, locationJson: String): Boolean {
-/*        val recentSearchListJson: List<String> = loadRecentSearch(context) ?: listOf()
-        return recentSearchListJson.contains(locationJson)*/
-        val recentSearches = loadRecentSearch(context) ?: return false
-        return recentSearches.contains(locationJson)
-    }
 
     /////////////////////////////////////////////////////////////////////////////////////////////
 

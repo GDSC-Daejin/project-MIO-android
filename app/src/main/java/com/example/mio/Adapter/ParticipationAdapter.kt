@@ -41,10 +41,6 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
     var participationItemData = ArrayList<ParticipationData>()
     private lateinit var context : Context
     var participantsUserData = ArrayList<User?>()
-
-    //클릭된 아이템의 위치를 저장할 변수
-    private var selectedItem = -1
-    //private var cancelItem = -2
     init {
         setHasStableIds(true)
         Log.d("ParticipationAdapter", participationItemData.toString())
@@ -88,41 +84,16 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             itemFilter.text = "${participantsUserData[position]?.studentId} | $gender $smoke"
 
 
-            if (partData.approvalOrReject == "APPROVAL") {
-                val handler = Handler(Looper.getMainLooper())
+            if (partData.approvalOrReject == "APPROVAL") { //승인된거
+                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
 
-                val r = Runnable {
-                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) //승인
+                // 배경색 변경
+                binding.participationCsl.backgroundTintList = colorStateList
+                binding.participationItemLl.backgroundTintList = colorStateList
 
-                    // 배경색 변경
-                    binding.participationCsl.backgroundTintList = colorStateList
-                    binding.participationItemLl.backgroundTintList = colorStateList
-
-                    binding.participationRefuse.visibility = View.GONE
-                    binding.participationApproval.visibility = View.GONE
-                    selectedItem = position
-                    notifyDataSetChanged()
-                }
-
-                handler.post(r)
-
-            } else {
-                val handler = Handler(Looper.getMainLooper())
-
-                val r = Runnable {
-                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
-
-                    // 배경색 변경
-                    binding.participationCsl.backgroundTintList = colorStateList
-                    binding.participationItemLl.backgroundTintList = colorStateList
-
-                    binding.participationRefuse.visibility = View.VISIBLE
-                    binding.participationApproval.visibility = View.VISIBLE
-                    selectedItem = -1
-                    notifyDataSetChanged()
-                }
-
-                handler.post(r)
+                binding.participationRefuse.visibility = View.GONE
+                binding.participationApproval.visibility = View.GONE
+                binding.participationCancel.visibility = View.VISIBLE
             }
         }
     }
@@ -143,34 +114,14 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
     override fun onBindViewHolder(holder: ParticipationAdapter.ParticipationViewHolder, position: Int) {
         holder.bind(participationItemData[position], position)
 
-        if(selectedItem == position) {
-            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_4)) //승인
-
-            holder.itemView.backgroundTintList = colorStateList
-
-            // 배경색 변경
-            /*binding.participationCsl.backgroundTintList = colorStateList
-            binding.participationItemLl.backgroundTintList = colorStateList*/
-
-            binding.participationRefuse.visibility = View.GONE
-            binding.participationApproval.visibility = View.GONE
-        } else {
-            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(context , R.color.mio_gray_1)) //취소됨
-            holder.itemView.backgroundTintList = colorStateList
-
-
-            binding.participationRefuse.visibility = View.VISIBLE
-            binding.participationApproval.visibility = View.VISIBLE
-        }
-
-        holder.itemView.findViewById<Button>(R.id.participation_approval).setOnClickListener {
+        /*holder.itemView.findViewById<Button>(R.id.participation_approval).setOnClickListener {
             //itemClickListener.onClick(it, holder.adapterPosition, participationItemData[holder.adapterPosition].postId)
             val pos = position
             selectedItem = pos
 
             //notifyItemChanged(beforePos)
             notifyItemChanged(selectedItem)
-        }
+        }*/
 
 
 
@@ -183,62 +134,27 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             fetchItemDetails(item.participantId)
             itemClickListener.onApprovalClick(position, participationItemData[position].participantId.toString())
             //cancelItem = -1
-            selectedItem = approvalPosition
             notifyDataSetChanged()
             //sendAlarmData("예약", position, item)
         }
 
         binding.participationRefuse.setOnClickListener {
             //removeData(holder.adapterPosition)
-            println("cancleellelelelelelelelee")
-            val cancelPosition = position
-            selectedItem = -1
-            val item = participationItemData[position]
-            ////cancelItem = cancelPosition
-            notifyDataSetChanged()
-            println(participationItemData[position].approvalOrReject)
             removeData(participationItemData[position].participantId, position)
             itemClickListener.onRefuseClick(position, participationItemData[position].participantId.toString())
+
+            notifyDataSetChanged()
             //sendAlarmData("취소", position, item)
         }
 
         binding.participationCancel.setOnClickListener {
-            println("cancleellelelelelelelelee")
-            val cancelPosition = position
-            selectedItem = -1
-            val item = participationItemData[position]
-            //cancelItem = cancelPosition
-            notifyDataSetChanged()
+            //removeData(participationItemData[position].participantId, position)
+            Log.e("cancel", participationItemData[position].participantId.toString())
+            Log.e("cancel", participationItemData.toString())
             removeData(participationItemData[position].participantId, position)
             itemClickListener.onRefuseClick(position, participationItemData[position].participantId.toString())
+            notifyDataSetChanged()
         }
-
-
-
-    /*binding.homeRemoveIv.setOnClickListener {
-            val builder : AlertDialog.Builder = AlertDialog.Builder(context)
-            val ad : AlertDialog = builder.create()
-            var deleteData = pillItemData[holder.adapterPosition]!!.pillName
-            builder.setTitle(deleteData)
-            builder.setMessage("정말로 삭제하시겠습니까?")
-            builder.setNegativeButton("예",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                    //temp = listData[holder.adapterPosition]!!
-                    //extraditeData()
-                    //testData.add(temp)
-                    //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
-                    removeData(holder.adapterPosition)
-                    //removeServerData(deleteServerData!!)
-                    //println(deleteServerData)
-                })
-
-            builder.setPositiveButton("아니오",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                })
-            builder.show()
-        }*/
     }
 
     override fun getItemCount(): Int {
@@ -247,9 +163,6 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
     override fun getItemId(position: Int): Long {
         return position.toLong()
-    }
-    override fun getItemViewType(position: Int): Int {
-        return if (position == selectedItem) R.layout.participation_item_update_layout else R.layout.participation_item_layout
     }
 
     //데이터 Handle 함수
@@ -292,7 +205,6 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         val api = retrofit2.create(MioInterface::class.java)
         /////////
 
-        //삭제 테스트해보기 TODO
         CoroutineScope(Dispatchers.IO).launch {
             api.deleteParticipants(participantsId).enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
@@ -310,9 +222,9 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 }
             })
         }
-        participationItemData.removeAt(position)
+        //participationItemData.removeAt(position)
         //temp = null
-        notifyItemRemoved(position)
+        //notifyItemRemoved(position)
     }
 
    /* fun patchData(participantsId: Int) {

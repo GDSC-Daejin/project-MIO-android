@@ -77,7 +77,7 @@ class SearchResultAdapter(private var items: List<LocationReadAllResponse>) : Re
                         binding.tvListName.text = item.location
                     }
 
-                    binding.tvListRoad.text = address
+                    binding.tvListRoad.text = item.title
                 }
             }
         }

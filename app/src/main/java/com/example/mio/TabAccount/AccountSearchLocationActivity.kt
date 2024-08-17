@@ -19,7 +19,6 @@ import com.example.mio.Adapter.SearchResultAdapter
 import com.example.mio.BuildConfig
 import com.example.mio.Helper.SharedPrefManager
 import com.example.mio.Helper.SharedPrefManager.convertAccountLocationToJSON
-import com.example.mio.Helper.SharedPrefManager.loadRecentSearch
 import com.example.mio.KakaoAPI
 import com.example.mio.Model.*
 import com.example.mio.R

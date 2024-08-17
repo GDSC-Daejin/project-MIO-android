@@ -218,7 +218,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             fourthVF()
             fifthVF()
         } else if (type.equals("EDIT")){ //edit
-            eTemp = intent.getSerializableExtra("editPostData") as PostData
+            eTemp = intent.getSerializableExtra("editPostData") as PostData?
             bottomBtnEvent()
             //vf 생성
             firstVF()

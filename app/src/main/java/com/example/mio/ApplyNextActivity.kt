@@ -74,7 +74,7 @@ class ApplyNextActivity : AppCompatActivity() {
 
         //val s = savedInstanceState.pu
         postId = intent.getIntExtra("postId", 0)
-        postData = intent.getSerializableExtra("postData") as PostData
+        postData = intent.getSerializableExtra("postData") as PostData?
 
         //뒤로가기
         anaBinding.applyBackArrow.setOnClickListener {

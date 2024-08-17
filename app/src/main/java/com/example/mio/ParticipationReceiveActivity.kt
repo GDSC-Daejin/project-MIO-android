@@ -77,6 +77,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                 loadingDialog = LoadingProgressDialog(this@ParticipationReceiveActivity)
                 loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
                 loadingDialog.show()
+                Log.e("onApprovalClick", "onApprovalClick")
                 CoroutineScope(Dispatchers.IO).launch {
                     setParticipationData()
                 }
@@ -86,6 +87,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                 loadingDialog = LoadingProgressDialog(this@ParticipationReceiveActivity)
                 loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
                 loadingDialog.show()
+                Log.e("onRefuseClick", "onRefuseClick")
                 CoroutineScope(Dispatchers.IO).launch {
                     setParticipationData()
                 }
@@ -265,16 +267,16 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                             thisData?.clear()
                             thisData?.addAll(it)
                             participationItemAllData.clear()
-                            participationItemAllData.addAll(it)
+                            participationItemAllData.addAll(it.filter { data -> data.isDeleteYN != "Y" && data.content != "작성자" })
                         }
                         Log.d("Notification Fragment Data", "Received data: $participationItemAllData")
-                        if (participationItemAllData.any { it.content != "작성자" }) {
+                        if (participationItemAllData.any { it.content != "작성자" && (it.approvalOrReject == "WAITING" || it.approvalOrReject == "APPROVAL")}) {
                             CoroutineScope(Dispatchers.IO).launch {
                                 setParticipantsUserData(postList = participationItemAllData.filter { it.content != "작성자" && it.isDeleteYN != "Y"})
                             }
                         } else {
-                            Log.e("updateui", "in ui")
-                            Log.e("PARTICIPATION RESPONSE DATA", participantsUserAllData.toString())
+                            Log.e("paticipation no data", participationItemAllData.toString())
+                            Log.e("paticipation no data", participantsUserAllData.toString())
                             loadingDialog.dismiss()
                             if (participantsUserAllData.isNotEmpty()) {
                                 pBinding.participationRv.visibility = View.VISIBLE
@@ -370,6 +372,8 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         ///
         //val call = RetrofitServerConnect.service
         var shouldBreak = false
+        participantsUserAllData.clear()
+
         if (postList?.isNotEmpty() == true) {
             Log.e("indexout check post", participantsUserAllData.toString())
             Log.e("indexout check post", postList.toString())

@@ -16,33 +16,19 @@ import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import com.example.mio.databinding.FragmentFinishAdBinding
 import com.google.android.gms.ads.*
-import com.google.android.gms.ads.formats.UnifiedNativeAd
 import com.google.android.gms.ads.nativead.MediaView
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.android.gms.ads.nativead.NativeAdView
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
+class FinishAdFragment(context: Context, finishAdInterface: FinishAdInterface) : DialogFragment() {
 
-/**
- * A simple [Fragment] subclass.
- * Use the [FinishAdFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class FinishAdFragment(context : Context, finishAdInterface : FinishAdInterface) : DialogFragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-
-    // 뷰 바인딩 정의
     private var _binding: FragmentFinishAdBinding? = null
     private val binding get() = _binding!!
     private var adLoader: AdLoader? = null
     private var finishAdInterface: FinishAdInterface? = null
     private val contextT = context
+    private var loadedAd: NativeAd? = null
 
     init {
         this.finishAdInterface = finishAdInterface
@@ -50,10 +36,6 @@ class FinishAdFragment(context : Context, finishAdInterface : FinishAdInterface)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
     }
 
     override fun onCreateView(
@@ -62,15 +44,14 @@ class FinishAdFragment(context : Context, finishAdInterface : FinishAdInterface)
     ): View {
         _binding = FragmentFinishAdBinding.inflate(inflater, container, false)
 
-        // 레이아웃 배경을 투명하게 해줌, 필수 아님
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
+        binding.adBtnLl.visibility = View.GONE
         createAd()
-
-
 
         // 취소 버튼 클릭
         binding.dialogLeftBtn.setOnClickListener {
+            Log.e("FragmentFinishAdBinding", "leftBtn")
             dismiss()
         }
 
@@ -83,81 +64,68 @@ class FinishAdFragment(context : Context, finishAdInterface : FinishAdInterface)
         return binding.root
     }
 
-
     private fun createAd() {
         MobileAds.initialize(contextT)
         adLoader = AdLoader.Builder(contextT, "ca-app-pub-3940256099942544/2247696110")
-            .forNativeAd { ad : NativeAd ->
+            .forNativeAd { ad: NativeAd ->
+                loadedAd = ad // 광고가 로드되면 이를 저장
                 val adView = binding.nativeAdView
                 populateNativeAd(adView, ad)
-                // 광고 로드 실패 시 처리할 내용을 여기에 추가
                 Log.e("ad test", ad.responseInfo.toString())
             }
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    // 광고 로드 실패 시 처리할 내용을 여기에 추가
-                    Log.e("ad test", adError.message)
+                    Log.e("ad test", "Failed to load ad: ${adError.message}")
+                    // 광고 로드 실패 시 기본 동작 수행 (예: 기본 UI 표시)
+                    binding.nativeAdView.visibility = View.VISIBLE
+                    //binding.defaultAdView.visibility = View.VISIBLE
                 }
             })
             .withNativeAdOptions(
                 NativeAdOptions.Builder()
-                // Methods in the NativeAdOptions.Builder class can be
-                // used here to specify individual options settings.
-                .build())
+                    .build()
+            )
             .build()
 
         adLoader?.loadAd(AdRequest.Builder().build())
     }
 
     private fun populateNativeAd(adView: NativeAdView, ad: NativeAd) {
-        /*nativeAdView = binding.nativeAdView
-
-        binding.adHeadline.text = ad.headline
-        binding.adBody.text = ad.body
-        // 이미지 로드
-        binding.adAppIcon.setImageDrawable(ad.icon?.drawable)
-        binding.adAdvertiser.text = ad.advertiser
-        // 평점 설정
-        binding.adStars.rating = ad.starRating?.toFloat() ?: 0f
-        // 미디어 뷰 설정
-        binding.adMedia.mediaContent = ad.mediaContent
-
-        binding.nativeAdView.mediaView?.mediaContent = ad.mediaContent
-
-        binding.nativeAdView.setNativeAd(ad)*/
         val icon = adView.findViewById<ImageView>(R.id.adAppIcon)
-        icon.setImageDrawable(ad.icon?.drawable)
-        adView.iconView = icon
-
         val mediaView = adView.findViewById<MediaView>(R.id.adMedia)
-        val temp = ad.mediaContent
-        adView.mediaView = mediaView
-        mediaView.mediaContent = temp
-
         val headline = adView.findViewById<TextView>(R.id.adHeadline)
-        adView.headlineView = headline
-        headline.text = ad.headline
 
+        // 광고에 필요한 필수 요소들 초기화
+        if (icon != null && ad.icon != null) {
+            icon.setImageDrawable(ad.icon?.drawable)
+            adView.iconView = icon
+        }
 
-        /*
+        if (mediaView != null && ad.mediaContent != null) {
+            mediaView.mediaContent = ad.mediaContent
+            adView.mediaView = mediaView
+        }
 
-        val advertiser = adView.findViewById<TextView>(R.id.adAdvertiser)
-        advertiser.text = ad.advertiser
-        adView.advertiserView = advertiser
+        if (headline != null && ad.headline != null) {
+            headline.text = ad.headline
+            adView.headlineView = headline
+        }
 
-
-        val body = adView.findViewById<TextView>(R.id.adBody)
-        body.text = ad.body
-        adView.bodyView = body*/
-
+        // 광고를 뷰에 설정
         adView.setNativeAd(ad)
+
+        // 광고가 정상적으로 표시되었음을 로그로 출력
+        Log.d("populateNativeAd", "Native ad populated successfully")
+        binding.adBtnLl.visibility = View.VISIBLE
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        loadedAd?.destroy() // 광고 객체가 사용 후 메모리에서 해제되도록 설정
     }
 }
+
 interface FinishAdInterface {
     fun onYesButtonClick()
 }

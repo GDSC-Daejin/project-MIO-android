@@ -35,6 +35,9 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -81,14 +84,12 @@ class MoreAreaActivity : AppCompatActivity() {
         mttBinding.filterResetLl.setOnClickListener {//필터리셋
             mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_gray_8))
             mttBinding.moreFilterBtn.setImageResource(R.drawable.filter_icon)
-            mttBinding.moreNonfilterTv.visibility = View.GONE
-            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
             mttBinding.filterResetLl.visibility = View.GONE
             mttBinding.moreAddFilterBtnSg.removeAllViewsInLayout()
+            getBottomData = ""
             chipList.clear()
-            CoroutineScope(Dispatchers.IO).launch {
-                setSelectData()
-            }
+            initSwipeRefresh()
+            setSelectData()
         }
         //이건 날짜, 탑승 수, 담배, 성별, 학교 순서 등 필터
         //필터 취소 기능 넣기 TODO
@@ -156,9 +157,27 @@ class MoreAreaActivity : AppCompatActivity() {
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
                     val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
-                    // 리스트를 날짜(date) 먼저, 시간(time) 다음으로 정렬
-                    moreAreaData.sortedWith(compareBy<PostData?> { sdf.parse(it?.postTargetDate + " " + it?.postTargetTime) }
-                        .thenBy { it?.postTargetTime })
+                    // 날짜 및 시간 형식 지정
+                    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+                    // 정렬 로직
+                    val sortedTargets = moreAreaData.sortedWith { t1, t2 ->
+                        // 날짜 비교
+                        val dateComparison = LocalDate.parse(t1?.postTargetDate, dateFormatter)
+                            .compareTo(LocalDate.parse(t2?.postTargetDate, dateFormatter))
+
+                        // 날짜가 같으면 시간 비교
+                        if (dateComparison == 0) {
+                            LocalTime.parse(t1?.postTargetTime, timeFormatter)
+
+                                .compareTo(LocalTime.parse(t2?.postTargetTime, timeFormatter))
+                        } else {
+                            dateComparison
+                        }
+                    }
+                    moreAreaData.clear()
+                    moreAreaData.addAll(sortedTargets)
                     mtAdapter?.notifyDataSetChanged()
                 }
                 "낮은 가격 순" -> {
@@ -487,6 +506,19 @@ class MoreAreaActivity : AppCompatActivity() {
                         mtAdapter!!.notifyDataSetChanged()
                     }
 
+                    if (getBottomData.isNotEmpty()) {
+                        myViewModel.postCheckFilter(getBottomData)
+                    } else if (getBottomSheetData.isNotEmpty()) {
+                        myViewModel.postCheckSearchFilter(getBottomSheetData)
+                    } else if (getBottomData.isNotEmpty() && getBottomSheetData.isNotEmpty()) {
+                        myViewModel.postCheckFilter(getBottomData)
+                        myViewModel.postCheckSearchFilter(getBottomSheetData)
+                    } else {
+                        // 새로 고침 완료 후 터치 활성화
+                        mttBinding.moreRefreshSwipeLayout.isRefreshing = false
+                        this@MoreAreaActivity.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    }
+
                     //tempFilterPostData = moreCarpoolAllData
 
                     //moreTempCarpoolAllData.addAll(moreCarpoolAllData)
@@ -531,168 +563,164 @@ class MoreAreaActivity : AppCompatActivity() {
 
     private fun initSwipeRefresh() {
         mttBinding.moreRefreshSwipeLayout.setOnRefreshListener {
-            //새로고침 시 터치불가능하도록
-            this.window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) // 화면 터치 못하게 하기
-            val handler = Handler(Looper.getMainLooper())
-            handler.postDelayed({
-                setSelectData()
-                mtAdapter!!.moreTaxiData = moreAreaData
-                //noticeBoardAdapter.recyclerView.startLayoutAnimation()
-                mttBinding.moreRefreshSwipeLayout.isRefreshing = false
-                mtAdapter!!.notifyDataSetChanged()
-                this.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            }, 1000)
-            //터치불가능 해제ss
-            //activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            // 화면 터치 불가능하도록 설정
+            this.window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+
+            // 데이터 새로 고침
+            refreshData()
+
+            /* // 새로 고침 완료 및 터치 가능하게 설정
+             mttBinding.moreRefreshSwipeLayout.isRefreshing = false
+             this.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)*/
+
+            // 스크롤 리스너 초기화
+            initScrollListener()
         }
     }
 
-    private fun initScrollListener(){
+    private fun refreshData() {
+        isLoading = false
+        currentPage = 0
+        //moreCarpoolAllData.clear() // Clear existing data
+        mtAdapter?.notifyDataSetChanged() // Notify adapter of data change
+
+        // Fetch fresh data
+        setSelectData()
+    }
+
+    private fun initScrollListener() {
         mttBinding.moreTaxiTabRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                if (currentPage < totalPages - 1) {
-                    if(!isLoading){
-                        if ((recyclerView.layoutManager as LinearLayoutManager?)!!.findLastCompletelyVisibleItemPosition() == moreAreaData.size - 1){
-                            Log.e("true", "True")
-                            getMoreItem()
-                            isLoading =  true
+                val layoutManager = recyclerView.layoutManager as? LinearLayoutManager
+                val lastVisibleItemPosition = layoutManager?.findLastCompletelyVisibleItemPosition() ?: -1
+                val itemTotalCount = recyclerView.adapter?.itemCount ?: 0
+
+                // 스크롤이 끝에 도달했는지 확인하고 isLoading 상태 확인
+                if (lastVisibleItemPosition >= itemTotalCount - 1 && !isLoading) {
+                    if (currentPage < totalPages - 1) {
+                        isLoading = true // Set isLoading to true to prevent multiple calls
+
+                        // Add a placeholder for the loading item
+                        val runnable = kotlinx.coroutines.Runnable {
+                            moreAreaData.add(null)
+                            mtAdapter?.notifyItemInserted(moreAreaData.size - 1)
                         }
+                        mttBinding.moreTaxiTabRv.post(runnable)
+
+                        // Load more items
+                        getMoreItem()
                     }
-                } else {
-                    isLoading = false
                 }
             }
         })
     }
 
     private fun getMoreItem() {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
-
-        val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                    val intent = Intent(this@MoreAreaActivity, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
-                    startActivity(intent)
-                    finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
-        ////////////////////////////////////////////////////
-
-        val runnable = kotlinx.coroutines.Runnable {
-            moreAreaData.add(null)
-            mtAdapter?.notifyItemInserted(moreAreaData.size - 1)
-        }
-        mttBinding.moreTaxiTabRv.post(runnable)
-        //null을 감지 했으니
-        //이 부분에 프로그래스바가 들어올거라 알림
-        //mttBinding.moreTaxiTabRv.adapter!!.notifyItemInserted(moreCarpoolAllData.size-1)
-        //성공/
-
         val handler = Handler(Looper.getMainLooper())
-        handler.postDelayed(java.lang.Runnable {
-            //null추가한 거 삭제
-            moreAreaData.removeAt(moreAreaData.size - 1)
-            mtAdapter?.notifyItemRemoved(moreAreaData.size)
-            //data.clear()
+        handler.postDelayed({
+            // Remove the loading item placeholder
+            val loadingPosition = moreAreaData.indexOf(null)
+            if (loadingPosition != -1) {
+                moreAreaData.removeAt(loadingPosition)
+                mtAdapter?.notifyItemRemoved(loadingPosition)
+            }
 
-            //page수가 totalpages 보다 작거나 같다면 데이터 더 가져오기 가능
+            // Fetch more data if necessary
             if (currentPage < totalPages - 1) {
                 currentPage += 1
-
                 CoroutineScope(Dispatchers.IO).launch {
-                    api.getActivityLocation("createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
-                        override fun onResponse(
-                            call: Call<PostReadAllResponse>,
-                            response: Response<PostReadAllResponse>
-                        ) {
+                    RetrofitServerConnect.create(this@MoreAreaActivity).getActivityLocation("createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                        override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                             if (response.isSuccessful) {
                                 val responseData = response.body()
-                                if (responseData != null) {
-                                    totalPages = responseData.totalPages
-
-                                    for (i in responseData.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
-                                        //println(response!!.body()!!.content[i].user.studentId)
-                                        moreAreaData.add(PostData(
-                                            responseData.content[i].user.studentId,
-                                            responseData.content[i].postId,
-                                            responseData.content[i].title,
-                                            responseData.content[i].content,
-                                            responseData.content[i].createDate,
-                                            responseData.content[i].targetDate,
-                                            responseData.content[i].targetTime,
-                                            responseData.content[i].category.categoryName,
-                                            responseData.content[i].location,
-                                            //participantscount가 현재 참여하는 인원들
-                                            responseData.content[i].participantsCount,
-                                            //numberOfPassengers은 총 탑승자 수
-                                            responseData.content[i].numberOfPassengers,
-                                            responseData.content[i].cost,
-                                            responseData.content[i].verifyGoReturn,
-                                            responseData.content[i].user,
-                                            responseData.content[i].latitude,
-                                            responseData.content[i].longitude
-                                        ))
+                                responseData?.let {
+                                    val newItems = it.content.filter { item ->
+                                        item.isDeleteYN == "N" && item.postType == "BEFORE_DEADLINE"
+                                    }.map { item ->
+                                        PostData(
+                                            item.user.studentId,
+                                            item.postId,
+                                            item.title,
+                                            item.content,
+                                            item.createDate,
+                                            item.targetDate,
+                                            item.targetTime,
+                                            item.category.categoryName,
+                                            item.location,
+                                            item.participantsCount,
+                                            item.numberOfPassengers,
+                                            item.cost,
+                                            item.verifyGoReturn,
+                                            item.user,
+                                            item.latitude,
+                                            item.longitude
+                                        )
                                     }
-                                    Log.e("morearea", moreAreaData.toString())
-                                    //currentData.addAll(moreAreaData.take(5))
-                                    mtAdapter!!.notifyDataSetChanged()
+
+                                    moreAreaData.addAll(newItems)
+                                    if (getBottomData.isNotEmpty()) {
+                                        myViewModel.postCheckFilter(getBottomData)
+                                    }
+
+                                    when(getBottomSheetData) {
+                                        "최신 순" -> {
+                                            mttBinding.moreSearchTv.text = "최신 순"
+                                            mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
+                                            moreAreaData.sortByDescending { it?.postCreateDate }
+                                            mtAdapter?.notifyDataSetChanged()
+                                        }
+                                        "마감 임박 순" -> {
+                                            mttBinding.moreSearchTv.text = "마감 임박 순"
+                                            mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
+                                            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+                                            // 날짜 및 시간 형식 지정
+                                            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                                            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+                                            // 정렬 로직
+                                            val sortedTargets = moreAreaData.sortedWith { t1, t2 ->
+                                                // 날짜 비교
+                                                val dateComparison = LocalDate.parse(t1?.postTargetDate, dateFormatter)
+                                                    .compareTo(LocalDate.parse(t2?.postTargetDate, dateFormatter))
+
+                                                // 날짜가 같으면 시간 비교
+                                                if (dateComparison == 0) {
+                                                    LocalTime.parse(t1?.postTargetTime, timeFormatter)
+
+                                                        .compareTo(LocalTime.parse(t2?.postTargetTime, timeFormatter))
+                                                } else {
+                                                    dateComparison
+                                                }
+                                            }
+                                            moreAreaData.clear()
+                                            moreAreaData.addAll(sortedTargets)
+                                            mtAdapter?.notifyDataSetChanged()
+                                        }
+                                        "낮은 가격 순" -> {
+                                            mttBinding.moreSearchTv.text = "낮은 가격 순"
+                                            mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
+                                            moreAreaData.sortBy { it?.postCost }
+                                            mtAdapter?.notifyDataSetChanged()
+                                        }
+                                    }
+                                    mtAdapter?.notifyDataSetChanged()
                                 }
-
-                                //tempFilterPostData = moreCarpoolAllData
-
-                                //moreTempCarpoolAllData.addAll(moreCarpoolAllData)
-                                if (moreAreaData.isEmpty()) {
-                                    mttBinding.moreNonfilterTv.text = "등록된 지역 게시글이 존재하지 않습니다"
-                                    mttBinding.moreNonfilterTv.visibility = View.VISIBLE
-                                    mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
-                                } else {
-                                    mttBinding.moreNonfilterTv.text = "검색된 게시글이 없습니다"
-                                    mttBinding.moreNonfilterTv.visibility = View.GONE
-                                    mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
-                                }
-
                             } else {
-                                Log.e("f", response.code().toString())
-                                Log.e("morearea", response.errorBody()?.string()!!)
+                                Log.d("Error", "Response code: ${response.code()}")
                             }
+                            isLoading = false
                         }
 
                         override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                            Log.e("f", t.toString())
+                            Log.d("Error", "Failure: ${t.message}")
+                            isLoading = false
                         }
                     })
                 }
             }
-
-            //println(moreCarpoolAllData)
-            isLoading = false
         }, 2000)
     }
 

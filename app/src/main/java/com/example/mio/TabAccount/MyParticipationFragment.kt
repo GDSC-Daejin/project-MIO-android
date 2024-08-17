@@ -249,6 +249,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
 
     private fun updateUI() {
         Log.e("updateui", "in ui")
+        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
         loadingDialog?.dismiss()
         if (loadingDialog != null && loadingDialog!!.isShowing) {
             loadingDialog?.dismiss()
@@ -479,7 +480,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {
             AppCompatActivity.RESULT_OK -> {
-                val post = it.data?.getSerializableExtra("postData") as PostData
+                //val post = it.data?.getSerializableExtra("postData") as PostData
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {

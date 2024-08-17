@@ -41,9 +41,6 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
 
         val messageData = messageEvent?.data ?: return
         Log.e("SSE", "Received data: $messageData")
-        if (messageEvent == null) {
-            return
-        }
 
         val eventId = messageEvent.lastEventId
         val eventType = messageEvent.eventName
@@ -107,83 +104,4 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
         Log.e("SSE", t.toString())
         //java.net.SocketTimeoutException: timeout
     }
-
-   /* private fun sendNotification(title: String, message: String) {
-        *//*createChannel()
-        setNotification(message, context)*//*
-        *//*val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channelId = "sse_channel_id"
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "SSE Notifications", NotificationManager.IMPORTANCE_DEFAULT).apply {
-                description = "Channel for SSE notifications"
-            }
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(com.example.mio.R.drawable.top_icon_vector)
-            .setContentTitle(title)
-            .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .build()
-
-        notificationManager.notify(0, notification)*//*
-       *//* val builder = NotificationCompat.Builder(context, "channelId")
-            .setSmallIcon(R.drawable.top_icon_vector)
-            .setContentTitle("알림")
-            .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        try {
-            notificationManager.notify(1, builder.build())
-            Log.d("Notification", "Notification created successfully")
-        } catch (e: Exception) {
-            Log.e("Notification", "Failed to create notification: ${e.message}")
-        }*//*
-    }*/
-
-    /*private fun createChannel() {
-        val channel = NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_DEFAULT).apply {
-            description = "참여 알림"
-            enableLights(true)
-            enableVibration(true)
-            lightColor = Color.GREEN
-            lockscreenVisibility = Notification.VISIBILITY_PRIVATE
-        }
-        getManager().createNotificationChannel(channel)
-    }*/
-
-    /*private fun setNotification(content: String?, context: Context?) {
-        Log.e("notification alarm", content.toString())
-        val tapResultIntent = Intent(context, NotificationFragment::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-
-        val pendingIntent = PendingIntent.getActivity(
-            context,
-            0,
-            tapResultIntent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        val notification = NotificationCompat.Builder(context!!, channelID)
-            .setContentTitle("알람")
-            .setContentText(content)
-            .setSmallIcon(R.drawable.top_icon_vector)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .build()
-
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            return
-        }
-        getManager().notify(System.currentTimeMillis().toInt(), notification)
-    }
-
-    private fun getManager(): NotificationManagerCompat {
-        return NotificationManagerCompat.from(context)
-    }*/
 }

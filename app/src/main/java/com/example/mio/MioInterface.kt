@@ -34,6 +34,9 @@ interface MioInterface {
     @GET("/detail/{id}")
     fun getPostIdDetailSearch(@Path("id") postId : Int) : Call<Content>
 
+    @GET("/detail/{id}")
+    suspend fun getSuspendPostIdDetailSearch(@Path("id") postId : Int) : Call<Content>
+
     //카테고리에 따른 게시글 생성 순 조회 1=카풀, 2=택시
     @GET("/categoryPost/{categoryId}")
     fun getCategoryPostData(@Path("categoryId") categoryId: Int,

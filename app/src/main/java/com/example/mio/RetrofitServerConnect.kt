@@ -2,6 +2,8 @@ package com.example.mio
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
+import android.widget.Toast
 import androidx.core.content.ContextCompat.startActivity
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -23,12 +25,10 @@ object RetrofitServerConnect {
                     chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.e("RetrofitServerConnect", "RetrofitServerConnect")
+                    Toast.makeText(context, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     val intent = Intent(context, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
                     context.startActivity(intent)
                     return@Interceptor chain.proceed(newRequest)
                 }

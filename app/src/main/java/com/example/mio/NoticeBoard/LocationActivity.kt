@@ -24,20 +24,6 @@ class LocationActivity : AppCompatActivity() {
         setContentView(lBinding.root)
 
         initMap()
-
-        /*// 마커 생성 및 지도 중심 이동
-        val mapPoint = MapPoint.mapPointWithGeoCoord(latitude, longitude)
-        mapView.setMapCenterPoint(mapPoint, true)
-
-        val marker = MapPOIItem()
-        marker.itemName = "Marker"
-        marker.tag = 0
-        marker.mapPoint = mapPoint
-        marker.markerType = MapPOIItem.MarkerType.CustomImage
-        marker.customImageResourceId = R.drawable.map_poi_sr2
-        //marker.selectedMarkerType = MapPOIItem.MarkerType.RedPin
-
-        mapView.addPOIItem(marker)*/
     }
 
     private fun initMap() {

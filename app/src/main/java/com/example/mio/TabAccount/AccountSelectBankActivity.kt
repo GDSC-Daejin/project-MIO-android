@@ -17,6 +17,7 @@ import com.example.mio.Adapter.AccountSelectBankAdapter
 import com.example.mio.Model.BankItemData
 import com.example.mio.Model.SharedViewModel
 import com.example.mio.R
+import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.ActivityAccountSelectBankBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,7 @@ class AccountSelectBankActivity : AppCompatActivity() {
     private var userBank : String? = null
     private var currentPage = 0
     private lateinit var myViewModel : SharedViewModel
+    private var sharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,36 +69,42 @@ class AccountSelectBankActivity : AppCompatActivity() {
                         userBank = " 카카오뱅크"
                         binding.accountVf.showNext()
                         currentPage += 1
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.kakaobank.channel")
                     }
 
                     "토스뱅크" -> {
                         userBank = " 토스뱅크"
                         binding.accountVf.showNext()
                         currentPage += 1
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "viva.republica.toss")
                     }
 
                     "국민은행" -> {
                         userBank = " 국민은행"
                         binding.accountVf.showNext()
                         currentPage += 1
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.kbstar.kbbank")
                     }
 
                     "하나은행" -> {
                         userBank = " 하나은행"
                         binding.accountVf.showNext()
                         currentPage += 1
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.kebhana.hanapush")
                     }
 
                     "신한은행" -> {
                         userBank = " 신한은행"
                         binding.accountVf.showNext()
                         currentPage += 1
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.shinhan.sbanking")
                     }
 
                     "기업은행" -> {
                         userBank = " 기업은행"
                         binding.accountVf.showNext()
                         currentPage += 1
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.ibk.android.ionebank")
                     }
                 }
             }

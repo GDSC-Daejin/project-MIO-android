@@ -33,7 +33,7 @@
                 android:textSize="16sp"
                 android:textColor="@color/mio_gray_12"
                 android:fontFamily="@font/pretendard_medium"
-               />
+                />
 
             <LinearLayout
                 android:layout_width="wrap_content"

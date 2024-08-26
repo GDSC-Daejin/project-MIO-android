@@ -235,9 +235,10 @@ class SearchFragment : Fragment() {
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.e("search", "searchFragment")
                     val intent = Intent(context, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(context, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     requireActivity().startActivity(intent)
                     return@Interceptor chain.proceed(newRequest)
                 }
@@ -299,59 +300,57 @@ class SearchFragment : Fragment() {
     private fun loadNearbyPostData(postId: Int?) {
         Log.d("requestActivity loadNearbyPostData", "loadNearbyPostData")
         if (postId != null) {
-            CoroutineScope(Dispatchers.IO).launch {
-                RetrofitServerConnect.create(requireContext()).getNearByPostData(postId).enqueue(object :
-                    Callback<List<LocationReadAllResponse>> {
-                    override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
-                        if (response.isSuccessful) {
-                            val responseData = response.body()
-                            if (responseData.isNullOrEmpty()) {
-                                Toast.makeText(requireActivity(), "검색된 주위 게시글이 없습니다", Toast.LENGTH_SHORT).show()
-                            } else {
-                                val selectedData = responseData.firstOrNull { it.postId == postId }
-                                if (selectedData != null) {
-                                    displaySelectedPostOnMap(selectedData)
-                                } else {
-                                    Log.e("requestActivity", "Selected data not found in response")
-                                }
-                                Log.d("requestActivity loadNearbyPostData", "loadNearbyPostData")
-                                for (i in responseData.filter { it.postId != postId && it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE"}) {
-                                    val style = kakaoMapValue?.labelManager?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.map_poi_srn)))
-                                    val options = LabelOptions.from("${i.postId}", LatLng.from(i.latitude, i.longitude)).setStyles(style)
-                                    val layer = kakaoMapValue?.labelManager?.layer
-                                    layer?.addLabel(options)
-                                    if (layer?.layerId != null) {
-                                        hashMapPoiAndPostData?.set(options.labelId, i)
-                                    }
-                                }
-                                Log.d("requestActivity loadNearbyPostData","$hashMapPoiAndPostData")
-                            }
+            RetrofitServerConnect.create(requireContext()).getNearByPostData(postId).enqueue(object :
+                Callback<List<LocationReadAllResponse>> {
+                override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
+                    if (response.isSuccessful) {
+                        val responseData = response.body()
+                        if (responseData.isNullOrEmpty()) {
+                            Toast.makeText(requireActivity(), "검색된 주위 게시글이 없습니다", Toast.LENGTH_SHORT).show()
                         } else {
-                            Log.d("comment", response.errorBody()?.string() ?: "Unknown error")
-                            Log.d("message", call.request().toString())
-                            Log.d("response code", response.code().toString())
+                            val selectedData = responseData.firstOrNull { it.postId == postId }
+                            if (selectedData != null) {
+                                displaySelectedPostOnMap(selectedData)
+                            } else {
+                                Log.e("requestActivity", "Selected data not found in response")
+                            }
+                            Log.d("requestActivity loadNearbyPostData", "loadNearbyPostData")
+                            for (i in responseData.filter { it.postId != postId && it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE"}) {
+                                val style = kakaoMapValue?.labelManager?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.map_poi_srn)))
+                                val options = LabelOptions.from("${i.postId}", LatLng.from(i.latitude, i.longitude)).setStyles(style)
+                                val layer = kakaoMapValue?.labelManager?.layer
+                                layer?.addLabel(options)
+                                if (layer?.layerId != null) {
+                                    hashMapPoiAndPostData?.set(options.labelId, i)
+                                }
+                            }
+                            Log.d("requestActivity loadNearbyPostData","$hashMapPoiAndPostData")
                         }
+                    } else {
+                        Log.d("comment", response.errorBody()?.string() ?: "Unknown error")
+                        Log.d("message", call.request().toString())
+                        Log.d("response code", response.code().toString())
                     }
+                }
 
-                    override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
-                        Log.d("error", t.toString())
-                        Log.e("SearchFragment", "Error fetching nearby post data: ${t.localizedMessage}")
-                    }
-                })
-            }
+                override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
+                    Log.d("error", t.toString())
+                    Log.e("SearchFragment", "Error fetching nearby post data: ${t.localizedMessage}")
+                }
+            })
         }
     }
 
     // 주변 게시글 데이터를 기반으로 지도에 마커를 추가하는 메소드
-    private fun addMarker(locationList: List<LocationReadAllResponse>) {
+    /*private fun addMarker(locationList: List<LocationReadAllResponse>) {
         //val latLng = LatLng.from(location.latitude, location.longitude)
         //val labelLayer = kakaoMapValue?.labelManager?.layer
         for (i in locationList) {
             latLngList.add(LatLng.from(i.latitude, i.longitude))
         }
-    }
+    }*/
 
-    private fun showInfoWindow(poi: Poi?, pointF: PointF) {
+    /*private fun showInfoWindow(poi: Poi?, pointF: PointF) {
         if (poi != null) {
             // TextView에 POI 정보를 설정
             sBinding?.poiInfoText?.text = poi.name
@@ -368,7 +367,7 @@ class SearchFragment : Fragment() {
             // TextView를 화면에 표시
             sBinding?.poiInfoText?.visibility = View.VISIBLE
         }
-    }
+    }*/
 
     /*class MarkerEventListener(val context: Context, val location: LocationReadAllResponse): MapView.POIItemEventListener {
         override fun onPOIItemSelected(mapView: MapView?, poiItem: MapPOIItem?) {
@@ -575,7 +574,6 @@ class SearchFragment : Fragment() {
                             sBinding?.postMoreCount?.visibility = View.VISIBLE
                             sBinding?.postMoreCount?.text = "+${searchPostData?.size}"
                             Log.e("sameLocation", searchPostData?.first()!!.location + " " +searchPostData?.size)
-
                         }
                     }
                 } else {
@@ -651,6 +649,8 @@ class SearchFragment : Fragment() {
                                 sBinding?.postMoreCount?.text = "+${hashMapPoiAndPostData!!.filter { it.value.location == setPostData.location }.size}"
                                 Log.e("sameLocation", setPostData.location + " " + hashMapPoiAndPostData!!.filter { it.value.location == setPostData.location }.size.toString())
                             } else {
+                                sBinding?.postMoreCount?.visibility = View.GONE
+                                //sBinding?.postMoreCount?.text = "+${hashMapPoiAndPostData!!.filter { it.value.location == setPostData.location }.size}"
                                 Log.e("sameLocation no", setPostData.location + " " + hashMapPoiAndPostData!!.filter { it.value.location == setPostData.location }.size.toString())
                                 sBinding?.postMoreCount?.visibility = View.GONE
                             }

@@ -884,7 +884,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                             chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                         val intent = Intent(this@NoticeBoardEditActivity, LoginActivity::class.java)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                        Toast.makeText(this@NoticeBoardEditActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                         startActivity(intent)
                         finish()
                         return@Interceptor chain.proceed(newRequest)
@@ -1002,8 +1002,31 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                             }
                         })
                     }
+
+                    val castTemp2 = PostData(
+                        eTemp!!.accountID,
+                        eTemp!!.postID,
+                        editTitle,
+                        detailContent,
+                        eTemp!!.postCreateDate,
+                        selectFormattedDate,
+                        selectFormattedTime,
+                        if (selectCategoryId == 1) {
+                               "carpool"
+                        } else {
+                               "taxi"
+                        },
+                        location,
+                        eTemp!!.postParticipation,
+                        participateNumberOfPeople,
+                        selectCost.toInt(),
+                        eTemp!!.postVerifyGoReturn,
+                        eTemp!!.user,
+                        latitude!!,
+                        longitude!!
+                    )
                     val intent = Intent(this, NoticeBoardReadActivity::class.java).apply {
-                        putExtra("postData", temp2)
+                        putExtra("postData", castTemp2)
                         putExtra("flag", 33)
                     }
                     setResult(RESULT_OK, intent)
@@ -1232,12 +1255,12 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val api = retrofit.create(KakaoAPI::class.java)
-        val call2 = api.getAddressSearch(API_KEY, location!!)
-
+        val call2 = api.getAddressSearch(API_KEY, location2?.replace("/", "").toString())
         call2.enqueue(object: Callback<ResultSearchAddress> {
             override fun onResponse(call: Call<ResultSearchAddress>, response: Response<ResultSearchAddress>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()?.documents
+                    Log.e("search Result", location2.toString())
                     Log.e("search Result", response.body()?.documents.toString())
                     if (responseData?.isEmpty() == true) {
                         Toast.makeText(this@NoticeBoardEditActivity, "잘못된 지역입니다 다시 검색해주세요", Toast.LENGTH_SHORT).show()

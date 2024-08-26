@@ -18,13 +18,13 @@
             android:layout_gravity="center"
             android:fontFamily="@font/pretendard_bold"
             android:gravity="center"
-            android:text="작성한 후기가 없습니다"
+            android:text="받은 후기가 없습니다"
             android:textColor="@color/mio_gray_11"
             android:textSize="18sp" />
     </LinearLayout>
 
     <!--필터-->
-    <LinearLayout
+    <!--<LinearLayout
         android:id="@+id/linearLayout11"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -49,28 +49,35 @@
             android:layout_height="wrap_content"
             android:src="@drawable/filter_checklist_icon" />
 
-    </LinearLayout>
+    </LinearLayout>-->
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/profile_review_swipe"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout11">
+        app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/profile_review_rv"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:listitem="@layout/review_item" />
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/profile_review_rv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:listitem="@layout/review_item" />
+        </RelativeLayout>
+
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

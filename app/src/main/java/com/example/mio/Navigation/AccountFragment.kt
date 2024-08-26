@@ -141,184 +141,178 @@ class AccountFragment : Fragment() {
 
         loadingDialog?.show()
 
-        CoroutineScope(Dispatchers.IO).launch {
-            RetrofitServerConnect.create(requireContext()).getAccountData(email).enqueue(object : Callback<User> {
-                override fun onResponse(call: Call<User>, response: Response<User>) {
-                    if (response.isSuccessful) {
-                        gender = try {
-                            response.body()!!.gender
-                        } catch (e : java.lang.NullPointerException) {
-                            Log.d("null", e.toString())
-                            null
-                        }
+        RetrofitServerConnect.create(requireContext()).getAccountData(email).enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    gender = try {
+                        response.body()!!.gender
+                    } catch (e : java.lang.NullPointerException) {
+                        Log.d("null", e.toString())
+                        null
+                    }
 
-                        accountNumber = try {
-                            response.body()!!.accountNumber
-                        } catch (e : java.lang.NullPointerException) {
-                            Log.d("null", e.toString())
-                            null
-                        }
+                    accountNumber = try {
+                        response.body()!!.accountNumber
+                    } catch (e : java.lang.NullPointerException) {
+                        Log.d("null", e.toString())
+                        null
+                    }
 
-                        verifySmoker = try {
-                            response.body()!!.verifySmoker
-                        } catch (e : java.lang.NullPointerException) {
-                            Log.d("null", e.toString())
-                            null
-                        }
+                    verifySmoker = try {
+                        response.body()!!.verifySmoker
+                    } catch (e : java.lang.NullPointerException) {
+                        Log.d("null", e.toString())
+                        null
+                    }
 
-                        mannerCount = try {
-                            response.body()?.mannerCount!!.toInt()
-                        } catch (e : java.lang.NullPointerException) {
-                            Log.d("null", e.toString())
-                            0
-                        }
+                    mannerCount = try {
+                        response.body()?.mannerCount!!.toInt()
+                    } catch (e : java.lang.NullPointerException) {
+                        Log.d("null", e.toString())
+                        0
+                    }
 
-                        grade = try {
-                            response.body()!!.grade
-                        } catch (e : java.lang.NullPointerException) {
-                            Log.d("null", e.toString())
-                            "F"
-                        }
+                    grade = try {
+                        response.body()!!.grade
+                    } catch (e : java.lang.NullPointerException) {
+                        Log.d("null", e.toString())
+                        "F"
+                    }
 
-                        activityLocation = try {
-                            response.body()!!.activityLocation
-                        } catch (e : java.lang.NullPointerException) {
-                            Log.d("null", e.toString())
-                            null
-                        }
+                    activityLocation = try {
+                        response.body()!!.activityLocation
+                    } catch (e : java.lang.NullPointerException) {
+                        Log.d("null", e.toString())
+                        null
+                    }
 
 
-                        //나중에 response.body()!!.mannerCount 다시 체크하기  TODO
-                        println("ss")
-                        saveSharedPreferenceGoogleLogin.setUserId(requireActivity(), response.body()!!.id)
-                        println(response.body()!!.id)
-                        println(saveSharedPreferenceGoogleLogin.getUserId(requireActivity()))
-                        myAccountData = response.body()
+                    //나중에 response.body()!!.mannerCount 다시 체크하기  TODO
+                    println("ss")
+                    saveSharedPreferenceGoogleLogin.setUserId(requireActivity(), response.body()!!.id)
+                    println(response.body()!!.id)
+                    println(saveSharedPreferenceGoogleLogin.getUserId(requireActivity()))
+                    myAccountData = response.body()
 
-                        if (grade != null) {
-                            println("mn")
+                    if (grade != null) {
+                        println("mn")
 
-                            aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 $grade 입니다"
+                        aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 $grade 입니다"
 
-                            if (grade != null) {
-                                val word = grade!!
-                                val start: Int = aBinding.accountGradeTv.text.indexOf(word)
-                                val end = start + word.length
-                                val spannableString = SpannableString(aBinding.accountGradeTv.text) //객체 생성
-                                //등급 글자의 색변경
-                                spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                aBinding.accountGradeTv.text = spannableString
-                            } /*else {
+                        val word = grade!!
+                        val start: Int = aBinding.accountGradeTv.text.indexOf(word)
+                        val end = start + word.length
+                        val spannableString = SpannableString(aBinding.accountGradeTv.text) //객체 생성
+                        //등급 글자의 색변경
+                        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        aBinding.accountGradeTv.text = spannableString
 
-                            }*/
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val animator = ObjectAnimator.ofInt(aBinding.accountGradePb, "progress", 0, mannerCount)
 
-                            CoroutineScope(Dispatchers.Main).launch {
-                                val animator = ObjectAnimator.ofInt(aBinding.accountGradePb, "progress", 0, mannerCount)
+                            // 애니메이션 지속 시간 설정 (예: 2초)
+                            animator.duration = 1000
 
-                                // 애니메이션 지속 시간 설정 (예: 2초)
-                                animator.duration = 1500
-
-                                // 애니메이션 시작
-                                animator.start()
-                            }
-                        } else {
-                            println("mmc")
-                            aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 F 입니다"
-
-                            val word = "F"
-                            val start: Int = aBinding.accountGradeTv.text.indexOf(word)
-                            val end = start + word.length
-                            val spannableString = SpannableString(aBinding.accountGradeTv.text) //객체 생성
-                            //등급 글자의 색변경
-                            spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                            aBinding.accountGradeTv.text = spannableString
-
-                            CoroutineScope(Dispatchers.Main).launch {
-                                val animator = ObjectAnimator.ofInt(aBinding.accountGradePb, "progress", 0, 0)
-
-                                // 애니메이션 지속 시간 설정 (예: 2초)
-                                animator.duration = 2000
-
-                                // 애니메이션 시작
-                                animator.start()
-                            }
-                        }
-
-                        if (gender != null) {
-                            aBinding.accountGender.text = if (gender == true) {
-                                "여성"
-                            } else {
-                                "남성"
-                            }
-                            aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
-
-                        } else {
-                            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(requireActivity() , R.color.mio_gray_4))
-                            aBinding.accountGender.text = "성별"
-                            aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
-                            aBinding.accountGender.backgroundTintList = colorStateList
-                        }
-
-                        if (verifySmoker != null) {
-                            aBinding.accountSmokingStatus.text = if (verifySmoker == true) {
-                                "흡연자"
-                            } else {
-                                "비흡연자"
-                            }
-                            aBinding.accountSmokingStatus.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
-                        } else {
-                            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(requireActivity() , R.color.mio_gray_4))
-                            aBinding.accountSmokingStatus.text = "흡연여부"
-                            aBinding.accountSmokingStatus.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
-                            aBinding.accountSmokingStatus.backgroundTintList = colorStateList
-                        }
-
-                        if (activityLocation != null) {
-                            aBinding.accountAddress.text = activityLocation
-                            aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
-                            saveSharedPreferenceGoogleLogin.setArea(requireActivity(), activityLocation)
-                        } else {
-                            aBinding.accountAddress.text = "설정에서 개인정보를 입력해주세요"
-                            aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_6))
-                        }
-
-                        if (accountNumber != null) {
-                            aBinding.accountBank.text = accountNumber
-                            aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
-                        } else {
-                            aBinding.accountBank.text = ""
-                        }
-
-                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                        if (loadingDialog != null && loadingDialog!!.isShowing) {
-                            loadingDialog?.dismiss()
-                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                            // 애니메이션 시작
+                            animator.start()
                         }
                     } else {
-                        println("ff")
-                        aBinding.accountGender.text = "기본 세팅"
-                        aBinding.accountSmokingStatus.text = "기본 세팅"
-                        aBinding.accountBank.text = "기본 세팅"
-                        aBinding.accountAddress.text = "기본 세팅"
+                        println("mmc")
+                        aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 B 입니다"
 
-                        aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 F 입니다"
-                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                        if (loadingDialog != null && loadingDialog!!.isShowing) {
-                            loadingDialog?.dismiss()
-                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                        val word = "B"
+                        val start: Int = aBinding.accountGradeTv.text.indexOf(word)
+                        val end = start + word.length
+                        val spannableString = SpannableString(aBinding.accountGradeTv.text) //객체 생성
+                        //등급 글자의 색변경
+                        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        aBinding.accountGradeTv.text = spannableString
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val animator = ObjectAnimator.ofInt(aBinding.accountGradePb, "progress", 0, mannerCount)
+
+                            // 애니메이션 지속 시간 설정 (예: 2초)
+                            animator.duration = 1000
+
+                            // 애니메이션 시작
+                            animator.start()
                         }
-
-                        Log.d("add", response.errorBody()?.string()!!)
-                        Log.d("message", call.request().toString())
-                        Log.d("f", response.code().toString())
                     }
-                }
 
-                override fun onFailure(call: Call<User>, t: Throwable) {
-                    Log.d("error","error $t")
+                    if (gender != null) {
+                        aBinding.accountGender.text = if (gender == true) {
+                            "여성"
+                        } else {
+                            "남성"
+                        }
+                        aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
+
+                    } else {
+                        val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(requireActivity() , R.color.mio_gray_4))
+                        aBinding.accountGender.text = "성별"
+                        aBinding.accountGender.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
+                        aBinding.accountGender.backgroundTintList = colorStateList
+                    }
+
+                    if (verifySmoker != null) {
+                        aBinding.accountSmokingStatus.text = if (verifySmoker == true) {
+                            "흡연자"
+                        } else {
+                            "비흡연자"
+                        }
+                        aBinding.accountSmokingStatus.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
+                    } else {
+                        val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(requireActivity() , R.color.mio_gray_4))
+                        aBinding.accountSmokingStatus.text = "흡연여부"
+                        aBinding.accountSmokingStatus.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
+                        aBinding.accountSmokingStatus.backgroundTintList = colorStateList
+                    }
+
+                    if (activityLocation != null) {
+                        aBinding.accountAddress.text = activityLocation
+                        aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
+                        saveSharedPreferenceGoogleLogin.setArea(requireActivity(), activityLocation)
+                    } else {
+                        aBinding.accountAddress.text = "설정에서 개인정보를 입력해주세요"
+                        aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_6))
+                    }
+
+                    if (accountNumber != null) {
+                        aBinding.accountBank.text = accountNumber
+                        aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
+                    } else {
+                        aBinding.accountBank.text = ""
+                    }
+
+                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    if (loadingDialog != null && loadingDialog!!.isShowing) {
+                        loadingDialog?.dismiss()
+                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                    }
+                } else {
+                    println("ff")
+                    aBinding.accountGender.text = "기본 세팅"
+                    aBinding.accountSmokingStatus.text = "기본 세팅"
+                    aBinding.accountBank.text = "기본 세팅"
+                    aBinding.accountAddress.text = "기본 세팅"
+
+                    aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 F 입니다"
+                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    if (loadingDialog != null && loadingDialog!!.isShowing) {
+                        loadingDialog?.dismiss()
+                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                    }
+
+                    Log.d("add", response.errorBody()?.string()!!)
+                    Log.d("message", call.request().toString())
+                    Log.d("f", response.code().toString())
                 }
-            })
-        }
+            }
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                Log.d("error","error $t")
+            }
+        })
 
     }
 

@@ -47,6 +47,12 @@ class SharedViewModel : ViewModel() {
             }
         }
     }
+
+
+
+
+
+
     //최신순 등
     private val _checkSearchFilter : MutableLiveData<String> = MutableLiveData()
     val checkSearchFilter : LiveData<String> = _checkSearchFilter

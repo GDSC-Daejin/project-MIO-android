@@ -5,17 +5,19 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
-import androidx.fragment.app.Fragment
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.startActivity
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
-import androidx.lifecycle.Lifecycle
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
@@ -27,6 +29,7 @@ import com.example.mio.databinding.FragmentNotificationBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -41,7 +44,6 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.CountDownLatch
-import kotlin.collections.ArrayList
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -72,13 +74,15 @@ class NotificationFragment : Fragment() {
 
     //알람에서 받아온 PostData를 따로 저장
     private var notificationPostAllData : ArrayList<PostData?> = ArrayList()
-    private var notificationPostParticipationAllData : ArrayList<Pair<Int, ArrayList<Participants>?>> = ArrayList()
+    private var notificationPostParticipationAllData : ArrayList<Pair<Int, ArrayList<ParticipationData>?>> = ArrayList()
     private var dataPosition = 0
     //로딩
     private var loadingDialog : LoadingProgressDialog? = null
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var identification : String? = null
     //private var hashMapCurrentPostItemData = HashMap<Int, NotificationAdapter.NotificationStatus>()
+
+    private lateinit var viewModel: NotificationViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,6 +100,31 @@ class NotificationFragment : Fragment() {
         nfBinding = FragmentNotificationBinding.inflate(inflater, container, false)
         sharedPref = SharedPref(requireContext())
         identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
+
+        if (isAdded) {
+            // 프래그먼트가 아직 액티비티에 연결되어 있는 경우에만 작업 수행
+            requireActivity().runOnUiThread {
+                // 뒤로가기 동작 핸들링
+                requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        // MainActivity의 changeFragment 메서드를 호출하여 HomeFragment로 전환
+                        (activity as MainActivity).changeFragment(HomeFragment())
+
+                        // 툴바도 "기본"으로 변경
+                        (activity as MainActivity).toolbarType = "기본"
+                        (activity as MainActivity).setToolbarView("기본")
+
+                        // 뒤로가기 플래그 설정 초기화
+                        (activity as MainActivity).isClicked = false
+                        (activity as MainActivity).isSettingClicked = false
+
+                        // 네비게이션 바의 선택된 항목을 "Home"으로 설정
+                        (activity as MainActivity).mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
+                    }
+                })
+            }
+        }
+
         if (arguments != null) {
             title = requireArguments().getString("title")
         }
@@ -114,33 +143,57 @@ class NotificationFragment : Fragment() {
         nAdapter.setItemClickListener(object : NotificationAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int?, status : NotificationAdapter.NotificationStatus) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val temp = notificationAllData.find { it.id == itemId }?.postId
-                    val contentPost = notificationPostAllData.find { it?.postID == temp } //선택한 알람의 포스터
-                    //본인이 작성자(운전자) 이면서 카풀이 완료
-                    // 카풀 종료시 운전자에게 후기 작성하라는 알림 발송
-                    val statusSet = if (identification == contentPost?.user?.email &&  notificationAllData.find { it.id == itemId }?.content?.contains("탑승자") == true) {
-                        NotificationAdapter.NotificationStatus.Driver
-                    } else if (notificationAllData.find { it.id == itemId }?.content?.contains("님과") == true) { //본인은 운전자가 아니고 손님
-                        NotificationAdapter.NotificationStatus.Passenger
-                    } else { //그냥 자기 게시글 확인
-                        NotificationAdapter.NotificationStatus.Neither
+                    // Ensure itemId is not null before proceeding
+                    val temp = itemId?.let { id ->
+                        notificationAllData.find { it.id == id }?.postId
                     }
 
-                    //손님 리스트
-                    val temp2 = notificationPostParticipationAllData.find { it.first == temp }?.second
+                    val contentPost = temp?.let { postId ->
+                        notificationPostAllData.find { it?.postID == postId }
+                    } // The selected alarm's poster
+
+                    // If contentPost is null, we shouldn't proceed with checks
+                    if (contentPost == null) {
+                        Log.e("notification", "notification")
+                        withContext(context = Dispatchers.Main) {
+                            Toast.makeText(requireContext(), "게시글이 삭제되었거나 찾을 수 없습니다", Toast.LENGTH_SHORT).show()
+                        }
+                        //코루틴 내에서 네트워크 요청이나 특정 작업을 강제로 중단해야 하는 상황
+                        //cancel()
+                        return@launch //단순히 종료
+                    }
+
+                    // Determine status based on the user's identity and notification content
+                    val statusSet = if (identification == contentPost.user.email && notificationAllData.find { it.id == itemId }?.content?.contains("탑승자") == true) {
+                        NotificationAdapter.NotificationStatus.Driver
+
+                    } else if (notificationAllData.find { it.id == itemId }?.content?.contains("님과") == true) { // The user is a passenger, not the driver
+                        NotificationAdapter.NotificationStatus.Passenger
+                    } else { // Just checking the user's own post
+                        NotificationAdapter.NotificationStatus.Neither
+                    }
+                    Log.e("statusSet", statusSet.toString())
+                    Log.e("statusSet", temp.toString())
+                    Log.e("statusSet", contentPost.toString())
+                    // Passenger list, checking that `temp` is not null
+                    val temp2 = temp.let { postId ->
+                        notificationPostParticipationAllData.find { it.first == postId }?.second
+                    }
+                    Log.e("statusSet", temp2.toString())
                     var intent : Intent? = null
                     dataPosition = position
-                    //여기 구현 완료하기 클릭 시 해당 read로 이동해야함
+
+                    // Handle different statuses
                     when(statusSet) {
-                        NotificationAdapter.NotificationStatus.Passenger -> {//내가 손님으로 카풀이 완료되었을 떄
+                        NotificationAdapter.NotificationStatus.Passenger -> { // When the user is a passenger and the carpool is complete
                             intent = Intent(activity, PassengersReviewActivity::class.java).apply {
                                 putExtra("type", "PASSENGER")
-                                putExtra("postDriver", contentPost?.user)
+                                putExtra("postDriver", contentPost.user)
                                 putExtra("Data", contentPost)
                             }
                         }
 
-                        NotificationAdapter.NotificationStatus.Driver -> { //내가 운전자로 카풀이 완료되었을 떄
+                        NotificationAdapter.NotificationStatus.Driver -> { // When the user is a driver and the carpool is complete
                             if (temp2 != null) {
                                 intent = Intent(activity, PassengersReviewActivity::class.java).apply {
                                     putExtra("type", "DRIVER")
@@ -148,21 +201,26 @@ class NotificationFragment : Fragment() {
                                     putExtra("Data", contentPost)
                                 }
                             } else {
-                                Toast.makeText(requireContext(), "탑승자가 없습니다.", Toast.LENGTH_SHORT).show()
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(requireContext(), "탑승자가 없습니다.", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         }
 
-                        NotificationAdapter.NotificationStatus.Neither -> {
+                        NotificationAdapter.NotificationStatus.Neither -> { // The user is checking their own post
                             intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
                                 putExtra("type", "READ")
                                 putExtra("postItem", contentPost)
                             }
                         }
                         else -> {
-
+                            // No operation for other statuses
                         }
                     }
-                    requestActivity.launch(intent)
+
+                    intent?.let {
+                        requestActivity.launch(it)
+                    }
                 }
             }
 
@@ -257,6 +315,7 @@ class NotificationFragment : Fragment() {
         return nfBinding.root
     }
 
+
     private fun initNotificationRV() {
         //로딩창 실행
         loadingDialog = LoadingProgressDialog(requireActivity())
@@ -270,96 +329,54 @@ class NotificationFragment : Fragment() {
             ViewGroup.LayoutParams.MATCH_PARENT
         )
         loadingDialog?.show()
-        CoroutineScope(Dispatchers.IO).launch {
+        /*CoroutineScope(Dispatchers.IO).launch {
             setNotificationData()
-        }
-        nAdapter = NotificationAdapter()
-        nAdapter.notificationItemData = notificationAllData
-        //nAdapter.notificationContentItemData = notificationPostAllData
-        nfBinding.notificationRV.adapter = nAdapter
-        //레이아웃 뒤집기 안씀
-        //manager.reverseLayout = true
-        //manager.stackFromEnd = true
-        nfBinding.notificationRV.setHasFixedSize(true)
-        nfBinding.notificationRV.layoutManager = manager
-
-
-        /*if (notificationAllData.isEmpty()) {
-            nfBinding.notNotificationLl.visibility = View.VISIBLE
-        } else {
-            nfBinding.notNotificationLl.visibility = View.GONE
         }*/
+        nAdapter = NotificationAdapter()
+        nfBinding.notificationRV.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = nAdapter
+        }
     }
 
     private fun setNotificationData() {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-
-        /////////interceptor
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
-        /////////
-        api.getMyAlarm().enqueue(object : Callback<List<AddAlarmResponseData>> {
+        viewModel.setLoading(true)
+        RetrofitServerConnect.create(requireActivity()).getMyAlarm().enqueue(object : Callback<List<AddAlarmResponseData>> {
             override fun onResponse(call: Call<List<AddAlarmResponseData>>, response: Response<List<AddAlarmResponseData>>) {
                 if (response.isSuccessful) {
                     println("scssucsucsucs")
                     val responseData = response.body()
                     Log.d("taxi", response.code().toString())
-                    //데이터 청소
                     notificationAllData.clear()
-
-                    if (responseData != null) {
-                        for (i in responseData) {
-                            notificationAllData.add(
-                                AddAlarmResponseData(
-                                    i.id,
-                                    i.createDate,
-                                    i.content,
-                                    i.postId,
-                                    i.userId
-                                )
-                            )
+                    viewModel.setLoading(false)
+                    if (response.isSuccessful) {
+                        viewModel.setNotifications(response.body() ?: emptyList())
+                        if (responseData != null) {
+                            notificationAllData.addAll(responseData)
+                            if (response.body().isNullOrEmpty()) {
+                                updateUI2(responseData)
+                            }
                         }
+
+                    } else {
+                        viewModel.setError("Failed to load notifications")
                     }
-                    Log.d("Notification Fragment Data", "Received data: $notificationAllData")
-                    nAdapter.notifyDataSetChanged()
-                    updateUI()
-                    CoroutineScope(Dispatchers.IO).launch {
+                    /*synchronized(notificationAllData) {
+                        notificationAllData.clear()
+                        if (responseData != null) {
+                            viewModel.setLoading(false)
+                            notificationAllData.addAll(responseData)
+                        }
+                        viewModel.setNotifications(response.body() ?: emptyList())
+                    }*/
+                    //nAdapter.notifyDataSetChanged()
+                    //updateUI()
+                    /*CoroutineScope(Dispatchers.IO).launch {
                         initNotificationPostData(notificationAllData)
-                    }
+                    }*/
                 } else {
                     println("faafa")
+                    viewModel.setError("Failed to load notifications")
                     Log.d("comment", response.errorBody()?.string()!!)
                     println(response.code())
                 }
@@ -367,164 +384,97 @@ class NotificationFragment : Fragment() {
 
             override fun onFailure(call: Call<List<AddAlarmResponseData>>, t: Throwable) {
                 Log.d("error", t.toString())
+                viewModel.setLoading(false)
+                viewModel.setError("Error: ${t.message}")
             }
         })
     }
 
 
-    private fun initNotificationPostData(alarmList: ArrayList<AddAlarmResponseData>?) {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-
-        /////////interceptor
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder()
-            .baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-        val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token.isNotEmpty()) { // 토큰이 있는 경우
-                newRequest = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer $token")
-                    .build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else {
-                newRequest = chain.request()
-            }
-            chain.proceed(newRequest)
-        }
-
-        val client = OkHttpClient.Builder()
-            .addInterceptor(interceptor)
-            .build()
-
-        val retrofit2 = retrofit.newBuilder().client(client).build()
-        val api = retrofit2.create(MioInterface::class.java)
-        /////////////////////////////////////////////////
+    private fun initNotificationPostData(alarmList: List<AddAlarmResponseData>?) {
 
         var shouldBreak = false
         Log.e("alarmList", alarmList.toString())
-        var latch : CountDownLatch? = null
-        if (alarmList?.isNotEmpty() == true) {
-            for (i in alarmList.indices) {
-                //요청의 수와 동일한 초기 카운트를 가진 CountDownLatch를 생성합니다.
-                latch = CountDownLatch(alarmList.size)
-                if (shouldBreak) break
-                Log.e("alarm", alarmList[i].toString())
-                api.getPostIdDetailSearch(alarmList[i].postId).enqueue(object : Callback<Content> {
+        //var latch : CountDownLatch? = null
+        alarmList?.let { list ->
+            val latch = CountDownLatch(list.size)
+            for (i in list.indices) {
+                RetrofitServerConnect.create(requireActivity()).getPostIdDetailSearch(list[i].postId).enqueue(object : Callback<Content> {
                     override fun onResponse(call: Call<Content>, response: Response<Content>) {
                         if (response.isSuccessful) {
                             val responseData = response.body()
-                            Log.e("indexout check", response.body().toString())
-                            if (responseData != null) {
-                                if (responseData.isDeleteYN == "N" && responseData.postType == "BEFORE_DEADLINE") {
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        response.body()?.let {
-                                            notificationPostAllData.add(
-                                                PostData(
-                                                    responseData.user.studentId,
-                                                    responseData.postId,
-                                                    responseData.title,
-                                                    responseData.content,
-                                                    responseData.createDate,
-                                                    responseData.targetDate,
-                                                    responseData.targetTime,
-                                                    responseData.category.categoryName,
-                                                    responseData.location,
-                                                    responseData.participantsCount,
-                                                    responseData.numberOfPassengers,
-                                                    responseData.cost,
-                                                    responseData.verifyGoReturn,
-                                                    responseData.user,
-                                                    responseData.latitude,
-                                                    responseData.longitude
-                                                )
-                                            )
-                                            if (responseData.participants != null) {
-                                                notificationPostParticipationAllData.add(Pair(responseData.postId, responseData.participants))
-                                            }
-                                            Log.e("indexout check post", notificationPostAllData.toString())
-                                        }
-                                    }
+                            if (responseData != null && responseData.isDeleteYN == "N" && responseData.postType == "BEFORE_DEADLINE") {
+                                notificationPostAllData.add(
+                                    PostData(
+                                        responseData.user.studentId,
+                                        responseData.postId,
+                                        responseData.title,
+                                        responseData.content,
+                                        responseData.createDate,
+                                        responseData.targetDate,
+                                        responseData.targetTime,
+                                        responseData.category.categoryName,
+                                        responseData.location,
+                                        responseData.participantsCount,
+                                        responseData.numberOfPassengers,
+                                        responseData.cost,
+                                        responseData.verifyGoReturn,
+                                        responseData.user,
+                                        responseData.latitude,
+                                        responseData.longitude
+                                    )
+                                )
+                                if (responseData.participants != null) {
+                                    notificationPostParticipationAllData.add(Pair(responseData.postId, responseData.participants))
                                 }
                             }
-                        } else {
-                            Log.e("fail notififrag", response.code().toString())
-                            Log.e("fail notififrag", response.errorBody()?.string()!!)
-                            shouldBreak = true
                         }
-                        latch.countDown() // 요청 완료 시 감소
+                        latch.countDown()
                     }
 
                     override fun onFailure(call: Call<Content>, t: Throwable) {
                         Log.e("Failure notification", t.toString())
-                        shouldBreak = true
-                        latch.countDown() // 요청 완료 시 감소
+                        latch.countDown()
                     }
                 })
             }
+            latch.await()
+            // UI 업데이트는 메인 스레드에서
+            CoroutineScope(Dispatchers.Main).launch {
+                updateUI()
+            }
         }
-        // UI 업데이트는 메인 스레드에서
-        // 비동기 요청이 모두 완료될 때까지 기다림
-        //요청 완료 대기: 모든 요청이 완료될 때까지 latch.await()로 대기합니다. 모든 요청이 완료되면 UI를 업데이트합니다.
-        /*Thread {
-            latch?.await()
-            requireActivity().runOnUiThread {
 
-            }
-        }.start()*/
-
-        /*// UI 업데이트는 메인 스레드에서
-        requireActivity().runOnUiThread {
-
-            nAdapter.notifyDataSetChanged()
-
-            if (notificationAllData.isEmpty()) {
-                nfBinding.notNotificationLl.visibility = View.VISIBLE
-                nfBinding.nestedScrollView.visibility = View.GONE
-            } else {
-                val dataSize = notificationAllData.size.toString().ifEmpty {
-                    "0"
-                }
-
-                saveSharedPreferenceGoogleLogin.setNotification(requireActivity(), dataSize)
-                nfBinding.notNotificationLl.visibility = View.GONE
-                nfBinding.nestedScrollView.visibility = View.VISIBLE
-            }
-        }*/
     }
 
     private fun updateUI() {
         Log.e("updateui", "in ui")
-        loadingDialog?.dismiss()
-        if (loadingDialog != null && loadingDialog!!.isShowing) {
+        if (loadingDialog != null && loadingDialog?.isShowing == true)  {
             loadingDialog?.dismiss()
-            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+            loadingDialog = null
+            viewModel.setLoading(false)
         }
-        nAdapter.notifyDataSetChanged()
+
+        // Update adapter with new notification data
+        //nAdapter.updateNotifications(notificationAllData)
+
         if (notificationAllData.isEmpty()) {
             nfBinding.notNotificationLl.visibility = View.VISIBLE
-            nfBinding.nestedScrollView.visibility = View.GONE
+            nfBinding.notificationSwipe.visibility = View.GONE
+            Log.e("notifi", "isempty")
         } else {
-            val dataSize = notificationAllData.size.toString().ifEmpty {
-                "0"
-            }
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            saveSharedPreferenceGoogleLogin.setNotification(requireActivity(), dataSize)
             nfBinding.notNotificationLl.visibility = View.GONE
-            nfBinding.nestedScrollView.visibility = View.VISIBLE
+            nfBinding.notificationSwipe.visibility = View.VISIBLE
+            Log.e("notifi", "isnotempty")
         }
+
+        val dataSize = notificationAllData.size.toString().ifEmpty {
+            "0"
+        }
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        saveSharedPreferenceGoogleLogin.setNotification(requireActivity(), dataSize)
     }
+
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {
@@ -538,67 +488,104 @@ class NotificationFragment : Fragment() {
             }
         }
     }
+    private fun updateUI2(notifications: List<AddAlarmResponseData>) {
+        viewModel.setLoading(false)
+        if (loadingDialog != null && loadingDialog?.isShowing == true) {
+            loadingDialog?.dismiss()
+            loadingDialog = null
+        }
+        if (notifications.isEmpty()) {
+            nfBinding.notNotificationLl.visibility = View.VISIBLE
+            nfBinding.notificationSwipe.visibility = View.GONE
+            Log.e("notifi", "isempty2")
+        } else {
+            nfBinding.notNotificationLl.visibility = View.GONE
+            nfBinding.notificationSwipe.visibility = View.VISIBLE
+            Log.e("notifi", "isnotempty2")
+        }
 
+        val dataSize = notifications.size.toString().ifEmpty { "0" }
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        saveSharedPreferenceGoogleLogin.setNotification(requireActivity(), dataSize)
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
+        // ViewModel 초기화
+        viewModel = ViewModelProvider(requireActivity())[NotificationViewModel::class.java]
+        setNotificationData()
+        // LiveData 관찰
+        viewModel.notifications.observe(viewLifecycleOwner) { notifications ->
+            nAdapter.updateNotifications(notifications.toList())
+            updateUI2(notifications)
+            Log.e("observeNoti1", notifications.toString())
+            /*CoroutineScope(Dispatchers.IO).launch {
+                initNotificationPostData(notificationAllData)
+            }*/
+            CoroutineScope(Dispatchers.IO).launch {
+                initNotificationPostData(notifications)
+            }
+        }
+
+        viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            if (isLoading) {
+                // 로딩 다이얼로그를 생성하고 표시
+                if (loadingDialog == null) {
+                    loadingDialog = LoadingProgressDialog(requireActivity())
+                    loadingDialog?.setCancelable(false)
+                    loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog
+                    loadingDialog?.window!!.setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    loadingDialog?.show()
+                }
+            } else {
+                // 로딩 다이얼로그를 해제
+                if (loadingDialog != null && loadingDialog?.isShowing == true)  {
+                    loadingDialog?.dismiss()
+                    loadingDialog = null
+                }
+
+            }
+        }
+
+        nfBinding.notificationSwipe.setOnRefreshListener {
+            // 화면 터치 불가능하도록 설정
+            requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+
+            setNotificationData()
+            //viewModel.refreshNotifications(requireContext())
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                nfBinding.notificationSwipe.isRefreshing = false
+                requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            }, 1500)
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) { errorMessage ->
+            if (errorMessage != null) {
+                Log.e("error observe", errorMessage)
+            }
+        }
 
     }
 
+
     override fun onStart() {
         super.onStart()
-        println("start")
-        if (notificationAllData.isEmpty()) {
-            nfBinding.notNotificationLl.visibility = View.VISIBLE
-        } else {
-            nfBinding.notNotificationLl.visibility = View.GONE
-        }
     }
 
     override fun onResume() {
         super.onResume()
-        println("resume")
-        //getHistory()
-        if (notificationAllData.isEmpty()) {
-            nfBinding.notNotificationLl.visibility = View.VISIBLE
-        } else {
-            nfBinding.notNotificationLl.visibility = View.GONE
-        }
     }
 
 
     override fun onPause() {
         super.onPause()
-        println("pause")
-        if (notificationAllData.isEmpty()) {
-            nfBinding.notNotificationLl.visibility = View.VISIBLE
-        } else {
-            nfBinding.notNotificationLl.visibility = View.GONE
-        }
     }
-
-
-
-    /*private fun getHistory() {
-        val historyData = sharedPref!!.getNotify(requireContext(), setKey)
-
-        if (historyData.isNotEmpty()) {
-            //notificationAllData.clear()
-            //searchWordList.addAll(historyData)
-            for (i in historyData.indices) {
-                //notificationAllData.add(NotificationData(i,"test", PostData("20201530@daejin.ac.kr", 0, "test", "test", "test", "test", "a","10" ,1, 4, 3000, true, User), true, historyData[i]))
-                println(historyData[i])
-                println(notificationAllData)
-            }
-            nAdapter!!.notifyDataSetChanged()
-        } else {
-
-        }
-
-
-    }*/
-
 
     companion object {
         /**

@@ -94,80 +94,15 @@ class PostSearchFragment : Fragment() { //안씀
 
 
                         for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
-                            //탑승자 null체크
-                            var part = 0
-                            var location = ""
-                            var title = ""
-                            var content = ""
-                            var targetDate = ""
-                            var targetTime = ""
-                            var categoryName = ""
-                            var cost = 0
-                            var verifyGoReturn = false
-
-                            if (response.isSuccessful) {
-                                part = try {
-                                    response.body()!!.content[i].participantsCount
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                location = try {
-                                    response.body()!!.content[i].location.isEmpty()
-                                    response.body()!!.content[i].location
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "수락산역 3번 출구"
-                                }
-                                title = try {
-                                    response.body()!!.content[i].title.isEmpty()
-                                    response.body()!!.content[i].title
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                content = try {
-                                    response.body()!!.content[i].content.isEmpty()
-                                    response.body()!!.content[i].content
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetDate = try {
-                                    response.body()!!.content[i].targetDate.isEmpty()
-                                    response.body()!!.content[i].targetDate
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetTime = try {
-                                    response.body()!!.content[i].targetTime.isEmpty()
-                                    response.body()!!.content[i].targetTime
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                categoryName = try {
-                                    response.body()!!.content[i].category.categoryName.isEmpty()
-                                    response.body()!!.content[i].category.categoryName
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                cost = try {
-                                    response.body()!!.content[i].cost
-                                    response.body()!!.content[i].cost
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                verifyGoReturn = try {
-                                    response.body()!!.content[i].verifyGoReturn
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    false
-                                }
-                            }
+                            val part = response.body()!!.content[i].participantsCount ?: 0
+                            val location = response.body()!!.content[i].location ?: "수락산역 3번 출구"
+                            val title = response.body()!!.content[i].title ?: "null"
+                            val content = response.body()!!.content[i].content ?: "null"
+                            val targetDate = response.body()!!.content[i].targetDate ?: "null"
+                            val targetTime = response.body()!!.content[i].targetTime ?: "null"
+                            val categoryName = response.body()!!.content[i].category.categoryName ?: "null"
+                            val cost = response.body()!!.content[i].cost ?: 0
+                            val verifyGoReturn = response.body()!!.content[i].verifyGoReturn ?: false
 
                             //println(response!!.body()!!.content[i].user.studentId)
                             searchAllData.add(

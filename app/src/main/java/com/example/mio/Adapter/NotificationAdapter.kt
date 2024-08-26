@@ -1,26 +1,21 @@
 package com.example.mio.Adapter
-import android.app.AlertDialog
-import android.app.Notification
 import android.content.Context
-import android.content.DialogInterface
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.*
-import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.NotificationItemBinding
-import com.example.mio.databinding.PostItemBinding
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
-class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.NotificationViewHolder>(){
+class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapter.NotificationViewHolder>(NotificationDiffUtil){
     enum class NotificationStatus {
         Passenger, //손님이면서 카풀완료
         Driver, //운전자이면서 카풀완료
@@ -29,7 +24,8 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
 
 
     private lateinit var binding : NotificationItemBinding
-    var notificationItemData = ArrayList<AddAlarmResponseData>()
+    //private var notificationItemData: List<AddAlarmResponseData> = ArrayList()
+    //private var notificationItemData = kotlin.collections.ArrayList<AddAlarmResponseData>()
     private lateinit var context : Context
     var sharedPref : SharedPref? = null
 
@@ -64,23 +60,15 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
 
             binding.notificationContentTv.text = notification.content
 
-            val temp = if (notification.content.contains("후기")) {
-                "후기 알림"
-            } else if (notification.content.contains("신청") && notification.content.contains("승인")) {
-                "승인 알림"
-            } else if (notification.content.contains("신청")) {
-                "신청 알림"
-            } else if (notification.content.contains("취소")) {
-                "취소 알림"
-            } else if (notification.content.contains("거절")) {
-                "거절 알림"
-            } else if (notification.content.contains("댓글")){
-                "댓글 알림"
-            } else {
-                "기타 알림"
+            binding.notificationItemTitleTv.text = when {
+                notification.content.contains("후기") -> "후기 알림"
+                notification.content.contains("신청") && notification.content.contains("승인") -> "승인 알림"
+                notification.content.contains("신청") -> "신청 알림"
+                notification.content.contains("취소") -> "취소 알림"
+                notification.content.contains("거절") -> "거절 알림"
+                notification.content.contains("댓글") -> "댓글 알림"
+                else -> "기타 알림"
             }
-
-            binding.notificationItemTitleTv.text = temp
 
             val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time!!)
             val diffSeconds = diffMilliseconds?.div(1000)
@@ -116,23 +104,23 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
     }
 
     override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
-        holder.bind(notificationItemData[position], position)
-
+        holder.bind(currentList[position], position)
+        Log.d("AdapterData", "Binding item at position $position: $currentList[position]")
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
 
-        binding.root.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, notificationItemData[holder.adapterPosition].id, NotificationStatus.Neither)
+        holder.itemView.setOnClickListener {
+            itemClickListener.onClick(it, holder.adapterPosition, currentList[position].id, NotificationStatus.Neither)
         }
 
-        binding.root.setOnLongClickListener {
-            itemClickListener.onLongClick(it, holder.adapterPosition, notificationItemData[holder.adapterPosition].id, notificationItemData[holder.adapterPosition].postId)
-            return@setOnLongClickListener true
+        holder.itemView.setOnLongClickListener {
+            itemClickListener.onLongClick(it, holder.adapterPosition, currentList[position].id, currentList[position].postId)
+            true
         }
     }
 
     override fun getItemCount(): Int {
-        return notificationItemData.size
+        return currentList.size
     }
 
     override fun getItemId(position: Int): Long {
@@ -140,19 +128,19 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
     }
 
     //데이터 Handle 함수
-    fun removeData(position: Int) {
-        notificationItemData.removeAt(position)
-        //sharedPref!!.setNotify(context, setKey, notificationItemData)
-        notifyItemRemoved(position)
-    }
+//    fun removeData(position: Int) {
+//        notificationItemData.removeAt(position)
+//        //sharedPref!!.setNotify(context, setKey, notificationItemData)
+//        notifyItemRemoved(position)
+//    }
 
-    fun updateData(newItems: List<AddAlarmResponseData>) {
+    /*fun updateData(newItems: List<AddAlarmResponseData>) {
         notificationItemData.clear()
         notificationItemData.addAll(newItems)
         Log.d("updateData", newItems.toString())
         Log.d("updateData", notificationItemData.toString())
         notifyDataSetChanged()
-    }
+    }*/
 
     interface ItemClickListener {
         fun onClick(view: View,position: Int, itemId: Int?,status : NotificationStatus )
@@ -165,4 +153,35 @@ class NotificationAdapter : RecyclerView.Adapter<NotificationAdapter.Notificatio
         this.itemClickListener = itemClickListener
     }
 
+    /*fun updateNotifications(newData: List<AddAlarmResponseData>) {
+        val oldSize = notificationItemData.size
+        val newSize = newData.size
+        val diff = DiffUtil.calculateDiff(NotificationDiffUtilCallback(notificationItemData, newData))
+
+        notificationItemData.clear()
+        notificationItemData.addAll(newData)
+        diff.dispatchUpdatesTo(this)
+    }*/
+
+    fun updateNotifications(newData: List<AddAlarmResponseData>) {
+        Log.d("NotificationAdapter", "Previous data: ${currentList}") // currentList는 현재 어댑터의 데이터
+        Log.d("NotificationAdapter", "New data: $newData")
+        //Log.d("NotificationAdapter", "data: $notificationItemData")
+        submitList(newData)
+    }
+}
+
+object NotificationDiffUtil : DiffUtil.ItemCallback<AddAlarmResponseData>() {
+
+    override fun areItemsTheSame(oldItem: AddAlarmResponseData, newItem: AddAlarmResponseData): Boolean {
+        val result = oldItem.id == newItem.id // Assuming 'id' is unique for each notification
+        Log.d("NotificationDiffUtil", "areItemsTheSame: Comparing oldItem.id = ${oldItem.id} with newItem.id = ${newItem.id}, result: $result")
+        return result
+    }
+
+    override fun areContentsTheSame(oldItem: AddAlarmResponseData, newItem: AddAlarmResponseData): Boolean {
+        val result = oldItem == newItem // This checks if all fields are the same
+        Log.d("NotificationDiffUtil", "areContentsTheSame: Comparing oldItem = $oldItem with newItem = $newItem, result: $result")
+        return result
+    }
 }

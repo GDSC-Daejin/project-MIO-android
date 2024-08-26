@@ -474,6 +474,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         mttBinding.backArrow.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
+            finish()
         }
 
         setContentView(mttBinding.root)
@@ -549,96 +550,95 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
             // Fetch more data if necessary
             if (currentPage < totalPages - 1) {
                 currentPage += 1
-                CoroutineScope(Dispatchers.IO).launch {
-                    RetrofitServerConnect.create(this@MoreCarpoolTabActivity).getCategoryPostData(1, "createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
-                        override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                            if (response.isSuccessful) {
-                                val responseData = response.body()
-                                responseData?.let {
-                                    val newItems = it.content.filter { item ->
-                                        item.isDeleteYN == "N" && item.postType == "BEFORE_DEADLINE"
-                                    }.map { item ->
-                                        PostData(
-                                            item.user.studentId,
-                                            item.postId,
-                                            item.title,
-                                            item.content,
-                                            item.createDate,
-                                            item.targetDate,
-                                            item.targetTime,
-                                            item.category.categoryName,
-                                            item.location,
-                                            item.participantsCount,
-                                            item.numberOfPassengers,
-                                            item.cost,
-                                            item.verifyGoReturn,
-                                            item.user,
-                                            item.latitude,
-                                            item.longitude
-                                        )
-                                    }
-
-                                    moreCarpoolAllData.addAll(newItems)
-                                    if (getBottomData.isNotEmpty()) {
-                                        myViewModel.postCheckFilter(getBottomData)
-                                    }
-
-                                    when(getBottomSheetData) {
-                                        "최신 순" -> {
-                                            mttBinding.moreSearchTv.text = "최신 순"
-                                            mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_blue_4))
-                                            moreCarpoolAllData.sortByDescending { it?.postCreateDate }
-                                            mtAdapter?.notifyDataSetChanged()
-                                        }
-                                        "마감 임박 순" -> {
-                                            mttBinding.moreSearchTv.text = "마감 임박 순"
-                                            mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_blue_4))
-                                            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-
-                                            // 날짜 및 시간 형식 지정
-                                            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                                            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-
-                                            // 정렬 로직
-                                            val sortedTargets = moreCarpoolAllData.sortedWith { t1, t2 ->
-                                                // 날짜 비교
-                                                val dateComparison = LocalDate.parse(t1?.postTargetDate, dateFormatter)
-                                                    .compareTo(LocalDate.parse(t2?.postTargetDate, dateFormatter))
-
-                                                // 날짜가 같으면 시간 비교
-                                                if (dateComparison == 0) {
-                                                    LocalTime.parse(t1?.postTargetTime, timeFormatter)
-
-                                                        .compareTo(LocalTime.parse(t2?.postTargetTime, timeFormatter))
-                                                } else {
-                                                    dateComparison
-                                                }
-                                            }
-                                            moreCarpoolAllData.clear()
-                                            moreCarpoolAllData.addAll(sortedTargets)
-                                            mtAdapter?.notifyDataSetChanged()
-                                        }
-                                        "낮은 가격 순" -> {
-                                            mttBinding.moreSearchTv.text = "낮은 가격 순"
-                                            mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_blue_4))
-                                            moreCarpoolAllData.sortBy { it?.postCost }
-                                            mtAdapter?.notifyDataSetChanged()
-                                        }
-                                    }
-                                    mtAdapter?.notifyDataSetChanged()
+                RetrofitServerConnect.create(this@MoreCarpoolTabActivity).getCategoryPostData(1, "createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                    override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                        if (response.isSuccessful) {
+                            val responseData = response.body()
+                            responseData?.let {
+                                val newItems = it.content.filter { item ->
+                                    item.isDeleteYN == "N" && item.postType == "BEFORE_DEADLINE"
+                                }.map { item ->
+                                    PostData(
+                                        item.user.studentId,
+                                        item.postId,
+                                        item.title,
+                                        item.content,
+                                        item.createDate,
+                                        item.targetDate,
+                                        item.targetTime,
+                                        item.category.categoryName,
+                                        item.location,
+                                        item.participantsCount,
+                                        item.numberOfPassengers,
+                                        item.cost,
+                                        item.verifyGoReturn,
+                                        item.user,
+                                        item.latitude,
+                                        item.longitude
+                                    )
                                 }
-                            } else {
-                                Log.d("Error", "Response code: ${response.code()}")
-                            }
-                            isLoading = false
-                        }
 
-                        override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                            Log.d("Error", "Failure: ${t.message}")
-                            isLoading = false
+                                moreCarpoolAllData.addAll(newItems)
+                                if (getBottomData.isNotEmpty()) {
+                                    myViewModel.postCheckFilter(getBottomData)
+                                }
+
+                                when(getBottomSheetData) {
+                                    "최신 순" -> {
+                                        mttBinding.moreSearchTv.text = "최신 순"
+                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_blue_4))
+                                        moreCarpoolAllData.sortByDescending { it?.postCreateDate }
+                                        mtAdapter?.notifyDataSetChanged()
+                                    }
+                                    "마감 임박 순" -> {
+                                        mttBinding.moreSearchTv.text = "마감 임박 순"
+                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_blue_4))
+                                        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+                                        // 날짜 및 시간 형식 지정
+                                        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                                        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+                                        // 정렬 로직
+                                        val sortedTargets = moreCarpoolAllData.sortedWith { t1, t2 ->
+                                            // 날짜 비교
+                                            val dateComparison = LocalDate.parse(t1?.postTargetDate, dateFormatter)
+                                                .compareTo(LocalDate.parse(t2?.postTargetDate, dateFormatter))
+
+                                            // 날짜가 같으면 시간 비교
+                                            if (dateComparison == 0) {
+                                                LocalTime.parse(t1?.postTargetTime, timeFormatter)
+
+                                                    .compareTo(LocalTime.parse(t2?.postTargetTime, timeFormatter))
+                                            } else {
+                                                dateComparison
+                                            }
+                                        }
+                                        moreCarpoolAllData.clear()
+                                        moreCarpoolAllData.addAll(sortedTargets)
+                                        mtAdapter?.notifyDataSetChanged()
+                                    }
+                                    "낮은 가격 순" -> {
+                                        mttBinding.moreSearchTv.text = "낮은 가격 순"
+                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_blue_4))
+                                        moreCarpoolAllData.sortBy { it?.postCost }
+                                        mtAdapter?.notifyDataSetChanged()
+                                    }
+                                }
+                                mtAdapter?.notifyDataSetChanged()
+                            }
+                        } else {
+                            Log.d("Error", "Response code: ${response.code()}")
                         }
-                    })
-                }
+                        isLoading = false
+                    }
+
+                    override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                        Log.d("Error", "Failure: ${t.message}")
+                        isLoading = false
+                    }
+                })
+
             }
         }, 2000)
     }
@@ -662,6 +662,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     //delte
                     2 -> {
                         CoroutineScope(Dispatchers.IO).launch {
+                            initSwipeRefresh()
                             setSelectData()
                         }
                     }
@@ -672,162 +673,96 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
     }
 
     private fun setSelectData() {
-        CoroutineScope(Dispatchers.IO).launch {
-            RetrofitServerConnect.create(this@MoreCarpoolTabActivity).getCategoryPostData(1, "createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
-                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                    if (response.isSuccessful) {
+        RetrofitServerConnect.create(this@MoreCarpoolTabActivity).getCategoryPostData(1, "createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                if (response.isSuccessful) {
 
-                        //println(response.body()!!.content)
-                        /*val start = SystemClock.elapsedRealtime()
+                    //println(response.body()!!.content)
+                    /*val start = SystemClock.elapsedRealtime()
 
-                        // 함수 실행시간
-                        val date = Date(start)
-                        val mFormat = SimpleDateFormat("HH:mm:ss")
-                        val time = mFormat.format(date)
-                        println(start)
-                        println(time)*/
-                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                        s.add(PostReadAllResponse())*/
-                        moreCarpoolAllData.clear()
-                        totalPages = response.body()!!.totalPages
-                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
-                            //탑승자 null체크
-                            var part = 0
-                            var location = ""
-                            var title = ""
-                            var content = ""
-                            var targetDate = ""
-                            var targetTime = ""
-                            var categoryName = ""
-                            var cost = 0
-                            var verifyGoReturn = false
-                            if (response.isSuccessful) {
-                                part = try {
-                                    /*response.body()!!.content[i].participants.isEmpty()
-                                    response.body()!!.content[i].participants.size*/
-                                    response.body()!!.content[i].participantsCount
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                location = try {
-                                    response.body()!!.content[i].location.isEmpty()
-                                    response.body()!!.content[i].location
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "수락산역 3번 출구"
-                                }
-                                title = try {
-                                    response.body()!!.content[i].title.isEmpty()
-                                    response.body()!!.content[i].title
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                content = try {
-                                    response.body()!!.content[i].content.isEmpty()
-                                    response.body()!!.content[i].content
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetDate = try {
-                                    response.body()!!.content[i].targetDate.isEmpty()
-                                    response.body()!!.content[i].targetDate
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetTime = try {
-                                    response.body()!!.content[i].targetTime.isEmpty()
-                                    response.body()!!.content[i].targetTime
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                categoryName = try {
-                                    response.body()!!.content[i].category.categoryName.isEmpty()
-                                    response.body()!!.content[i].category.categoryName
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                cost = try {
-                                    response.body()!!.content[i].cost
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                verifyGoReturn = try {
-                                    response.body()!!.content[i].verifyGoReturn
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    false
-                                }
-                            }
+                    // 함수 실행시간
+                    val date = Date(start)
+                    val mFormat = SimpleDateFormat("HH:mm:ss")
+                    val time = mFormat.format(date)
+                    println(start)
+                    println(time)*/
+                    /*val s : ArrayList<PostReadAllResponse> = ArrayList()
+                    s.add(PostReadAllResponse())*/
+                    moreCarpoolAllData.clear()
+                    totalPages = response.body()!!.totalPages
+                    for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
+                        val part = response.body()!!.content[i].participantsCount ?: 0
+                        val location = response.body()!!.content[i].location ?: "수락산역 3번 출구"
+                        val title = response.body()!!.content[i].title ?: "null"
+                        val content = response.body()!!.content[i].content ?: "null"
+                        val targetDate = response.body()!!.content[i].targetDate ?: "null"
+                        val targetTime = response.body()!!.content[i].targetTime ?: "null"
+                        val categoryName = response.body()!!.content[i].category.categoryName ?: "null"
+                        val cost = response.body()!!.content[i].cost ?: 0
+                        val verifyGoReturn = response.body()!!.content[i].verifyGoReturn ?: false
 
-                            //println(response!!.body()!!.content[i].user.studentId)
-                            moreCarpoolAllData.add(PostData(
-                                response.body()!!.content[i].user.studentId,
-                                response.body()!!.content[i].postId,
-                                title,
-                                content,
-                                response.body()!!.content[i].createDate,
-                                targetDate,
-                                targetTime,
-                                categoryName,
-                                location,
-                                //participantscount가 현재 참여하는 인원들
-                                part,
-                                //numberOfPassengers은 총 탑승자 수
-                                response.body()!!.content[i].numberOfPassengers,
-                                cost,
-                                verifyGoReturn,
-                                response.body()!!.content[i].user,
-                                response.body()!!.content[i].latitude,
-                                response.body()!!.content[i].longitude
-                            ))
-                        }
-                        mtAdapter!!.moreTaxiData = moreCarpoolAllData
-                        mtAdapter!!.notifyDataSetChanged()
-
-                        if (getBottomData.isNotEmpty()) {
-                            myViewModel.postCheckFilter(getBottomData)
-                        } else if (getBottomSheetData.isNotEmpty()) {
-                            myViewModel.postCheckSearchFilter(getBottomSheetData)
-                        } else if (getBottomData.isNotEmpty() && getBottomSheetData.isNotEmpty()) {
-                            myViewModel.postCheckFilter(getBottomData)
-                            myViewModel.postCheckSearchFilter(getBottomSheetData)
-                        } else {
-                            // 새로 고침 완료 후 터치 활성화
-                            mttBinding.moreRefreshSwipeLayout.isRefreshing = false
-                            this@MoreCarpoolTabActivity.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                        }
-
-                        //tempFilterPostData = moreCarpoolAllData
-
-                        //moreTempCarpoolAllData.addAll(moreCarpoolAllData)
-                        if (moreCarpoolAllData.isEmpty()) {
-                            mttBinding.moreNonfilterTv.text = "카풀 게시글이 존재하지 않습니다"
-                            mttBinding.moreNonfilterTv.visibility = View.VISIBLE
-                            mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
-                        } else {
-                            mttBinding.moreNonfilterTv.text = "검색된 게시글이 없습니다"
-                            mttBinding.moreNonfilterTv.visibility = View.GONE
-                            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
-                        }
-
-
-                    } else {
-                        Log.d("f", response.code().toString())
+                        //println(response!!.body()!!.content[i].user.studentId)
+                        moreCarpoolAllData.add(PostData(
+                            response.body()!!.content[i].user.studentId,
+                            response.body()!!.content[i].postId,
+                            title,
+                            content,
+                            response.body()!!.content[i].createDate,
+                            targetDate,
+                            targetTime,
+                            categoryName,
+                            location,
+                            //participantscount가 현재 참여하는 인원들
+                            part,
+                            //numberOfPassengers은 총 탑승자 수
+                            response.body()!!.content[i].numberOfPassengers,
+                            cost,
+                            verifyGoReturn,
+                            response.body()!!.content[i].user,
+                            response.body()!!.content[i].latitude,
+                            response.body()!!.content[i].longitude
+                        ))
                     }
-                }
+                    mtAdapter!!.moreTaxiData = moreCarpoolAllData
+                    mtAdapter!!.notifyDataSetChanged()
 
-                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.d("error", t.toString())
+                    if (getBottomData.isNotEmpty()) {
+                        myViewModel.postCheckFilter(getBottomData)
+                    } else if (getBottomSheetData.isNotEmpty()) {
+                        myViewModel.postCheckSearchFilter(getBottomSheetData)
+                    } else if (getBottomData.isNotEmpty() && getBottomSheetData.isNotEmpty()) {
+                        myViewModel.postCheckFilter(getBottomData)
+                        myViewModel.postCheckSearchFilter(getBottomSheetData)
+                    } else {
+                        // 새로 고침 완료 후 터치 활성화
+                        mttBinding.moreRefreshSwipeLayout.isRefreshing = false
+                        this@MoreCarpoolTabActivity.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    }
+
+                    //tempFilterPostData = moreCarpoolAllData
+
+                    //moreTempCarpoolAllData.addAll(moreCarpoolAllData)
+                    if (moreCarpoolAllData.isEmpty()) {
+                        mttBinding.moreNonfilterTv.text = "카풀 게시글이 존재하지 않습니다"
+                        mttBinding.moreNonfilterTv.visibility = View.VISIBLE
+                        mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
+                    } else {
+                        mttBinding.moreNonfilterTv.text = "검색된 게시글이 없습니다"
+                        mttBinding.moreNonfilterTv.visibility = View.GONE
+                        mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+                    }
+
+
+                } else {
+                    Log.d("f", response.code().toString())
                 }
-            })
-        }
+            }
+
+            override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
+
     }
 
     private fun initRecyclerView() {

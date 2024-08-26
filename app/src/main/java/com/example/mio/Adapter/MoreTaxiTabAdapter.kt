@@ -1,7 +1,6 @@
 package com.example.mio.Adapter
-import android.app.AlertDialog
+
 import android.content.Context
-import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,13 +8,14 @@ import android.widget.ProgressBar
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.PostData
-import com.example.mio.Model.SearchWordData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
 import com.example.mio.databinding.RvLoadingBinding
-import com.example.mio.databinding.SearchWordLayoutBinding
 
-class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
+
+class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
+
+){
 
 
     companion object {
@@ -27,14 +27,15 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
 
     private lateinit var binding : PostItemBinding
     //var searchWordData = ArrayList<SearchWordData>()
-    var moreTaxiData = ArrayList<PostData?>()
+    var moreTaxiData: List<PostData?> = ArrayList()
+    private val mMoreTaxiData: List<PostData> = ArrayList()
     var sharedPref : SharedPref? = null
     private lateinit var context : Context
-    var isRemove = false //삭제 체크용
 
     init {
         setHasStableIds(true)
     }
+
     inner class MoreTaxiViewHolder(private val binding : PostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
         var postTitle = binding.postTitle
@@ -60,25 +61,9 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
 
 
 
-            /*binding.searchwordRemoveIv.setOnClickListener {
-                val builder : AlertDialog.Builder = AlertDialog.Builder(context)
-                val ad : AlertDialog = builder.create()
-                var deleteData = moreTaxiData[this.layoutPosition]!!
-                builder.setTitle(deleteData)
-                builder.setMessage("정말로 삭제하시겠습니까?")
-
-                builder.setNegativeButton("예",
-                    DialogInterface.OnClickListener { dialog, which ->
-                        ad.dismiss()
-                        removeData(this.layoutPosition)
-                    })
-
-                builder.setPositiveButton("아니오",
-                    DialogInterface.OnClickListener { dialog, which ->
-                        ad.dismiss()
-                    })
-                builder.show()
-            }*/
+            itemView.setOnClickListener {
+                itemClickListener.onClick(it, adapterPosition, moreData.postID)
+            }
         }
     }
     inner class LoadingViewHolder(var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
@@ -103,13 +88,7 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder , position: Int) {
 
         if (holder is MoreTaxiViewHolder) {
-            holder.bind(moreTaxiData[holder.adapterPosition]!!, position)
-
-            holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, moreTaxiData[holder.adapterPosition]!!.postID)
-            }
-            //val content : PostData = moreTaxiData[position]!!
-            //holder.searchWord_tv.text = content.searchWordText
+            holder.bind(moreTaxiData[position]!!, position)
         } /*else {
 
         }*/
@@ -135,10 +114,10 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     }
 
     //데이터 Handle 함수
-    fun removeData(position: Int) {
+    /*fun removeData(position: Int) {
         moreTaxiData.removeAt(position)
         notifyItemRemoved(position)
-    }
+    }*/
 
     interface ItemClickListener {
         fun onClick(view: View, position: Int, itemId: Int)
@@ -148,13 +127,21 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
-    fun addMoreData(newData: List<PostData?>) {
-        val startPosition = moreTaxiData.size
-        moreTaxiData.addAll(newData)
-        notifyItemRangeInserted(startPosition, newData.size)
-    }
 
-    fun deleteLoading(){
-        moreTaxiData.removeAt(moreTaxiData.lastIndex)
-    }
+    // Adapter의 데이터 리스트를 업데이트하는 메서드
+    /*fun updateDataList(newItems: List<MyAccountReviewData?>) {
+        // Create a new DiffUtil.Callback instance
+        val diffCallback = CarpoolDiffUtilCallback(moreTaxiData, newItems)
+
+        // Calculate the diff
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        val newDataList: MutableList<PostData?> = newItems.toMutableList()
+
+        // Replace the old list with the new list
+        moreTaxiData = newDataList
+
+        // Dispatch the updates to the adapter
+        diffResult.dispatchUpdatesTo(this)
+    }*/
 }

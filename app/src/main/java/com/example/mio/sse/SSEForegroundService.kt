@@ -1,12 +1,12 @@
 package com.example.mio.sse
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.app.Service
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.launchdarkly.eventsource.ConnectStrategy
 import com.launchdarkly.eventsource.EventSource
@@ -15,15 +15,12 @@ import java.net.URL
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-
 class SSEForegroundService : Service() {
-    private var sharedPreferenceGoogleLogin : SaveSharedPreferenceGoogleLogin? = null
-    private var userId : Long? = null
-    private var eventSource : BackgroundEventSource? = null
+    private var sharedPreferenceGoogleLogin: SaveSharedPreferenceGoogleLogin? = null
+    private var userId: Long? = null
+    private var eventSource: BackgroundEventSource? = null
     var serviceIntent: Intent? = null
-    private var isGetAlarm : Boolean? = null
-
-
+    private var isGetAlarm: Boolean? = null
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
@@ -35,11 +32,13 @@ class SSEForegroundService : Service() {
         isGetAlarm = sharedPreferenceGoogleLogin!!.getSharedAlarm(this)
         Log.e("onStartCommand", isGetAlarm.toString())
 
+        // Foreground Service 시작을 위해 Notification 생성
+        startForegroundServiceWithNotification()
 
         if (userId != null && isGetAlarm == true) {
             Log.e("Service", "서비스가 실행 중입니다...")
             Log.e("Service on Start", userId.toString())
-            eventSource = BackgroundEventSource //백그라운드에서 이벤트를 처리하기위한 EVENTSOURCE의 하위 클래스
+            eventSource = BackgroundEventSource // 백그라운드에서 이벤트를 처리하기 위한 EVENTSOURCE의 하위 클래스
                 .Builder(
                     SseHandler(context = this),
                     EventSource.Builder(
@@ -52,7 +51,7 @@ class SSEForegroundService : Service() {
                             .readTimeout(600, TimeUnit.SECONDS)
                     )
                 )
-                .threadPriority(Thread.MAX_PRIORITY) //백그라운드 이벤트 처리를 위한 스레드 우선 순위를 최대로 설정합니다.
+                .threadPriority(Thread.MAX_PRIORITY) // 백그라운드 이벤트 처리를 위한 스레드 우선 순위를 최대로 설정합니다.
                 .build()
             // EventSource 연결 시작
             eventSource!!.start()
@@ -60,15 +59,41 @@ class SSEForegroundService : Service() {
             Log.e("Service", "서비스 종료입니다...")
         }
 
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.e("SERVICE","MyService onDestroy")
+        Log.e("SERVICE", "MyService onDestroy")
         eventSource?.close()
         serviceIntent = null
         setAlarmTimer()
+    }
+
+    private fun startForegroundServiceWithNotification() {
+        val channelId = "SSEForegroundServiceChannel"
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        // NotificationChannel 설정 (Android 8.0 이상)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "Foreground Service Channel",
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        // Foreground Service 알림 생성
+        val notification = NotificationCompat.Builder(this, channelId)
+            .setContentTitle("SSE Foreground Service")
+            .setContentText("서비스가 실행 중입니다...")
+            .setSmallIcon(R.drawable.top_icon_vector)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+
+        // 포그라운드 서비스 시작
+        startForeground(1, notification)
     }
 
     private fun setAlarmTimer() {
@@ -80,7 +105,7 @@ class SSEForegroundService : Service() {
             this,
             0,
             intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT // 플래그 추가
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
         val mAlarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         mAlarmManager.setExact(AlarmManager.RTC_WAKEUP, c.timeInMillis, sender)

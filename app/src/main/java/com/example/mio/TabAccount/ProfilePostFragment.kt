@@ -10,12 +10,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.*
 import com.example.mio.Adapter.MyAccountPostAdapter
 import com.example.mio.Adapter.ProfilePostAdapter
+import com.example.mio.BottomSheetFragment.AnotherBottomSheetFragment
 import com.example.mio.Model.PostData
 import com.example.mio.Model.PostReadAllResponse
+import com.example.mio.Model.SharedViewModel
 import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentProfilePostBinding
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +36,12 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.util.*
+import kotlin.collections.ArrayList
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -48,10 +61,19 @@ class ProfilePostFragment : Fragment() {
 
     private lateinit var ppBinding : FragmentProfilePostBinding
     private var myAdapter : ProfilePostAdapter? = null
-    private var profilePostAllData = ArrayList<PostData>()
+    private var profilePostAllData = ArrayList<PostData?>()
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
-
+    private var getBottomSheetData = ""
     private var dataPosition = 0
+    private lateinit var myViewModel : SharedViewModel
+    private var userId = ""
+
+    //로딩 즉 item의 끝이며 스크롤의 끝인지
+    private var isLoading = false
+    //데이터의 현재 페이지 수
+    private var currentPage = 0
+    //데이터의 전체 페이지 수
+    private var totalPages = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,9 +88,12 @@ class ProfilePostFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         ppBinding = FragmentProfilePostBinding.inflate(inflater, container, false)
+        myViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
+        userId = SaveSharedPreferenceGoogleLogin().getUserId(requireActivity()).toString()
 
         initMyRecyclerView()
         initSwipeRefresh()
+        initScrollListener()
 
         myAdapter!!.setItemClickListener(object : ProfilePostAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int) {
@@ -85,29 +110,129 @@ class ProfilePostFragment : Fragment() {
             }
         })
 
+        ppBinding.profileSearchFilterBtn.setOnClickListener {
+            val bottomSheet = AnotherBottomSheetFragment()
+            bottomSheet.show(requireActivity().supportFragmentManager, bottomSheet.tag)
+            bottomSheet.apply {
+                setCallback(object : AnotherBottomSheetFragment.OnSendFromBottomSheetDialog{
+                    override fun sendValue(value: String) {
+                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
+                        getBottomSheetData = value
+                        myViewModel.postCheckSearchFilter(getBottomSheetData)
+                    }
+                })
+            }
+        }
+
+        myViewModel.checkSearchFilter.observe(requireActivity()) {
+            when(getBottomSheetData) {
+                "최신 순" -> {
+                    ppBinding.profileSearchFilterTv.text = "최신 순"
+                    ppBinding.profileSearchFilterTv.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
+                    profilePostAllData.sortByDescending { it?.postCreateDate }
+                    myAdapter?.notifyDataSetChanged()
+                }
+                "마감 임박 순" -> {
+                    ppBinding.profileSearchFilterTv.text = "마감 임박 순"
+                    ppBinding.profileSearchFilterTv.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
+                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+                    // 날짜 및 시간 형식 지정
+                    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+                    // 정렬 로직
+                    val sortedTargets = profilePostAllData.sortedWith { t1, t2 ->
+                        // 날짜 비교
+                        val dateComparison = LocalDate.parse(t1?.postTargetDate, dateFormatter)
+                            .compareTo(LocalDate.parse(t2?.postTargetDate, dateFormatter))
+
+                        // 날짜가 같으면 시간 비교
+                        if (dateComparison == 0) {
+                            LocalTime.parse(t1?.postTargetTime, timeFormatter)
+
+                                .compareTo(LocalTime.parse(t2?.postTargetTime, timeFormatter))
+                        } else {
+                            dateComparison
+                        }
+                    }
+                    profilePostAllData.clear()
+                    profilePostAllData.addAll(sortedTargets)
+                    myAdapter?.notifyDataSetChanged()
+                }
+                "낮은 가격 순" -> {
+                    ppBinding.profileSearchFilterTv.text = "낮은 가격 순"
+                    ppBinding.profileSearchFilterTv.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
+                    profilePostAllData.sortBy { it?.postCost }
+                    myAdapter?.notifyDataSetChanged()
+                }
+            }
+
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                ppBinding.profileSwipe.isRefreshing = false
+                requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            }, 1500)
+        }
 
         return ppBinding.root
     }
 
     private fun initSwipeRefresh() {
         ppBinding.profileSwipe.setOnRefreshListener {
-            //새로고침 시 터치불가능하도록
-            activity?.window!!.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) // 화면 터치 못하게 하기
-            val handler = Handler(Looper.getMainLooper())
-            handler.postDelayed({
-                setMyPostData()
-                myAdapter!!.profilePostItemData = profilePostAllData
-                //noticeBoardAdapter.recyclerView.startLayoutAnimation()
-                ppBinding.profileSwipe.isRefreshing = false
-                myAdapter!!.notifyDataSetChanged()
-                activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            }, 1000)
-            //터치불가능 해제ss
-            //activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            // 화면 터치 불가능하도록 설정
+            requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+
+            // 데이터 새로 고침
+            refreshData()
+
+            /* // 새로 고침 완료 및 터치 가능하게 설정
+             mttBinding.moreRefreshSwipeLayout.isRefreshing = false
+             this.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)*/
+
+            // 스크롤 리스너 초기화
+            initScrollListener()
         }
     }
 
+    private fun refreshData() {
+        isLoading = false
+        currentPage = 0
+        //moreCarpoolAllData.clear() // Clear existing data
+        myAdapter?.notifyDataSetChanged() // Notify adapter of data change
+
+        // Fetch fresh data
+        setMyPostData()
+    }
+
+    private fun initScrollListener() {
+        ppBinding.profilePostRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val layoutManager = recyclerView.layoutManager as? LinearLayoutManager
+                val lastVisibleItemPosition = layoutManager?.findLastCompletelyVisibleItemPosition() ?: -1
+                val itemTotalCount = recyclerView.adapter?.itemCount ?: 0
+
+                // 스크롤이 끝에 도달했는지 확인하고 isLoading 상태 확인
+                if (lastVisibleItemPosition >= itemTotalCount - 1 && !isLoading) {
+                    if (currentPage < totalPages - 1) {
+                        isLoading = true // Set isLoading to true to prevent multiple calls
+
+                        // Add a placeholder for the loading item
+                        val runnable = kotlinx.coroutines.Runnable {
+                            profilePostAllData.add(null)
+                            myAdapter?.notifyItemInserted(profilePostAllData.size - 1)
+                        }
+                        ppBinding.profilePostRv.post(runnable)
+
+                        // Load more items
+                        getMoreItem()
+                    }
+                }
+            }
+        })
+    }
 
     private fun setMyPostData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
@@ -128,7 +253,7 @@ class ProfilePostFragment : Fragment() {
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -147,134 +272,138 @@ class ProfilePostFragment : Fragment() {
         val api = retrofit2.create(MioInterface::class.java)
         ///////////////////////////////////////////////////
 
-        CoroutineScope(Dispatchers.IO).launch {
-            api.getMyPostData(profileUserId,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
-                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                    if (response.isSuccessful) {
+        //deadLine 안씀
+        api.getMyPostData(profileUserId,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                if (response.isSuccessful) {
 
-                        //데이터 청소
-                        profilePostAllData.clear()
+                    //데이터 청소
+                    profilePostAllData.clear()
 
-                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
-                            //탑승자 null체크
-                            var part = 0
-                            var location = ""
-                            var title = ""
-                            var content = ""
-                            var targetDate = ""
-                            var targetTime = ""
-                            var categoryName = ""
-                            var cost = 0
-                            var verifyGoReturn = false
-                            if (response.isSuccessful) {
-                                part = try {
-                                    response.body()!!.content[i].participantsCount
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                location = try {
-                                    response.body()!!.content[i].location.isEmpty()
-                                    response.body()!!.content[i].location
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "수락산역 3번 출구"
-                                }
-                                title = try {
-                                    response.body()!!.content[i].title.isEmpty()
-                                    response.body()!!.content[i].title
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                content = try {
-                                    response.body()!!.content[i].content.isEmpty()
-                                    response.body()!!.content[i].content
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetDate = try {
-                                    response.body()!!.content[i].targetDate.isEmpty()
-                                    response.body()!!.content[i].targetDate
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetTime = try {
-                                    response.body()!!.content[i].targetTime.isEmpty()
-                                    response.body()!!.content[i].targetTime
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                categoryName = try {
-                                    response.body()!!.content[i].category.categoryName.isEmpty()
-                                    response.body()!!.content[i].category.categoryName
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                cost = try {
-                                    response.body()!!.content[i].cost
-                                    response.body()!!.content[i].cost
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                verifyGoReturn = try {
-                                    response.body()!!.content[i].verifyGoReturn
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    false
-                                }
-                            }
+                    for (i in response.body()!!.content.filter { it.isDeleteYN == "N" }.indices) {
+                        val part = response.body()!!.content[i].participantsCount ?: 0
+                        val location = response.body()!!.content[i].location ?: "수락산역 3번 출구"
+                        val title = response.body()!!.content[i].title ?: "null"
+                        val content = response.body()!!.content[i].content ?: "null"
+                        val targetDate = response.body()!!.content[i].targetDate ?: "null"
+                        val targetTime = response.body()!!.content[i].targetTime ?: "null"
+                        val categoryName = response.body()!!.content[i].category.categoryName ?: "null"
+                        val cost = response.body()!!.content[i].cost ?: 0
+                        val verifyGoReturn = response.body()!!.content[i].verifyGoReturn ?: false
 
-                            //println(response!!.body()!!.content[i].user.studentId)
-                            profilePostAllData.add(
-                                PostData(
-                                    response.body()!!.content[i].user.studentId,
-                                    response.body()!!.content[i].postId,
-                                    title,
-                                    content,
-                                    response.body()!!.content[i].createDate,
-                                    targetDate,
-                                    targetTime,
-                                    categoryName,
-                                    location,
-                                    //participantscount가 현재 참여하는 인원들
-                                    part,
-                                    //numberOfPassengers은 총 탑승자 수
-                                    response.body()!!.content[i].numberOfPassengers,
-                                    cost,
-                                    verifyGoReturn,
-                                    response.body()!!.content[i].user,
-                                    response.body()!!.content[i].latitude,
-                                    response.body()!!.content[i].longitude
-                                ))
-
-                            myAdapter!!.notifyDataSetChanged()
-                        }
-                        if (profilePostAllData.size > 0) {
-                            ppBinding.profilePostNotDataLl.visibility = View.GONE
-                            ppBinding.profileSwipe.visibility = View.VISIBLE
-                            ppBinding.profilePostRv.visibility = View.VISIBLE
-                        } else {
-                            ppBinding.profilePostNotDataLl.visibility = View.VISIBLE
-                            ppBinding.profileSwipe.visibility = View.GONE
-                            ppBinding.profilePostRv.visibility = View.GONE
-                        }
-
-                    } else {
-                        Log.d("f", response.code().toString())
+                        //println(response!!.body()!!.content[i].user.studentId)
+                        profilePostAllData.add(
+                            PostData(
+                                response.body()!!.content[i].user.studentId,
+                                response.body()!!.content[i].postId,
+                                title,
+                                content,
+                                response.body()!!.content[i].createDate,
+                                targetDate,
+                                targetTime,
+                                categoryName,
+                                location,
+                                //participantscount가 현재 참여하는 인원들
+                                part,
+                                //numberOfPassengers은 총 탑승자 수
+                                response.body()!!.content[i].numberOfPassengers,
+                                cost,
+                                verifyGoReturn,
+                                response.body()!!.content[i].user,
+                                response.body()!!.content[i].latitude,
+                                response.body()!!.content[i].longitude
+                            ))
                     }
-                }
 
-                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.d("error", t.toString())
+                    myAdapter!!.notifyDataSetChanged()
+
+                    if (getBottomSheetData.isNotEmpty()) {
+                        myViewModel.postCheckSearchFilter(getBottomSheetData)
+                    } else {
+                        // 새로 고침 완료 후 터치 활성화
+                        ppBinding.profileSwipe.isRefreshing = false
+                        requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    }
+
+                    if (profilePostAllData.size > 0) {
+                        ppBinding.profilePostNotDataLl.visibility = View.GONE
+                        ppBinding.profileSwipe.visibility = View.VISIBLE
+                        ppBinding.profilePostRv.visibility = View.VISIBLE
+                    } else {
+                        ppBinding.profilePostNotDataLl.visibility = View.VISIBLE
+                        ppBinding.profileSwipe.visibility = View.GONE
+                        ppBinding.profilePostRv.visibility = View.GONE
+                    }
+
+                } else {
+                    Log.d("f", response.code().toString())
                 }
-            })
-        }
+            }
+
+            override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
+    }
+
+    private fun getMoreItem() {
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed({
+            // Remove the loading item placeholder
+            val loadingPosition = profilePostAllData.indexOf(null)
+            if (loadingPosition != -1) {
+                profilePostAllData.removeAt(loadingPosition)
+                myAdapter?.notifyItemRemoved(loadingPosition)
+            }
+
+            // Fetch more data if necessary
+            if (currentPage < totalPages - 1) {
+                currentPage += 1
+                RetrofitServerConnect.create(requireActivity()).getMyPostData(userId.toInt(), "createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                    override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                        if (response.isSuccessful) {
+                            val responseData = response.body()
+                            responseData?.let {
+                                val newItems = it.content.filter { item ->
+                                    item.isDeleteYN == "N" && item.postType == "BEFORE_DEADLINE"
+                                }.map { item ->
+                                    PostData(
+                                        item.user.studentId,
+                                        item.postId,
+                                        item.title,
+                                        item.content,
+                                        item.createDate,
+                                        item.targetDate,
+                                        item.targetTime,
+                                        item.category.categoryName,
+                                        item.location,
+                                        item.participantsCount,
+                                        item.numberOfPassengers,
+                                        item.cost,
+                                        item.verifyGoReturn,
+                                        item.user,
+                                        item.latitude,
+                                        item.longitude
+                                    )
+                                }
+
+                                profilePostAllData.addAll(newItems)
+                                myAdapter?.notifyDataSetChanged()
+                            }
+                        } else {
+                            Log.d("Error", "Response code: ${response.code()}")
+                        }
+                        isLoading = false
+                    }
+
+                    override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                        Log.d("Error", "Failure: ${t.message}")
+                        isLoading = false
+                    }
+                })
+
+            }
+        }, 2000)
     }
 
     private fun initMyRecyclerView() {
@@ -287,8 +416,9 @@ class ProfilePostFragment : Fragment() {
         //manager.stackFromEnd = true
         ppBinding.profilePostRv.setHasFixedSize(true)
         ppBinding.profilePostRv.layoutManager = manager
-
     }
+
+
 
     companion object {
         /**

@@ -93,7 +93,7 @@ class TaxiTabFragment : Fragment() {
     //게시글 전체 데이터 및 adapter와 공유하는 데이터
     private var taxiAllData : ArrayList<PostData> = ArrayList()
     private var currentTaxiAllData = ArrayList<PostData>()
-    private var taxiParticipantsData = ArrayList<ArrayList<Participants>?>()
+    private var taxiParticipantsData = ArrayList<ArrayList<ParticipationData>?>()
     //게시글 선택 시 위치를 잠시 저장하는 변수
     private var dataPosition = 0
     //게시글 위치
@@ -552,169 +552,104 @@ class TaxiTabFragment : Fragment() {
 
 
     private fun setData() {
-        CoroutineScope(Dispatchers.IO).launch {
-            RetrofitServerConnect.create(requireContext()).getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
-                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                    if (response.isSuccessful) {
+        RetrofitServerConnect.create(requireContext()).getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                if (response.isSuccessful) {
 
-                        //println(response.body()!!.content)
-                        /*val start = SystemClock.elapsedRealtime()
+                    //println(response.body()!!.content)
+                    /*val start = SystemClock.elapsedRealtime()
 
-                        // 함수 실행시간
-                        val date = Date(start)
-                        val mFormat = SimpleDateFormat("HH:mm:ss")
-                        val time = mFormat.format(date)
-                        println(start)
-                        println(time)*/
-                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                        s.add(PostReadAllResponse())*/
+                    // 함수 실행시간
+                    val date = Date(start)
+                    val mFormat = SimpleDateFormat("HH:mm:ss")
+                    val time = mFormat.format(date)
+                    println(start)
+                    println(time)*/
+                    /*val s : ArrayList<PostReadAllResponse> = ArrayList()
+                    s.add(PostReadAllResponse())*/
 
-                        //데이터 청소
-                        taxiAllData.clear()
+                    //데이터 청소
+                    taxiAllData.clear()
 
-                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
-                            //탑승자 null체크
-                            var part = 0
-                            var location = ""
-                            var title = ""
-                            var content = ""
-                            var targetDate = ""
-                            var targetTime = ""
-                            var categoryName = ""
-                            var cost = 0
-                            var verifyGoReturn = false
-                            if (response.isSuccessful) {
-                                part = try {
-                                    response.body()!!.content[i].participantsCount
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                location = try {
-                                    response.body()!!.content[i].location.isEmpty()
-                                    response.body()!!.content[i].location
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "수락산역 3번 출구"
-                                }
-                                title = try {
-                                    response.body()!!.content[i].title.isEmpty()
-                                    response.body()!!.content[i].title
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                content = try {
-                                    response.body()!!.content[i].content.isEmpty()
-                                    response.body()!!.content[i].content
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetDate = try {
-                                    response.body()!!.content[i].targetDate.isEmpty()
-                                    response.body()!!.content[i].targetDate
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetTime = try {
-                                    response.body()!!.content[i].targetTime.isEmpty()
-                                    response.body()!!.content[i].targetTime
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                categoryName = try {
-                                    response.body()!!.content[i].category.categoryName.isEmpty()
-                                    response.body()!!.content[i].category.categoryName
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                cost = try {
-                                    response.body()!!.content[i].cost
-                                    response.body()!!.content[i].cost
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                verifyGoReturn = try {
-                                    response.body()!!.content[i].verifyGoReturn
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    false
-                                }
-                            }
+                    for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
+                        val part = response.body()!!.content[i].participantsCount ?: 0
+                        val location = response.body()!!.content[i].location ?: "수락산역 3번 출구"
+                        val title = response.body()!!.content[i].title ?: "null"
+                        val content = response.body()!!.content[i].content ?: "null"
+                        val targetDate = response.body()!!.content[i].targetDate ?: "null"
+                        val targetTime = response.body()!!.content[i].targetTime ?: "null"
+                        val categoryName = response.body()!!.content[i].category.categoryName ?: "null"
+                        val cost = response.body()!!.content[i].cost ?: 0
+                        val verifyGoReturn = response.body()!!.content[i].verifyGoReturn ?: false
 
-                            //println(response!!.body()!!.content[i].user.studentId)
-                           /* taxiAllData.add(PostData(
+                        //println(response!!.body()!!.content[i].user.studentId)
+                        /* taxiAllData.add(PostData(
+                             response.body()!!.content[i].user.studentId,
+                             response.body()!!.content[i].postId,
+                             title,
+                             content,
+                             targetDate,
+                             targetTime,
+                             categoryName,
+                             location,
+                             //participantscount가 현재 참여하는 인원들
+                             part?,
+                             //numberOfPassengers은 총 탑승자 수
+                             response.body()!!.content[i].numberOfPassengers,
+                             cost,
+                             verifyGoReturn,
+                             response.body()!!.content[i].user
+                         ))*/
+
+                        taxiAllData.add(
+                            PostData(
                                 response.body()!!.content[i].user.studentId,
                                 response.body()!!.content[i].postId,
                                 title,
                                 content,
+                                response.body()!!.content[i].createDate,
                                 targetDate,
                                 targetTime,
                                 categoryName,
                                 location,
                                 //participantscount가 현재 참여하는 인원들
-                                part?,
+                                part,
                                 //numberOfPassengers은 총 탑승자 수
                                 response.body()!!.content[i].numberOfPassengers,
                                 cost,
                                 verifyGoReturn,
-                                response.body()!!.content[i].user
-                            ))*/
-
-                            taxiAllData.add(
-                                PostData(
-                                    response.body()!!.content[i].user.studentId,
-                                    response.body()!!.content[i].postId,
-                                    title,
-                                    content,
-                                    response.body()!!.content[i].createDate,
-                                    targetDate,
-                                    targetTime,
-                                    categoryName,
-                                    location,
-                                    //participantscount가 현재 참여하는 인원들
-                                    part,
-                                    //numberOfPassengers은 총 탑승자 수
-                                    response.body()!!.content[i].numberOfPassengers,
-                                    cost,
-                                    verifyGoReturn,
-                                    response.body()!!.content[i].user,
-                                    response.body()!!.content[i].latitude,
-                                    response.body()!!.content[i].longitude
-                                ))
-                        }
-                        Log.e("TaxiTabDataCheck", taxiAllData.toString())
-                        noticeBoardAdapter!!.notifyDataSetChanged()
-                        if (taxiAllData.isEmpty()) {
-                            Log.e("TaxiTabDataCheck", taxiAllData.toString())
-                            taxiTabBinding.nonTaxiData.visibility = View.VISIBLE
-                            taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
-                        } else {
-                            Log.e("TaxiTabDataCheck", taxiAllData.toString())
-                            taxiTabBinding.nonTaxiData.visibility = View.GONE
-                            taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
-                        }
-
-
-                        calendarAdapter!!.notifyDataSetChanged()
-
-                        loadingDialog.dismiss()
-
-                    } else {
-                        Log.e("f", response.code().toString())
+                                response.body()!!.content[i].user,
+                                response.body()!!.content[i].latitude,
+                                response.body()!!.content[i].longitude
+                            ))
                     }
-                }
+                    Log.e("TaxiTabDataCheck", taxiAllData.toString())
+                    noticeBoardAdapter!!.notifyDataSetChanged()
+                    if (taxiAllData.isEmpty()) {
+                        Log.e("TaxiTabDataCheck", taxiAllData.toString())
+                        taxiTabBinding.nonTaxiData.visibility = View.VISIBLE
+                        taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                    } else {
+                        Log.e("TaxiTabDataCheck", taxiAllData.toString())
+                        taxiTabBinding.nonTaxiData.visibility = View.GONE
+                        taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                    }
 
-                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.e("error", t.toString())
+
+                    calendarAdapter!!.notifyDataSetChanged()
+
+                    loadingDialog.dismiss()
+
+                } else {
+                    Log.e("f", response.code().toString())
                 }
-            })
-        }
+            }
+
+            override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                Log.e("error", t.toString())
+            }
+        })
+
     }
 
     private fun setMyAreaData() { //나중에 여기 위치 받아오면 데이터 변경하기 Todo
@@ -739,13 +674,12 @@ class TaxiTabFragment : Fragment() {
 
                     // UI 스레드에서 Toast 실행
                     requireActivity().runOnUiThread {
-                        Toast.makeText(requireActivity(), "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     }
 
                     // Log.d("MainActivitu Notification", expireDate.toString())
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -864,13 +798,12 @@ class TaxiTabFragment : Fragment() {
 
                     // UI 스레드에서 Toast 실행
                     requireActivity().runOnUiThread {
-                        Toast.makeText(requireActivity(), "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     }
 
                     Log.e("TaxiFragment", "순서체크")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -1026,9 +959,10 @@ class TaxiTabFragment : Fragment() {
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.e("taxi", "taxi")
                     val intent = Intent(requireContext(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -1088,9 +1022,10 @@ class TaxiTabFragment : Fragment() {
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.e("taxi", "taxi2")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)

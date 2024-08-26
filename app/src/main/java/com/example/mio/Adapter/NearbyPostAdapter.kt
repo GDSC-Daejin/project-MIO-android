@@ -50,7 +50,7 @@ class NearbyPostAdapter(private val onItemClick: (LocationReadAllResponse) -> Un
     override fun getItemCount(): Int = posts.size
 
     fun setData(newPosts: List<LocationReadAllResponse>) {
-        this.posts = newPosts
+        this.posts = newPosts.filter { it.isDeleteYN != "Y" && it.postType == "BEFORE_DEADLINE" }
         notifyDataSetChanged()
     }
 }

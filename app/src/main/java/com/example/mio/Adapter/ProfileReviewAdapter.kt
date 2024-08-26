@@ -1,38 +1,39 @@
 package com.example.mio.Adapter
-import android.annotation.SuppressLint
+import com.example.mio.diffutil.ProfileReviewDiffUtilCallback
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mio.Model.AddAlarmResponseData
 import com.example.mio.Model.MyAccountReviewData
-import com.example.mio.Model.PostData
 import com.example.mio.R
-import com.example.mio.databinding.PostItemBinding
 import com.example.mio.databinding.ReviewItemBinding
-import kotlinx.coroutines.NonDisposableHandle.parent
-import java.lang.ref.WeakReference
+import com.example.mio.databinding.ReviewItemTeBinding
 
 
-class ProfileReviewAdapter : RecyclerView.Adapter<ProfileReviewAdapter.ProfileReviewViewHolder>(){
+class ProfileReviewAdapter : ListAdapter<MyAccountReviewData, ProfileReviewAdapter.MyReviewViewHolder>(ProfileReviewDiffUtilCallback){
     private lateinit var binding : ReviewItemBinding
-    var profileReviewItemData = ArrayList<MyAccountReviewData>()
+    //private var myReviewData = ArrayList<MyAccountReviewData>()
     private lateinit var context : Context
 
     init {
         setHasStableIds(true)
     }
 
-    inner class ProfileReviewViewHolder(private val binding : ReviewItemBinding ) : RecyclerView.ViewHolder(binding.root) {
+    inner class MyReviewViewHolder(private val binding : ReviewItemBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
         //var accountId = binding.accountId
         //var accountProfile = binding.accountImage
+
         private var reviewSatisfactionIcon = binding.reviewSatisfaction
         private var reviewCommonlyIcon = binding.reviewCommonly
         private var reviewDissatisfaction = binding.reviewDissatisfaction
         private var reviewContent = binding.reviewContentTv
         private var reviewCreateDate = binding.reviewCreateDate
-
 
         fun bind(reviewData: MyAccountReviewData, position : Int) {
             this.position = position
@@ -58,47 +59,47 @@ class ProfileReviewAdapter : RecyclerView.Adapter<ProfileReviewAdapter.ProfileRe
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProfileReviewViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyReviewViewHolder {
         context = parent.context
         binding = ReviewItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ProfileReviewViewHolder(binding)
+        return MyReviewViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: ProfileReviewViewHolder, position: Int) {
-        holder.bind(profileReviewItemData[holder.adapterPosition], position)
+    override fun onBindViewHolder(holder: MyReviewViewHolder, position: Int) {
+        holder.bind(currentList[holder.adapterPosition], position)
 
-        holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, profileReviewItemData[holder.adapterPosition].id)
-        }
-
-    /*binding.homeRemoveIv.setOnClickListener {
-            val builder : AlertDialog.Builder = AlertDialog.Builder(context)
-            val ad : AlertDialog = builder.create()
-            var deleteData = pillItemData[holder.adapterPosition]!!.pillName
-            builder.setTitle(deleteData)
-            builder.setMessage("정말로 삭제하시겠습니까?")
-            builder.setNegativeButton("예",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                    //temp = listData[holder.adapterPosition]!!
-                    //extraditeData()
-                    //testData.add(temp)
-                    //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
-                    removeData(holder.adapterPosition)
-                    //removeServerData(deleteServerData!!)
-                    //println(deleteServerData)
-                })
-
-            builder.setPositiveButton("아니오",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                })
-            builder.show()
+        /*holder.itemView.setOnClickListener {
+            itemClickListener.onClick(it, holder.adapterPosition, myReviewData[holder.adapterPosition].id)
         }*/
+
+        /*binding.homeRemoveIv.setOnClickListener {
+                val builder : AlertDialog.Builder = AlertDialog.Builder(context)
+                val ad : AlertDialog = builder.create()
+                var deleteData = pillItemData[holder.adapterPosition]!!.pillName
+                builder.setTitle(deleteData)
+                builder.setMessage("정말로 삭제하시겠습니까?")
+                builder.setNegativeButton("예",
+                    DialogInterface.OnClickListener { dialog, which ->
+                        ad.dismiss()
+                        //temp = listData[holder.adapterPosition]!!
+                        //extraditeData()
+                        //testData.add(temp)
+                        //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
+                        removeData(holder.adapterPosition)
+                        //removeServerData(deleteServerData!!)
+                        //println(deleteServerData)
+                    })
+
+                builder.setPositiveButton("아니오",
+                    DialogInterface.OnClickListener { dialog, which ->
+                        ad.dismiss()
+                    })
+                builder.show()
+            }*/
     }
 
     override fun getItemCount(): Int {
-        return profileReviewItemData.size
+        return currentList.size
     }
 
     override fun getItemId(position: Int): Long {
@@ -107,21 +108,34 @@ class ProfileReviewAdapter : RecyclerView.Adapter<ProfileReviewAdapter.ProfileRe
 
     //데이터 Handle 함수
     fun removeData(position: Int) {
-        profileReviewItemData.removeAt(position)
+        currentList.removeAt(position)
         //temp = null
         notifyItemRemoved(position)
     }
 
-    interface ItemClickListener {
-        fun onClick(view: View, position: Int, itemId: Int)
-    }
 
-    //약한 참조로 참조하는 객체가 사용되지 않을 경우 가비지 콜렉션에 의해 자동해제
-    //private var itemClickListener: WeakReference<ItemClickListener>? = null
-    private lateinit var itemClickListener: ProfileReviewAdapter.ItemClickListener
+    /*fun updateDataList(newItems: List<MyAccountReviewData>) {
+        val diff = DiffUtil.calculateDiff(ProfileReviewDiffUtilCallback(myReviewData, newItems))
+        myReviewData.clear()
+        myReviewData.addAll(newItems)
 
-    fun setItemClickListener(itemClickListener: ProfileReviewAdapter.ItemClickListener) {
-        this.itemClickListener = itemClickListener
+        diff.dispatchUpdatesTo(this)
+    }*/
+
+    /*fun updateNotifications(newData: List<AddAlarmResponseData>) {
+        val oldSize = notificationItemData.size
+        val newSize = newData.size
+        val diff = DiffUtil.calculateDiff(NotificationDiffUtilCallback(notificationItemData, newData))
+
+        notificationItemData.clear()
+        notificationItemData.addAll(newData)
+        diff.dispatchUpdatesTo(this)
+    }*/
+    fun updateData(newData: List<MyAccountReviewData>) {
+        Log.d("NotificationAdapter", "Previous data: ${currentList}") // currentList는 현재 어댑터의 데이터
+        Log.d("NotificationAdapter", "New data: $newData")
+        //Log.d("NotificationAdapter", "data: $notificationItemData")
+        submitList(newData)
     }
 
 }

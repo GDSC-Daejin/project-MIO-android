@@ -44,15 +44,15 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 
 class MainActivity : AppCompatActivity(), FinishAdInterface {
-    private lateinit var mBinding : ActivityMainBinding
+    lateinit var mBinding : ActivityMainBinding
 
     private val TAG_HOME = "home_fragment"
     private val TAG_SEARCH = "search_fragment"
     private val TAG_ACCOUNT = "account_fragment"
     private val TAG_NOTIFICATION = "notification_fragment"
     private val TAG_SETTING = "setting_fragment"
-    private var isClicked = false
-    private var isSettingClicked = false
+    var isClicked = false
+    var isSettingClicked = false
     //notification에서 뒤로가기 구현할 때 그 전에 어느 fragment에 있었는 지 알기위한 변수
     private var oldFragment : Fragment? = null
     private var oldTAG = ""
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
 
     private var sharedViewModel: SharedViewModel? = null
 
-    private var toolbarType = "기본"
+    var toolbarType = "기본"
 
     private var isFirstAccountEdit : String? = null
 
@@ -216,18 +216,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         Log.e("actionNotificaion", isClicked.toString())
         actionSetting?.isVisible = !isSettingClicked
         Log.e("actionSetting", isSettingClicked.toString())*/
-        if (isClicked) {
-            //Log.e("isclicked", isClicked.toString())
-            actionNotification?.isVisible = false//!isClicked
-            toolbarType = "알림"
-            setToolbarView(toolbarType)
-            //actionSetting?.isVisible = true
-        } else {
-            //Log.e("isclicked", isClicked.toString())
-            actionNotification?.isVisible = true//!isClicked
-            //actionSetting?.isVisible = false
-        }
-
+        actionNotification?.isVisible = !isClicked
         actionSetting?.isVisible = !isSettingClicked
 
         return true
@@ -546,7 +535,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         bt.commitAllowingStateLoss()
     }
 
-    private fun setToolbarView(type : String) {
+    fun setToolbarView(type : String) {
         when (type) {
             "기본" -> {
                 setSupportActionBar(mBinding.toolBar)
@@ -597,13 +586,12 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
 
                     // UI 스레드에서 Toast 실행
                     this@MainActivity.runOnUiThread {
-                        Toast.makeText(this@MainActivity, "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     }
-
+                    Log.e("main", "main")
                     // Log.d("MainActivitu Notification", expireDate.toString())
                     val intent = Intent(this@MainActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -666,13 +654,12 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
 
                     // UI 스레드에서 Toast 실행
                     this@MainActivity.runOnUiThread {
-                        Toast.makeText(this@MainActivity, "로그인 세션이 만료되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     }
 
                    // Log.d("MainActivitu Notification", expireDate.toString())
                     val intent = Intent(this@MainActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -729,7 +716,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         })
     }
 
-    private fun changeFragment(fragment : Fragment) {
+    fun changeFragment(fragment : Fragment) {
         //프래그먼트를 교체 하는 작업을 수행할 수 있게 해줍니다.
         supportFragmentManager
             .beginTransaction()

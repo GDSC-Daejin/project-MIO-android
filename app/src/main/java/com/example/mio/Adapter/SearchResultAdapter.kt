@@ -35,7 +35,7 @@ class SearchResultAdapter(private var items: List<LocationReadAllResponse>) : Re
 
     // 강조할 텍스트를 함께 전달
     fun updateData(newItems: List<LocationReadAllResponse>, highlightText: String) {
-        items = newItems
+        items = newItems.filter { it.isDeleteYN != "Y" && it.postType == "BEFORE_DEADLINE" }
         this.highlightText = highlightText
         notifyDataSetChanged()
     }
@@ -58,7 +58,7 @@ class SearchResultAdapter(private var items: List<LocationReadAllResponse>) : Re
 
         fun bind(item: LocationReadAllResponse, highlightText: String) {
             CoroutineScope(Dispatchers.IO).launch {
-                val address = getAddressFromLatLng(item.latitude, item.longitude)
+                //val address = getAddressFromLatLng(item.latitude, item.longitude)
                 withContext(Dispatchers.Main) {
                     if (highlightText.isNotEmpty() && item.location.contains(highlightText, true)) {
                         // 강조해야 하는 텍스트가 있고, 아이템의 location에 포함되어 있다면
@@ -82,7 +82,7 @@ class SearchResultAdapter(private var items: List<LocationReadAllResponse>) : Re
             }
         }
 
-        private fun getAddressFromLatLng(latitude: Double, longitude: Double): String {
+        /*private fun getAddressFromLatLng(latitude: Double, longitude: Double): String {
             val addresses = geocoder.getFromLocation(latitude, longitude, 1)
             if (addresses?.isNotEmpty() == true) {
                 val address = addresses[0]
@@ -101,7 +101,7 @@ class SearchResultAdapter(private var items: List<LocationReadAllResponse>) : Re
 
             // 주소 정보가 없을 경우 "Unknown Address" 반환
             return "Unknown Address"
-        }
+        }*/
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

@@ -160,38 +160,36 @@ class NearbypostActivity  : AppCompatActivity() { //검색에서 게시글 더�
 
     private fun loadNearbyPostData(postId: Int) {
 
-        CoroutineScope(Dispatchers.IO).launch {
-            RetrofitServerConnect.create(this@NearbypostActivity).getNearByPostData(postId).enqueue(object : Callback<List<LocationReadAllResponse>> {
-                override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
-                    if (response.isSuccessful) {
-                        val posts = response.body()
-                        posts?.let { allPosts ->
-                            val referencePost = allPosts.find { it.postId == postId }
-                            referencePost?.let {
-                                val filteredAndSortedPosts = allPosts.filter { post ->
-                                    calculateDistance(it.latitude, it.longitude, post.latitude, post.longitude) <= 3.0
-                                }.sortedBy { post ->
-                                    calculateDistance(it.latitude, it.longitude, post.latitude, post.longitude)
-                                }
-                                firstLatitude = it.latitude.toString()
-                                firstLongitude = it.longitude.toString()
-                                nearPostAllData.addAll(filteredAndSortedPosts)
-                                adapter.setData(filteredAndSortedPosts)
+        RetrofitServerConnect.create(this@NearbypostActivity).getNearByPostData(postId).enqueue(object : Callback<List<LocationReadAllResponse>> {
+            override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
+                if (response.isSuccessful) {
+                    val posts = response.body()
+                    posts?.let { allPosts ->
+                        val referencePost = allPosts.find { it.postId == postId }
+                        referencePost?.let {
+                            val filteredAndSortedPosts = allPosts.filter { post ->
+                                calculateDistance(it.latitude, it.longitude, post.latitude, post.longitude) <= 3.0
+                            }.sortedBy { post ->
+                                calculateDistance(it.latitude, it.longitude, post.latitude, post.longitude)
                             }
+                            firstLatitude = it.latitude.toString()
+                            firstLongitude = it.longitude.toString()
+                            nearPostAllData.addAll(filteredAndSortedPosts)
+                            adapter.setData(filteredAndSortedPosts)
                         }
-                    } else {
-                        println("faafa")
-                        Log.d("comment", response.errorBody()?.string()!!)
-                        Log.d("message", call.request().toString())
-                        println(response.code())
                     }
+                } else {
+                    println("faafa")
+                    Log.d("comment", response.errorBody()?.string()!!)
+                    Log.d("message", call.request().toString())
+                    println(response.code())
                 }
+            }
 
-                override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
-                    Log.d("error", t.toString())
-                }
-            })
-        }
+            override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
     }
 
     private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {

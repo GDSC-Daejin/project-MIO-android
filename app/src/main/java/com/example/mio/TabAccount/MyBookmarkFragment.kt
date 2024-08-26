@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.startActivity
@@ -141,9 +142,10 @@ class MyBookmarkFragment : Fragment() {
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.e("bookmark", "bookmark")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -227,9 +229,10 @@ class MyBookmarkFragment : Fragment() {
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.e("bookmark", "bookmark")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)

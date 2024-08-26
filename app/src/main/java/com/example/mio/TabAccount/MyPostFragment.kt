@@ -13,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.OvershootInterpolator
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -133,9 +134,10 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.e("postFrag", "postFrag1")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -165,79 +167,15 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
 
                         //데드라인 체크안함
                         for (i in response.body()!!.content.filter { it.isDeleteYN == "N" }.indices) {
-                            //탑승자 null체크
-                            var part = 0
-                            var location = ""
-                            var title = ""
-                            var content = ""
-                            var targetDate = ""
-                            var targetTime = ""
-                            var categoryName = ""
-                            var cost = 0
-                            var verifyGoReturn = false
-                            if (response.isSuccessful) {
-                                part = try {
-                                    response.body()!!.content[i].participantsCount
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                location = try {
-                                    response.body()!!.content[i].location.isEmpty()
-                                    response.body()!!.content[i].location
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "수락산역 3번 출구"
-                                }
-                                title = try {
-                                    response.body()!!.content[i].title.isEmpty()
-                                    response.body()!!.content[i].title
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                content = try {
-                                    response.body()!!.content[i].content.isEmpty()
-                                    response.body()!!.content[i].content
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetDate = try {
-                                    response.body()!!.content[i].targetDate.isEmpty()
-                                    response.body()!!.content[i].targetDate
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                targetTime = try {
-                                    response.body()!!.content[i].targetTime.isEmpty()
-                                    response.body()!!.content[i].targetTime
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                categoryName = try {
-                                    response.body()!!.content[i].category.categoryName.isEmpty()
-                                    response.body()!!.content[i].category.categoryName
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    "null"
-                                }
-                                cost = try {
-                                    response.body()!!.content[i].cost
-                                    response.body()!!.content[i].cost
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    0
-                                }
-                                verifyGoReturn = try {
-                                    response.body()!!.content[i].verifyGoReturn
-                                } catch (e : java.lang.NullPointerException) {
-                                    Log.d("null", e.toString())
-                                    false
-                                }
-                            }
+                            val part = response.body()!!.content[i].participantsCount ?: 0
+                            val location = response.body()!!.content[i].location ?: "수락산역 3번 출구"
+                            val title = response.body()!!.content[i].title ?: "null"
+                            val content = response.body()!!.content[i].content ?: "null"
+                            val targetDate = response.body()!!.content[i].targetDate ?: "null"
+                            val targetTime = response.body()!!.content[i].targetTime ?: "null"
+                            val categoryName = response.body()!!.content[i].category.categoryName ?: "null"
+                            val cost = response.body()!!.content[i].cost ?: 0
+                            val verifyGoReturn = response.body()!!.content[i].verifyGoReturn ?: false
 
                             //println(response!!.body()!!.content[i].user.studentId)
                             myAccountPostAllData.add(
@@ -386,50 +324,49 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
             // Fetch more data if necessary
             if (currentPage < totalPages - 1) {
                 currentPage += 1
-                CoroutineScope(Dispatchers.IO).launch {
-                    RetrofitServerConnect.create(requireActivity()).getMyPostData(userId.toInt(), "createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
-                        override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                            if (response.isSuccessful) {
-                                val responseData = response.body()
-                                responseData?.let {
-                                    val newItems = it.content.filter { item ->
-                                        item.isDeleteYN == "N"
-                                    }.map { item ->
-                                        PostData(
-                                            item.user.studentId,
-                                            item.postId,
-                                            item.title,
-                                            item.content,
-                                            item.createDate,
-                                            item.targetDate,
-                                            item.targetTime,
-                                            item.category.categoryName,
-                                            item.location,
-                                            item.participantsCount,
-                                            item.numberOfPassengers,
-                                            item.cost,
-                                            item.verifyGoReturn,
-                                            item.user,
-                                            item.latitude,
-                                            item.longitude
-                                        )
-                                    }
-
-                                    myAccountPostAllData.addAll(newItems)
-                                    myAdapter?.notifyDataSetChanged()
+                RetrofitServerConnect.create(requireActivity()).getMyPostData(userId.toInt(), "createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                    override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                        if (response.isSuccessful) {
+                            val responseData = response.body()
+                            responseData?.let {
+                                val newItems = it.content.filter { item ->
+                                    item.isDeleteYN == "N"
+                                }.map { item ->
+                                    PostData(
+                                        item.user.studentId,
+                                        item.postId,
+                                        item.title,
+                                        item.content,
+                                        item.createDate,
+                                        item.targetDate,
+                                        item.targetTime,
+                                        item.category.categoryName,
+                                        item.location,
+                                        item.participantsCount,
+                                        item.numberOfPassengers,
+                                        item.cost,
+                                        item.verifyGoReturn,
+                                        item.user,
+                                        item.latitude,
+                                        item.longitude
+                                    )
                                 }
-                            } else {
-                                Log.d("Error", "Response code: ${response.code()}")
-                            }
-                            isLoading = false
-                        }
 
-                        override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                            Log.d("Error", "Failure: ${t.message}")
-                            isLoading = false
+                                myAccountPostAllData.addAll(newItems)
+                                myAdapter?.notifyDataSetChanged()
+                            }
+                        } else {
+                            Log.d("Error", "Response code: ${response.code()}")
                         }
-                    })
-                }
+                        isLoading = false
+                    }
+
+                    override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                        Log.d("Error", "Failure: ${t.message}")
+                        isLoading = false
+                    }
+                })
+
             }
         }, 2000)
     }

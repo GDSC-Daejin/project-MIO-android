@@ -1,16 +1,21 @@
 package com.example.mio.TabAccount
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
 import com.example.mio.Adapter.MyReviewAdapter
 import com.example.mio.Model.MyAccountReviewData
+import com.example.mio.Model.ReviewViewModel
 import com.example.mio.databinding.FragmentMyReivewWrittenBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,7 +48,9 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
     private var rwAdapter : MyReviewAdapter? = null
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     private var reviewWrittenAllData = ArrayList<MyAccountReviewData>()
-
+    private lateinit var viewModel: ReviewViewModel
+    //로딩
+    private var loadingDialog : LoadingProgressDialog? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -69,7 +76,7 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
         val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
-
+        viewModel.setLoading(true)
         val interceptor = Interceptor { chain ->
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
@@ -81,9 +88,10 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.e("reviewWritten", "reviewWritten1")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     startActivity(intent)
                     requireActivity().finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -102,59 +110,128 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
         val api = retrofit2.create(MioInterface::class.java)
         /////////////////////////////////////////////////////
 
-        //여기 나중에 데이터 바뀌면 체크 TODO
-        CoroutineScope(Dispatchers.IO).launch {
-            api.getMyMannersSendReview(userId).enqueue(object :
-                Callback<List<MyAccountReviewData>> {
-                override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
-                    if (response.isSuccessful) {
+        api.getMyMannersSendReview(userId).enqueue(object :
+            Callback<List<MyAccountReviewData>> {
+            override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
+                if (response.isSuccessful) {
 
-                        //데이터 청소
+                    //데이터 청소
+                    response.body()?.let {
+                        viewModel.setLoading(false)
                         reviewWrittenAllData.clear()
-
-                        for (i in response.body()!!.indices) {
-                            reviewWrittenAllData.add(
-                                MyAccountReviewData(
-                                    response.body()!![i].id,
-                                    response.body()!![i].manner,
-                                    response.body()!![i].content,
-                                    response.body()!![i].getUserId,
-                                    response.body()!![i].postUserId,
-                                    response.body()!![i].createDate,
-                                )
-                            )
+                        reviewWrittenAllData.addAll(it)
+                        if (response.body().isNullOrEmpty()) {
+                            updateUI2(it)
                         }
-                        rwAdapter!!.notifyDataSetChanged()
-                        if (reviewWrittenAllData.size > 0) {
-                            rwBinding.writtenReviewPostNotDataLl.visibility = View.GONE
-                            rwBinding.writtenReviewSwipe.visibility = View.VISIBLE
-                            rwBinding.writtenReviewPostRv.visibility = View.VISIBLE
-                        } else {
-                            rwBinding.writtenReviewPostNotDataLl.visibility = View.VISIBLE
-                            rwBinding.writtenReviewSwipe.visibility = View.GONE
-                            rwBinding.writtenReviewPostRv.visibility = View.GONE
-                        }
-
-                    } else {
-                        Log.d("f", response.code().toString())
                     }
-                }
+                    /*for (i in response.body()!!.indices) {
+                        reviewWrittenAllData.add(
+                            MyAccountReviewData(
+                                response.body()!![i].id,
+                                response.body()!![i].manner,
+                                response.body()!![i].content,
+                                response.body()!![i].getUserId,
+                                response.body()!![i].postUserId,
+                                response.body()!![i].createDate,
+                            )
+                        )
+                    }*/
 
-                override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
-                    Log.d("error", t.toString())
+
+                } else {
+                    Log.d("f", response.code().toString())
                 }
-            })
+            }
+
+            override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
+    }
+    private fun updateUI2(reviews: List<MyAccountReviewData>) {
+        viewModel.setLoading(false)
+        if (loadingDialog != null && loadingDialog?.isShowing == true) {
+            loadingDialog?.dismiss()
+            loadingDialog = null
+        }
+
+        if (reviews.isNotEmpty()) {
+            rwBinding.writtenReviewPostNotDataLl.visibility = View.GONE
+            rwBinding.writtenReviewSwipe.visibility = View.VISIBLE
+            rwBinding.writtenReviewPostRv.visibility = View.VISIBLE
+        } else {
+            rwBinding.writtenReviewPostNotDataLl.visibility = View.VISIBLE
+            rwBinding.writtenReviewSwipe.visibility = View.GONE
+            rwBinding.writtenReviewPostRv.visibility = View.GONE
         }
     }
-
     private fun initRecyclerview() {
-        setReadReviewData()
+        //setReadReviewData()
         rwAdapter = MyReviewAdapter()
-        rwAdapter!!.myReviewData = reviewWrittenAllData
+        //rwAdapter!!.myReviewData = reviewWrittenAllData
 
         rwBinding.writtenReviewPostRv.adapter = rwAdapter
         rwBinding.writtenReviewPostRv.setHasFixedSize(true)
         rwBinding.writtenReviewPostRv.layoutManager = manager
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProvider(requireActivity())[ReviewViewModel::class.java]
+        setReadReviewData()
+        // LiveData 관찰
+        viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
+            rwAdapter?.updateData(reviews.toList())
+            updateUI2(reviews)
+            Log.e("observeNoti1", reviews.toString())
+            /*CoroutineScope(Dispatchers.IO).launch {
+                initNotificationPostData(notificationAllData)
+            }*/
+
+        }
+
+        viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            if (isLoading) {
+                // 로딩 다이얼로그를 생성하고 표시
+                if (loadingDialog == null) {
+                    loadingDialog = LoadingProgressDialog(requireActivity())
+                    loadingDialog?.setCancelable(false)
+                    loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog
+                    loadingDialog?.window!!.setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    loadingDialog?.show()
+                }
+            } else {
+                // 로딩 다이얼로그를 해제
+                if (loadingDialog != null && loadingDialog?.isShowing == true)  {
+                    loadingDialog?.dismiss()
+                    loadingDialog = null
+                }
+
+            }
+        }
+
+        /*nfBinding.notificationSwipe.setOnRefreshListener {
+            // 화면 터치 불가능하도록 설정
+            requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+
+            setNotificationData()
+            //viewModel.refreshNotifications(requireContext())
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                nfBinding.notificationSwipe.isRefreshing = false
+                requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            }, 1500)
+        }*/
+
+        viewModel.error.observe(viewLifecycleOwner) { errorMessage ->
+            if (errorMessage != null) {
+                Log.e("error observe", errorMessage)
+            }
+        }
     }
 
     companion object {

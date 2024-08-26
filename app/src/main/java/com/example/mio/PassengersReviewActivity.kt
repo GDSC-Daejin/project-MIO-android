@@ -1,27 +1,19 @@
 package com.example.mio
 
-import android.content.Intent
 import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.example.mio.Model.*
 import com.example.mio.databinding.ActivityPassengersReviewBinding
 import com.google.android.material.chip.Chip
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class PassengersReviewActivity : AppCompatActivity() {
     private lateinit var prBinding : ActivityPassengersReviewBinding
@@ -31,11 +23,12 @@ class PassengersReviewActivity : AppCompatActivity() {
     private var mannerCount = ""
 
     private var type = ""
-    private var passengersData: ArrayList<Participants>? = null
+    private var passengersData: ArrayList<ParticipationData>? = null
     private var driverData : User? = null
     private var passengersChipList = ArrayList<Chip>()
     private var passengersChipItemData = ArrayList<ChipData>()
     private var passengersReviewData = ArrayList<String?>()
+    private var passengerUserData = ArrayList<User?>()
 
     private var postData : PostData? = null
 
@@ -48,14 +41,16 @@ class PassengersReviewActivity : AppCompatActivity() {
         type = intent.getStringExtra("type") as String
 
         if (type == "PASSENGER") { //내가 손님일때
+            Log.e("review", "PASSENGER")
             driverData = intent.getSerializableExtra("postDriver") as User
             postData = intent.getSerializableExtra("Data") as PostData?
 
         } else if (type == "DRIVER") { //내가 운전자일때
+            Log.e("review", "DRIVER")
             postData = intent.getSerializableExtra("Data") as PostData?
-            passengersData = intent.getSerializableExtra("postPassengers") as ArrayList<Participants>?
-
-            if (passengersData != null) {
+            passengersData = intent.getSerializableExtra("postPassengers") as ArrayList<ParticipationData>?
+            userInfo(passengersData)
+            /*if (passengersData != null) {
                 //여기에 인원 수 만큼 chip? 추가하기 Todo
                 for (j in passengersData!!.indices) {
                     passengersChipList.add(createNewChip(
@@ -77,7 +72,7 @@ class PassengersReviewActivity : AppCompatActivity() {
                         prBinding.reviewSetPassengersCg.addView(passengersChipList[i])
                     }
                 }
-            }
+            }*/
         }
 
 
@@ -230,96 +225,100 @@ class PassengersReviewActivity : AppCompatActivity() {
 
     }
 
+    private fun userInfo(passengersData: ArrayList<ParticipationData>?) {
+        if (passengersData?.isNotEmpty() == true) {
+            for (i in passengersData) {
+                RetrofitServerConnect.create(this@PassengersReviewActivity).getUserProfileData(i.userId).enqueue(object : Callback<User> {
+                    override fun onResponse(call: Call<User>, response: Response<User>) {
+                        if (response.isSuccessful) {
+                            val user = response.body()
+                            user?.let {
+                                passengerUserData.add(it)
+                                val newChip = createNewChip(it.studentId)
+                                passengersChipList.add(newChip)
+                                passengersChipItemData.add(ChipData(it.studentId, it.id))
+
+                                // Chip 추가 로직
+                                if (prBinding.reviewSetPassengersCg.childCount >= 0) {
+                                    // 마지막 Chip 앞에 추가
+                                    prBinding.reviewSetPassengersCg.addView(newChip, prBinding.reviewSetPassengersCg.childCount - 1)
+                                } else {
+                                    // ChipGroup에 자식이 없는 경우, 그냥 추가
+                                    prBinding.reviewSetPassengersCg.addView(newChip)
+                                }
+                            } ?: run {
+                                Log.e("userInfo", "Response body is null")
+                            }
+                        } else {
+                            Log.e("userInfo", response.code().toString())
+                            response.errorBody()?.string()?.let { errorMsg ->
+                                Log.e("userInfo", errorMsg)
+                            }
+                        }
+                    }
+
+                    override fun onFailure(call: Call<User>, t: Throwable) {
+                        Log.e("userInfo", t.toString())
+                    }
+                })
+            }
+        }
+    }
+
+
     private fun sendReviewData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-
-        /////////interceptor
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                    val intent = Intent(this@PassengersReviewActivity, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
-                    startActivity(intent)
-                    finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
         ///
         if (type == "DRIVER") { //내가 운전자일 때 손님들의 리뷰데이터를 전송
             if (passengersData != null) {
                 for (i in passengersData!!.indices) {
                     val temp = PassengersReviewData(mannerCount, reviewEditText, postData?.postID!!)
-                    CoroutineScope(Dispatchers.IO).launch {
-                        api.addPassengersReview(passengersData!![i].id, temp).enqueue(object : Callback<PassengersReviewData> {
-                            override fun onResponse(
-                                call: Call<PassengersReviewData>,
-                                response: Response<PassengersReviewData>
-                            ) {
-                                if (response.isSuccessful) {
-                                    Log.d("SUCCESS review", "탑승자들의 review를 잘보냄 : ${response.code()}")
-
-
-                                } else {
-                                    Log.e("ERROR", "review1 : ${response.errorBody()?.string()!!}")
-                                    Log.e("ERROR", "review2 : ${response.message().toString()}")
-                                    Log.e("ERROR", "review3 : ${response.code().toString()}")
-                                }
+                    RetrofitServerConnect.create(this@PassengersReviewActivity).addPassengersReview(passengersData!![i].userId, temp).enqueue(object : Callback<PassengersReviewData> {
+                        override fun onResponse(
+                            call: Call<PassengersReviewData>,
+                            response: Response<PassengersReviewData>
+                        ) {
+                            if (response.isSuccessful) {
+                                Log.d("SUCCESS review", "탑승자들의 review를 잘보냄 : ${response.code()}")
+                                this@PassengersReviewActivity.finish()
+                            } else {
+                                Log.e("ERROR", "review1 : ${response.errorBody()?.string()!!}")
+                                Log.e("ERROR", "review2 : ${response.message().toString()}")
+                                Log.e("ERROR", "review3 : ${response.code().toString()}")
+                                Toast.makeText(this@PassengersReviewActivity, response.errorBody()?.string()!!, Toast.LENGTH_SHORT).show()
                             }
+                        }
 
-                            override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
-                                Log.e("ERROR", "review : ${t.message.toString()}")
-                            }
-                        })
-                    }
+                        override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
+                            Log.e("ERROR", "review : ${t.message.toString()}")
+                        }
+                    })
                 }
             }
         } else { //내가 손님일 때 운전자의 리뷰데이터를 전송
             val temp = DriversReviewData(mannerCount, reviewEditText)
-            CoroutineScope(Dispatchers.IO).launch {
-                api.addDriversReview(postData?.postID!!, temp).enqueue(object : Callback<PassengersReviewData> {
-                    override fun onResponse(
-                        call: Call<PassengersReviewData>,
-                        response: Response<PassengersReviewData>
-                    ) {
-                        if (response.isSuccessful) {
-                            Log.d("SUCCESS review", "운전자의 review를 잘보냄 : ${response.code()}")
+            RetrofitServerConnect.create(this@PassengersReviewActivity).addDriversReview(postData?.postID!!, temp).enqueue(object : Callback<PassengersReviewData> {
+                override fun onResponse(
+                    call: Call<PassengersReviewData>,
+                    response: Response<PassengersReviewData>
+                ) {
+                    if (response.isSuccessful) {
+                        Log.d("SUCCESS review", "운전자의 review를 잘보냄 : ${response.code()}")
 
 
-                        } else {
-                            Log.e("ERROR", "review1 : ${response.errorBody()?.string()!!}")
-                            Log.e("ERROR", "review2 : ${response.message().toString()}")
-                            Log.e("ERROR", "review3 : ${response.code().toString()}")
-                        }
+                    } else {
+                        Log.e("ERROR", "review1 : ${response.errorBody()?.string()!!}")
+                        Log.e("ERROR", "review2 : ${response.message().toString()}")
+                        Log.e("ERROR", "review3 : ${response.code().toString()}")
                     }
+                }
 
-                    override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
-                        Log.e("ERROR", "review : ${t.message.toString()}")
-                    }
-                })
-            }
+                override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
+                    Log.e("ERROR", "review : ${t.message.toString()}")
+                }
+            })
         }
 
     }

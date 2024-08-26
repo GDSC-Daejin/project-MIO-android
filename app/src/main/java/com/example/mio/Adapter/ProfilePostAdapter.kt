@@ -4,21 +4,34 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
+import com.example.mio.databinding.RvLoadingBinding
 import kotlinx.coroutines.NonDisposableHandle.parent
 import java.lang.ref.WeakReference
 
 
-class ProfilePostAdapter : RecyclerView.Adapter<ProfilePostAdapter.ProfilePostViewHolder>(){
+class ProfilePostAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     private lateinit var binding : PostItemBinding
-    var profilePostItemData = ArrayList<PostData>()
+    var profilePostItemData = ArrayList<PostData?>()
     private lateinit var context : Context
+
+    companion object {
+        //item을 표시할 때
+        private const val TAG_ITEM = 0
+        //loading을 표시할 때
+        private const val TAG_LOADING = 1
+    }
 
     init {
         setHasStableIds(true)
+    }
+
+    inner class LoadingViewHolder(var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
+        val processBar : ProgressBar = loadingBinding.loadingPb
     }
 
     inner class ProfilePostViewHolder(private val binding : PostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
@@ -48,18 +61,26 @@ class ProfilePostAdapter : RecyclerView.Adapter<ProfilePostAdapter.ProfilePostVi
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProfilePostViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         context = parent.context
         binding = PostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ProfilePostViewHolder(binding)
+        return if (viewType == ProfilePostAdapter.TAG_ITEM) {
+            ProfilePostViewHolder(binding)
+        } else {
+            val binding2 = RvLoadingBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            LoadingViewHolder(binding2)
+        }
     }
 
-    override fun onBindViewHolder(holder: ProfilePostViewHolder, position: Int) {
-        holder.bind(profilePostItemData[holder.adapterPosition], position)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
 
-        holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, profilePostItemData[holder.adapterPosition].postID)
+        if (holder is ProfilePostViewHolder) {
+            holder.bind(profilePostItemData[holder.adapterPosition]!!, position)
+            holder.itemView.setOnClickListener {
+                itemClickListener.onClick(it, holder.adapterPosition, profilePostItemData[holder.adapterPosition]!!.postID)
+            }
         }
+
 
     /*binding.homeRemoveIv.setOnClickListener {
             val builder : AlertDialog.Builder = AlertDialog.Builder(context)
@@ -93,6 +114,14 @@ class ProfilePostAdapter : RecyclerView.Adapter<ProfilePostAdapter.ProfilePostVi
 
     override fun getItemId(position: Int): Long {
         return position.toLong()
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (profilePostItemData[position] != null) {
+            TAG_ITEM
+        } else {
+            TAG_LOADING
+        }
     }
 
     //데이터 Handle 함수

@@ -70,6 +70,7 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                         setResult(RESULT_OK, intent)
                         finish()
                     } else {
+                        Log.e("location", "location2")
                         Toast.makeText(this@AccountSearchLocationActivity, "동으로 검색해주세요", Toast.LENGTH_SHORT).show()
                     }
                 }

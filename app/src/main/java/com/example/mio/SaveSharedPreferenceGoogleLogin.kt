@@ -16,6 +16,7 @@ public class SaveSharedPreferenceGoogleLogin {
     private val notificationCheck = "notificationCheck"
 
     private val privateProfileUserId = "profileUserId"
+    private val privateUserAccountName = "privateUserAccountName"
 
     private val isGender = "geneder"
     private val isSchool = "school"
@@ -27,6 +28,16 @@ public class SaveSharedPreferenceGoogleLogin {
     //alarm key
     private val ALARM_SETTING = "alarm_setting"
 
+    fun getAccount(ctx: Context?): String? {
+        return getSharedPreferences(ctx).getString(privateUserAccountName, "")
+    }
+
+
+    fun setAccount(ctx: Context?, accountBank: String?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putString(privateUserAccountName, accountBank)
+        editor.apply()
+    }
 
     //알람 받을 건지 아닌지 get
     fun getSharedAlarm(ctx: Context?): Boolean {

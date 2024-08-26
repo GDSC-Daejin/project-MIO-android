@@ -8,6 +8,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -449,9 +450,10 @@ class MoreAreaActivity : AppCompatActivity() {
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.e("area", "area1")
                     val intent = Intent(this@MoreAreaActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(this@MoreAreaActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -630,96 +632,95 @@ class MoreAreaActivity : AppCompatActivity() {
             // Fetch more data if necessary
             if (currentPage < totalPages - 1) {
                 currentPage += 1
-                CoroutineScope(Dispatchers.IO).launch {
-                    RetrofitServerConnect.create(this@MoreAreaActivity).getActivityLocation("createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
-                        override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                            if (response.isSuccessful) {
-                                val responseData = response.body()
-                                responseData?.let {
-                                    val newItems = it.content.filter { item ->
-                                        item.isDeleteYN == "N" && item.postType == "BEFORE_DEADLINE"
-                                    }.map { item ->
-                                        PostData(
-                                            item.user.studentId,
-                                            item.postId,
-                                            item.title,
-                                            item.content,
-                                            item.createDate,
-                                            item.targetDate,
-                                            item.targetTime,
-                                            item.category.categoryName,
-                                            item.location,
-                                            item.participantsCount,
-                                            item.numberOfPassengers,
-                                            item.cost,
-                                            item.verifyGoReturn,
-                                            item.user,
-                                            item.latitude,
-                                            item.longitude
-                                        )
-                                    }
-
-                                    moreAreaData.addAll(newItems)
-                                    if (getBottomData.isNotEmpty()) {
-                                        myViewModel.postCheckFilter(getBottomData)
-                                    }
-
-                                    when(getBottomSheetData) {
-                                        "최신 순" -> {
-                                            mttBinding.moreSearchTv.text = "최신 순"
-                                            mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
-                                            moreAreaData.sortByDescending { it?.postCreateDate }
-                                            mtAdapter?.notifyDataSetChanged()
-                                        }
-                                        "마감 임박 순" -> {
-                                            mttBinding.moreSearchTv.text = "마감 임박 순"
-                                            mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
-                                            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-
-                                            // 날짜 및 시간 형식 지정
-                                            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                                            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-
-                                            // 정렬 로직
-                                            val sortedTargets = moreAreaData.sortedWith { t1, t2 ->
-                                                // 날짜 비교
-                                                val dateComparison = LocalDate.parse(t1?.postTargetDate, dateFormatter)
-                                                    .compareTo(LocalDate.parse(t2?.postTargetDate, dateFormatter))
-
-                                                // 날짜가 같으면 시간 비교
-                                                if (dateComparison == 0) {
-                                                    LocalTime.parse(t1?.postTargetTime, timeFormatter)
-
-                                                        .compareTo(LocalTime.parse(t2?.postTargetTime, timeFormatter))
-                                                } else {
-                                                    dateComparison
-                                                }
-                                            }
-                                            moreAreaData.clear()
-                                            moreAreaData.addAll(sortedTargets)
-                                            mtAdapter?.notifyDataSetChanged()
-                                        }
-                                        "낮은 가격 순" -> {
-                                            mttBinding.moreSearchTv.text = "낮은 가격 순"
-                                            mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
-                                            moreAreaData.sortBy { it?.postCost }
-                                            mtAdapter?.notifyDataSetChanged()
-                                        }
-                                    }
-                                    mtAdapter?.notifyDataSetChanged()
+                RetrofitServerConnect.create(this@MoreAreaActivity).getActivityLocation("createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                    override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                        if (response.isSuccessful) {
+                            val responseData = response.body()
+                            responseData?.let {
+                                val newItems = it.content.filter { item ->
+                                    item.isDeleteYN == "N" && item.postType == "BEFORE_DEADLINE"
+                                }.map { item ->
+                                    PostData(
+                                        item.user.studentId,
+                                        item.postId,
+                                        item.title,
+                                        item.content,
+                                        item.createDate,
+                                        item.targetDate,
+                                        item.targetTime,
+                                        item.category.categoryName,
+                                        item.location,
+                                        item.participantsCount,
+                                        item.numberOfPassengers,
+                                        item.cost,
+                                        item.verifyGoReturn,
+                                        item.user,
+                                        item.latitude,
+                                        item.longitude
+                                    )
                                 }
-                            } else {
-                                Log.d("Error", "Response code: ${response.code()}")
-                            }
-                            isLoading = false
-                        }
 
-                        override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                            Log.d("Error", "Failure: ${t.message}")
-                            isLoading = false
+                                moreAreaData.addAll(newItems)
+                                if (getBottomData.isNotEmpty()) {
+                                    myViewModel.postCheckFilter(getBottomData)
+                                }
+
+                                when(getBottomSheetData) {
+                                    "최신 순" -> {
+                                        mttBinding.moreSearchTv.text = "최신 순"
+                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
+                                        moreAreaData.sortByDescending { it?.postCreateDate }
+                                        mtAdapter?.notifyDataSetChanged()
+                                    }
+                                    "마감 임박 순" -> {
+                                        mttBinding.moreSearchTv.text = "마감 임박 순"
+                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
+                                        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+                                        // 날짜 및 시간 형식 지정
+                                        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                                        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+                                        // 정렬 로직
+                                        val sortedTargets = moreAreaData.sortedWith { t1, t2 ->
+                                            // 날짜 비교
+                                            val dateComparison = LocalDate.parse(t1?.postTargetDate, dateFormatter)
+                                                .compareTo(LocalDate.parse(t2?.postTargetDate, dateFormatter))
+
+                                            // 날짜가 같으면 시간 비교
+                                            if (dateComparison == 0) {
+                                                LocalTime.parse(t1?.postTargetTime, timeFormatter)
+
+                                                    .compareTo(LocalTime.parse(t2?.postTargetTime, timeFormatter))
+                                            } else {
+                                                dateComparison
+                                            }
+                                        }
+                                        moreAreaData.clear()
+                                        moreAreaData.addAll(sortedTargets)
+                                        mtAdapter?.notifyDataSetChanged()
+                                    }
+                                    "낮은 가격 순" -> {
+                                        mttBinding.moreSearchTv.text = "낮은 가격 순"
+                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
+                                        moreAreaData.sortBy { it?.postCost }
+                                        mtAdapter?.notifyDataSetChanged()
+                                    }
+                                }
+                                mtAdapter?.notifyDataSetChanged()
+                            }
+                        } else {
+                            Log.d("Error", "Response code: ${response.code()}")
                         }
-                    })
-                }
+                        isLoading = false
+                    }
+
+                    override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                        Log.d("Error", "Failure: ${t.message}")
+                        isLoading = false
+                    }
+                })
+
             }
         }, 2000)
     }

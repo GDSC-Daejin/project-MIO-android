@@ -1,25 +1,27 @@
 package com.example.mio.Adapter
-import android.annotation.SuppressLint
+import com.example.mio.diffutil.ReviewWriteableDiffUtilCallback
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mio.Model.MyAccountReviewData
 import com.example.mio.Model.PostData
-import com.example.mio.R
-import com.example.mio.databinding.MyReviewItemBinding
-import com.example.mio.databinding.MyReviewWriteableItemBinding
-import com.example.mio.databinding.PostItemBinding
-import com.example.mio.databinding.ReviewItemBinding
-import kotlinx.coroutines.NonDisposableHandle.parent
-import java.lang.ref.WeakReference
+import com.example.mio.databinding.*
 
 
-class MyReviewWriteableAdapter : RecyclerView.Adapter<MyReviewWriteableAdapter.MyReviewWriteableViewHolder>(){
+class MyReviewWriteableAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     private lateinit var binding : MyReviewWriteableItemBinding
-    var myReviewWriteableData = ArrayList<PostData>()
+    var myReviewWriteableData = ArrayList<PostData?>()
     private lateinit var context : Context
+
+    companion object {
+        //item을 표시할 때
+        private const val TAG_ITEM = 0
+        //loading을 표시할 때
+        private const val TAG_LOADING = 1
+    }
 
     init {
         setHasStableIds(true)
@@ -47,44 +49,29 @@ class MyReviewWriteableAdapter : RecyclerView.Adapter<MyReviewWriteableAdapter.M
             //val listener = itemClickListener?.get()
         }
     }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyReviewWriteableViewHolder {
-        context = parent.context
-        binding = MyReviewWriteableItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return MyReviewWriteableViewHolder(binding)
+    inner class LoadingViewHolder(var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
+        val processBar : ProgressBar = loadingBinding.loadingPb
     }
 
-    override fun onBindViewHolder(holder: MyReviewWriteableViewHolder, position: Int) {
-        holder.bind(myReviewWriteableData[holder.adapterPosition], position)
-
-        holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, myReviewWriteableData[holder.adapterPosition].postID)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        context = parent.context
+        binding = MyReviewWriteableItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return if (viewType == TAG_ITEM) {
+            MyReviewWriteableViewHolder(binding)
+        } else {
+            val binding2 = RvLoadingBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            LoadingViewHolder(binding2)
         }
+    }
 
-    /*binding.homeRemoveIv.setOnClickListener {
-            val builder : AlertDialog.Builder = AlertDialog.Builder(context)
-            val ad : AlertDialog = builder.create()
-            var deleteData = pillItemData[holder.adapterPosition]!!.pillName
-            builder.setTitle(deleteData)
-            builder.setMessage("정말로 삭제하시겠습니까?")
-            builder.setNegativeButton("예",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                    //temp = listData[holder.adapterPosition]!!
-                    //extraditeData()
-                    //testData.add(temp)
-                    //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
-                    removeData(holder.adapterPosition)
-                    //removeServerData(deleteServerData!!)
-                    //println(deleteServerData)
-                })
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is MyReviewWriteableViewHolder) {
+            holder.bind(myReviewWriteableData[position]!!, position)
 
-            builder.setPositiveButton("아니오",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                })
-            builder.show()
-        }*/
+            holder.itemView.setOnClickListener {
+                itemClickListener.onClick(it, position, myReviewWriteableData[position]!!.postID)
+            }
+        }
     }
 
     override fun getItemCount(): Int {
@@ -93,6 +80,14 @@ class MyReviewWriteableAdapter : RecyclerView.Adapter<MyReviewWriteableAdapter.M
 
     override fun getItemId(position: Int): Long {
         return position.toLong()
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (myReviewWriteableData[position] != null) {
+            TAG_ITEM
+        } else {
+            TAG_LOADING
+        }
     }
 
     //데이터 Handle 함수
@@ -112,6 +107,19 @@ class MyReviewWriteableAdapter : RecyclerView.Adapter<MyReviewWriteableAdapter.M
 
     fun setItemClickListener(itemClickListener: MyReviewWriteableAdapter.ItemClickListener) {
         this.itemClickListener = itemClickListener
+    }
+
+    fun updateDataList(newItems: List<PostData?>) {
+        // Create a new DiffUtil.Callback instance
+        val diffCallback = ReviewWriteableDiffUtilCallback(myReviewWriteableData, newItems)
+
+        // Calculate the diff
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        myReviewWriteableData.clear()
+        myReviewWriteableData.addAll(newItems)
+
+        diffResult.dispatchUpdatesTo(this)
     }
 
 }

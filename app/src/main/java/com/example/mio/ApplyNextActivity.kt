@@ -5,6 +5,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
@@ -14,6 +15,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
@@ -321,7 +323,7 @@ class ApplyNextActivity : AppCompatActivity() {
                             chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                         val intent = Intent(this@ApplyNextActivity, LoginActivity::class.java)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                        Toast.makeText(this@ApplyNextActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                         startActivity(intent)
                         finish()
                         return@Interceptor chain.proceed(newRequest)
@@ -403,10 +405,16 @@ class ApplyNextActivity : AppCompatActivity() {
             }
             anaBinding.applyNext.setOnClickListener {
                 anaBinding.applyViewflipper.showNext()
+                val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                if (inputMethodManager.isActive) {
+                    // 가상 키보드가 올라가 있다면 내립니다.
+                    inputMethodManager.hideSoftInputFromWindow(anaBinding.applyViewflipper.windowToken, 0)
+                }
                 isComplete = !isComplete
                 myViewModel.postCheckComplete(false)
                 currentPage += 1
-                println(currentPage)
+                Log.e("applyNext" , currentPage.toString())
                 myViewModel.postCheckPage(currentPage)
             }
         } else {
@@ -440,7 +448,7 @@ class ApplyNextActivity : AppCompatActivity() {
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
                     val intent = Intent(this@ApplyNextActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(this@ApplyNextActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)

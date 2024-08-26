@@ -94,15 +94,6 @@ class SearchResultActivity : AppCompatActivity() { //검색창
 
         loadRecentSearch()
 
-/*        adapter = SearchResultAdapter(emptyList(), isRecentSearch = true)
-        adapter.setOnItemClickListener(object: SearchResultAdapter.OnItemClickListener {
-            override fun onItemClicked(location: LocationReadAllResponse) {
-                sharedViewModel.selectedLocation.value = location
-                SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location.location)
-                finish() // 액티비티 종료와 함께 SearchFragment로 돌아갑니다.
-            }
-        })*/
-
         binding.rvSearchList.adapter = adapter
 
         binding.etSearchField2.addTextChangedListener(object: TextWatcher {
@@ -123,10 +114,8 @@ class SearchResultActivity : AppCompatActivity() { //검색창
                     binding.btnClear.visibility = View.INVISIBLE
                 }
             }
-
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-
             }
         })
 
@@ -139,11 +128,7 @@ class SearchResultActivity : AppCompatActivity() { //검색창
                     if (searchWord != null) {
                         filterAndHighlightText(searchWord.toString())
                     }
-                } /*else {
-                    if (searchWord != null) {
-                        searchKeyword(searchWord.toString())
-                    }
-                }*/
+                }
                 true
             } else {
                 // 다른 키 입력 이벤트에 대한 기본 동작을 유지합니다.
@@ -183,9 +168,7 @@ class SearchResultActivity : AppCompatActivity() { //검색창
             override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
-                    /*response.body()?.let { items ->
-
-                    }*/
+                    //val responseDataFilter = ArrayList<LocationReadAllResponse>()
                     Log.d("searchResultActivity filterhigh", responseData.toString())
                     if (responseData.isNullOrEmpty()) {
                         binding.textView4.visibility = View.VISIBLE
@@ -213,21 +196,6 @@ class SearchResultActivity : AppCompatActivity() { //검색창
         })
     }
 
-/*    private fun loadRecentSearch() {
-        val recentSearchList = SharedPrefManager.loadRecentSearch(this)
-        adapter = SearchResultAdapter(recentSearchList, isRecentSearch = true) // 여기를 수정
-        adapter.setOnItemClickListener(object: SearchResultAdapter.OnItemClickListener {
-            override fun onItemClicked(location: LocationReadAllResponse) {
-                sharedViewModel.selectedLocation.value = location
-                SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location.location)
-                finish() // SearchFragment 페이지로 이동
-            }
-            override fun onItemRemove(location: LocationReadAllResponse) {
-                // 아이템 삭제 로직
-            }
-        })
-        binding.rvSearchList.adapter = adapter
-    }*/
 
     private fun moveToSearchFragment(location: LocationReadAllResponse) {
         sharedViewModel.selectedLocation.value = location

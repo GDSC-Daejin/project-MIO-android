@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -32,7 +33,8 @@ class CompleteActivity : AppCompatActivity() {
     private var driverData : User? = null
     private var postData : PostData? = null
     private var category : String? = null
-
+    private var sharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+    private var userAccount = ""
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +42,8 @@ class CompleteActivity : AppCompatActivity() {
 
         type = intent.getStringExtra("type") as String
         category = intent.getStringExtra("category") as String
+        userAccount = sharedPreferenceGoogleLogin.getAccount(this@CompleteActivity).toString()
+
         if (type == "PASSENGER") {
             postData = intent.getSerializableExtra("postData") as PostData?
             driverData = intent.getSerializableExtra("postDriver") as User
@@ -50,16 +54,16 @@ class CompleteActivity : AppCompatActivity() {
             driverName = sb.toString()
 
             cBinding.completeDriverAccountNumber.text = try {
-                "${driverData?.accountNumber} $driverName"
+                "$driverName \n${driverData?.accountNumber}"
             } catch (e : NullPointerException) {
                 "null ${driverData?.name}"
             }
 
-            cBinding.completePassengerCost.text = postCost.toString()
+            cBinding.completePassengerCost.text = "${postCost.toString()}원"
 
             cBinding.completeDriverAccountNumber.paintFlags = Paint.UNDERLINE_TEXT_FLAG  //밑줄긋기
             cBinding.completeDriverAccountNumber.setOnClickListener {
-                createClipData(cBinding.completeDriverAccountNumber.text as String)
+                driverData?.accountNumber?.let { it1 -> createClipData(it1) }
             }
             cBinding.completeCostLl.visibility = View.VISIBLE
             cBinding.completeBankLl.visibility = View.VISIBLE
@@ -68,7 +72,7 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.completeDivideView.visibility = View.VISIBLE
             cBinding.completeDivideView2.visibility = View.VISIBLE
             cBinding.tossBankLl.setOnClickListener {
-                createClipData(cBinding.completeDriverAccountNumber.text as String)
+                driverData?.accountNumber?.let { it1 -> createClipData(it1) }
                 if (postCost != null) {
                     deepLink("viva.republica.toss", postCost!!)
                 }
@@ -76,15 +80,20 @@ class CompleteActivity : AppCompatActivity() {
             }
 
             cBinding.kakaoPayLl.setOnClickListener {
-                createClipData(cBinding.completeDriverAccountNumber.text as String)
+                driverData?.accountNumber?.let { it1 -> createClipData(it1) }
                 if (postCost != null) {
                     deepLink("com.kakao.talk", postCost!!)
                 }
             }
 
             cBinding.accountTransferLl.setOnClickListener {
-                createClipData(cBinding.completeDriverAccountNumber.text as String)
+                driverData?.accountNumber?.let { it1 -> createClipData(it1) }
+                if (postCost != null) {
+                    Log.e("userAccount", userAccount)
+                    deepLink(userAccount, postCost!!)
+                }
             }
+
         } else if (type == "DRIVER") {
             val layoutParams = cBinding.completeEntireLl.layoutParams as ViewGroup.MarginLayoutParams
             val newMarginTop = 180
@@ -148,12 +157,31 @@ class CompleteActivity : AppCompatActivity() {
         if (isPackageInstalled(packageName)) {
             startActivity(intentPackageName)
         } else {
-            if (packageName == "viva.republica.toss") {
-                // 토스 앱이 설치되어 있지 않은 경우 처리할 내용을 여기에 추가합니다.
-                Toast.makeText(this, "토스 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
-            } else {
-                // 카톡 앱이 설치되어 있지 않은 경우 처리할 내용을 여기에 추가합니다.
-                Toast.makeText(this, "카카오톡 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+            when (packageName) {
+                "viva.republica.toss" -> {
+                    // 토스 앱이 설치되어 있지 않은 경우 처리할 내용을 여기에 추가합니다.
+                    Toast.makeText(this, "토스은행 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+                "com.kakao.talk" -> {
+                    // 카톡 앱이 설치되어 있지 않은 경우 처리할 내용을 여기에 추가합니다.
+                    Toast.makeText(this, "카카오톡 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+                "com.kakaobank.channel" -> {
+                    // 카톡 앱이 설치되어 있지 않은 경우 처리할 내용을 여기에 추가합니다.
+                    Toast.makeText(this, "카카오뱅크가 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+                "com.kbstar.kbbank" -> {
+                    // 카톡 앱이 설치되어 있지 않은 경우 처리할 내용을 여기에 추가합니다.
+                    Toast.makeText(this, "국민은행 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+                "com.kebhana.hanapush" -> {
+                    // 카톡 앱이 설치되어 있지 않은 경우 처리할 내용을 여기에 추가합니다.
+                    Toast.makeText(this, "하나은행 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+                "com.shinhan.sbanking" -> {
+                    // 카톡 앱이 설치되어 있지 않은 경우 처리할 내용을 여기에 추가합니다.
+                    Toast.makeText(this, "신한은행 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

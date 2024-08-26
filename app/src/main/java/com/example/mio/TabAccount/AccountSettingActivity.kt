@@ -155,9 +155,10 @@ class AccountSettingActivity : AppCompatActivity() {
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.e("settting", "setting1")
                     val intent = Intent(this@AccountSettingActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(this@AccountSettingActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)
@@ -216,6 +217,7 @@ class AccountSettingActivity : AppCompatActivity() {
                     Log.e("Account Set ERROR", response.errorBody()?.string()!!)
                     Log.e("Account Set Error", response.code().toString())
                     Log.e("Account Set Error", response.message().toString())
+                    Log.e("setting", "setting2")
                     Toast.makeText(this@AccountSettingActivity, "사용자 정보를 불러오지 못했습니다. 연결을 확인해주세요", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -244,9 +246,10 @@ class AccountSettingActivity : AppCompatActivity() {
                     //refresh 들어갈 곳
                     /*newRequest =
                         chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    Log.e("setting", "setting3")
                     val intent = Intent(this@AccountSettingActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
+                    Toast.makeText(this@AccountSettingActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
                     startActivity(intent)
                     finish()
                     return@Interceptor chain.proceed(newRequest)

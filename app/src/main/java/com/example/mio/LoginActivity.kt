@@ -265,7 +265,7 @@ class LoginActivity : AppCompatActivity() {
                 val userEmailMap = task.result.email?.split("@")?.map { it.toString() }
                 //회원가입과 함께 새로운 계정 정보 저장
                 Toast.makeText(this, "로그인 계정 $userEmailMap", Toast.LENGTH_SHORT).show()
-                if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true) {
+                if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true || userEmailMap?.contains("sonms5676") == true) {
                     Log.e("resultOk", userEmailMap.toString())
                     handleSignInResult(task)
                 } else {

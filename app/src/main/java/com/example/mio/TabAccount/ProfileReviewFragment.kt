@@ -1,6 +1,8 @@
 package com.example.mio.TabAccount
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
 import com.example.mio.Adapter.ProfilePostAdapter
@@ -17,6 +20,7 @@ import com.example.mio.Adapter.ProfileReviewAdapter
 import com.example.mio.Model.MyAccountReviewData
 import com.example.mio.Model.PostData
 import com.example.mio.Model.PostReadAllResponse
+import com.example.mio.Model.ReviewViewModel
 import com.example.mio.databinding.FragmentProfilePostBinding
 import com.example.mio.databinding.FragmentProfileReviewBinding
 import kotlinx.coroutines.CoroutineScope
@@ -51,8 +55,9 @@ class ProfileReviewFragment : Fragment() {
     private var myAdapter : ProfileReviewAdapter? = null
     private var profileReviewAllData = ArrayList<MyAccountReviewData>()
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
-
-    private var dataPosition = 0
+    private lateinit var viewModel: ReviewViewModel
+    //로딩
+    private var loadingDialog : LoadingProgressDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,35 +73,17 @@ class ProfileReviewFragment : Fragment() {
     ): View {
         prBinding = FragmentProfileReviewBinding.inflate(inflater, container, false)
 
-        initSwipeRefresh()
+        //initSwipeRefresh()
         initMyRecyclerView()
 
         return prBinding.root
     }
 
-    private fun initSwipeRefresh() {
-        prBinding.profileReviewSwipe.setOnRefreshListener {
-            //새로고침 시 터치불가능하도록
-            activity?.window!!.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) // 화면 터치 못하게 하기
-            val handler = Handler(Looper.getMainLooper())
-            handler.postDelayed({
-                setProfileReviewData()
-                myAdapter!!.profileReviewItemData = profileReviewAllData
-                //noticeBoardAdapter.recyclerView.startLayoutAnimation()
-                prBinding.profileReviewSwipe.isRefreshing = false
-                myAdapter!!.notifyDataSetChanged()
-                activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            }, 1000)
-            //터치불가능 해제ss
-            //activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        }
-    }
 
     private fun initMyRecyclerView() {
-        setProfileReviewData()
+       // setProfileReviewData()
         myAdapter = ProfileReviewAdapter()
-        myAdapter!!.profileReviewItemData = profileReviewAllData
+        //myAdapter!!.profileReviewItemData = profileReviewAllData
         prBinding.profileReviewRv.adapter = myAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true
@@ -107,82 +94,115 @@ class ProfileReviewFragment : Fragment() {
 
     private fun setProfileReviewData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
         val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(activity)!!
-
-        val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
         ///////////////////////////////////////////////////
-
-        CoroutineScope(Dispatchers.IO).launch {
-            api.getMyMannersReceiveReview(profileUserId).enqueue(object : Callback<List<MyAccountReviewData>> {
-                override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
-                    if (response.isSuccessful) {
-
-                        //데이터 청소
+        viewModel.setLoading(true)
+        RetrofitServerConnect.create(requireActivity()).getMyMannersReceiveReview(profileUserId).enqueue(object : Callback<List<MyAccountReviewData>> {
+            override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
+                if (response.isSuccessful) {
+                    Log.e("review", response.body()?.toString()!!)
+                    response.body()?.let {
                         profileReviewAllData.clear()
-
-                        for (i in response.body()!!.indices) {
-                            profileReviewAllData.add(MyAccountReviewData(
-                                response.body()!![i].id,
-                                response.body()!![i].manner,
-                                response.body()!![i].content,
-                                response.body()!![i].getUserId,
-                                response.body()!![i].postUserId,
-                                response.body()!![i].createDate,
-                            ))
-                            myAdapter!!.notifyDataSetChanged()
+                        profileReviewAllData.addAll(it)
+                        viewModel.setLoading(false)
+                        if (response.body().isNullOrEmpty()) {
+                            updateUI2(it)
                         }
-                        if (profileReviewAllData.size > 0) {
-                            prBinding.profileReviewNotDataLl.visibility = View.GONE
-                            prBinding.profileReviewSwipe.visibility = View.VISIBLE
-                            prBinding.profileReviewRv.visibility = View.VISIBLE
-                        } else {
-                            prBinding.profileReviewNotDataLl.visibility = View.VISIBLE
-                            prBinding.profileReviewSwipe.visibility = View.GONE
-                            prBinding.profileReviewRv.visibility = View.GONE
-                        }
-
-                    } else {
-                        Log.d("f", response.code().toString())
                     }
-                }
 
-                override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
-                    Log.d("error", t.toString())
+
+
+
+                } else {
+                    Log.d("f", response.code().toString())
                 }
-            })
+            }
+
+            override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
+
+    }
+
+    private fun updateUI2(reviews: List<MyAccountReviewData>) {
+        viewModel.setLoading(false)
+        if (loadingDialog != null && loadingDialog?.isShowing == true) {
+            loadingDialog?.dismiss()
+            loadingDialog = null
+        }
+
+        if (reviews.isNotEmpty()) {
+            Log.e("reviews", "isnotempty")
+            prBinding.profileReviewNotDataLl.visibility = View.GONE
+            prBinding.profileReviewSwipe.visibility = View.VISIBLE
+            prBinding.profileReviewRv.visibility = View.VISIBLE
+        } else {
+            Log.e("reviews", "isempty")
+            prBinding.profileReviewNotDataLl.visibility = View.VISIBLE
+            prBinding.profileReviewSwipe.visibility = View.GONE
+            prBinding.profileReviewRv.visibility = View.GONE
         }
     }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel = ViewModelProvider(requireActivity())[ReviewViewModel::class.java]
+        setProfileReviewData()
+        // LiveData 관찰
+        viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
+            myAdapter?.updateData(reviews.toList())
+            updateUI2(reviews)
+            Log.e("observereview1", reviews.toString())
+            /*CoroutineScope(Dispatchers.IO).launch {
+                initNotificationPostData(notificationAllData)
+            }*/
+
+        }
+
+        viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            if (isLoading) {
+                // 로딩 다이얼로그를 생성하고 표시
+                if (loadingDialog == null) {
+                    loadingDialog = LoadingProgressDialog(requireActivity())
+                    loadingDialog?.setCancelable(false)
+                    loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog
+                    loadingDialog?.window!!.setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    loadingDialog?.show()
+                }
+            } else {
+                // 로딩 다이얼로그를 해제
+                if (loadingDialog != null && loadingDialog?.isShowing == true)  {
+                    loadingDialog?.dismiss()
+                    loadingDialog = null
+                }
+
+            }
+        }
+
+        /*nfBinding.notificationSwipe.setOnRefreshListener {
+            // 화면 터치 불가능하도록 설정
+            requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+
+            setNotificationData()
+            //viewModel.refreshNotifications(requireContext())
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                nfBinding.notificationSwipe.isRefreshing = false
+                requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            }, 1500)
+        }*/
+
+        viewModel.error.observe(viewLifecycleOwner) { errorMessage ->
+            if (errorMessage != null) {
+                Log.e("error observe", errorMessage)
+            }
+        }
+    }
+
 
     companion object {
         /**

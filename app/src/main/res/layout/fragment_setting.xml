@@ -91,9 +91,7 @@
             android:layout_height="wrap_content"
             android:text="메시지 알림을 받으려면 체크하세요"
             android:textSize="10sp"
-            android:fontFamily="@font/pretendard_medium"
-            tools:layout_editor_absoluteX="152dp"
-            tools:layout_editor_absoluteY="43dp" />
+            android:fontFamily="@font/pretendard_medium" />
 
     </LinearLayout>
 
@@ -118,9 +116,10 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="30dp"
-        android:fontFamily="@font/pretendard_bold"
+        android:fontFamily="@font/pretendard_medium"
         android:text="오픈소스 라이선스"
-        android:textSize="14sp"
+        android:textSize="16sp"
+        android:textColor="@color/mio_gray_12"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView11" />
@@ -132,9 +131,10 @@
         android:layout_marginStart="30dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="30dp"
-        android:fontFamily="@font/pretendard_bold"
+        android:fontFamily="@font/pretendard_medium"
         android:text="오픈소스 라이선스2"
-        android:textSize="14sp"
+        android:textSize="16sp"
+        android:textColor="@color/mio_gray_12"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/open_source_license" />

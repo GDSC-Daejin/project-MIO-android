@@ -4,15 +4,15 @@ import com.google.gson.annotations.SerializedName
 
 data class AddAlarmResponseData(
     @SerializedName("id")
-    var id : Int,
+    val id : Int,
     @SerializedName("createDate")
-    var createDate : String,
+    val createDate : String,
     @SerializedName("content")
-    var content : String,
+    val content : String,
     @SerializedName("postId")
-    var postId : Int,
+    val postId : Int,
     @SerializedName("userId")
-    var userId : Int,
+    val userId : Int,
 )
 
 /*

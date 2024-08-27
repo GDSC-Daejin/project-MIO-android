@@ -243,6 +243,7 @@ class NotificationFragment : Fragment() {
                 }
 
                 dialogRightBtn.setOnClickListener {
+                    viewModel.setLoading(true)
                     val now = System.currentTimeMillis()
                     val date = Date(now)
                     val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
@@ -292,19 +293,19 @@ class NotificationFragment : Fragment() {
                     /////////
                     api.deleteMyAlarm(itemId).enqueue(object : Callback<Void> {
                         override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                            viewModel.setLoading(false) // 로딩 상태 해제
                             if (response.isSuccessful) {
                                 Log.d("check deleteAlarm", response.code().toString())
+                                viewModel.deleteNotification(itemId)
                             } else {
-                                println("faafa")
-                                println(response.code())
-                                Log.e("comment", response.errorBody()?.string()!!)
-                                Log.e("message", call.request().toString())
-                                response.errorBody().toString()
+                                Log.e("comment", response.errorBody()?.string() ?: "Unknown error")
+                                viewModel.setError("Failed to delete notification: ${response.code()}")
                             }
                         }
 
                         override fun onFailure(call: Call<Void>, t: Throwable) {
-                            Log.d("error", t.toString())
+                            viewModel.setLoading(false) // 로딩 상태 해제
+                            viewModel.setError("Error deleting notification: ${t.message}")
                         }
                     })
                 }
@@ -403,7 +404,7 @@ class NotificationFragment : Fragment() {
                     override fun onResponse(call: Call<Content>, response: Response<Content>) {
                         if (response.isSuccessful) {
                             val responseData = response.body()
-                            if (responseData != null && responseData.isDeleteYN == "N" && responseData.postType == "BEFORE_DEADLINE") {
+                            if (responseData != null && responseData.isDeleteYN == "N") {
                                 notificationPostAllData.add(
                                     PostData(
                                         responseData.user.studentId,

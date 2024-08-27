@@ -1148,42 +1148,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 }
                                 nbrBinding.readDetailLocation.text = post.postLocation.split("/").dropLast(1).joinToString(" ")
                                 nbrBinding.readDateTime.text = this@NoticeBoardReadActivity.getString(R.string.setText, post.postTargetDate, post.postTargetTime)
-/*
-                                chipList.clear()
-                                nbrBinding.readSetFilterCg.removeAllViewsInLayout()
-                                chipList.add(createNewChip(text = if (post.user?.verifySmoker == true) {
-                                    "흡연 O"
-                                } else {
-                                    "흡연 X"
-                                }))
-                                chipList.add(createNewChip(text = if (post.user?.gender == true) {
-                                    "여성"
-                                } else {
-                                    "남성"
-                                }))
-                                chipList.add(createNewChip(text = if (post.postVerifyGoReturn == true) {
-                                    "등교"
-                                } else {
-                                    "하교"
-                                }))
-
-
-                                for (i in chipList.indices) {
-                                    // 마지막 Chip 뷰의 인덱스를 계산
-                                    val lastChildIndex = nbrBinding.readSetFilterCg.childCount - 1
-
-                                    // 마지막 Chip 뷰의 인덱스가 0보다 큰 경우에만
-                                    // 현재 Chip을 바로 그 앞에 추가
-                                    if (lastChildIndex >= 0) {
-                                        nbrBinding.readSetFilterCg.addView(chipList[i], lastChildIndex)
-                                    } else {
-                                        // ChipGroup에 자식이 없는 경우, 그냥 추가
-                                        nbrBinding.readSetFilterCg.addView(chipList[i])
-                                    }
-                                }*/
                             }
                         }
-
                     }
                     //taxi
                     1 -> {
@@ -1241,7 +1207,24 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     }
 
                     33 -> {
-                        refreshNoticeBoardReadData()
+                        if (post != null) {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                temp = post
+                                nbrBinding.readContent.text = post.postContent
+                                nbrBinding.readUserId.text = post.accountID
+                                nbrBinding.readCost.text = post.postCost.toString()
+                                nbrBinding.readTitle.text = post.postTitle
+                                nbrBinding.readNumberOfPassengersTotal.text = post.postParticipationTotal.toString()
+                                nbrBinding.readNumberOfPassengers.text = post.postParticipation.toString()
+                                nbrBinding.readLocation.text = if (post.postLocation.split("/").last().isEmpty()) {
+                                    temp!!.postLocation.split("/").first()
+                                } else {
+                                    temp!!.postLocation.split("/").last().toString()
+                                }
+                                nbrBinding.readDetailLocation.text = post.postLocation.split("/").dropLast(1).joinToString(" ")
+                                nbrBinding.readDateTime.text = this@NoticeBoardReadActivity.getString(R.string.setText, post.postTargetDate, post.postTargetTime)
+                            }
+                        }
                     }
 
                 }

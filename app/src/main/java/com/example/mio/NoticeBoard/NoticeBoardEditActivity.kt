@@ -739,40 +739,49 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         })
 
         //등/하교
-        mBinding.editGtschoolBtn.setOnClickListener {
-            // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
-            val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            // 가상 키보드가 올라가 있는지 여부를 확인합니다.
-            if (inputMethodManager.isActive) {
-                // 가상 키보드가 올라가 있다면 내립니다.
-                inputMethodManager.hideSoftInputFromWindow(mBinding.editGtschoolBtn.windowToken, 0)
-            }
+       if (type == "EDIT") {
+           mBinding.editGtschoolBtn.visibility = View.GONE
+           mBinding.editAschoolBtn.visibility = View.GONE
+           mBinding.textView7.visibility = View.GONE
+       } else {
+           mBinding.editGtschoolBtn.visibility = View.VISIBLE
+           mBinding.editAschoolBtn.visibility = View.VISIBLE
+           mBinding.textView7.visibility = View.VISIBLE
+           mBinding.editGtschoolBtn.setOnClickListener {
+               // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+               val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+               // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+               if (inputMethodManager.isActive) {
+                   // 가상 키보드가 올라가 있다면 내립니다.
+                   inputMethodManager.hideSoftInputFromWindow(mBinding.editGtschoolBtn.windowToken, 0)
+               }
 
-            mBinding.editGtschoolBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_update_layout)
-                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
-            }
-            mBinding.editAschoolBtn.apply {
-                setBackgroundResource(R.drawable.edit_check_btn)
-                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
-            }
-            isAllCheck.isThirdVF.isGSchool = true
-            isAllCheck.isThirdVF.isASchool = false
-            myViewModel.postCheckValue(isAllCheck)
-        }
-        mBinding.editAschoolBtn.setOnClickListener {
-            mBinding.editAschoolBtn.apply {
-                setBackgroundResource(R.drawable.round_btn_update_layout)
-                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
-            }
-            mBinding.editGtschoolBtn.apply {
-                setBackgroundResource(R.drawable.edit_check_btn)
-                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
-            }
-            isAllCheck.isThirdVF.isGSchool = false
-            isAllCheck.isThirdVF.isASchool = true
-            myViewModel.postCheckValue(isAllCheck)
-        }
+               mBinding.editGtschoolBtn.apply {
+                   setBackgroundResource(R.drawable.round_btn_update_layout)
+                   setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+               }
+               mBinding.editAschoolBtn.apply {
+                   setBackgroundResource(R.drawable.edit_check_btn)
+                   setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
+               }
+               isAllCheck.isThirdVF.isGSchool = true
+               isAllCheck.isThirdVF.isASchool = false
+               myViewModel.postCheckValue(isAllCheck)
+           }
+           mBinding.editAschoolBtn.setOnClickListener {
+               mBinding.editAschoolBtn.apply {
+                   setBackgroundResource(R.drawable.round_btn_update_layout)
+                   setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+               }
+               mBinding.editGtschoolBtn.apply {
+                   setBackgroundResource(R.drawable.edit_check_btn)
+                   setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
+               }
+               isAllCheck.isThirdVF.isGSchool = false
+               isAllCheck.isThirdVF.isASchool = true
+               myViewModel.postCheckValue(isAllCheck)
+           }
+       }
 
         //흡연
         mBinding.editSmokerBtn.setOnClickListener {

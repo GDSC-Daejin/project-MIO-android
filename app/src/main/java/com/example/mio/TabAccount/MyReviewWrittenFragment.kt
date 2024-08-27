@@ -118,11 +118,14 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
                     //데이터 청소
                     response.body()?.let {
                         viewModel.setLoading(false)
+                        viewModel.setReviews(response.body() ?: emptyList())
                         reviewWrittenAllData.clear()
                         reviewWrittenAllData.addAll(it)
-                        if (response.body().isNullOrEmpty()) {
-                            updateUI2(it)
-                        }
+
+                        Log.e("written", it.toString())
+                    }
+                    if (reviewWrittenAllData.isEmpty()) {
+                        updateUI2(reviewWrittenAllData)
                     }
                     /*for (i in response.body()!!.indices) {
                         reviewWrittenAllData.add(

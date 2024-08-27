@@ -210,6 +210,10 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
                         viewModel.setReviews(response.body() ?: emptyList())
                     }
 
+                    if (reviewReadAllData.isEmpty()) {
+                        updateUI2(reviewReadAllData)
+                    }
+
                 } else {
                     Log.d("f", response.code().toString())
                 }

@@ -33,4 +33,8 @@ class NotificationViewModel : ViewModel() {
     fun setError(errorMessage: String) {
         _error.value = errorMessage
     }
+
+    fun deleteNotification(itemId: Int) {
+        _notifications.value = _notifications.value?.filter { it.id != itemId }
+    }
 }

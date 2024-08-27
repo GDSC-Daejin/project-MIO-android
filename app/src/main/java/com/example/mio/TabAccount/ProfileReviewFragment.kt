@@ -104,10 +104,12 @@ class ProfileReviewFragment : Fragment() {
                     response.body()?.let {
                         profileReviewAllData.clear()
                         profileReviewAllData.addAll(it)
+                        viewModel.setReviews(response.body() ?: emptyList())
                         viewModel.setLoading(false)
-                        if (response.body().isNullOrEmpty()) {
-                            updateUI2(it)
-                        }
+
+                    }
+                    if (profileReviewAllData.isEmpty()) {
+                        updateUI2(profileReviewAllData)
                     }
 
 

@@ -27,9 +27,6 @@ class MyReviewAdapter : ListAdapter<MyAccountReviewData, MyReviewAdapter.MyRevie
         private var position : Int? = null
         //var accountId = binding.accountId
         //var accountProfile = binding.accountImage
-
-        private var reviewTitle = binding.reviewTitle
-        private var reviewCompleteCreateDate = binding.reviewCompleteCreateDate
         private var reviewSatisfactionIcon = binding.reviewSatisfaction
         private var reviewCommonlyIcon = binding.reviewCommonly
         private var reviewDissatisfaction = binding.reviewDissatisfaction

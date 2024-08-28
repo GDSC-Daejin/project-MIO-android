@@ -180,7 +180,7 @@
                         android:layout_gravity="center|end"
                         android:fontFamily="@font/pretendard_medium"
                         android:gravity="end"
-                        android:text="10분 전"
+                        android:text="방금전"
                         android:textColor="@color/mio_gray_7" />
                 </LinearLayout>
             </LinearLayout>

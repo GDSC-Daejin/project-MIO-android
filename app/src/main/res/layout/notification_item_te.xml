@@ -67,7 +67,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/pretendard_regular"
-                        android:text="10분전"
+                        android:text="방금전"
                         android:textColor="@color/mio_gray_6"
                         android:textSize="12sp" />
 

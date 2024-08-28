@@ -81,8 +81,9 @@ class NotificationFragment : Fragment() {
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var identification : String? = null
     //private var hashMapCurrentPostItemData = HashMap<Int, NotificationAdapter.NotificationStatus>()
-
+    //private var reviewWrittenAllData = ArrayList<MyAccountReviewData>()
     private lateinit var viewModel: NotificationViewModel
+    //private lateinit var reviewViewModel: ReviewViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -152,6 +153,9 @@ class NotificationFragment : Fragment() {
                         notificationPostAllData.find { it?.postID == postId }
                     } // The selected alarm's poster
 
+                    /*val reviewPost = reviewWrittenAllData.let { id ->
+
+                    }*/
                     // If contentPost is null, we shouldn't proceed with checks
                     if (contentPost == null) {
                         Log.e("notification", "notification")
@@ -162,6 +166,7 @@ class NotificationFragment : Fragment() {
                         //cancel()
                         return@launch //단순히 종료
                     }
+
 
                     // Determine status based on the user's identity and notification content
                     val statusSet = if (identification == contentPost.user.email && notificationAllData.find { it.id == itemId }?.content?.contains("탑승자") == true) {
@@ -445,8 +450,40 @@ class NotificationFragment : Fragment() {
                 updateUI()
             }
         }
-
     }
+
+
+    //나중에 리뷰막을곳
+    /*private fun setReadReviewData() {
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
+        reviewViewModel.setLoading(true)
+        RetrofitServerConnect.create(requireActivity()).getMyMannersSendReview(userId).enqueue(object :
+            Callback<List<MyAccountReviewData>> {
+            override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
+                if (response.isSuccessful) {
+
+                    //데이터 청소
+                    response.body()?.let {
+                        reviewViewModel.setLoading(false)
+                        reviewViewModel.setReviews(response.body() ?: emptyList())
+                        reviewWrittenAllData.clear()
+                        reviewWrittenAllData.addAll(it)
+
+                        Log.e("written", it.toString())
+                    }
+                    *//*if (reviewWrittenAllData.isEmpty()) {
+                        updateUI2(reviewWrittenAllData)
+                    }*//*
+                } else {
+                    Log.d("f", response.code().toString())
+                }
+            }
+
+            override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
+    }*/
 
     private fun updateUI() {
         Log.e("updateui", "in ui")
@@ -515,7 +552,9 @@ class NotificationFragment : Fragment() {
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         // ViewModel 초기화
         viewModel = ViewModelProvider(requireActivity())[NotificationViewModel::class.java]
+        //reviewViewModel = ViewModelProvider(requireActivity())[ReviewViewModel::class.java]
         setNotificationData()
+       // setReadReviewData()
         // LiveData 관찰
         viewModel.notifications.observe(viewLifecycleOwner) { notifications ->
             nAdapter.updateNotifications(notifications.toList())
@@ -528,6 +567,10 @@ class NotificationFragment : Fragment() {
                 initNotificationPostData(notifications)
             }
         }
+
+        /*reviewViewModel.reviews.observe(viewLifecycleOwner) {
+
+        }*/
 
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
             if (isLoading) {

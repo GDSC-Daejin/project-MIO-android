@@ -110,7 +110,7 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
         identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
 
         holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, currentList[position].id, NotificationStatus.Neither)
+            itemClickListener.onClick(it, holder.adapterPosition, currentList[position].postId, NotificationStatus.Neither)
         }
 
         holder.itemView.setOnLongClickListener {

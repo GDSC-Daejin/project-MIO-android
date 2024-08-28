@@ -740,13 +740,9 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
         //등/하교
        if (type == "EDIT") {
-           mBinding.editGtschoolBtn.visibility = View.GONE
-           mBinding.editAschoolBtn.visibility = View.GONE
-           mBinding.textView7.visibility = View.GONE
+           mBinding.allC.visibility = View.GONE
        } else {
-           mBinding.editGtschoolBtn.visibility = View.VISIBLE
-           mBinding.editAschoolBtn.visibility = View.VISIBLE
-           mBinding.textView7.visibility = View.VISIBLE
+           mBinding.allC.visibility = View.VISIBLE
            mBinding.editGtschoolBtn.setOnClickListener {
                // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
                val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

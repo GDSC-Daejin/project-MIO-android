@@ -302,6 +302,7 @@ class NotificationFragment : Fragment() {
                             if (response.isSuccessful) {
                                 Log.d("check deleteAlarm", response.code().toString())
                                 viewModel.deleteNotification(itemId)
+                                alertDialog.dismiss()
                             } else {
                                 Log.e("comment", response.errorBody()?.string() ?: "Unknown error")
                                 viewModel.setError("Failed to delete notification: ${response.code()}")

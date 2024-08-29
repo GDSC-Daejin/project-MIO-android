@@ -21,6 +21,9 @@ class SSEForegroundService : Service() {
     private var eventSource: BackgroundEventSource? = null
     var serviceIntent: Intent? = null
     private var isGetAlarm: Boolean? = null
+    companion object {
+        private var hasNotificationBeenShown: Boolean = false
+    }
 
     override fun onBind(p0: Intent?): IBinder? {
         return null
@@ -32,8 +35,10 @@ class SSEForegroundService : Service() {
         isGetAlarm = sharedPreferenceGoogleLogin!!.getSharedAlarm(this)
         Log.e("onStartCommand", isGetAlarm.toString())
 
-        // Foreground Service 시작을 위해 Notification 생성
-        startForegroundServiceWithNotification()
+        if (!hasNotificationBeenShown && isGetAlarm == true) {
+            startForegroundServiceWithNotification()
+            hasNotificationBeenShown = true
+        }
 
         if (userId != null && isGetAlarm == true) {
             Log.e("Service", "서비스가 실행 중입니다...")
@@ -71,13 +76,14 @@ class SSEForegroundService : Service() {
     }
 
     private fun startForegroundServiceWithNotification() {
-        val channelId = "SSEForegroundServiceChannel"
+        val channelID = "NOTIFICATION_CHANNEL"
+        val channelName = "NOTIFICATION"
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         // NotificationChannel 설정 (Android 8.0 이상)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                channelId,
+                channelID,
                 "Foreground Service Channel",
                 NotificationManager.IMPORTANCE_DEFAULT
             )
@@ -85,7 +91,7 @@ class SSEForegroundService : Service() {
         }
 
         // Foreground Service 알림 생성
-        val notification = NotificationCompat.Builder(this, channelId)
+        val notification = NotificationCompat.Builder(this, channelID)
             .setContentTitle("SSE Foreground Service")
             .setContentText("서비스가 실행 중입니다...")
             .setSmallIcon(R.drawable.top_icon_vector)

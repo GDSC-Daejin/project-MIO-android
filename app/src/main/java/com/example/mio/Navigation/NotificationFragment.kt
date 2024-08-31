@@ -144,47 +144,49 @@ class NotificationFragment : Fragment() {
         nAdapter.setItemClickListener(object : NotificationAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int?, status : NotificationAdapter.NotificationStatus) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    // Ensure itemId is not null before proceeding
-                    val temp = itemId?.let { id ->
+                    Log.e("notifi", "$itemId") //알람 id
+                    val temp = itemId?.let { id -> //전체 알람에서 알람id를 담은 postid를 찾음
                         notificationAllData.find { it.id == id }?.postId
                     }
+                    Log.e("notifi", "$temp")
 
-                    val contentPost = temp?.let { postId ->
+                    val contentPost = temp?.let { postId -> //위 postid를 토대로 post데이터에 있는지 없는지 찾음
                         notificationPostAllData.find { it?.postID == postId }
-                    } // The selected alarm's poster
+                    }
 
-                    /*val reviewPost = reviewWrittenAllData.let { id ->
-
-                    }*/
-                    // If contentPost is null, we shouldn't proceed with checks
                     if (contentPost == null) {
                         Log.e("notification", "notification")
                         withContext(context = Dispatchers.Main) {
-                            Toast.makeText(requireContext(), "게시글이 삭제되었거나 찾을 수 없습니다", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "게시글이 삭제되었거나 종료되었습니다", Toast.LENGTH_SHORT).show()
                         }
-                        //코루틴 내에서 네트워크 요청이나 특정 작업을 강제로 중단해야 하는 상황
-                        //cancel()
-                        return@launch //단순히 종료
+                        return@launch
                     }
 
-
-                    // Determine status based on the user's identity and notification content
-                    val statusSet = if (identification == contentPost.user.email && notificationAllData.find { it.id == itemId }?.content?.contains("탑승자") == true) {
-                        NotificationAdapter.NotificationStatus.Driver
-
-                    } else if (notificationAllData.find { it.id == itemId }?.content?.contains("님과") == true) { // The user is a passenger, not the driver
-                        NotificationAdapter.NotificationStatus.Passenger
-                    } else { // Just checking the user's own post
-                        NotificationAdapter.NotificationStatus.Neither
+                    val content = notificationAllData.find { it.id == itemId }?.content
+                    val statusSet = when {
+                        identification == contentPost.user.email && content?.contains("탑승자") == true -> {
+                            Log.e("statusSEt", "${identification}")
+                            Log.e("statusSEt", "${notificationAllData.find { it.id == itemId }?.content}")
+                            NotificationAdapter.NotificationStatus.Driver
+                        }
+                        content?.contains("님과") == true -> {
+                            Log.e("statusSEt", "${notificationAllData.find { it.id == itemId }?.content}")
+                            NotificationAdapter.NotificationStatus.Passenger
+                        }
+                        else -> {
+                            Log.e("statusSet", "Neither status set")
+                            NotificationAdapter.NotificationStatus.Neither
+                        }
                     }
+
                     Log.e("statusSet", statusSet.toString())
                     Log.e("statusSet", temp.toString())
                     Log.e("statusSet", contentPost.toString())
-                    // Passenger list, checking that `temp` is not null
+
                     val temp2 = temp.let { postId ->
                         notificationPostParticipationAllData.find { it.first == postId }?.second
                     }
-                    Log.e("statusSet", temp2.toString())
+                    Log.e("statusSet temp2", temp2.toString())
                     var intent : Intent? = null
                     dataPosition = position
 

@@ -14,7 +14,7 @@ data class CommentResponseData(
     @SerializedName("user")
     var user : CommentUser,
     @SerializedName("childComments")
-    var childComments : ArrayList<CommentData>
+    var childComments : List<CommentData>?
 )
 
 data class CommentData(
@@ -29,7 +29,7 @@ data class CommentData(
     @SerializedName("user")
     var user : CommentUser,
     @SerializedName("childComments")
-    var childComments : ArrayList<CommentData>,
+    var childComments : List<CommentData>?,
 
 
     //var childAllData : ArrayList<CommentData>

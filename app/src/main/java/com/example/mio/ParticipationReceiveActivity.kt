@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.Adapter.NoticeBoardAdapter
 import com.example.mio.Adapter.ParticipationAdapter
 import com.example.mio.Model.*
+import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityParticipationReceiveBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,8 +57,8 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         //기기의 뒤로가기 콜백
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val intent = Intent().apply {
-                    putExtra("flag", 33)
+                val intent = Intent(this@ParticipationReceiveActivity, NoticeBoardReadActivity::class.java).apply {
+                    putExtra("flag", 389)
                 }
                 setResult(RESULT_OK, intent)
                 finish() // 액티비티 종료
@@ -67,8 +68,8 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         initParticipationRecyclerView()
 
         pBinding.backArrow.setOnClickListener {
-            val intent = Intent().apply {
-                putExtra("flag", 33)
+            val intent = Intent(this@ParticipationReceiveActivity, NoticeBoardReadActivity::class.java).apply {
+                putExtra("flag", 389)
             }
             setResult(RESULT_OK, intent)
             finish()

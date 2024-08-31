@@ -1,14 +1,8 @@
 package com.example.mio
 
 import android.animation.ObjectAnimator
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
@@ -18,13 +12,9 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import com.example.mio.Helper.AlertReceiver
 import com.example.mio.Model.*
-import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityApplyNextBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -290,15 +280,17 @@ class ApplyNextActivity : AppCompatActivity() {
                         myViewModel.postCheckPage(currentPage)
                     }
                 }
-                //깜빡임 제거
-                anaBinding.applyEt.clearFocus()
-                anaBinding.applyEt.movementMethod = null
-
             }
         })
     }
 
     private fun applyThirdVF() {
+        val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+        if (inputMethodManager.isActive) {
+            // 가상 키보드가 올라가 있다면 내립니다.
+            inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+        }
         anaBinding.applyCompleteBtn.setOnClickListener {
             val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
             val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
@@ -341,31 +333,28 @@ class ApplyNextActivity : AppCompatActivity() {
             ///////////////////////////////
             val temp = ParticipateData(applyEditContent)
 
-            CoroutineScope(Dispatchers.IO).launch {
-               api.addParticipate(postId, temp).enqueue(object : Callback<String?> {
-                    override fun onResponse(
-                        call: Call<String?>,
-                        response: Response<String?>
-                    ) {
-                        if (response.isSuccessful) {
-                            println("succcc")
-                            //postData?.let { it1 -> setNotification("참여 신청이 완료되었습니다!", it1) }
-                            //sendAlarmData()
-                            Toast.makeText(this@ApplyNextActivity, "참여 신청이 완료되었습니다!", Toast.LENGTH_SHORT).show()
-                        } else {
-                            println("faafa")
-                            Log.d("add", response.errorBody()?.string()!!)
-                            Log.d("message", call.request().toString())
-                            println(response.code())
-                        }
+            api.addParticipate(postId, temp).enqueue(object : Callback<ParticipationData> {
+                override fun onResponse(
+                    call: Call<ParticipationData>,
+                    response: Response<ParticipationData>
+                ) {
+                    if (response.isSuccessful) {
+                        println("succcc")
+                        //postData?.let { it1 -> setNotification("참여 신청이 완료되었습니다!", it1) }
+                        //sendAlarmData()
+                        Toast.makeText(this@ApplyNextActivity, "참여 신청이 완료되었습니다!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        println("faafa")
+                        Log.e("addpost", response.errorBody()?.string()!!)
+                        Log.e("message", call.request().toString())
+                        println(response.code())
                     }
+                }
 
-                    override fun onFailure(call: Call<String?>, t: Throwable) {
-                        Log.d("error", t.toString())
-                    }
-
-                })
-            }
+                override fun onFailure(call: Call<ParticipationData>, t: Throwable) {
+                    Log.e("error", t.toString())
+                }
+            })
 
             val intent = Intent().apply {
                 putExtra("flag", 33)
@@ -405,12 +394,7 @@ class ApplyNextActivity : AppCompatActivity() {
             }
             anaBinding.applyNext.setOnClickListener {
                 anaBinding.applyViewflipper.showNext()
-                val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                // 가상 키보드가 올라가 있는지 여부를 확인합니다.
-                if (inputMethodManager.isActive) {
-                    // 가상 키보드가 올라가 있다면 내립니다.
-                    inputMethodManager.hideSoftInputFromWindow(anaBinding.applyViewflipper.windowToken, 0)
-                }
+
                 isComplete = !isComplete
                 myViewModel.postCheckComplete(false)
                 currentPage += 1

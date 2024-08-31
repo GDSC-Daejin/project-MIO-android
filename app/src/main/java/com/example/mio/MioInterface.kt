@@ -169,7 +169,7 @@ interface MioInterface {
 
     //유저가 게시글에 참여신청
     @POST("/{postId}/participate")
-    fun addParticipate(@Path("postId") postId: Int, @Body content: ParticipateData) : Call<String?>
+    fun addParticipate(@Path("postId") postId: Int, @Body content: ParticipateData) : Call<ParticipationData>
 
     //유저가 게시글에 참여를 취소
     @PATCH("/{postId}/participateCancel")

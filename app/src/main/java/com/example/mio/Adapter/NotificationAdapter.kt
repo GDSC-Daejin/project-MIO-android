@@ -110,7 +110,7 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
         identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
 
         holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, currentList[position].postId, NotificationStatus.Neither)
+            itemClickListener.onClick(it, holder.adapterPosition, currentList[position].id, NotificationStatus.Neither)
         }
 
         holder.itemView.setOnLongClickListener {
@@ -167,7 +167,8 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
         Log.d("NotificationAdapter", "Previous data: ${currentList}") // currentList는 현재 어댑터의 데이터
         Log.d("NotificationAdapter", "New data: $newData")
         //Log.d("NotificationAdapter", "data: $notificationItemData")
-        submitList(newData)
+        submitList(newData.toList())
+        //notifyDataSetChanged()
     }
 }
 

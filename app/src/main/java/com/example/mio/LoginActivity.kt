@@ -297,7 +297,7 @@ class LoginActivity : AppCompatActivity() {
             userEmail = email
             val userEmailMap = userEmail.split("@").map { it.toString() }
             saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
-
+            Log.e("getUserEmail", "${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity)}")
             println(email)
             println(authCode.toString())
             println("idToken " + idToken)

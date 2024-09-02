@@ -103,39 +103,6 @@ class BottomSheetCommentFragment(setEditText : CommentData?, parentId : String?)
             listener?.sendValue(commentEditText)
             dismiss()
         }
-       /* abBinding.filterNewest.setOnClickListener {
-            Toast.makeText(requireActivity(), "최신 순", Toast.LENGTH_SHORT).show()
-            if (listener == null) return@setOnClickListener
-            listener?.sendValue("최신 순")
-            dismiss()
-        }
-
-        *//*abBinding.filterCloseDistance.setOnClickListener {
-            Toast.makeText(requireActivity(), "가까운 순", Toast.LENGTH_SHORT).show()
-            if (listener == null) return@setOnClickListener
-            listener?.sendValue("가까운 순")
-            dismiss()
-        }*//*
-
-        abBinding.filterLowestPrice.setOnClickListener {
-            Toast.makeText(requireActivity(), "낮은 가격 순", Toast.LENGTH_SHORT).show()
-            if (listener == null) return@setOnClickListener
-            listener?.sendValue("낮은 가격 순")
-            dismiss()
-        }
-
-        abBinding.filterNearingEnd.setOnClickListener {
-            Toast.makeText(requireActivity(), "마감 임박 순", Toast.LENGTH_SHORT).show()
-            if (listener == null) return@setOnClickListener
-            listener?.sendValue("마감 임박 순")
-            dismiss()
-        }*/
-
-        /*
-        * if (listener == null) return@setOnClickListener
-            listener?.sendValue("$selectTargetDate, ${participateNumberOfPeople}, $isCheckSmoke, $isCheckGender, $isCheckSchool")
-            dismiss()
-            * */
 
         return abBinding.root
     }

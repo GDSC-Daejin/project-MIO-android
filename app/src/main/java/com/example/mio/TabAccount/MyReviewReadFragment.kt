@@ -48,7 +48,7 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
     private var reviewReadAllData = ArrayList<MyAccountReviewData>()
     private var reviewAdapter : MyReviewAdapter? = null
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
-    private lateinit var viewModel: ReviewViewModel
+    private lateinit var viewModel: MyReviewReadViewModel
     //로딩
     private var loadingDialog : LoadingProgressDialog? = null
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,13 +74,13 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
         super.onViewCreated(view, savedInstanceState)
 
         // ViewModel 초기화
-        viewModel = ViewModelProvider(requireActivity())[ReviewViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity())[MyReviewReadViewModel::class.java]
         setReadReviewData()
         // LiveData 관찰
         viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
             reviewAdapter?.updateData(reviews.toList())
             updateUI2(reviews)
-            Log.e("observeNoti1", reviews.toString())
+            Log.e("myreviewread", reviews.toString())
             /*CoroutineScope(Dispatchers.IO).launch {
                 initNotificationPostData(notificationAllData)
             }*/
@@ -207,7 +207,7 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
                     response.body()?.let {
                         reviewReadAllData.clear()
                         reviewReadAllData.addAll(it)
-                        viewModel.setReviews(response.body() ?: emptyList())
+                        viewModel.setReviews(it)
                     }
 
                     if (reviewReadAllData.isEmpty()) {

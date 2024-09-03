@@ -9,13 +9,15 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.AddAlarmResponseData
+import com.example.mio.Model.CommentData
 import com.example.mio.Model.MyAccountReviewData
 import com.example.mio.R
+import com.example.mio.databinding.MyReviewItemBinding
 import com.example.mio.databinding.ReviewItemTeBinding
 
 
-class MyReviewAdapter : ListAdapter<MyAccountReviewData, MyReviewAdapter.MyReviewViewHolder>(ProfileReviewDiffUtilCallback){
-    private lateinit var binding : ReviewItemTeBinding
+class MyReviewWrittenAdapter : ListAdapter<MyAccountReviewData, MyReviewWrittenAdapter.MyReviewViewHolder>(WrittenDiffUtil){
+    private lateinit var binding : MyReviewItemBinding
     //private var myReviewData = ArrayList<MyAccountReviewData>()
     private lateinit var context : Context
 
@@ -23,7 +25,7 @@ class MyReviewAdapter : ListAdapter<MyAccountReviewData, MyReviewAdapter.MyRevie
         setHasStableIds(true)
     }
 
-    inner class MyReviewViewHolder(private val binding : ReviewItemTeBinding ) : RecyclerView.ViewHolder(binding.root) {
+    inner class MyReviewViewHolder(private val binding : MyReviewItemBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
         //var accountId = binding.accountId
         //var accountProfile = binding.accountImage
@@ -59,12 +61,12 @@ class MyReviewAdapter : ListAdapter<MyAccountReviewData, MyReviewAdapter.MyRevie
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyReviewViewHolder {
         context = parent.context
-        binding = ReviewItemTeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        binding = MyReviewItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return MyReviewViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: MyReviewViewHolder, position: Int) {
-        holder.bind(currentList[holder.adapterPosition], position)
+        holder.bind(currentList[position], position)
 
         /*holder.itemView.setOnClickListener {
             itemClickListener.onClick(it, holder.adapterPosition, myReviewData[holder.adapterPosition].id)
@@ -136,4 +138,19 @@ class MyReviewAdapter : ListAdapter<MyAccountReviewData, MyReviewAdapter.MyRevie
         submitList(newData.toList())
     }
 
+}
+
+object WrittenDiffUtil : DiffUtil.ItemCallback<MyAccountReviewData>() {
+
+    override fun areItemsTheSame(oldItem: MyAccountReviewData, newItem: MyAccountReviewData): Boolean {
+        val result = oldItem.id == newItem.id // Assuming 'id' is unique for each notification
+        Log.d("CommentData", "areItemsTheSame: Comparing oldItem.id = ${oldItem.id} with newItem.id = ${newItem.id}, result: $result")
+        return result
+    }
+
+    override fun areContentsTheSame(oldItem: MyAccountReviewData, newItem: MyAccountReviewData): Boolean {
+        val result = oldItem == newItem // This checks if all fields are the same
+        Log.d("CommentData", "areContentsTheSame: Comparing oldItem = $oldItem with newItem = $newItem, result: $result")
+        return result
+    }
 }

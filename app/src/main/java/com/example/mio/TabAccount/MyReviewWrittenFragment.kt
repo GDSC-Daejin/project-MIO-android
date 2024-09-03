@@ -13,13 +13,10 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
-import com.example.mio.Adapter.MyReviewAdapter
+import com.example.mio.Adapter.MyReviewWrittenAdapter
 import com.example.mio.Model.MyAccountReviewData
-import com.example.mio.Model.ReviewViewModel
+import com.example.mio.Model.ReviewWrittenViewModel
 import com.example.mio.databinding.FragmentMyReivewWrittenBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -45,11 +42,10 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
     private var param2: String? = null
 
     private lateinit var rwBinding : FragmentMyReivewWrittenBinding
-    private var rwAdapter : MyReviewAdapter? = null
+    private var rwAdapter : MyReviewWrittenAdapter? = null
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     private var reviewWrittenAllData = ArrayList<MyAccountReviewData>()
-    private lateinit var viewModel: ReviewViewModel
-    //로딩
+    private lateinit var viewModel: ReviewWrittenViewModel
     private var loadingDialog : LoadingProgressDialog? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,7 +66,16 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
 
         return rwBinding.root
     }
-
+    private fun checkTokenExpiry(expireDate: Long) {
+        if (expireDate <= System.currentTimeMillis()) {
+            // 토큰 만료 처리
+            val intent = Intent(requireActivity(), LoginActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
+            startActivity(intent)
+            requireActivity().finish()
+        }
+    }
     private fun setReadReviewData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
@@ -78,25 +83,12 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
         val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
         viewModel.setLoading(true)
         val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
-                    Log.e("reviewWritten", "reviewWritten1")
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
+            var newRequest = chain.request()
+            if (token.isNotEmpty()) {
+                newRequest = chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer $token")
+                    .build()
+            }
             chain.proceed(newRequest)
         }
         val SERVER_URL = BuildConfig.server_URL
@@ -109,24 +101,23 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
         /////////////////////////////////////////////////////
-
+        checkTokenExpiry(getExpireDate.toLong())
         api.getMyMannersSendReview(userId).enqueue(object :
             Callback<List<MyAccountReviewData>> {
             override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
                 if (response.isSuccessful) {
-
+                    viewModel.setLoading(false)
                     //데이터 청소
                     response.body()?.let {
-                        viewModel.setLoading(false)
-                        viewModel.setReviews(response.body() ?: emptyList())
+                        viewModel.setReviews(it)
                         reviewWrittenAllData.clear()
                         reviewWrittenAllData.addAll(it)
 
                         Log.e("written", it.toString())
                     }
-                    if (reviewWrittenAllData.isEmpty()) {
+                    /*if (reviewWrittenAllData.isEmpty()) {
                         updateUI2(reviewWrittenAllData)
-                    }
+                    }*/
                     /*for (i in response.body()!!.indices) {
                         reviewWrittenAllData.add(
                             MyAccountReviewData(
@@ -158,19 +149,21 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
             loadingDialog = null
         }
 
+        Log.e("updateUI2 written", "suc")
+
         if (reviews.isNotEmpty()) {
             rwBinding.writtenReviewPostNotDataLl.visibility = View.GONE
-            rwBinding.writtenReviewSwipe.visibility = View.VISIBLE
+            //rwBinding.writtenReviewSwipe.visibility = View.VISIBLE
             rwBinding.writtenReviewPostRv.visibility = View.VISIBLE
         } else {
             rwBinding.writtenReviewPostNotDataLl.visibility = View.VISIBLE
-            rwBinding.writtenReviewSwipe.visibility = View.GONE
+            //rwBinding.writtenReviewSwipe.visibility = View.GONE
             rwBinding.writtenReviewPostRv.visibility = View.GONE
         }
     }
     private fun initRecyclerview() {
         //setReadReviewData()
-        rwAdapter = MyReviewAdapter()
+        rwAdapter = MyReviewWrittenAdapter()
         //rwAdapter!!.myReviewData = reviewWrittenAllData
 
         rwBinding.writtenReviewPostRv.adapter = rwAdapter
@@ -180,13 +173,13 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel = ViewModelProvider(requireActivity())[ReviewViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity())[ReviewWrittenViewModel::class.java]
         setReadReviewData()
         // LiveData 관찰
         viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
-            rwAdapter?.updateData(reviews.toList())
+            rwAdapter?.submitList(reviews.toList())
             updateUI2(reviews)
-            Log.e("observeNoti1", reviews.toString())
+            Log.e("myreviewwritten", reviews.toString())
             /*CoroutineScope(Dispatchers.IO).launch {
                 initNotificationPostData(notificationAllData)
             }*/

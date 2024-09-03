@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.*
 import com.example.mio.Adapter.CurrentNoticeBoardAdapter
-import com.example.mio.Adapter.MyReviewAdapter
 import com.example.mio.Adapter.MyReviewWriteableAdapter
 import com.example.mio.Model.*
 import com.example.mio.databinding.FragmentMyReviewWriteableBinding
@@ -33,11 +32,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
-import java.util.*
+
 import kotlin.collections.ArrayList
 
 // TODO: Rename parameter arguments, choose names that match

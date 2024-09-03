@@ -38,10 +38,10 @@ class ProfileActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pBinding = ActivityProflieBinding.inflate(layoutInflater)
-
-        setProfile()
-
         setContentView(pBinding.root)
+
+        profileId =  intent.getIntExtra("studentId", 0)
+        setProfile()
 
         pBinding.profileViewpager.adapter = ProfileTabAdapter(this)
 
@@ -52,105 +52,103 @@ class ProfileActivity : AppCompatActivity() {
         pBinding.backArrow.setOnClickListener {
             this.finish()
         }
+
+
     }
 
     private fun setProfile() {
-        profileId =  intent.getIntExtra("studentId", 0)
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
 
-        CoroutineScope(Dispatchers.IO).launch {
-            RetrofitServerConnect.create(this@ProfileActivity).getUserProfileData(profileId).enqueue(object : Callback<User> {
-                override fun onResponse(call: Call<User>, response: Response<User>) {
+        RetrofitServerConnect.create(this@ProfileActivity).getUserProfileData(profileId).enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
 
-                    if (response.isSuccessful) {
+                if (response.isSuccessful) {
 
-                        println("scssucsucsucs")
+                    println("scssucsucsucs")
 
-                        profileData = response.body()
+                    profileData = response.body()
 
-                        userGrade = try {
-                            response.body()!!.grade
-                        } catch (e : java.lang.NullPointerException) {
-                            Log.d("null", e.toString())
-                            "F"
-                        }
+                    userGrade = try {
+                        response.body()!!.grade
+                    } catch (e : java.lang.NullPointerException) {
+                        Log.d("null", e.toString())
+                        "F"
+                    }
 
-                        mannerCount = try {
-                            response.body()!!.mannerCount
-                        } catch (e : java.lang.NullPointerException) {
-                            Log.d("null", e.toString())
-                            0
-                        }
+                    mannerCount = try {
+                        response.body()!!.mannerCount
+                    } catch (e : java.lang.NullPointerException) {
+                        Log.d("null", e.toString())
+                        0
+                    }
 
 
-                        println(profileData)
+                    Log.e("click profile", "$profileData")
 
-                        saveSharedPreferenceGoogleLogin.setProfileUserId(this@ProfileActivity, profileId)
 
-                        pBinding.profileTopTv.text = "${profileData!!.studentId}님의 프로필"
+
+                    pBinding.profileTopTv.text = "${profileData!!.studentId}님의 프로필"
+                    pBinding.profileUserGrade.text = "${profileData!!.studentId}님의 현재 등급은 $userGrade 입니다"
+
+                    if (userGrade != null) {
+                        println("mn")
+
                         pBinding.profileUserGrade.text = "${profileData!!.studentId}님의 현재 등급은 $userGrade 입니다"
 
                         if (userGrade != null) {
-                            println("mn")
-
-                            pBinding.profileUserGrade.text = "${profileData!!.studentId}님의 현재 등급은 $userGrade 입니다"
-
-                            if (userGrade != null) {
-                                val word = userGrade!!
-                                val start: Int = pBinding.profileUserGrade.text.indexOf(word)
-                                val end = start + word.length
-                                val spannableString = SpannableString(pBinding.profileUserGrade.text) //객체 생성
-                                //등급 글자의 색변경
-                                spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                pBinding.profileUserGrade.text = spannableString
-                            } else {
-
-                            }
-
-                            CoroutineScope(Dispatchers.Main).launch {
-                                val animator = ObjectAnimator.ofInt(pBinding.profileGradePb, "progress", 0, mannerCount!!)
-
-                                // 애니메이션 지속 시간 설정 (예: 2초)
-                                animator.duration = 1500
-
-                                // 애니메이션 시작
-                                animator.start()
-                            }
-                        } else {
-                            println("mmc")
-                            pBinding.profileUserGrade.text = "${profileData!!.studentId}님의 현재 등급은 F 입니다"
-
-                            val word = "F"
+                            val word = userGrade!!
                             val start: Int = pBinding.profileUserGrade.text.indexOf(word)
                             val end = start + word.length
                             val spannableString = SpannableString(pBinding.profileUserGrade.text) //객체 생성
                             //등급 글자의 색변경
                             spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                             pBinding.profileUserGrade.text = spannableString
+                        } else {
 
-                            CoroutineScope(Dispatchers.Main).launch {
-                                val animator = ObjectAnimator.ofInt(pBinding.profileGradePb, "progress", 0, 0)
-
-                                // 애니메이션 지속 시간 설정 (예: 2초)
-                                animator.duration = 2000
-
-                                // 애니메이션 시작
-                                animator.start()
-                            }
                         }
 
-                    } else {
-                        println("faafa")
-                        Log.d("comment", response.errorBody()?.string()!!)
-                        println(response.code())
-                    }
-                }
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val animator = ObjectAnimator.ofInt(pBinding.profileGradePb, "progress", 0, mannerCount!!)
 
-                override fun onFailure(call: Call<User>, t: Throwable) {
-                    Log.d("error", t.toString())
+                            // 애니메이션 지속 시간 설정 (예: 2초)
+                            animator.duration = 1500
+
+                            // 애니메이션 시작
+                            animator.start()
+                        }
+                    } else {
+                        println("mmc")
+                        pBinding.profileUserGrade.text = "${profileData!!.studentId}님의 현재 등급은 B 입니다"
+
+                        val word = "B"
+                        val start: Int = pBinding.profileUserGrade.text.indexOf(word)
+                        val end = start + word.length
+                        val spannableString = SpannableString(pBinding.profileUserGrade.text) //객체 생성
+                        //등급 글자의 색변경
+                        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        pBinding.profileUserGrade.text = spannableString
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            val animator = ObjectAnimator.ofInt(pBinding.profileGradePb, "progress", 0, mannerCount!!)
+
+                            // 애니메이션 지속 시간 설정 (예: 2초)
+                            animator.duration = 1500
+
+                            // 애니메이션 시작
+                            animator.start()
+                        }
+                    }
+
+                } else {
+                    println("faafa")
+                    Log.d("comment", response.errorBody()?.string()!!)
+                    println(response.code())
                 }
-            })
-        }
+            }
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
 
     }
 }

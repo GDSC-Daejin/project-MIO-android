@@ -53,11 +53,13 @@ class ProfileReviewFragment : Fragment() {
     private lateinit var prBinding : FragmentProfileReviewBinding
 
     private var myAdapter : ProfileReviewAdapter? = null
-    private var profileReviewAllData = ArrayList<MyAccountReviewData>()
+    //private var profileReviewAllData = ArrayList<MyAccountReviewData>()
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     private lateinit var viewModel: ReviewViewModel
     //로딩
     private var loadingDialog : LoadingProgressDialog? = null
+    private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+    private var profileUserId : Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +74,7 @@ class ProfileReviewFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         prBinding = FragmentProfileReviewBinding.inflate(inflater, container, false)
-
+        profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(requireActivity())
         //initSwipeRefresh()
         initMyRecyclerView()
 
@@ -93,37 +95,33 @@ class ProfileReviewFragment : Fragment() {
     }
 
     private fun setProfileReviewData() {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(activity)!!
+
         ///////////////////////////////////////////////////
         viewModel.setLoading(true)
-        RetrofitServerConnect.create(requireActivity()).getMyMannersReceiveReview(profileUserId).enqueue(object : Callback<List<MyAccountReviewData>> {
-            override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
-                if (response.isSuccessful) {
-                    Log.e("review", response.body()?.toString()!!)
-                    response.body()?.let {
-                        profileReviewAllData.clear()
-                        profileReviewAllData.addAll(it)
-                        viewModel.setReviews(response.body() ?: emptyList())
+        profileUserId?.let {
+            RetrofitServerConnect.create(requireActivity()).getMyMannersReceiveReview(it).enqueue(object : Callback<List<MyAccountReviewData>> {
+                override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
+                    if (response.isSuccessful) {
+                        Log.e("reviewProfile", response.body()?.toString()!!)
                         viewModel.setLoading(false)
+                        response.body()?.let { profileReview ->
+                            viewModel.setReviews(profileReview)
+                        }
+                        /*if (profileReviewAllData.isEmpty()) {
+                            updateUI2(profileReviewAllData)
+                        }*/
 
+
+                    } else {
+                        Log.e("f", response.code().toString())
                     }
-                    if (profileReviewAllData.isEmpty()) {
-                        updateUI2(profileReviewAllData)
-                    }
-
-
-
-
-                } else {
-                    Log.d("f", response.code().toString())
                 }
-            }
 
-            override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
-                Log.d("error", t.toString())
-            }
-        })
+                override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
+                    Log.d("error", t.toString())
+                }
+            })
+        }
 
     }
 
@@ -137,12 +135,12 @@ class ProfileReviewFragment : Fragment() {
         if (reviews.isNotEmpty()) {
             Log.e("reviews", "isnotempty")
             prBinding.profileReviewNotDataLl.visibility = View.GONE
-            prBinding.profileReviewSwipe.visibility = View.VISIBLE
+            //prBinding.profileReviewSwipe.visibility = View.VISIBLE
             prBinding.profileReviewRv.visibility = View.VISIBLE
         } else {
             Log.e("reviews", "isempty")
             prBinding.profileReviewNotDataLl.visibility = View.VISIBLE
-            prBinding.profileReviewSwipe.visibility = View.GONE
+            //prBinding.profileReviewSwipe.visibility = View.GONE
             prBinding.profileReviewRv.visibility = View.GONE
         }
     }
@@ -152,7 +150,7 @@ class ProfileReviewFragment : Fragment() {
         setProfileReviewData()
         // LiveData 관찰
         viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
-            myAdapter?.updateData(reviews.toList())
+            myAdapter?.submitList(reviews.toList())
             updateUI2(reviews)
             Log.e("observereview1", reviews.toString())
             /*CoroutineScope(Dispatchers.IO).launch {

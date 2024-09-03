@@ -66,7 +66,7 @@ class ProfilePostFragment : Fragment() {
     private var getBottomSheetData = ""
     private var dataPosition = 0
     private lateinit var myViewModel : SharedViewModel
-    private var userId = ""
+    private var profileUserId : Int? = null
 
     //로딩 즉 item의 끝이며 스크롤의 끝인지
     private var isLoading = false
@@ -88,8 +88,8 @@ class ProfilePostFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         ppBinding = FragmentProfilePostBinding.inflate(inflater, container, false)
-        myViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
-        userId = SaveSharedPreferenceGoogleLogin().getUserId(requireActivity()).toString()
+
+        profileUserId = SaveSharedPreferenceGoogleLogin().getProfileUserId(requireActivity())
 
         initMyRecyclerView()
         initSwipeRefresh()
@@ -123,6 +123,15 @@ class ProfilePostFragment : Fragment() {
                 })
             }
         }
+
+
+
+        return ppBinding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        myViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
 
         myViewModel.checkSearchFilter.observe(requireActivity()) {
             when(getBottomSheetData) {
@@ -174,8 +183,6 @@ class ProfilePostFragment : Fragment() {
                 requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
             }, 1500)
         }
-
-        return ppBinding.root
     }
 
     private fun initSwipeRefresh() {
@@ -236,9 +243,9 @@ class ProfilePostFragment : Fragment() {
 
     private fun setMyPostData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(activity)!!
+        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
+        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
+        val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(requireActivity())!!
 
         val interceptor = Interceptor { chain ->
             var newRequest: Request
@@ -315,6 +322,7 @@ class ProfilePostFragment : Fragment() {
                             ))
                     }
 
+                    Log.e("profilePostData", profilePostAllData.toString())
                     myAdapter!!.notifyDataSetChanged()
 
                     if (getBottomSheetData.isNotEmpty()) {
@@ -359,48 +367,50 @@ class ProfilePostFragment : Fragment() {
             // Fetch more data if necessary
             if (currentPage < totalPages - 1) {
                 currentPage += 1
-                RetrofitServerConnect.create(requireActivity()).getMyPostData(userId.toInt(), "createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
-                    override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                        if (response.isSuccessful) {
-                            val responseData = response.body()
-                            responseData?.let {
-                                val newItems = it.content.filter { item ->
-                                    item.isDeleteYN == "N" && item.postType == "BEFORE_DEADLINE"
-                                }.map { item ->
-                                    PostData(
-                                        item.user.studentId,
-                                        item.postId,
-                                        item.title,
-                                        item.content,
-                                        item.createDate,
-                                        item.targetDate,
-                                        item.targetTime,
-                                        item.category.categoryName,
-                                        item.location,
-                                        item.participantsCount,
-                                        item.numberOfPassengers,
-                                        item.cost,
-                                        item.verifyGoReturn,
-                                        item.user,
-                                        item.latitude,
-                                        item.longitude
-                                    )
+                profileUserId?.let {
+                    RetrofitServerConnect.create(requireActivity()).getMyPostData(it, "createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
+                        override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                            if (response.isSuccessful) {
+                                val responseData = response.body()
+                                responseData?.let {
+                                    val newItems = it.content.filter { item ->
+                                        item.isDeleteYN == "N" && item.postType == "BEFORE_DEADLINE"
+                                    }.map { item ->
+                                        PostData(
+                                            item.user.studentId,
+                                            item.postId,
+                                            item.title,
+                                            item.content,
+                                            item.createDate,
+                                            item.targetDate,
+                                            item.targetTime,
+                                            item.category.categoryName,
+                                            item.location,
+                                            item.participantsCount,
+                                            item.numberOfPassengers,
+                                            item.cost,
+                                            item.verifyGoReturn,
+                                            item.user,
+                                            item.latitude,
+                                            item.longitude
+                                        )
+                                    }
+
+                                    profilePostAllData.addAll(newItems)
+                                    myAdapter?.notifyDataSetChanged()
                                 }
-
-                                profilePostAllData.addAll(newItems)
-                                myAdapter?.notifyDataSetChanged()
+                            } else {
+                                Log.d("Error", "Response code: ${response.code()}")
                             }
-                        } else {
-                            Log.d("Error", "Response code: ${response.code()}")
+                            isLoading = false
                         }
-                        isLoading = false
-                    }
 
-                    override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                        Log.d("Error", "Failure: ${t.message}")
-                        isLoading = false
-                    }
-                })
+                        override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                            Log.d("Error", "Failure: ${t.message}")
+                            isLoading = false
+                        }
+                    })
+                }
 
             }
         }, 2000)

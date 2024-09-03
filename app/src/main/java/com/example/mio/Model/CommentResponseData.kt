@@ -1,63 +1,61 @@
 package com.example.mio.Model
 
+import com.example.mio.R
 import com.google.gson.annotations.SerializedName
 
 data class CommentResponseData(
     @SerializedName("commentId")
-    var commentId : Int,
+    val commentId : Int,
     @SerializedName("content")
-    var content : String,
+    val content : String,
     @SerializedName("createDate")
-    var createDate : String,
+    val createDate : String,
     @SerializedName("postId")
-    var postId : Int,
+    val postId : Int,
     @SerializedName("user")
-    var user : CommentUser,
+    val user : CommentUser,
     @SerializedName("childComments")
-    var childComments : List<CommentData>?
+    val childComments : List<CommentData>?
 )
 
 data class CommentData(
     @SerializedName("commentId")
-    var commentId : Int,
+    val commentId : Int,
     @SerializedName("content")
-    var content : String,
+    val content : String,
     @SerializedName("createDate")
-    var createDate : String,
+    val createDate : String,
     @SerializedName("postId")
-    var postId : Int,
+    val postId : Int,
     @SerializedName("user")
-    var user : CommentUser,
+    val user : CommentUser,
     @SerializedName("childComments")
     var childComments : List<CommentData>?,
-
-
-    //var childAllData : ArrayList<CommentData>
 )
 
 data class CommentUser(
     @SerializedName("id")
-    var id : Int,
+    val id : Int,
     @SerializedName("email")
-    var email : String,
+    val email : String,
     @SerializedName("studentId")
-    var studentId : String,
+    val studentId : String,
     @SerializedName("profileImageUrl")
-    var profileImageUrl : String,
+    val profileImageUrl : String,
     @SerializedName("name")
-    var name : String,
+    val name : String,
     @SerializedName("accountNumber")
-    var accountNumber : String,
+    val accountNumber : String,
     @SerializedName("gender")
-    var gender : Boolean,
+    val gender : Boolean,
     @SerializedName("verifySmoker")
-    var verifySmoker : Boolean,
+    val verifySmoker : Boolean,
     @SerializedName("roleType")
-    var roleType : String,
+    val roleType : String,
     @SerializedName("status")
-    var status : String,
+    val status : String,
     @SerializedName("mannerCount")
-    var mannerCount : Int,
+    val mannerCount : Int,
     @SerializedName("grade")
-    var grade : String,
+    val grade : String,
 )

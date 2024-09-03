@@ -159,8 +159,8 @@ interface MioInterface {
     //유저 활동 지역에서 가져오기
     @GET("/activityLocation")
     fun getActivityLocation(@Query("sort") sort : String,
-                      @Query("page") page : Int,
-                      @Query("size") size : Int) : Call<PostReadAllResponse>
+                            @Query("page") page : Int,
+                            @Query("size") size : Int) : Call<PostReadAllResponse>
 
 
 
@@ -222,8 +222,8 @@ interface MioInterface {
     //작성가능한 후기
     @GET("/post/review")
     fun getMyMannersWriteableReview(@Query("sort") sort : String,
-                              @Query("page") page : Int,
-                              @Query("size") size : Int) : Call<PostReadAllResponse>
+                                    @Query("page") page : Int,
+                                    @Query("size") size : Int) : Call<PostReadAllResponse>
 
 
     //유저가 보낸 후기

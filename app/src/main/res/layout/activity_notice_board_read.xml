@@ -455,14 +455,20 @@
 
                     </LinearLayout>
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/comment_RV"
+                    <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="4dp"
-                        android:nestedScrollingEnabled="true"
-                        android:visibility="gone"
-                        tools:listitem="@layout/comment_item_layout" />
+                        android:layout_height="match_parent">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/comment_RV"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="4dp"
+                            android:nestedScrollingEnabled="false"
+                            android:visibility="gone"
+                            tools:listitem="@layout/comment_item_layout" />
+
+                    </RelativeLayout>
 
                     <TextView
                         android:id="@+id/not_comment_tv"

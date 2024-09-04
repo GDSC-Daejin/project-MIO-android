@@ -18,21 +18,12 @@ object RetrofitServerConnect {
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
 
         val interceptor = Interceptor { chain ->
-            val newRequest: Request
-            if (token != null && token != "") { // 토큰이 없지 않은 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    Log.e("RetrofitServerConnect", "RetrofitServerConnect")
-                    Toast.makeText(context, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(context, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    context.startActivity(intent)
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
+            var newRequest = chain.request()
+            if (token.isNotEmpty()) {
+                newRequest = chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer $token")
+                    .build()
+            }
             chain.proceed(newRequest)
         }
         val SERVER_URL = BuildConfig.server_URL

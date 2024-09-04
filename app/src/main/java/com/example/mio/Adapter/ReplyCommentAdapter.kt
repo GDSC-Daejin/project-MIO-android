@@ -5,131 +5,109 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.CommentData
+import com.example.mio.Model.CommentsViewModel
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
-import com.example.mio.databinding.CommentItemLayoutBinding
 import com.example.mio.databinding.ReplyCommentsItemLayoutBinding
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
-class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommentViewHolder>(){
-    private lateinit var binding : ReplyCommentsItemLayoutBinding
-    var replyCommentItemData = ArrayList<CommentData?>()
-    private lateinit var context : Context
-    private var identification = ""
-    var getWriter : String? = ""
-    inner class ReplyCommentViewHolder(private val binding : ReplyCommentsItemLayoutBinding ) : RecyclerView.ViewHolder(binding.root) {
-        private var position : Int? = null
-        private var reCommentContent = binding.reCommentContent
-        private var reCommentRealTimeCheck = binding.reCommentRealtimeCheck
-       /* private var reCommentDetail = binding.reCommentDetailIv*/
-        private var reCommentUserId = binding.reCommentUserId
+class ReplyCommentAdapter(private val commentsViewModel: CommentsViewModel) :
+    ListAdapter<CommentData, ReplyCommentAdapter.ReplyCommentViewHolder>(ReplyDiffUtilCallback) {
 
-        fun bind(comment : CommentData, position : Int) {
-            this.position = position
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!.split("@").map { it }.first()
+    private lateinit var context: Context
+    var getWriter: String? = ""
+    private val viewModel2 = commentsViewModel
+    inner class ReplyCommentViewHolder(private val binding: ReplyCommentsItemLayoutBinding) :
+        RecyclerView.ViewHolder(binding.root) {
 
-            if (identification == getWriter) {
-                binding.reCommentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_blue_4))
-                reCommentUserId.text = comment.user.studentId.toString()
-            } else {
-                reCommentUserId.text = comment.user.studentId.toString()
+        init {
+            binding.root.setOnLongClickListener {
+                itemClickListener.onLongClick(it, layoutPosition, currentList[layoutPosition]!!.commentId, currentList[layoutPosition])
+                true
             }
+        }
 
-            if (comment.content == "삭제된 댓글입니다.") {
-                binding.reCommentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_8))
-                reCommentContent.text = comment.content
+        val commentUserId = binding.reCommentUserId
+
+        fun bind(comment: CommentData) {
+            if (comment.user.studentId == getWriter) {
+                binding.reCommentUserId.setTextColor(ContextCompat.getColor(context, R.color.mio_blue_4))
             } else {
-                binding.reCommentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_11))
-                reCommentContent.text = comment.content
+                binding.reCommentUserId.setTextColor(ContextCompat.getColor(context, R.color.mio_gray_11))
             }
-
+            binding.reCommentUserId.text = comment.user.studentId.toString()
+            binding.reCommentContent.text = comment.content
 
             val now = System.currentTimeMillis()
             val date = Date(now)
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
             val currentDate = sdf.format(date)
 
+            val postDateTime = context.getString(R.string.setText, comment.createDate.substring(0..9), comment.createDate.substring(11..18))
+            val nowFormat = sdf.parse(currentDate)
+            val beforeFormat = sdf.parse(postDateTime)
+            val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time ?: 0)
+            val diffSeconds = diffMilliseconds?.div(1000) ?: 0
+            val diffMinutes = diffMilliseconds?.div(60 * 1000) ?: 0
+            val diffHours = diffMilliseconds?.div(60 * 60 * 1000) ?: 0
+            val diffDays = diffMilliseconds?.div(24 * 60 * 60 * 1000) ?: 0
 
-            val postDateTime = context.getString(R.string.setText, comment!!.createDate.substring(0 .. 9), comment!!.createDate.substring(11 .. 18))
-
-            val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
-            val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)
-            val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time!!)
-            val diffSeconds = diffMilliseconds?.div(1000)
-            val diffMinutes = diffMilliseconds?.div((60 * 1000))
-            val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
-            val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
-            if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
-                Log.e("replycommentAdapter", diffSeconds.toString())
-                if(diffSeconds > -1){
-                    reCommentRealTimeCheck.text = "방금전"
-                }
-                if (diffSeconds > 0) {
-                    reCommentRealTimeCheck.text = "${diffSeconds.toString()}초전"
-                }
-                if (diffMinutes > 0) {
-                    reCommentRealTimeCheck.text = "${diffMinutes.toString()}분전"
-                }
-                if (diffHours > 0) {
-                    reCommentRealTimeCheck.text = "${diffHours.toString()}시간전"
-                }
-                if (diffDays > 0) {
-                    reCommentRealTimeCheck.text = "${diffDays.toString()}일전"
-                }
-            }
-
-            //accountProfile.setImageURI() = pillData.pillTakeTime
-
-            /*binding.root.setOnClickListener {
-                itemClickListener.onClick(it, layoutPosition, replyCommentItemData[layoutPosition]!!.commentId)
-                println(postDateTime)
-            }*/
-
-            binding.root.setOnLongClickListener {
-                itemClickListener.onLongClick(it, layoutPosition, replyCommentItemData[layoutPosition]!!.commentId)
-                return@setOnLongClickListener true
+            binding.reCommentRealtimeCheck.text = when {
+                diffSeconds < 60 -> "방금전"
+                diffMinutes < 60 -> "${diffMinutes}분전"
+                diffHours < 24 -> "${diffHours}시간전"
+                else -> "${diffDays}일전"
             }
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReplyCommentAdapter.ReplyCommentViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReplyCommentViewHolder {
         context = parent.context
-        binding = ReplyCommentsItemLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ReplyCommentsItemLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ReplyCommentViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: ReplyCommentAdapter.ReplyCommentViewHolder, position: Int) {
-        holder.bind(replyCommentItemData[position]!!, position)
+    override fun onBindViewHolder(holder: ReplyCommentViewHolder, position: Int) {
+        val comment = getItem(position)
+        holder.bind(comment)
+        if (currentList[position].user.studentId == getWriter) {
+            holder.commentUserId.apply {
+                setTextColor(ContextCompat.getColor(context ,R.color.mio_blue_4))
+            }
+        }
     }
 
     override fun getItemCount(): Int {
-        return replyCommentItemData.size
+        return currentList.size
     }
 
-    //데이터 Handle 함수
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
+
+    // Remove the data at a specific position
     fun removeData(position: Int) {
-        replyCommentItemData.removeAt(position)
-        //temp = null
-        notifyItemRemoved(position)
+        val updatedList = currentList.toMutableList()
+        if (position in updatedList.indices) {
+            updatedList.removeAt(position)
+            submitList(updatedList)
+        }
     }
 
-    //대댓글 데이터 관리
-    fun setReplyCommentData(replyComments: List<CommentData>) {
-        replyCommentItemData.clear()
-        replyCommentItemData.addAll(replyComments)
-        notifyDataSetChanged()
+    // Update comments list
+    fun updateChildComments(newChildComments: List<CommentData>) {
+        submitList(newChildComments)
+        Log.e("ReplyCommentItemData", "$currentList")
     }
 
     interface ItemClickListener {
-        //fun onClick(view: View, position: Int, itemId: Int)
-
-        fun onLongClick(view: View, position: Int, itemId: Int)
+        fun onLongClick(view: View, position: Int, itemId: Int, comment : CommentData?)
     }
 
     private lateinit var itemClickListener: ItemClickListener
@@ -137,5 +115,14 @@ class ReplyCommentAdapter : RecyclerView.Adapter<ReplyCommentAdapter.ReplyCommen
     fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
+}
 
+object ReplyDiffUtilCallback : DiffUtil.ItemCallback<CommentData>() {
+    override fun areItemsTheSame(oldItem: CommentData, newItem: CommentData): Boolean {
+        return oldItem.commentId == newItem.commentId
+    }
+
+    override fun areContentsTheSame(oldItem: CommentData, newItem: CommentData): Boolean {
+        return oldItem == newItem
+    }
 }

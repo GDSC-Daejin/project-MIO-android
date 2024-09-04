@@ -1,51 +1,56 @@
 package com.example.mio.Adapter
 import android.content.Context
-import android.os.Build
-import android.os.VibrationEffect
-import android.os.Vibrator
-import android.os.VibratorManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.InputMethodManager
-import android.widget.PopupMenu
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.FragmentManager
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.CommentData
+import com.example.mio.Model.CommentsViewModel
 import com.example.mio.R
 import com.example.mio.ReadSettingBottomSheetFragment
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.CommentItemLayoutBinding
-import org.w3c.dom.Comment
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
 
-class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.NoticeBoardReadViewHolder>(){
+class NoticeBoardReadAdapter(commentsViewModel: CommentsViewModel): ListAdapter<CommentData, NoticeBoardReadAdapter.NoticeBoardReadViewHolder>(ReadDiffUtil){
     private lateinit var binding : CommentItemLayoutBinding
-    var commentItemData = mutableListOf<CommentData?>()
+    private var parentComments: List<CommentData> = listOf()
     var supportFragment : FragmentManager? = null
     private lateinit var context : Context
     private var manager : LinearLayoutManager? = null
-
+    private val viewPool = RecyclerView.RecycledViewPool()
     //게시글용
     private var getBottomSheetData = ""
     var getWriter = ""
+    private var viewModel = commentsViewModel
 
 
-    private var replyCommentAdapter : ReplyCommentAdapter? = null
+    //private var replyCommentAdapter : ReplyCommentAdapter? = null
     var replyCommentItemData = ArrayList<CommentData?>()
+    private var childCommentsMap: Map<Int, List<CommentData>> = emptyMap()
 
     //게시글 확인
     private var identification = ""
 
+
+    /*init {
+        // ViewModel의 childCommentsMap을 관찰하여 업데이트
+        commentsViewModel.childCommentsMap.observeForever { newChildCommentsMap ->
+            Log.d("NoticeBoardReadAdapter", "Child comments updated: $newChildCommentsMap")
+            childCommentsMap = newChildCommentsMap
+
+            setChildComments(newChildCommentsMap)
+        }
+    }*/
 
     inner class NoticeBoardReadViewHolder(private val binding : CommentItemLayoutBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
@@ -53,32 +58,58 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
         var commentRealTimeCheck = binding.commentRealtimeCheck
         /*var commentDetail = binding.commentDetailIv*/
         var commentUserId = binding.commentUserId
+        val replyCommentAdapter = ReplyCommentAdapter(viewModel)
+        var replyRv = binding.reCommentRv
 
-        fun bind(comment : CommentData, position : Int) {
+        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!.split("@").map { it }.first()
+
+        private fun updateChildComments(childComments: List<CommentData>) {
+            replyCommentAdapter.updateChildComments(childComments.toMutableList())
+        }
+
+        /*private fun updateNotify(replyComments : kotlin.collections.List<CommentData>) {
+            replyCommentAdapter.setReplyCommentData(replyComments)
+        }*/
+        init {
+            binding.reCommentRv.apply {
+                layoutManager = LinearLayoutManager(binding.root.context)
+                adapter = replyCommentAdapter
+                setHasFixedSize(true)
+            }
+
+            // Set click listeners if necessary
+            binding.root.setOnClickListener {
+                itemClickListener?.onClick(it, layoutPosition, parentComments[layoutPosition]!!.commentId)
+            }
+
+            binding.root.setOnLongClickListener {
+                itemClickListener?.onLongClick(it, layoutPosition, parentComments[layoutPosition]!!.commentId)
+                true
+            }
+        }
+
+        fun bind(comment : CommentData, childComments: List<CommentData>, position : Int) {
             //대댓글 adapter 세팅
-            replyCommentAdapter = ReplyCommentAdapter()
-            manager = LinearLayoutManager(context)
-            binding.reCommentRv.adapter = replyCommentAdapter
-            binding.reCommentRv.setHasFixedSize(true)
-            binding.reCommentRv.layoutManager = manager
-            replyCommentAdapter!!.setReplyCommentData(comment.childComments) // 댓글의 답변 댓글 리스트 설정
-            replyCommentAdapter!!.getWriter = getWriter
-
+            /*binding.parentComment = parentComment*/
+            // Setup child RecyclerView
+            // 업데이트된 자식 댓글을 처리
+            updateChildComments(childComments)
 
             this.position = position
-            if (identification == getWriter) { //게시글 작성자와 댓글 쓴 사람 아이디가 같으면
-                binding.commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_blue_4))
+            if (getWriter == comment.user.studentId) { //게시글 작성자와 댓글 쓴 사람 아이디가 같으면
+                commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_blue_4))
                 commentUserId.text = comment.user.studentId.toString()
             } else {
-                binding.commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_7))
+                commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_7))
                 commentUserId.text = comment.user.studentId.toString()
             }
 
             if (comment.content == "삭제된 댓글입니다.") {
-                binding.commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_8))
+                commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_8))
                 commentContent.text = comment.content
             } else {
-                binding.commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_11))
+                commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_11))
                 commentContent.text = comment.content
             }
 
@@ -121,132 +152,108 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
 
-            binding.root.setOnClickListener {
-                itemClickListener?.onClick(it, layoutPosition, commentItemData[layoutPosition]!!.commentId)
+           /* binding.root.setOnClickListener {
+                itemClickListener?.onClick(it, layoutPosition, currentList[layoutPosition]!!.commentId)
                 println(postDateTime)
                 println(comment.createDate)
                 println(identification)
             }
 
             binding.root.setOnLongClickListener {
-                itemClickListener?.onLongClick(it, layoutPosition, commentItemData[layoutPosition]!!.commentId)
+                itemClickListener?.onLongClick(it, layoutPosition, currentList[layoutPosition]!!.commentId)
                 return@setOnLongClickListener true
-            }
+            }*/
+
+            replyCommentAdapter.setItemClickListener(object : ReplyCommentAdapter.ItemClickListener {
+                //수정,삭제
+                override fun onLongClick(view: View, position: Int, itemId: Int, comment: CommentData?) {
+                    Log.e("noticeboardadapter", "onlongclick")
+                    //위에 요거는 itemId가 10인 commentItemData의 childComment를 찾고 아래가 부모댓글찾는거
+                    //즉 이거는 클릭한 대댓글의 모든 정보
+                    val temp = comment
+
+                    //any 함수는 하나라도 만족하는지 체크합니다.
+                    //이거는 클릭한 대댓글의 부모 댓글의 모든 정보
+                   /* val parentComment = parentComments.find { comment ->
+                        comment?.childComments?.any { it.commentId == itemId }!! } //부모 댓글 찾기*/
+
+                    if (identification == temp!!.user.studentId && temp.content != "삭제된 댓글입니다.") {
+                        //수정용
+                        val bottomSheet = ReadSettingBottomSheetFragment()
+                        bottomSheet.show(supportFragment!!, bottomSheet.tag)
+                        bottomSheet.apply {
+                            setCallback(object : ReadSettingBottomSheetFragment.OnSendFromBottomSheetDialog{
+                                override fun sendValue(value: String) {
+                                    Log.d("child comment adapter", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
+                                    getBottomSheetData = value
+                                    when(value) {
+                                        "수정" -> {
+                                            Log.d("adpater Read Test", "${temp}")
+                                            itemClickListener?.onReplyClicked("수정", temp.commentId, temp)
+                                        }
+
+                                        "삭제" -> {
+                                            itemClickListener?.onReplyClicked("삭제", temp.commentId, temp)
+                                        }
+                                    }
+                                }
+                            })
+                        }
+                    }
+                }
+            })
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoticeBoardReadAdapter.NoticeBoardReadViewHolder {
         context = parent.context
         binding = CommentItemLayoutBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!.split("@").map { it }.first()
-
+        manager = LinearLayoutManager(context)
         return NoticeBoardReadViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: NoticeBoardReadAdapter.NoticeBoardReadViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: NoticeBoardReadViewHolder, position: Int) {
+        val parentComment = parentComments[position]
+        val childComments = childCommentsMap[parentComment.commentId] ?: emptyList()
+        holder.bind(parentComment, childComments, position)
+        //holder.replyRv.requestLayout()
 
-
-        holder.bind(commentItemData[holder.adapterPosition]!!, holder.adapterPosition)
-
-        replyCommentAdapter?.setItemClickListener(object : ReplyCommentAdapter.ItemClickListener {
-            /*override fun onClick(view: View, position: Int, itemId: Int) {
-                println(itemId)
-            }*/
-
-            //수정,삭제
-            override fun onLongClick(view: View, position: Int, itemId: Int) {
-                //위에 요거는 itemId가 10인 commentItemData의 childComment를 찾고 아래가 부모댓글찾는거
-                //즉 이거는 클릭한 대댓글의 모든 정보
-                val temp = commentItemData.asSequence().flatMap { it?.childComments?.asSequence()!! }.find { it.commentId == itemId }
-
-                //any 함수는 하나라도 만족하는지 체크합니다.
-                //이거는 클릭한 대댓글의 부모 댓글의 모든 정보
-                val parentComment = commentItemData.find { comment ->
-                    comment?.childComments?.any { it.commentId == itemId }!! } //부모 댓글 찾기
-
-                if (identification == temp!!.user.studentId) {
-                    //수정용
-                    val bottomSheet = ReadSettingBottomSheetFragment()
-                    bottomSheet.show(supportFragment!!, bottomSheet.tag)
-                    bottomSheet.apply {
-                        setCallback(object : ReadSettingBottomSheetFragment.OnSendFromBottomSheetDialog{
-                            override fun sendValue(value: String) {
-                                Log.d("test adapter", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
-                                getBottomSheetData = value
-                                //댓글 부분 고치기 Todo
-                                when(value) {
-                                    "수정" -> {
-                                        Log.d("adpater Read Test", "${temp}")
-                                        Log.d("adpater Read Test", "${parentComment}")
-                                        itemClickListener?.onReplyClicked("수정", parentComment?.commentId, temp)
-                                    }
-
-                                    "삭제" -> {
-                                        itemClickListener?.onReplyClicked("삭제", temp.commentId, temp)
-                                    }
-                                }
-                            }
-                        })
-                    }
-                }
+        if (parentComments[position].user.studentId == getWriter) {
+            holder.commentUserId.apply {
+                setTextColor(ContextCompat.getColor(context ,R.color.mio_blue_4))
             }
-        })
-        //댓글 팝업메뉴
-        /*binding.commentDetailIv.setOnClickListener {
-            val popUpMenu = PopupMenu(context, binding.commentDetailIv)
-            popUpMenu.menuInflater.inflate(R.menu.comment_option_menu, popUpMenu.menu)
-            popUpMenu.setOnMenuItemClickListener {
-                when (it.itemId) {
-                    R.id.comment_menu_write -> {
-                        Toast.makeText(context, "대댓글쓰기", Toast.LENGTH_SHORT).show()
-                    }
-                    R.id.comment_menu_edit -> {
-                        Toast.makeText(context, "수정", Toast.LENGTH_SHORT).show()
-                    }
-                    R.id.comment_menu_delete -> {
-                        Toast.makeText(context, "삭제", Toast.LENGTH_SHORT).show()
-                    }
-                }
-                return@setOnMenuItemClickListener true
-            }
-            popUpMenu.show()
-        }*/
-        /*binding.homeRemoveIv.setOnClickListener {
-            val builder : AlertDialog.Builder = AlertDialog.Builder(context)
-            val ad : AlertDialog = builder.create()
-            var deleteData = pillItemData[holder.adapterPosition]!!.pillName
-            builder.setTitle(deleteData)
-            builder.setMessage("정말로 삭제하시겠습니까?")
-            builder.setNegativeButton("예",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                    //temp = listData[holder.adapterPosition]!!
-                    //extraditeData()
-                    //testData.add(temp)
-                    //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
-                    removeData(holder.adapterPosition)
-                    //removeServerData(deleteServerData!!)
-                    //println(deleteServerData)
-                })
-
-            builder.setPositiveButton("아니오",
-                DialogInterface.OnClickListener { dialog, which ->
-                    ad.dismiss()
-                })
-            builder.show()
-        }*/
+        }
     }
+
 
     override fun getItemCount(): Int {
-        return commentItemData.size
+        return parentComments.size
     }
 
+    override fun getItemId(position: Int): Long {
+        return position.toLong()
+    }
     //데이터 Handle 함수
-    fun removeData(position: Int) {
-        commentItemData.removeAt(position)
+    /*fun removeData(position: Int) {
+        parentComments.re(position)
         //temp = null
         notifyItemRemoved(position)
+    }*/
+
+    // Method to update parent comments
+    fun updateParentComment(parentComments: List<CommentData>) {
+        this.parentComments = parentComments
+        //notifyDataSetChanged() // 전체 데이터 변경 사항 알림
+        Log.e("updateParentComment", "$parentComments")
+        submitList(parentComments.toList())//notifyDataSetChanged()
+        //submitList(parentComments.toList())
+    }
+
+    // Method to update child comments
+    fun updateChildComments(childCommentsMap: Map<Int, List<CommentData>>) {
+        this.childCommentsMap = childCommentsMap.toMutableMap()
+        Log.e("updateChildComments", "${viewModel.childCommentsMap.value}")
+        notifyDataSetChanged() // 전체 데이터 변경 사항 알림
     }
 
     interface ItemClickListener {
@@ -256,22 +263,25 @@ class NoticeBoardReadAdapter() : RecyclerView.Adapter<NoticeBoardReadAdapter.Not
         fun onReplyClicked(status : String? , commentId: Int?, commentData : CommentData?)
     }
 
-    interface CommentClickListener {
-
-    }
-
 
     private var itemClickListener: ItemClickListener? = null
-
-    private var commentClickListener: CommentClickListener? = null
 
     fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
+}
 
-    fun setCommentClickListener(commentClickListener: CommentClickListener) {
-        this.commentClickListener = commentClickListener
+object ReadDiffUtil : DiffUtil.ItemCallback<CommentData>() {
+
+    override fun areItemsTheSame(oldItem: CommentData, newItem: CommentData): Boolean {
+        val result = oldItem.commentId == newItem.commentId // Assuming 'id' is unique for each notification
+        Log.d("ReadDiffUtil", "areItemsTheSame: Comparing oldItem.id = ${oldItem.commentId} with newItem.id = ${newItem.commentId}, result: $result")
+        return result
     }
 
-
+    override fun areContentsTheSame(oldItem: CommentData, newItem: CommentData): Boolean {
+        val result = oldItem == newItem // This checks if all fields are the same
+        Log.d("ReadDiffUtil", "areContentsTheSame: Comparing oldItem = $oldItem with newItem = $newItem, result: $result")
+        return result
+    }
 }

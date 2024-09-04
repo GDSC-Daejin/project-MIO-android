@@ -79,7 +79,7 @@ class MyReviewWriteableFragment : Fragment() {
     ): View? {
         wBinding = FragmentMyReviewWriteableBinding.inflate(inflater, container, false)
 
-        initSwipeRefresh()
+        //initSwipeRefresh()
         initScrollListener()
         initRecyclerview()
 
@@ -209,14 +209,11 @@ class MyReviewWriteableFragment : Fragment() {
                         }*/
                         if (reviewWriteableReadAllData.isNotEmpty()) {
                             wBinding.writeableReviewPostNotDataLl.visibility = View.GONE
-                            wBinding.writeablReviewSwipe.visibility = View.VISIBLE
                             wBinding.writeablReviewPostRv.visibility = View.VISIBLE
                         } else {
                             wBinding.writeableReviewPostNotDataLl.visibility = View.VISIBLE
-                            wBinding.writeablReviewSwipe.visibility = View.GONE
                             wBinding.writeablReviewPostRv.visibility = View.GONE
                         }
-                        wBinding.writeablReviewSwipe.isRefreshing = false
                         requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
 
                     } else {
@@ -257,7 +254,7 @@ class MyReviewWriteableFragment : Fragment() {
     }
 
 
-    private fun initSwipeRefresh() {
+    /*private fun initSwipeRefresh() {
         wBinding.writeablReviewSwipe.setOnRefreshListener {
             // 화면 터치 불가능하도록 설정
             requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
@@ -265,14 +262,14 @@ class MyReviewWriteableFragment : Fragment() {
             // 데이터 새로 고침
             refreshData()
 
-            /* // 새로 고침 완료 및 터치 가능하게 설정
+            *//* // 새로 고침 완료 및 터치 가능하게 설정
              mttBinding.moreRefreshSwipeLayout.isRefreshing = false
-             this.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)*/
+             this.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)*//*
 
             // 스크롤 리스너 초기화
             initScrollListener()
         }
-    }
+    }*/
 
     private fun refreshData() {
         isLoading = false

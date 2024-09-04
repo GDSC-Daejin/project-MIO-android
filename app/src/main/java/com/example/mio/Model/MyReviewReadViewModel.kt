@@ -16,7 +16,7 @@ class MyReviewReadViewModel : ViewModel() {
 
     // 데이터를 설정하는 메서드 추가
     fun setReviews(reviews: List<MyAccountReviewData>) {
-        _reviews.value = reviews.toList()
+        _reviews.value = reviews
     }
 
     // 로딩 상태를 설정하는 메서드 추가

@@ -78,7 +78,7 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
         setReadReviewData()
         // LiveData 관찰
         viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
-            reviewAdapter?.updateData(reviews.toList())
+            reviewAdapter?.submitList(reviews.toList())
             updateUI2(reviews)
             Log.e("myreviewread", reviews.toString())
             /*CoroutineScope(Dispatchers.IO).launch {

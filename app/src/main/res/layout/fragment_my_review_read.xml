@@ -23,8 +23,8 @@
             android:textSize="18sp" />
     </LinearLayout>
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/read_review_swipe"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/read_review_post_rv"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginStart="20dp"
@@ -35,25 +35,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            >
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/read_review_post_rv"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:listitem="@layout/review_item_te"
-                />
-        </RelativeLayout>
-
-
-    </androidx.core.widget.NestedScrollView>
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@layout/review_item_te"
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

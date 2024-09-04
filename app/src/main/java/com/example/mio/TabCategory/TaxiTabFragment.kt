@@ -205,7 +205,7 @@ class TaxiTabFragment : Fragment() {
         })
 
 
-        calendarAdapter!!.setItemClickListener(object : CalendarAdapter.ItemClickListener {
+        calendarAdapter?.setItemClickListener(object : CalendarAdapter.ItemClickListener {
             //여기서 position = 0시작은 date가 되야함 itemId=1로 시작함
             override fun onClick(view: View, position: Int, itemId: String) {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -224,19 +224,13 @@ class TaxiTabFragment : Fragment() {
                                     selectCalendarTaxiData.add(select)
                                 }
 
-                                noticeBoardAdapter = NoticeBoardAdapter()
+                                //noticeBoardAdapter = NoticeBoardAdapter()
                                 noticeBoardAdapter!!.postItemData = selectCalendarTaxiData
-                                taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
-                                //레이아웃 뒤집기 안씀
-                                //manager.reverseLayout = true
-                                //manager.stackFromEnd = true
-                                taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
-                                taxiTabBinding.noticeBoardRV.layoutManager = manager
                                 taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                                 noticeBoardAdapter!!.notifyDataSetChanged()
-//recyclerview item클릭 시
-                                noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
+
+                               /* noticeBoardAdapter?.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
                                     override fun onClick(view: View, position: Int, itemId: Int) {
                                         CoroutineScope(Dispatchers.IO).launch {
                                             val temp = taxiAllData[position]
@@ -249,7 +243,7 @@ class TaxiTabFragment : Fragment() {
                                             requestActivity.launch(intent)
                                         }
                                     }
-                                })
+                                })*/
 
 
                             } else {

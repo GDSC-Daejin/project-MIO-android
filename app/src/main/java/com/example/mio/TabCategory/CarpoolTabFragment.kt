@@ -40,6 +40,7 @@ import com.google.android.gms.ads.AdRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -140,7 +141,7 @@ class CarpoolTabFragment : Fragment() {
 
 
         //recyclerview item클릭 시
-        noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
+        noticeBoardAdapter?.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int) {
                 CoroutineScope(Dispatchers.IO).launch {
                     val temp = carpoolAllData[position]
@@ -155,7 +156,7 @@ class CarpoolTabFragment : Fragment() {
             }
         })
 
-        currentNoticeBoardAdapter!!.setItemClickListener(object : CurrentNoticeBoardAdapter.ItemClickListener {
+        currentNoticeBoardAdapter?.setItemClickListener(object : CurrentNoticeBoardAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int, status : CurrentNoticeBoardAdapter.PostStatus?) {
                 CoroutineScope(Dispatchers.IO).launch {
                     val temp = currentTaxiAllData[position]
@@ -204,7 +205,7 @@ class CarpoolTabFragment : Fragment() {
         })
 
 
-        calendarAdapter!!.setItemClickListener(object : CalendarAdapter.ItemClickListener {
+        calendarAdapter?.setItemClickListener(object : CalendarAdapter.ItemClickListener {
             //여기서 position = 0시작은 date가 되야함 itemId=1로 시작함
             override fun onClick(view: View, position: Int, itemId: String) {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -219,29 +220,21 @@ class CarpoolTabFragment : Fragment() {
                                 /* for (i in selectDateData.indices) {
                                      calendarTaxiAllData.add(selectDateData[i])
                                  }*/
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    for (select in selectDateData) {
-                                        selectCalendarCarpoolData.add(select)
-                                    }
-
-                                    noticeBoardAdapter = NoticeBoardAdapter()
-                                    noticeBoardAdapter!!.postItemData = selectCalendarCarpoolData
-                                    taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
-                                    //레이아웃 뒤집기 안씀
-                                    //manager.reverseLayout = true
-                                    //manager.stackFromEnd = true
-                                    taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
-                                    taxiTabBinding.noticeBoardRV.layoutManager = manager
+                                for (select in selectDateData) {
+                                    selectCalendarCarpoolData.add(select)
                                 }
 
-                                CoroutineScope(Dispatchers.Main).launch {
+                                //noticeBoardAdapter = NoticeBoardAdapter()
+                                noticeBoardAdapter!!.postItemData = selectCalendarCarpoolData
+
+                                withContext(Dispatchers.Main) {
                                     taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
                                     taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                                 }
                                 noticeBoardAdapter!!.notifyDataSetChanged()
 
-                                //recyclerview item클릭 시
-                                noticeBoardAdapter!!.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
+                               /* //recyclerview item클릭 시
+                                noticeBoardAdapter?.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
                                     override fun onClick(view: View, position: Int, itemId: Int) {
                                         CoroutineScope(Dispatchers.IO).launch {
                                             val temp = carpoolAllData[position]
@@ -254,7 +247,7 @@ class CarpoolTabFragment : Fragment() {
                                             requestActivity.launch(intent)
                                         }
                                     }
-                                })
+                                })*/
 
                             } else {
                                 CoroutineScope(Dispatchers.Main).launch {
@@ -382,28 +375,14 @@ class CarpoolTabFragment : Fragment() {
         loadingDialog?.show()
 
         setData()
-        /*if (loadingDialog != null && loadingDialog!!.isShowing) {
-            loadingDialog?.dismiss()
-            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-        }*/
-
 
         noticeBoardAdapter = NoticeBoardAdapter()
         noticeBoardAdapter!!.postItemData = carpoolAllData
         taxiTabBinding.noticeBoardRV.adapter = noticeBoardAdapter
-        //레이아웃 뒤집기 안씀
-        //manager.reverseLayout = true
-        //manager.stackFromEnd = true
         taxiTabBinding.noticeBoardRV.setHasFixedSize(true)
         taxiTabBinding.noticeBoardRV.layoutManager = manager
 
-        /*taxiTabBinding.noticeBoardRV.itemAnimator =  SlideInUpAnimator(OvershootInterpolator(1f))
-        taxiTabBinding.noticeBoardRV.itemAnimator?.apply {
-            addDuration = 1000
-            removeDuration = 100
-            moveDuration = 1000
-            changeDuration = 100
-        }*/
+
         val sharedPref = requireActivity().getSharedPreferences("saveSetting", Context.MODE_PRIVATE)
         isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", "") ?: ""
         Log.e("shaerdPref", isFirstAccountEdit.toString())

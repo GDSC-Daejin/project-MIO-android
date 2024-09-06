@@ -15,6 +15,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.mio.Model.*
+import com.example.mio.NoticeBoard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityApplyNextBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,11 +28,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.*
+
 
 class ApplyNextActivity : AppCompatActivity() {
     private lateinit var anaBinding : ActivityApplyNextBinding
@@ -70,16 +67,16 @@ class ApplyNextActivity : AppCompatActivity() {
 
         //뒤로가기
         anaBinding.applyBackArrow.setOnClickListener {
-            val intent = Intent().apply {
-                putExtra("flag", 33)
+            val intent = Intent(this@ApplyNextActivity, NoticeBoardReadActivity::class.java).apply {
+                putExtra("flag", 389)
             }
             setResult(RESULT_OK, intent)
             finish() // 액티비티 종료
         }
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val intent = Intent().apply {
-                    putExtra("flag", 33)
+                val intent = Intent(this@ApplyNextActivity, NoticeBoardReadActivity::class.java).apply {
+                    putExtra("flag", 389)
                 }
                 setResult(RESULT_OK, intent)
                 finish() // 액티비티 종료
@@ -356,8 +353,8 @@ class ApplyNextActivity : AppCompatActivity() {
                 }
             })
 
-            val intent = Intent().apply {
-                putExtra("flag", 33)
+            val intent = Intent(this@ApplyNextActivity, NoticeBoardReadActivity::class.java).apply {
+                putExtra("flag", 389)
             }
             setResult(RESULT_OK, intent)
             this@ApplyNextActivity.finish()

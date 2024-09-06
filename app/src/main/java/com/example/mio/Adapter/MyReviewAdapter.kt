@@ -12,6 +12,10 @@ import com.example.mio.Model.AddAlarmResponseData
 import com.example.mio.Model.MyAccountReviewData
 import com.example.mio.R
 import com.example.mio.databinding.ReviewItemTeBinding
+import java.text.SimpleDateFormat
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 
 class MyReviewAdapter : ListAdapter<MyAccountReviewData, MyReviewAdapter.MyReviewViewHolder>(ProfileReviewDiffUtilCallback){
@@ -49,11 +53,11 @@ class MyReviewAdapter : ListAdapter<MyAccountReviewData, MyReviewAdapter.MyRevie
             }
 
             reviewContent.text = reviewData.content
-            reviewCreateDate.text = reviewData.createDate
 
+            val zonedDateTime = ZonedDateTime.parse(reviewData.createDate)
+            val outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
-            //accountProfile.setImageURI() = pillData.pillTakeTime
-            //val listener = itemClickListener?.get()
+            reviewCreateDate.text = zonedDateTime.format(outputFormatter)
         }
     }
 

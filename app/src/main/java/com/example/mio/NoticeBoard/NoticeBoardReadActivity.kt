@@ -145,16 +145,15 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         // Fetch data from the ViewModel
         sharedViewModel!!.fetchIsBeforeDeadLine(this, temp!!.postID)
 
-        // Launch a coroutine to collect state changes
         lifecycleScope.launch {
             sharedViewModel!!.isNotDeadLine.collect { isNotDeadLine ->
+                //게시글의 정해진 시간이 넘었는지
                 val isBeforeTarget = isBeforeTarget(temp!!.postTargetDate, temp!!.postTargetTime)
                 Log.e("sharedViewmodel", isNotDeadLine.toString())
+                //responseData?.postType == "BEFORE_DEADLINE" && responseData.isDeleteYN != "Y" 인지
+                //true면 마감이 아님
                 val isDeadLineCheck3 = isBeforeTarget && isNotDeadLine
                 Log.e("sharedViewmodel", isDeadLineCheck3.toString())
-
-                // Update UI based on isDeadLineCheck2 value
-                isDeadLineCheck2 = isDeadLineCheck3
                 Log.e("sharedViewmodel", isDeadLineCheck2.toString())
                 updateUI(isDeadLineCheck3)
             }
@@ -1313,7 +1312,14 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             Log.e("NoticeBoardRead refresh", temp!!.user.email)
                             Log.e("NoticeBoardRead refresh", isParticipation.toString())
                             Log.e("NoticeBoardRead refresh", (email == temp!!.user.email).toString())
-                            initParticipationCheck(it.postType == "BEFORE_DEADLINE")
+                            Log.e("NoticeBoardRead refresh", "${it.postType != "BEFORE_DEADLINE"}")
+
+                            if (it.postType == "BEFORE_DEADLINE") {
+                                initParticipationCheck(true)
+                            } else {
+                                initParticipationCheck(false)
+                            }
+
                             writerEmail = temp!!.user.email
                             //tempProfile = intent.getSerializableExtra("uri") as String
                             tempProfile = temp?.user?.profileImageUrl.toString()
@@ -1362,9 +1368,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             }
                         }
                     }
-                    /*else { //지워지거나 마감기한지나거나 이미 완료된 게시글
-                            finish()
-                        }*/
                 } else {
                     Log.e("notice read detail", response.code().toString())
                     Log.e("notice read detail", response.errorBody()?.string()!!)
@@ -1413,26 +1416,27 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
 
         //println(userId)
-        Log.d("NoticeReadGetParticipation", userId.toString())
+        Log.d("initParticipationCheck", userId.toString())
+        Log.e("initParticipationCheck", "$isDeadLineCheck2")
+
         RetrofitServerConnect.create(this@NoticeBoardReadActivity).getParticipationData(postId = temp?.postID!!).enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                 if (response.isSuccessful) {
-                    Log.d("NoticeReadGetParticipation", "suceessssssss")
+                    Log.d("initParticipationCheck", "suceessssssss")
                     if (response.body()?.find { it.userId == userId} != null){
                         isParticipation = true
-                        Log.d("NoticeReadGetParticipation", isParticipation.toString())
+                        Log.d("initParticipationCheck", isParticipation.toString())
                         participantApplyBtnSet(isParticipation!!, isDeadLineCheck2)
-                        Log.d("NoticeReadGetParticipation", isDeadLineCheck2.toString())
+                        Log.d("initParticipationCheck", isDeadLineCheck2.toString())
                     } else {
                         isParticipation = false
-                        Log.d("NoticeReadGetParticipation", isParticipation.toString())
+                        Log.d("initParticipationCheck", isParticipation.toString())
                         //participantApplyBtnSet(isParticipation!!)
                         participantApplyBtnSet(isParticipation!!, isDeadLineCheck2)
-                        Log.d("NoticeReadGetParticipation", isDeadLineCheck2.toString())
+                        Log.d("initParticipationCheck", isDeadLineCheck2.toString())
                     }
                 } else {
                     Log.e("read participation", response.errorBody()?.string()!!)
-                    println(response.message().toString())
                     Log.d("f", response.code().toString())
                 }
             }
@@ -1443,18 +1447,20 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         })
     }
 
-    private fun updateUI(isDeadLineCheck2: Boolean) {
+    private fun updateUI(isDeadLineCheck: Boolean) {
         // Implement your UI update logic based on isDeadLineCheck2
-        if (isDeadLineCheck2) {
+        if (isDeadLineCheck) {
             // Actions when deadline check is true
+            isDeadLineCheck2 = isDeadLineCheck
             Log.d("NoticeBoardReadActivity", "Deadline check is true")
             nbrBinding.readSetting.visibility = View.VISIBLE
-            initParticipationCheck(isDeadLineCheck2)
+            initParticipationCheck(true)
         } else {
             // Actions when deadline check is false
+            isDeadLineCheck2 = isDeadLineCheck
             Log.d("NoticeBoardReadActivity", "Deadline check is false")
             nbrBinding.readSetting.visibility = View.GONE
-            initParticipationCheck(isDeadLineCheck2)
+            initParticipationCheck(false)
         }
     }
 
@@ -2492,9 +2498,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
     private fun refreshData() {
         //commentsViewModel.setLoading(false)
-        val commentAdapter = NoticeBoardReadAdapter(commentsViewModel)
-        nbrBinding.commentRV.adapter = commentAdapter
-
         refreshNoticeBoardReadData()
         initMyBookmarkData()
         setCommentData()
@@ -2586,12 +2589,19 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         super.onStart()
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.toString()
         Log.d("NoticeRead", email)
+        Log.e("read onStart", "$isDeadLineCheck2")
     }
 
 
     override fun onPause() {
         super.onPause()
+        Log.e("read onPause", "$isDeadLineCheck2")
         stopAdLoading()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.e("read onDestroy", "$isDeadLineCheck2")
     }
 
     private fun loadAdIfNeeded() {

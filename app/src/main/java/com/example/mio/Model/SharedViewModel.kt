@@ -34,6 +34,7 @@ class SharedViewModel : ViewModel() {
                     // Log the response data
                     Log.d("fetchIsBeforeDeadLine", "Response Code: ${response.code()}")
                     Log.d("fetchIsBeforeDeadLine", "Response Body: ${responseData?.toString()}")
+                    Log.d("fetchIsBeforeDeadLine", "${_isNotDeadLine.value}")
                 } else {
                     // Log the error body
                     Log.e("fetchIsBeforeDeadLine", "Response Error Code: ${response.code()}")

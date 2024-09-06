@@ -36,7 +36,7 @@ class SSEForegroundService : Service() {
         Log.e("onStartCommand", isGetAlarm.toString())
 
         if (!hasNotificationBeenShown && isGetAlarm == true) {
-            startForegroundServiceWithNotification()
+            //startForegroundServiceWithNotification()
             hasNotificationBeenShown = true
         }
 

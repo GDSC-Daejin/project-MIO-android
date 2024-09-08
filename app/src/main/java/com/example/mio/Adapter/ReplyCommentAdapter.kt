@@ -34,15 +34,27 @@ class ReplyCommentAdapter(private val commentsViewModel: CommentsViewModel) :
         }
 
         val commentUserId = binding.reCommentUserId
-
+        val commentContent = binding.reCommentContent
         fun bind(comment: CommentData) {
             if (comment.user.studentId == getWriter) {
-                binding.reCommentUserId.setTextColor(ContextCompat.getColor(context, R.color.mio_blue_4))
+                commentUserId.setTextColor(ContextCompat.getColor(context, R.color.mio_blue_4))
+                commentUserId.text =  comment.user.studentId
             } else {
-                binding.reCommentUserId.setTextColor(ContextCompat.getColor(context, R.color.mio_gray_11))
+                commentUserId.setTextColor(ContextCompat.getColor(context, R.color.mio_gray_11))
+                commentUserId.text =  comment.user.studentId
             }
-            binding.reCommentUserId.text = comment.user.studentId.toString()
-            binding.reCommentContent.text = comment.content
+
+            if (comment.content == "삭제된 댓글입니다.") {
+                commentContent.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_8))
+                commentContent.text = comment.content
+            } else {
+                commentContent.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_11))
+                commentContent.text = comment.content
+            }
+
+
+            /*binding.reCommentUserId.text = comment.user.studentId.toString()
+            binding.reCommentContent.text = comment.content*/
 
             val now = System.currentTimeMillis()
             val date = Date(now)

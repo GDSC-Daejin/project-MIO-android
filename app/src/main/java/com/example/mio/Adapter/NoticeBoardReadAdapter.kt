@@ -72,6 +72,8 @@ class NoticeBoardReadAdapter(commentsViewModel: CommentsViewModel): ListAdapter<
             replyCommentAdapter.setReplyCommentData(replyComments)
         }*/
         init {
+            replyCommentAdapter.getWriter = getWriter
+
             binding.reCommentRv.apply {
                 layoutManager = LinearLayoutManager(binding.root.context)
                 adapter = replyCommentAdapter
@@ -97,7 +99,7 @@ class NoticeBoardReadAdapter(commentsViewModel: CommentsViewModel): ListAdapter<
             updateChildComments(childComments)
 
             this.position = position
-            if (getWriter == comment.user.studentId) { //게시글 작성자와 댓글 쓴 사람 아이디가 같으면
+            if (comment.user.studentId == getWriter) { //게시글 작성자와 댓글 쓴 사람 아이디가 같으면
                 commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_blue_4))
                 commentUserId.text = comment.user.studentId.toString()
             } else {
@@ -106,10 +108,10 @@ class NoticeBoardReadAdapter(commentsViewModel: CommentsViewModel): ListAdapter<
             }
 
             if (comment.content == "삭제된 댓글입니다.") {
-                commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_8))
+                commentContent.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_8))
                 commentContent.text = comment.content
             } else {
-                commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_11))
+                commentContent.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_11))
                 commentContent.text = comment.content
             }
 

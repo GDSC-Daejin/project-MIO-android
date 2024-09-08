@@ -260,7 +260,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             val currentDate = sdf.format(date)
 
 
-            val postDateTime = "${temp?.postCreateDate}".replace("T", " ").split(".")[0] ?: ""
+            val postDateTime = "${temp?.postCreateDate}".replace("T", " ").split(".")[0]
 
             val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
             val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)
@@ -346,7 +346,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         window?.setBackgroundDrawableResource(android.R.color.transparent)
 
                                         val layoutParams = window?.attributes
-                                        layoutParams?.width = ViewGroup.LayoutParams.MATCH_PARENT // 다이얼로그의 폭을 MATCH_PARENT로 설정
+                                        layoutParams?.width = LayoutParams.MATCH_PARENT // 다이얼로그의 폭을 MATCH_PARENT로 설정
                                         window?.attributes = layoutParams
 
                                         // 루트 뷰의 마진을 설정
@@ -414,11 +414,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
                                     val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
                                     val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
-                                    val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this@NoticeBoardReadActivity)!!.split("@").map { it }.first()
+                                    //val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this@NoticeBoardReadActivity)!!.split("@").map { it }.first()
                                     val userId = saveSharedPreferenceGoogleLogin.getUserId(this@NoticeBoardReadActivity)!!
 
-                                    val interceptor = Interceptor { chain ->
-                                        var newRequest: Request
+                                    /*val interceptor = Interceptor { chain ->
+                                        val newRequest: Request
                                         if (token != null && token != "") { // 토큰이 없는 경우
                                             // Authorization 헤더에 토큰 추가
                                             newRequest =
@@ -426,8 +426,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                             val expireDate: Long = getExpireDate.toLong()
                                             if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                                                 //refresh 들어갈 곳
-                                                /*newRequest =
-                                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                                *//*newRequest =
+                                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                                                 Log.e("read", "read")
                                                 val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
                                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -447,11 +447,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     val client: OkHttpClient = builder.build()
                                     retrofit.client(client)
                                     val retrofit2: Retrofit = retrofit.build()
-                                    val api = retrofit2.create(MioInterface::class.java)
+                                    val api = retrofit2.create(MioInterface::class.java)*/
 
                                     //println(userId)
                                     Log.d("NoticeReadGetParticipation", userId.toString())
-                                    api.addBookmark(postId = temp?.postID!!).enqueue(object : Callback<Void> {
+                                    RetrofitServerConnect.create(this@NoticeBoardReadActivity).addBookmark(postId = temp?.postID!!).enqueue(object : Callback<Void> {
                                         override fun onResponse(call: Call<Void>, response: Response<Void>) {
                                             if (response.isSuccessful) {
                                                 Log.d("noticeboardread", response.code().toString())
@@ -512,7 +512,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
 
                             /////////interceptor
-                            val SERVER_URL = BuildConfig.server_URL
+                            /*val SERVER_URL = BuildConfig.server_URL
                             val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
                                 .addConverterFactory(GsonConverterFactory.create())
                             //Authorization jwt토큰 로그인
@@ -525,8 +525,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     val expireDate: Long = getExpireDate.toLong()
                                     if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                                         //refresh 들어갈 곳
-                                        /*newRequest =
-                                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                        *//*newRequest =
+                                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                                         Log.e("read", "read2")
                                         val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
                                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -544,7 +544,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             val client: OkHttpClient = builder.build()
                             retrofit.client(client)
                             val retrofit2: Retrofit = retrofit.build()
-                            val api = retrofit2.create(MioInterface::class.java)
+                            val api = retrofit2.create(MioInterface::class.java)*/
                             /////////
 
                             //댓글 잠시 저장
@@ -553,7 +553,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             ///
 
                             //대댓글 추가하기
-                            api.addChildCommentData(childCommentTemp, parentPosition).enqueue(object : Callback<CommentData> {
+                            RetrofitServerConnect.create(this@NoticeBoardReadActivity).addChildCommentData(childCommentTemp, parentPosition).enqueue(object : Callback<CommentData> {
                                 override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
                                     if (response.isSuccessful) {
                                         commentsViewModel.setLoading(false)
@@ -593,7 +593,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
 
                             /////////interceptor
-                            val SERVER_URL = BuildConfig.server_URL
+                            /*val SERVER_URL = BuildConfig.server_URL
                             val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
                                 .addConverterFactory(GsonConverterFactory.create())
                             //Authorization jwt토큰 로그인
@@ -606,8 +606,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     val expireDate: Long = getExpireDate.toLong()
                                     if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                                         //refresh 들어갈 곳
-                                        /*newRequest =
-                                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                        *//*newRequest =
+                                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                                         Log.e("read", "read3")
                                         val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
                                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -625,13 +625,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             val client: OkHttpClient = builder.build()
                             retrofit.client(client)
                             val retrofit2: Retrofit = retrofit.build()
-                            val api = retrofit2.create(MioInterface::class.java)
+                            val api = retrofit2.create(MioInterface::class.java)*/
                             /////////
 
                             //댓글 잠시 저장
                             val commentTemp = SendCommentData(commentEditText)
                             Log.d("commentTemt", "$commentTemp")
-                            api.addCommentData(commentTemp, temp!!.postID).enqueue(object : Callback<CommentData> {
+                            RetrofitServerConnect.create(this@NoticeBoardReadActivity).addCommentData(commentTemp, temp!!.postID).enqueue(object : Callback<CommentData> {
                                 override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
                                     if (response.isSuccessful) {
                                         Log.e("addComment", "댓글담")
@@ -720,7 +720,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
 
                                 /////////interceptor
-                                val SERVER_URL = BuildConfig.server_URL
+                                /*val SERVER_URL = BuildConfig.server_URL
                                 val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
                                     .addConverterFactory(GsonConverterFactory.create())
                                 //Authorization jwt토큰 로그인
@@ -733,8 +733,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         val expireDate: Long = getExpireDate.toLong()
                                         if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                                             //refresh 들어갈 곳
-                                            /*newRequest =
-                                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                            *//*newRequest =
+                                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                                             Log.e("read", "read4")
                                             val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
                                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -752,7 +752,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 val client: OkHttpClient = builder.build()
                                 retrofit.client(client)
                                 val retrofit2: Retrofit = retrofit.build()
-                                val api = retrofit2.create(MioInterface::class.java)
+                                val api = retrofit2.create(MioInterface::class.java)*/
                                 /////////
 
                                 //댓글 잠시 저장
@@ -761,7 +761,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 ///
 
                                 //대댓글 추가하기
-                                api.addChildCommentData(childCommentTemp, parentPosition).enqueue(object : Callback<CommentData> {
+                                RetrofitServerConnect.create(this@NoticeBoardReadActivity).addChildCommentData(childCommentTemp, parentPosition).enqueue(object : Callback<CommentData> {
                                     override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
                                         if (response.isSuccessful) {
                                             commentsViewModel.setLoading(false)
@@ -836,7 +836,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                                     val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
 
                                                     /////////interceptor
-                                                    val SERVER_URL = BuildConfig.server_URL
+                                                    /*val SERVER_URL = BuildConfig.server_URL
                                                     val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
                                                         .addConverterFactory(GsonConverterFactory.create())
                                                     //Authorization jwt토큰 로그인
@@ -849,8 +849,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                                             val expireDate: Long = getExpireDate.toLong()
                                                             if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                                                                 //refresh 들어갈 곳
-                                                                /*newRequest =
-                                                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                                                *//*newRequest =
+                                                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                                                                 Log.e("read", "read5")
                                                                 val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
                                                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -868,13 +868,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                                     val client: OkHttpClient = builder.build()
                                                     retrofit.client(client)
                                                     val retrofit2: Retrofit = retrofit.build()
-                                                    val api = retrofit2.create(MioInterface::class.java)
+                                                    val api = retrofit2.create(MioInterface::class.java)*/
                                                     /////////
                                                     val editCommentTemp = SendCommentData(commentEditText)
 
 
                                                     CoroutineScope(Dispatchers.IO).launch {
-                                                        api.editCommentData(editCommentTemp, commentPosition).enqueue(object : Callback<CommentData> {
+                                                        RetrofitServerConnect.create(this@NoticeBoardReadActivity).editCommentData(editCommentTemp, commentPosition).enqueue(object : Callback<CommentData> {
                                                             override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
                                                                 if (response.isSuccessful) {
                                                                     //fetchAllComments()
@@ -1033,7 +1033,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this@NoticeBoardReadActivity)!!.split("@").map { it }.first()
             val userId = saveSharedPreferenceGoogleLogin.getUserId(this@NoticeBoardReadActivity)!!
 
-            val interceptor = Interceptor { chain ->
+            /*val interceptor = Interceptor { chain ->
                 var newRequest: Request
                 if (token != null && token != "") { // 토큰이 없는 경우
                     // Authorization 헤더에 토큰 추가
@@ -1042,8 +1042,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     val expireDate: Long = getExpireDate.toLong()
                     if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                         //refresh 들어갈 곳
-                        /*newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                        *//*newRequest =
+                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                         Log.e("read", "read6")
                         val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -1063,11 +1063,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             val client: OkHttpClient = builder.build()
             retrofit.client(client)
             val retrofit2: Retrofit = retrofit.build()
-            val api = retrofit2.create(MioInterface::class.java)
+            val api = retrofit2.create(MioInterface::class.java)*/
 
 
             Log.d("NoticeReadGetParticipation", temp?.postID!!.toString())
-            api.addBookmark(postId = temp?.postID!!).enqueue(object : Callback<Void> {
+            RetrofitServerConnect.create(this@NoticeBoardReadActivity).addBookmark(postId = temp?.postID!!).enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
                         Log.d("noticeboardread", response.code().toString())
@@ -1415,7 +1415,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
 
-        //println(userId)
         Log.d("initParticipationCheck", userId.toString())
         Log.e("initParticipationCheck", "$isDeadLineCheck2")
 
@@ -1764,7 +1763,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
 
         /////////interceptor
-        val SERVER_URL = BuildConfig.server_URL
+        /*val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
         //Authorization jwt토큰 로그인
@@ -1777,8 +1776,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.e("read", "read8")
                     val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -1796,10 +1795,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         /////////
 
-        api.checkParticipate(postId = temp!!.postID).enqueue(object : Callback<CheckParticipateData> {
+        RetrofitServerConnect.create(this@NoticeBoardReadActivity).checkParticipate(postId = temp!!.postID).enqueue(object : Callback<CheckParticipateData> {
             override fun onResponse(call: Call<CheckParticipateData>, response: Response<CheckParticipateData>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
@@ -2512,7 +2511,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
 
-        val interceptor = Interceptor { chain ->
+        /*val interceptor = Interceptor { chain ->
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
                 // Authorization 헤더에 토큰 추가
@@ -2521,8 +2520,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.e("read", "read12")
                     val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -2542,10 +2541,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         ///////////////////////////////////////////////////////
         CoroutineScope(Dispatchers.IO).launch {
-            api.deleteCommentData(deleteCommentId).enqueue(object : Callback<CommentData> {
+            RetrofitServerConnect.create(this@NoticeBoardReadActivity).deleteCommentData(deleteCommentId).enqueue(object : Callback<CommentData> {
                 override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
                     if (response.isSuccessful) {
                         println("ssssssss")

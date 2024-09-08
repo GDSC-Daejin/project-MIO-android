@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:baselineAligned="true"
         android:orientation="vertical"
-        android:background="@color/mio_gray_5"
+        android:background="@color/mio_gray_4"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">

@@ -866,7 +866,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
             val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
             //통신
-            val SERVER_URL = BuildConfig.server_URL
+            /*val SERVER_URL = BuildConfig.server_URL
             val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 //.client(clientBuilder)
@@ -885,8 +885,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     val expireDate: Long = getExpireDate.toLong()
                     if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                         //refresh 들어갈 곳
-                        /*newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                        *//*newRequest =
+                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                         val intent = Intent(this@NoticeBoardEditActivity, LoginActivity::class.java)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                         Toast.makeText(this@NoticeBoardEditActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
@@ -903,7 +903,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             val client: OkHttpClient = builder.build()
             retrofit.client(client)
             val retrofit2: Retrofit = retrofit.build()
-            val api = retrofit2.create(MioInterface::class.java)
+            val api = retrofit2.create(MioInterface::class.java)*/
 
             if (type.equals("ADD")) {
                 Log.e("editactivity", "add")
@@ -925,7 +925,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     Log.d("edit add Temp ", temp.toString())
                     CoroutineScope(Dispatchers.IO).launch {
                         /*"application/json; charset=UTF-8",*/
-                        api.addPostData(temp!!, selectCategoryId).enqueue(object : Callback<AddPostResponse> {
+                        RetrofitServerConnect.create(this@NoticeBoardEditActivity).addPostData(temp!!, selectCategoryId).enqueue(object : Callback<AddPostResponse> {
                             override fun onResponse(
                                 call: Call<AddPostResponse>,
                                 response: Response<AddPostResponse>
@@ -987,7 +987,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     Log.e("edit temp", temp2.toString())
                     CoroutineScope(Dispatchers.IO).launch {
                         val postId = eTemp?.postID ?: return@launch // postID가 null이면 실행 종료
-                        api.editPostData(postId, temp2).enqueue(object : Callback<AddPostResponse> {
+                        RetrofitServerConnect.create(this@NoticeBoardEditActivity).editPostData(postId, temp2).enqueue(object : Callback<AddPostResponse> {
                             override fun onResponse(
                                 call: Call<AddPostResponse>,
                                 response: Response<AddPostResponse>

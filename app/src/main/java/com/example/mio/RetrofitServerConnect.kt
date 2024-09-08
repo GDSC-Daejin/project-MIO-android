@@ -19,6 +19,11 @@ object RetrofitServerConnect {
 
         val interceptor = Interceptor { chain ->
             var newRequest = chain.request()
+
+            if (checkTokenExpiry(getExpireDate.toLong(), context)) {
+                return@Interceptor chain.proceed(newRequest)
+            }
+
             if (token.isNotEmpty()) {
                 newRequest = chain.request().newBuilder()
                     .addHeader("Authorization", "Bearer $token")
@@ -26,6 +31,7 @@ object RetrofitServerConnect {
             }
             chain.proceed(newRequest)
         }
+
         val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -36,8 +42,21 @@ object RetrofitServerConnect {
         val retrofit2: Retrofit = retrofit.build()
         val api = retrofit2.create(MioInterface::class.java)
 
-
         return api
+    }
+
+
+    private fun checkTokenExpiry(expireDate: Long, context: Context): Boolean {
+        return if (expireDate <= System.currentTimeMillis()) {
+            val intent = Intent(context, LoginActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }
+            Toast.makeText(context, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
+            context.startActivity(intent)
+            true
+        } else {
+            false
+        }
     }
 }
 

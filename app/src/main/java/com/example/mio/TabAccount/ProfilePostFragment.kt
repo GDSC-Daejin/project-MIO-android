@@ -247,7 +247,7 @@ class ProfilePostFragment : Fragment() {
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
         val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(requireActivity())!!
 
-        val interceptor = Interceptor { chain ->
+        /*val interceptor = Interceptor { chain ->
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
                 // Authorization 헤더에 토큰 추가
@@ -256,8 +256,8 @@ class ProfilePostFragment : Fragment() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                     Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
@@ -276,11 +276,11 @@ class ProfilePostFragment : Fragment() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         ///////////////////////////////////////////////////
 
         //deadLine 안씀
-        api.getMyPostData(profileUserId,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+        RetrofitServerConnect.create(requireActivity()).getMyPostData(profileUserId,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
             override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                 if (response.isSuccessful) {
 

@@ -160,7 +160,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
         val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.split("@").map { it }.first()
         val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
 
-        val interceptor = Interceptor { chain ->
+        /*val interceptor = Interceptor { chain ->
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
                 // Authorization 헤더에 토큰 추가
@@ -169,8 +169,8 @@ class MyParticipationFragment : Fragment() { //두번쨰
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.e("particiFragg", "particiFragg1")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -190,11 +190,11 @@ class MyParticipationFragment : Fragment() { //두번쨰
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
 
         //println(userId)
 
-        api.getMyParticipantsData().enqueue(object : Callback<List<ParticipationData>> {
+        RetrofitServerConnect.create(requireActivity()).getMyParticipantsData().enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                 if (response.isSuccessful) {
                     //데이터 청소
@@ -279,7 +279,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
         /*val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.substring(0 until 8)
         val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(this)!!*/
 
-        val interceptor = Interceptor { chain ->
+        /*val interceptor = Interceptor { chain ->
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
                 // Authorization 헤더에 토큰 추가
@@ -288,8 +288,8 @@ class MyParticipationFragment : Fragment() { //두번쨰
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.e("particiFragg", "particiFragg2")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -309,11 +309,11 @@ class MyParticipationFragment : Fragment() { //두번쨰
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         ///////////////////////////////////////////////////
         if (postList?.isNotEmpty() == true) {
             for (i in postList.indices) {
-                api.getPostIdDetailSearch(postId = postList[i].postId).enqueue(object : Callback<Content> {
+                RetrofitServerConnect.create(requireActivity()).getPostIdDetailSearch(postId = postList[i].postId).enqueue(object : Callback<Content> {
                     override fun onResponse(call: Call<Content>, response: Response<Content>) {
                         if (response.isSuccessful) {
                             val responseData = response.body()

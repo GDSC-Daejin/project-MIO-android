@@ -429,7 +429,7 @@ class MoreAreaActivity : AppCompatActivity() {
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
         //통신
-        val SERVER_URL = BuildConfig.server_URL
+        /*val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
         //.client(clientBuilder)
@@ -448,8 +448,8 @@ class MoreAreaActivity : AppCompatActivity() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.e("area", "area1")
                     val intent = Intent(this@MoreAreaActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -467,9 +467,9 @@ class MoreAreaActivity : AppCompatActivity() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         ///
-        api.getActivityLocation("createDate,desc", 0, 5).enqueue(object :
+        RetrofitServerConnect.create(this@MoreAreaActivity).getActivityLocation("createDate,desc", 0, 5).enqueue(object :
             Callback<PostReadAllResponse> {
             override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                 if (response.isSuccessful) {

@@ -224,7 +224,7 @@ class SearchFragment : Fragment() {
         val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
 
-        val interceptor = Interceptor { chain ->
+        /*val interceptor = Interceptor { chain ->
             val newRequest: Request
             if (token != null && token != "") { // 토큰이 없지 않은 경우
                 // Authorization 헤더에 토큰 추가
@@ -233,8 +233,8 @@ class SearchFragment : Fragment() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.e("search", "searchFragment")
                     val intent = Intent(context, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -253,9 +253,9 @@ class SearchFragment : Fragment() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
 
-        api.getLocationPostData(location!!).enqueue(object : Callback<List<LocationReadAllResponse>> {
+        RetrofitServerConnect.create(requireActivity()).getLocationPostData(location!!).enqueue(object : Callback<List<LocationReadAllResponse>> {
             override fun onResponse(
                 call: Call<List<LocationReadAllResponse>>,
                 response: Response<List<LocationReadAllResponse>>

@@ -144,7 +144,7 @@ class AccountSettingActivity : AppCompatActivity() {
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
 
-        val interceptor = Interceptor { chain ->
+        /*val interceptor = Interceptor { chain ->
             val newRequest: Request
             if (token != null && token != "") { // 토큰이 없지 않은 경우
                 // Authorization 헤더에 토큰 추가
@@ -153,8 +153,8 @@ class AccountSettingActivity : AppCompatActivity() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.e("settting", "setting1")
                     val intent = Intent(this@AccountSettingActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -174,9 +174,9 @@ class AccountSettingActivity : AppCompatActivity() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
 
-        api.getAccountData(userEmail = email).enqueue(object : Callback<User> {
+        RetrofitServerConnect.create(this@AccountSettingActivity).getAccountData(userEmail = email).enqueue(object : Callback<User> {
             override fun onResponse(call: Call<User>, response: Response<User>) {
                 if (response.isSuccessful) {
                     if (response.body()?.gender != null) {
@@ -235,7 +235,7 @@ class AccountSettingActivity : AppCompatActivity() {
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
         val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
 
-        val interceptor = Interceptor { chain ->
+        /*val interceptor = Interceptor { chain ->
             val newRequest: Request
             if (token != null && token != "") { // 토큰이 없지 않은 경우
                 // Authorization 헤더에 토큰 추가
@@ -244,8 +244,8 @@ class AccountSettingActivity : AppCompatActivity() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.e("setting", "setting3")
                     val intent = Intent(this@AccountSettingActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -265,7 +265,7 @@ class AccountSettingActivity : AppCompatActivity() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
 
         //println(userId)
 
@@ -278,7 +278,7 @@ class AccountSettingActivity : AppCompatActivity() {
         Log.e("ACCountSEttingSENDTEST", sendAccountData.toString())
 
         CoroutineScope(Dispatchers.IO).launch {
-            api.editMyAccountData(userId, sendAccountData!!).enqueue(object : Callback<User> {
+            RetrofitServerConnect.create(this@AccountSettingActivity).editMyAccountData(userId, sendAccountData!!).enqueue(object : Callback<User> {
                 override fun onResponse(call: Call<User>, response: Response<User>) {
                     if (response.isSuccessful) {
                         runOnUiThread {

@@ -570,7 +570,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
         val userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
 
-        val interceptor = Interceptor { chain ->
+        /*val interceptor = Interceptor { chain ->
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
                 // Authorization 헤더에 토큰 추가
@@ -580,8 +580,8 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
 
                 if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.d("MainActivitu Notification", expireDate.toString())
 
                     // UI 스레드에서 Toast 실행
@@ -609,9 +609,9 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         /////
-        api.getAccountData(userEmail).enqueue(object : Callback<User> {
+        RetrofitServerConnect.create(this@MainActivity).getAccountData(userEmail).enqueue(object : Callback<User> {
             override fun onResponse(call: Call<User>, response: Response<User>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
@@ -638,7 +638,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
         val notificationCheck = saveSharedPreferenceGoogleLogin.getSharedNotification(this).toString()
 
-        val interceptor = Interceptor { chain ->
+        /*val interceptor = Interceptor { chain ->
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
                 // Authorization 헤더에 토큰 추가
@@ -648,8 +648,8 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
 
                 if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.d("MainActivitu Notification", expireDate.toString())
 
                     // UI 스레드에서 Toast 실행
@@ -677,9 +677,9 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         /////
-        api.getMyAlarm().enqueue(object : Callback<List<AddAlarmResponseData>> {
+        RetrofitServerConnect.create(this@MainActivity).getMyAlarm().enqueue(object : Callback<List<AddAlarmResponseData>> {
             override fun onResponse(
                 call: Call<List<AddAlarmResponseData>>,
                 response: Response<List<AddAlarmResponseData>>

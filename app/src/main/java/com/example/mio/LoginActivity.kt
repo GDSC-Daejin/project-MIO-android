@@ -265,7 +265,8 @@ class LoginActivity : AppCompatActivity() {
                 val userEmailMap = task.result.email?.split("@")?.map { it.toString() }
                 //회원가입과 함께 새로운 계정 정보 저장
                 Toast.makeText(this, "로그인 계정 $userEmailMap", Toast.LENGTH_SHORT).show()
-                if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true || userEmailMap?.contains("sonms5676") == true) {
+                handleSignInResult(task)
+                /*if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true || userEmailMap?.contains("sonms5676") == true) {
                     Log.e("resultOk", userEmailMap.toString())
                     handleSignInResult(task)
                 } else {
@@ -274,7 +275,7 @@ class LoginActivity : AppCompatActivity() {
                     mGoogleSignInClient.signOut().addOnCompleteListener {
                         signIn() // Prompt for sign-in again
                     }
-                }
+                }*/
             } else {
                 loadingDialog?.dismiss()
                 Toast.makeText(this, "로그인에 실패하였습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
@@ -295,7 +296,6 @@ class LoginActivity : AppCompatActivity() {
             val idToken = account.idToken
 
             userEmail = email
-            val userEmailMap = userEmail.split("@").map { it.toString() }
             saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
             Log.e("getUserEmail", "${saveSharedPreferenceGoogleLogin.getUserEMAIL(this@LoginActivity)}")
             println(email)

@@ -292,8 +292,8 @@ class ApplyNextActivity : AppCompatActivity() {
             val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
             val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
             val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-            val SERVER_URL = BuildConfig.server_URL
-            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+            //val SERVER_URL = BuildConfig.server_URL
+            /*val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
                 .addConverterFactory(GsonConverterFactory.create())
             //.client(clientBuilder)
 
@@ -308,8 +308,8 @@ class ApplyNextActivity : AppCompatActivity() {
                     val expireDate: Long = getExpireDate.toLong()
                     if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                         //refresh 들어갈 곳
-                        /*newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                        *//*newRequest =
+                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                         val intent = Intent(this@ApplyNextActivity, LoginActivity::class.java)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                         Toast.makeText(this@ApplyNextActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
@@ -326,11 +326,11 @@ class ApplyNextActivity : AppCompatActivity() {
             val client: OkHttpClient = builder.build()
             retrofit.client(client)
             val retrofit2: Retrofit = retrofit.build()
-            val api = retrofit2.create(MioInterface::class.java)
+            val api = retrofit2.create(MioInterface::class.java)*/
             ///////////////////////////////
             val temp = ParticipateData(applyEditContent)
 
-            api.addParticipate(postId, temp).enqueue(object : Callback<ParticipationData> {
+            RetrofitServerConnect.create(this@ApplyNextActivity).addParticipate(postId, temp).enqueue(object : Callback<ParticipationData> {
                 override fun onResponse(
                     call: Call<ParticipationData>,
                     response: Response<ParticipationData>
@@ -409,7 +409,7 @@ class ApplyNextActivity : AppCompatActivity() {
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)?.toString()?.split("@")?.map { it }?.first()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-        val SERVER_URL = BuildConfig.server_URL
+        /*val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
         //.client(clientBuilder)
@@ -425,8 +425,8 @@ class ApplyNextActivity : AppCompatActivity() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     val intent = Intent(this@ApplyNextActivity, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                     Toast.makeText(this@ApplyNextActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
@@ -443,7 +443,7 @@ class ApplyNextActivity : AppCompatActivity() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         ///////////////////////////////
 
         //userId 가 알람 받는 사람
@@ -451,7 +451,7 @@ class ApplyNextActivity : AppCompatActivity() {
 
         //entity가 알람 받는 사람, user가 알람 전송한 사람
         CoroutineScope(Dispatchers.IO).launch {
-            api.addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
+            RetrofitServerConnect.create(this@ApplyNextActivity).addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
                 override fun onResponse(
                     call: Call<AddAlarmResponseData?>,
                     response: Response<AddAlarmResponseData?>

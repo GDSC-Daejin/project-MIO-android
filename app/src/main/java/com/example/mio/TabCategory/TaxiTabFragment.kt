@@ -652,7 +652,7 @@ class TaxiTabFragment : Fragment() {
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
         var myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity()).toString()
 
-        val interceptor = Interceptor { chain ->
+        /*val interceptor = Interceptor { chain ->
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
                 // Authorization 헤더에 토큰 추가
@@ -662,8 +662,8 @@ class TaxiTabFragment : Fragment() {
 
                 if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.d("Carpool myarea", expireDate.toString())
 
                     // UI 스레드에서 Toast 실행
@@ -691,7 +691,7 @@ class TaxiTabFragment : Fragment() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         /////
 
         if (myAreaData.isEmpty() || myAreaData == "") {
@@ -704,7 +704,7 @@ class TaxiTabFragment : Fragment() {
                 taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
             }
         } else {
-            api.getActivityLocation("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            RetrofitServerConnect.create(requireActivity()).getActivityLocation("createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
                         val responseData = response.body()
@@ -776,7 +776,7 @@ class TaxiTabFragment : Fragment() {
         val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
 
-        val interceptor = Interceptor { chain ->
+        /*val interceptor = Interceptor { chain ->
             var newRequest: Request
             if (token != null && token != "") { // 토큰이 없는 경우
                 // Authorization 헤더에 토큰 추가
@@ -786,8 +786,8 @@ class TaxiTabFragment : Fragment() {
 
                 if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.d("TaxiFragment", expireDate.toString())
 
                     // UI 스레드에서 Toast 실행
@@ -815,11 +815,11 @@ class TaxiTabFragment : Fragment() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
 
         //println(userId)
 
-        api.getMyParticipantsUserData().enqueue(object : Callback<List<Content>> {
+        RetrofitServerConnect.create(requireActivity()).getMyParticipantsUserData().enqueue(object : Callback<List<Content>> {
             override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
@@ -935,7 +935,7 @@ class TaxiTabFragment : Fragment() {
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
 
         //통신
-        val SERVER_URL = BuildConfig.server_URL
+        /*val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
         //.client(clientBuilder)
@@ -951,8 +951,8 @@ class TaxiTabFragment : Fragment() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.e("taxi", "taxi")
                     val intent = Intent(requireContext(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -970,9 +970,9 @@ class TaxiTabFragment : Fragment() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         ///
-        api.patchVerifyFinish(verifyFinish = VerifyFinishData(true), postId).enqueue(object : Callback<AddPostResponse> {
+        RetrofitServerConnect.create(requireActivity()).patchVerifyFinish(verifyFinish = VerifyFinishData(true), postId).enqueue(object : Callback<AddPostResponse> {
             override fun onResponse(
                 call: Call<AddPostResponse>,
                 response: Response<AddPostResponse>
@@ -998,7 +998,7 @@ class TaxiTabFragment : Fragment() {
         val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
         val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity()).toString().split("@").map { it }.first()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-        val SERVER_URL = BuildConfig.server_URL
+        /*val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
         //.client(clientBuilder)
@@ -1014,8 +1014,8 @@ class TaxiTabFragment : Fragment() {
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.e("taxi", "taxi2")
                     val intent = Intent(requireActivity(), LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -1032,11 +1032,11 @@ class TaxiTabFragment : Fragment() {
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         ///////////////////////////////
 
         var thisParticipationData : kotlin.collections.List<ParticipationData>? = null
-        api.getParticipationData(postData.postID).enqueue(object : Callback<List<ParticipationData>> {
+        RetrofitServerConnect.create(requireActivity()).getParticipationData(postData.postID).enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(
                 call: Call<List<ParticipationData>>,
                 response: Response<List<ParticipationData>>
@@ -1072,7 +1072,7 @@ class TaxiTabFragment : Fragment() {
 
                     //entity가 알람 받는 사람, user가 알람 전송한 사람
                     CoroutineScope(Dispatchers.IO).launch {
-                        api.addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
+                        RetrofitServerConnect.create(requireActivity()).addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
                             override fun onResponse(
                                 call: Call<AddAlarmResponseData?>,
                                 response: Response<AddAlarmResponseData?>
@@ -1101,7 +1101,7 @@ class TaxiTabFragment : Fragment() {
 
             //entity가 알람 받는 사람, user가 알람 전송한 사람
             CoroutineScope(Dispatchers.IO).launch {
-                api.addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
+                RetrofitServerConnect.create(requireActivity()).addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
                     override fun onResponse(
                         call: Call<AddAlarmResponseData?>,
                         response: Response<AddAlarmResponseData?>

@@ -181,7 +181,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
 
-        /////////interceptor
+        /*/////////interceptor
         val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -195,8 +195,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 val expireDate: Long = getExpireDate.toLong()
                 if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                     //refresh 들어갈 곳
-                    /*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                    *//*newRequest =
+                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                     Log.e("participation", "adapter")
                     val intent = Intent(context, LoginActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -214,13 +214,13 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         /////////
 
 
         //당일 취소 불가능, 마감이면 취소 불가능,
         CoroutineScope(Dispatchers.IO).launch {
-            api.deleteParticipants(participantsId).enqueue(object : Callback<Void> {
+            RetrofitServerConnect.create(context).deleteParticipants(participantsId).enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
                         Log.d("PART Remove Success ", response.code().toString())
@@ -246,7 +246,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
 
         /////////interceptor
-        val SERVER_URL = BuildConfig.server_URL
+        /*val SERVER_URL = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
             .addConverterFactory(GsonConverterFactory.create())
         //Authorization jwt토큰 로그인
@@ -274,12 +274,12 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
+        val api = retrofit2.create(MioInterface::class.java)*/
         /////////
 
         //200확인 완료
         CoroutineScope(Dispatchers.IO).launch {
-            api.patchParticipantsApproval(participantsId).enqueue(object : Callback<Void> {
+            RetrofitServerConnect.create(context).patchParticipantsApproval(participantsId).enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
                         println(response.code())

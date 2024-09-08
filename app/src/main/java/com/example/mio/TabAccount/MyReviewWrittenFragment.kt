@@ -78,31 +78,10 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
     }
     private fun setReadReviewData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
         val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
         viewModel.setLoading(true)
-        val interceptor = Interceptor { chain ->
-            var newRequest = chain.request()
-            if (token.isNotEmpty()) {
-                newRequest = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer $token")
-                    .build()
-            }
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
         /////////////////////////////////////////////////////
-        checkTokenExpiry(getExpireDate.toLong())
-        api.getMyMannersSendReview(userId).enqueue(object :
+        RetrofitServerConnect.create(requireActivity()).getMyMannersSendReview(userId).enqueue(object :
             Callback<List<MyAccountReviewData>> {
             override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
                 if (response.isSuccessful) {

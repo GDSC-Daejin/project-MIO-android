@@ -75,7 +75,7 @@ class SSEForegroundService : Service() {
         setAlarmTimer()
     }
 
-    private fun startForegroundServiceWithNotification() {
+    /*private fun startForegroundServiceWithNotification() {
         val channelID = "NOTIFICATION_CHANNEL"
         val channelName = "NOTIFICATION"
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -100,7 +100,7 @@ class SSEForegroundService : Service() {
 
         // 포그라운드 서비스 시작
         startForeground(1, notification)
-    }
+    }*/
 
     private fun setAlarmTimer() {
         val c: Calendar = Calendar.getInstance()

@@ -1,12 +1,18 @@
 package com.example.mio
 
 import android.content.res.ColorStateList
+import android.graphics.Rect
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.view.MotionEvent
+import android.view.ViewTreeObserver
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import com.example.mio.Model.*
@@ -26,7 +32,9 @@ class PassengersReviewActivity : AppCompatActivity() {
     private var type = ""
     private var passengersData: ArrayList<ParticipationData>? = null
     private var driverData : User? = null
+    //chip 생성용
     private var passengersChipList = ArrayList<Chip>()
+    //chip에 담긴 내용
     private var passengersChipItemData = ArrayList<ChipData>()
     private var passengersReviewData = ArrayList<String?>()
     private var passengerUserData = ArrayList<User?>() //유저들의 정보
@@ -80,22 +88,37 @@ class PassengersReviewActivity : AppCompatActivity() {
         })
 
         prBinding.passengersReviewRegistrationBtn.setOnClickListener {
-
-            passengerReviewHashMapData[passengersChipItemData.find { it.chipName == currentUser }!!.chipId] = PassengersReviewData(
-                currentMannerCount,
-                currentContent,
-                postData?.postID
-            )
-
-            var isNull = false
-            passengerReviewHashMapData.forEach {
-                if (it.value == null) {
-                    isNull = true
-                }
-            }
-            if (isNull) {
-                Toast.makeText(this@PassengersReviewActivity, "모든 사람의 리뷰를 등록해주세요", Toast.LENGTH_SHORT).show()
+            if (type == "DRIVER") {
+                val chipId = passengersChipItemData.find { it.chipName == currentUser }?.chipId
+                Log.e("passengersChipItemData", "$chipId")
                 Log.e("passengerReviewHashMapData", passengerReviewHashMapData.toString())
+                if (chipId != null) {
+                    passengerReviewHashMapData[chipId] = PassengersReviewData(
+                        currentMannerCount,
+                        currentContent,
+                        postData?.postID
+                    )
+                    Log.e("passengersChipItemData", "$passengerReviewHashMapData")
+                    var isNull = false
+                    passengerReviewHashMapData.forEach {
+                        if (it.value == null || it.value?.content.isNullOrEmpty()) { // 내용도 비어있는지 확인
+                            isNull = true
+                        }
+                    }
+
+                    if (isNull) {
+                        Toast.makeText(this@PassengersReviewActivity, "모든 사람의 리뷰를 등록해주세요", Toast.LENGTH_SHORT).show()
+                        Log.e("passengerReviewHashMapData", passengerReviewHashMapData.toString())
+                    } else {
+                        sendReviewData()
+                    }
+                } else {
+                    Toast.makeText(this@PassengersReviewActivity, "사용자의 리뷰 데이터를 찾을 수 없습니다. \n학생 아이디를 클릭하여 등록해주세요", Toast.LENGTH_SHORT).show()
+
+                    Log.e("passengerReviewHashMapData", "chipId가 null입니다. currentUser: $currentUser")
+                }
+
+
             } else {
                 sendReviewData()
             }
@@ -183,7 +206,24 @@ class PassengersReviewActivity : AppCompatActivity() {
                 Log.e("TAG", "Selected chip is null")
             }
         }*/
+        val rootView = prBinding.rootLayout
+        val rootLayout = prBinding.passengersReviewLl
 
+        rootView.viewTreeObserver.addOnGlobalLayoutListener {
+            val rect = Rect()
+            rootView.getWindowVisibleDisplayFrame(rect)
+
+            val screenHeight = rootView.rootView.height
+            val keypadHeight = screenHeight - rect.bottom
+
+            if (keypadHeight > screenHeight * 0.15) {
+                // If keyboard is visible, move the view up
+                rootLayout.translationY = -keypadHeight.toFloat()
+            } else {
+                // If keyboard is hidden, reset the view position
+                rootLayout.translationY = 0f
+            }
+        }
 
         prBinding.backArrow.setOnClickListener {
             this.finish()
@@ -193,10 +233,25 @@ class PassengersReviewActivity : AppCompatActivity() {
     }
 
     private fun setupChipListeners() {
-        // 모든 Chip을 순회하며 클릭 리스너를 설정합니다.
-        for (chip in prBinding.reviewSetPassengersCg.children) {
-            if (chip is Chip) {
-                chip.setOnClickListener { clickedChip ->
+        Log.e("setupChipListeners", currentUser)
+        // ChipGroup에서 Chip들을 순회하며 클릭 리스너를 설정
+        prBinding.reviewSetPassengersCg.children.forEachIndexed { index, view ->
+            if (view is Chip) {
+                /*if (index == 0 && passengersChipItemData.isNotEmpty()) {
+                    val firstChip = passengersChipItemData.first()
+                    // 첫 번째 Chip의 스타일 적용
+                    currentUser = firstChip.chipName.toString()
+                    view.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this@PassengersReviewActivity, R.color.mio_blue_1))
+                    view.chipStrokeColor = ColorStateList.valueOf(ContextCompat.getColor(this@PassengersReviewActivity, R.color.mio_blue_4))
+                    view.setTextColor(ContextCompat.getColor(this@PassengersReviewActivity, R.color.mio_blue_4))
+
+                    // Chip drawableEnd 변경
+                    val drawableEnd = ContextCompat.getDrawable(this@PassengersReviewActivity, R.drawable.review_check_icon)?.mutate()
+                    drawableEnd?.setTint(ContextCompat.getColor(this@PassengersReviewActivity, R.color.mio_blue_4))
+                    view.chipIcon = drawableEnd
+                }*/
+                // Chip에 공통적인 클릭 리스너 설정
+                view.setOnClickListener { clickedChip ->
                     handleChipClick(clickedChip as Chip)
                 }
             }
@@ -205,6 +260,7 @@ class PassengersReviewActivity : AppCompatActivity() {
 
     private fun handleChipClick(clickedChip: Chip) {
         val chipName = clickedChip.text.toString()
+
 
         // Chip 이름을 기준으로 리뷰 데이터를 추가합니다.
         if (passengersChipItemData.find { it.chipName == chipName } != null) {
@@ -370,42 +426,46 @@ class PassengersReviewActivity : AppCompatActivity() {
     private fun userInfo(passengersData: ArrayList<ParticipationData>?) {
         if (passengersData?.isNotEmpty() == true) {
             for (i in passengersData) {
-                RetrofitServerConnect.create(this@PassengersReviewActivity).getUserProfileData(i.userId).enqueue(object : Callback<User> {
-                    override fun onResponse(call: Call<User>, response: Response<User>) {
-                        if (response.isSuccessful) {
-                            val user = response.body()
-                            user?.let {
-                                passengerUserData.add(it)
-                                val newChip = createNewChip(it.studentId)
-                                passengersChipList.add(newChip)
-                                passengersChipItemData.add(ChipData(it.studentId, it.id))
-
-                                // Chip 추가 로직
-                                if (prBinding.reviewSetPassengersCg.childCount >= 0) {
-                                    // 마지막 Chip 앞에 추가
-                                    prBinding.reviewSetPassengersCg.addView(newChip, prBinding.reviewSetPassengersCg.childCount - 1)
-                                } else {
-                                    // ChipGroup에 자식이 없는 경우, 그냥 추가
-                                    prBinding.reviewSetPassengersCg.addView(newChip)
+                RetrofitServerConnect.create(this@PassengersReviewActivity)
+                    .getUserProfileData(i.userId)
+                    .enqueue(object : Callback<User> {
+                        override fun onResponse(call: Call<User>, response: Response<User>) {
+                            if (response.isSuccessful) {
+                                val user = response.body()
+                                user?.let {
+                                    passengerUserData.add(it)
+                                    val newChip = createNewChip(it.studentId)
+                                    passengersChipList.add(newChip)
+                                    passengersChipItemData.add(ChipData(it.studentId, it.id))
+                                    // Chip 추가 로직
+                                    if (prBinding.reviewSetPassengersCg.childCount >= 0) {
+                                        // 마지막 Chip 앞에 추가
+                                        prBinding.reviewSetPassengersCg.addView(newChip, prBinding.reviewSetPassengersCg.childCount - 1)
+                                    } else {
+                                        // ChipGroup에 자식이 없는 경우, 그냥 추가
+                                        prBinding.reviewSetPassengersCg.addView(newChip)
+                                    }
+                                    /*// 첫 번째 Chip의 이름을 currentUser로 설정
+                                    if (passengersChipItemData.isNotEmpty()) {
+                                        currentUser = passengersChipItemData.first().chipName.toString()
+                                    }*/
+                                    setupChipListeners()
+                                } ?: run {
+                                    Log.e("userInfo", "Response body is null")
                                 }
-                                setupChipListeners()
-                            } ?: run {
-                                Log.e("userInfo", "Response body is null")
-                            }
-                        } else {
-                            Log.e("userInfo", response.code().toString())
-                            response.errorBody()?.string()?.let { errorMsg ->
-                                Log.e("userInfo", errorMsg)
+                            } else {
+                                Log.e("userInfo", response.code().toString())
+                                response.errorBody()?.string()?.let { errorMsg ->
+                                    Log.e("userInfo", errorMsg)
+                                }
                             }
                         }
-                    }
 
-                    override fun onFailure(call: Call<User>, t: Throwable) {
-                        Log.e("userInfo", t.toString())
-                    }
-                })
+                        override fun onFailure(call: Call<User>, t: Throwable) {
+                            Log.e("userInfo", t.toString())
+                        }
+                    })
             }
-            setupChipListeners()
         }
     }
 
@@ -414,7 +474,7 @@ class PassengersReviewActivity : AppCompatActivity() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-        ///
+
         if (type == "DRIVER") { //내가 운전자일 때 손님들의 리뷰데이터를 전송
             if (passengersData != null) {
                 for (i in passengerReviewHashMapData) {
@@ -431,7 +491,7 @@ class PassengersReviewActivity : AppCompatActivity() {
                                 Log.e("ERROR", "review1 : ${response.errorBody()?.string()!!}")
                                 Log.e("ERROR", "review2 : ${response.message().toString()}")
                                 Log.e("ERROR", "review3 : ${response.code().toString()}")
-                                Toast.makeText(this@PassengersReviewActivity, response.errorBody()?.string()!!, Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@PassengersReviewActivity, "이미 평가한 유저입니다.", Toast.LENGTH_SHORT).show()
                             }
                         }
 
@@ -450,12 +510,11 @@ class PassengersReviewActivity : AppCompatActivity() {
                 ) {
                     if (response.isSuccessful) {
                         Log.d("SUCCESS review", "운전자의 review를 잘보냄 : ${response.code()}")
-
-
+                        this@PassengersReviewActivity.finish()
                     } else {
                         Log.e("ERROR", "review1 : ${response.errorBody()?.string()!!}")
-                        Log.e("ERROR", "review2 : ${response.message().toString()}")
-                        Log.e("ERROR", "review3 : ${response.code().toString()}")
+                        Toast.makeText(this@PassengersReviewActivity,
+                            "이미 평가한 운전자입니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -472,5 +531,12 @@ class PassengersReviewActivity : AppCompatActivity() {
         chip.text = text
         //chip.isCloseIconVisible = false
         return chip
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val imm: InputMethodManager =
+            getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+        return super.dispatchTouchEvent(ev)
     }
 }

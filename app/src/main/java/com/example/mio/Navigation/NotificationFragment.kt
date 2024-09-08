@@ -192,7 +192,7 @@ class NotificationFragment : Fragment() {
 
                     // Handle different statuses
                     when(statusSet) {
-                        NotificationAdapter.NotificationStatus.Passenger -> { // When the user is a passenger and the carpool is complete
+                        NotificationAdapter.NotificationStatus.Passenger -> { //손님 카풀종료
                             intent = Intent(activity, PassengersReviewActivity::class.java).apply {
                                 putExtra("type", "PASSENGER")
                                 putExtra("postDriver", contentPost.user)
@@ -200,8 +200,8 @@ class NotificationFragment : Fragment() {
                             }
                         }
 
-                        NotificationAdapter.NotificationStatus.Driver -> { // When the user is a driver and the carpool is complete
-                            if (temp2 != null) {
+                        NotificationAdapter.NotificationStatus.Driver -> {//운전자 카풀종료
+                            if (temp2?.isNotEmpty() == true) {
                                 intent = Intent(activity, PassengersReviewActivity::class.java).apply {
                                     putExtra("type", "DRIVER")
                                     putExtra("postPassengers", temp2)
@@ -214,7 +214,7 @@ class NotificationFragment : Fragment() {
                             }
                         }
 
-                        NotificationAdapter.NotificationStatus.Neither -> { // The user is checking their own post
+                        NotificationAdapter.NotificationStatus.Neither -> {
                             intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
                                 putExtra("type", "READ")
                                 putExtra("postItem", contentPost)
@@ -265,7 +265,7 @@ class NotificationFragment : Fragment() {
                     val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
 
                     /////////interceptor
-                    val SERVER_URL = BuildConfig.server_URL
+                    /*val SERVER_URL = BuildConfig.server_URL
                     val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
                         .addConverterFactory(GsonConverterFactory.create())
                     //Authorization jwt토큰 로그인
@@ -278,8 +278,8 @@ class NotificationFragment : Fragment() {
                             val expireDate: Long = getExpireDate.toLong()
                             if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
                                 //refresh 들어갈 곳
-                                /*newRequest =
-                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*/
+                                *//*newRequest =
+                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
                                 val intent = Intent(requireActivity(), LoginActivity::class.java)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
 
@@ -296,9 +296,9 @@ class NotificationFragment : Fragment() {
                     val client: OkHttpClient = builder.build()
                     retrofit.client(client)
                     val retrofit2: Retrofit = retrofit.build()
-                    val api = retrofit2.create(MioInterface::class.java)
+                    val api = retrofit2.create(MioInterface::class.java)*/
                     /////////
-                    api.deleteMyAlarm(itemId).enqueue(object : Callback<Void> {
+                    RetrofitServerConnect.create(requireContext()).deleteMyAlarm(itemId).enqueue(object : Callback<Void> {
                         override fun onResponse(call: Call<Void>, response: Response<Void>) {
                             viewModel.setLoading(false) // 로딩 상태 해제
                             if (response.isSuccessful) {

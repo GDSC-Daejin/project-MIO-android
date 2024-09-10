@@ -91,20 +91,74 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                 Log.e("onRefuseClick", "onRefuseClick")
             }
         })
+    }
 
+    private fun postDeadLineClick(deadLine : Boolean) {
         pBinding.receiveDeadlineBtn.setOnClickListener {
-            /////////
-            RetrofitServerConnect.create(this@ParticipationReceiveActivity).patchDeadLinePost(postId).enqueue(object : Callback<Content> {
+            //deadLine
+            if (deadLine) {
+                RetrofitServerConnect.create(this@ParticipationReceiveActivity).patchDeadLinePost(postId).enqueue(object : Callback<Content> {
+                    override fun onResponse(call: Call<Content>, response: Response<Content>) {
+                        if (response.isSuccessful) {
+                            Log.e("deadline", response.code().toString())
+                            val responseData = response.body()
+                            if (responseData != null) {
+                                //BEFORE_DEADLINE, DEADLINE, COMPLETED
+                                when (responseData.postType) {
+                                    "DEADLINE" -> {
+                                        val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_blue_5)) //마감
+                                        pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
+                                        pBinding.receiveDeadlineBtn.text = "운행 완료"
+                                        postComplete()
+                                    }
+                                    else -> { //completed
+                                        val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_gray_4)) //마감
+                                        pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
+                                        pBinding.receiveDeadlineBtn.text = "운행 종료"
+                                        pBinding.receiveDeadlineBtn.isClickable = false
+                                    }
+                                }
+                            }
+                        } else {
+                            Log.e("fff", response.code().toString())
+                            Log.e("fff", response.errorBody()?.string()!!)
+                        }
+                    }
+
+                    override fun onFailure(call: Call<Content>, t: Throwable) {
+                        Log.e("ffffail", t.toString())
+                    }
+                })
+            }
+        }
+    }
+
+    private fun postComplete() {
+        pBinding.receiveDeadlineBtn.setOnClickListener {
+            RetrofitServerConnect.create(this@ParticipationReceiveActivity).patchCompletePost(postId).enqueue(object : Callback<Content> {
                 override fun onResponse(call: Call<Content>, response: Response<Content>) {
                     if (response.isSuccessful) {
-                        Log.e("RetrofitServerConnect", response.code().toString())
+                        Log.e("deadlineComplete", response.code().toString())
                         val responseData = response.body()
                         if (responseData != null) {
-                            if (responseData.postType != "BEFORE_DEADLINE") {
-                                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_gray_4)) //마감
-                                pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
-                                pBinding.receiveDeadlineBtn.text = "마감완료"
-                                pBinding.receiveDeadlineBtn.isClickable = false
+                            //BEFORE_DEADLINE, DEADLINE, COMPLETED
+                            when (responseData.postType) {
+                                "BEFORE_DEADLINE" -> {
+                                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_blue_5)) //마감
+                                    pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
+                                    pBinding.receiveDeadlineBtn.text = "마감하기"
+                                }
+                                "DEADLINE" -> {
+                                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_blue_5)) //마감
+                                    pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
+                                    pBinding.receiveDeadlineBtn.text = "운행 완료"
+                                }
+                                else -> { //completed
+                                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_gray_4)) //마감
+                                    pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
+                                    pBinding.receiveDeadlineBtn.text = "운행 종료"
+                                    pBinding.receiveDeadlineBtn.isClickable = false
+                                }
                             }
                         }
                     } else {
@@ -117,9 +171,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                     Log.e("ffffail", t.toString())
                 }
             })
-
         }
-
     }
 
     private fun initPostDeadLine() {
@@ -129,11 +181,25 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                     val responseData = response.body()
                     Log.e("indexout check", response.body().toString())
                     if (responseData != null) {
-                        if (responseData.postType != "BEFORE_DEADLINE") {
-                            val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_gray_4)) //마감
-                            pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
-                            pBinding.receiveDeadlineBtn.text = "마감완료"
-                            pBinding.receiveDeadlineBtn.isClickable = false
+                        when (responseData.postType) {
+                            "BEFORE_DEADLINE" -> {
+                                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_blue_5)) //마감
+                                pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
+                                pBinding.receiveDeadlineBtn.text = "마감하기"
+                                postDeadLineClick(true)
+                            }
+                            "DEADLINE" -> {
+                                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_blue_5)) //마감
+                                pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
+                                pBinding.receiveDeadlineBtn.text = "운행 완료"
+                                postComplete()
+                            }
+                            else -> { //completed
+                                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_gray_4)) //마감
+                                pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
+                                pBinding.receiveDeadlineBtn.text = "운행 종료"
+                                pBinding.receiveDeadlineBtn.isClickable = false
+                            }
                         }
                     }
                 } else {

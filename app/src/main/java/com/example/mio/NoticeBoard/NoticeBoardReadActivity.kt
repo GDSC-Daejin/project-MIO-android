@@ -463,7 +463,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                                 Log.d("add", response.errorBody()?.string()!!)
                                                 Log.d("message", call.request().toString())
                                                 Log.d("f", response.code().toString())
-
                                             }
                                         }
 

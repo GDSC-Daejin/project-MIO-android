@@ -126,7 +126,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:fontFamily="@font/pretendard_bold"
-            android:text="카풀 완료"
+            android:text="운행 종료"
             android:textSize="16sp"
             android:textColor="@color/mio_gray_1" />
     </FrameLayout>

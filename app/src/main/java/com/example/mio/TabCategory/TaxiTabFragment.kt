@@ -172,7 +172,7 @@ class TaxiTabFragment : Fragment() {
                                 putExtra("category", "taxi")
                             }
                             //sendAlarmData("PASSENGER", position, currentTaxiAllData[position])
-                            patchVerifyFinish(temp.postID)
+                            //patchVerifyFinish(temp.postID)
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Driver -> { //내가 운전자로 카풀이 완료되었을 떄
@@ -183,7 +183,7 @@ class TaxiTabFragment : Fragment() {
                                 putExtra("category", "taxi")
                             }
                             //sendAlarmData("DRIVER", position, currentTaxiAllData[position])
-                            patchVerifyFinish(temp.postID)
+                            //patchVerifyFinish(temp.postID)
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Neither -> {

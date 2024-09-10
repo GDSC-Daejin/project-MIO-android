@@ -183,7 +183,7 @@ class CarpoolTabFragment : Fragment() {
                                 putExtra("category", "carpool")
                             }
                             //sendAlarmData("DRIVER", position, currentTaxiAllData[position])
-                            patchCompletePost(temp.postID)
+                            //patchCompletePost(temp.postID)
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Neither -> {

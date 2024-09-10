@@ -103,7 +103,7 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
                 }
                 if (diffSeconds > 0) {
                     binding.currentCompleteFl.visibility = View.VISIBLE
-                    binding.currentCompleteTv.text = "카풀 완료"
+                    binding.currentCompleteTv.text = "운행 종료"
 
                     if (identification == currentPostItemData[position].user.email) {
                         Log.d("identification Driver", currentPostItemData[position].user.email)

@@ -669,85 +669,90 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             RetrofitServerConnect.create(this@MoreTaxiTabActivity).getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
+                        response.body()?.let { responseData ->
+                            moreTaxiAllData.clear()
+                            totalPages = responseData.totalPages
 
-                        //println(response.body()!!.content)
-                        /*val start = SystemClock.elapsedRealtime()
+                            // 필터링된 게시글만 처리
+                            val filteredContent = responseData.content.filter {
+                                it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE"
+                            }
 
-                        // 함수 실행시간
-                        val date = Date(start)
-                        val mFormat = SimpleDateFormat("HH:mm:ss")
-                        val time = mFormat.format(date)
-                        println(start)
-                        println(time)*/
-                        /*val s : ArrayList<PostReadAllResponse> = ArrayList()
-                        s.add(PostReadAllResponse())*/
+                            // 필터링된 게시글 처리
+                            for (post in filteredContent) {
+                                val part = post.participantsCount ?: 0
+                                val location = post.location ?: "수락산역 3번 출구"
+                                val title = post.title ?: "null"
+                                val content = post.content ?: "null"
+                                val targetDate = post.targetDate ?: "null"
+                                val targetTime = post.targetTime ?: "null"
+                                val categoryName = post.category.categoryName ?: "null"
+                                val cost = post.cost ?: 0
+                                val verifyGoReturn = post.verifyGoReturn ?: false
 
-                        moreTaxiAllData.clear()
-                        totalPages = response.body()!!.totalPages
-                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
-                            val part = response.body()!!.content[i].participantsCount ?: 0
-                            val location = response.body()!!.content[i].location ?: "수락산역 3번 출구"
-                            val title = response.body()!!.content[i].title ?: "null"
-                            val content = response.body()!!.content[i].content ?: "null"
-                            val targetDate = response.body()!!.content[i].targetDate ?: "null"
-                            val targetTime = response.body()!!.content[i].targetTime ?: "null"
-                            val categoryName = response.body()!!.content[i].category.categoryName ?: "null"
-                            val cost = response.body()!!.content[i].cost ?: 0
-                            val verifyGoReturn = response.body()!!.content[i].verifyGoReturn ?: false
+                                moreTaxiAllData.add(PostData(
+                                    post.user.studentId,
+                                    post.postId,
+                                    title,
+                                    content,
+                                    post.createDate,
+                                    targetDate,
+                                    targetTime,
+                                    categoryName,
+                                    location,
+                                    part,
+                                    post.numberOfPassengers,
+                                    cost,
+                                    verifyGoReturn,
+                                    post.user,
+                                    post.latitude,
+                                    post.longitude
+                                ))
+                            }
 
-                            //println(response!!.body()!!.content[i].user.studentId)
-                            moreTaxiAllData.add(PostData(
-                                response.body()!!.content[i].user.studentId,
-                                response.body()!!.content[i].postId,
-                                title,
-                                content,
-                                response.body()!!.content[i].createDate,
-                                targetDate,
-                                targetTime,
-                                categoryName,
-                                location,
-                                //participantscount가 현재 참여하는 인원들
-                                part,
-                                //numberOfPassengers은 총 탑승자 수
-                                response.body()!!.content[i].numberOfPassengers,
-                                cost,
-                                verifyGoReturn,
-                                response.body()!!.content[i].user,
-                                response.body()!!.content[i].latitude,
-                                response.body()!!.content[i].longitude
-                            ))
+                            Log.e("moreTaxiAllData", "$moreTaxiAllData")
+                            // 어댑터 데이터 갱신
+                            mtAdapter?.let { adapter ->
+                                adapter.moreTaxiData = moreTaxiAllData
+                                adapter.notifyDataSetChanged()
+                            }
 
-                        }
-                        mtAdapter!!.moreTaxiData = moreTaxiAllData
-                        mtAdapter!!.notifyDataSetChanged()
-                        if (getBottomData.isNotEmpty()) {
-                            myViewModel.postCheckFilter(getBottomData)
-                        } else if (getBottomSheetData.isNotEmpty()) {
-                            myViewModel.postCheckSearchFilter(getBottomSheetData)
-                        } else if (getBottomData.isNotEmpty() && getBottomSheetData.isNotEmpty()) {
-                            myViewModel.postCheckFilter(getBottomData)
-                            myViewModel.postCheckSearchFilter(getBottomSheetData)
-                        } else {
-                            // 새로 고침 완료 후 터치 활성화
-                            mttBinding.moreRefreshSwipeLayout.isRefreshing = false
-                            this@MoreTaxiTabActivity.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                        }
-                        if (moreTaxiAllData.isEmpty()) {
-                            mttBinding.moreNonfilterTv.text = "택시 게시글이 존재하지 않습니다"
-                            mttBinding.moreNonfilterTv.visibility = View.VISIBLE
-                            mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
-                        } else {
-                            mttBinding.moreNonfilterTv.text = "검색된 게시글이 없습니다"
-                            mttBinding.moreNonfilterTv.visibility = View.GONE
-                            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+                            // ViewModel 필터링 및 검색 필터 확인
+                            when {
+                                getBottomData.isNotEmpty() -> myViewModel.postCheckFilter(getBottomData)
+                                getBottomSheetData.isNotEmpty() -> myViewModel.postCheckSearchFilter(getBottomSheetData)
+                                getBottomData.isNotEmpty() && getBottomSheetData.isNotEmpty() -> {
+                                    myViewModel.postCheckFilter(getBottomData)
+                                    myViewModel.postCheckSearchFilter(getBottomSheetData)
+                                }
+                                else -> {
+                                    // 새로 고침 완료 후 터치 활성화
+                                    mttBinding.moreRefreshSwipeLayout.isRefreshing = false
+                                    this@MoreTaxiTabActivity.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                                }
+                            }
+
+                            // 게시글 유무에 따른 UI 처리
+                            if (moreTaxiAllData.isEmpty()) {
+                                mttBinding.moreNonfilterTv.apply {
+                                    text = "카풀 게시글이 존재하지 않습니다"
+                                    visibility = View.VISIBLE
+                                }
+                                mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
+                            } else {
+                                mttBinding.moreNonfilterTv.visibility = View.GONE
+                                mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+                            }
+                        } ?: run {
+                            Log.e("setSelectData", "Response body is null")
                         }
                     } else {
-                        Log.d("f", response.code().toString())
+                        Log.e("setSelectData", "Error code: ${response.code()}")
                     }
                 }
 
                 override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.d("error", t.toString())
+                    Log.e("setSelectData", "Failure: ${t.message}")
                 }
             })
         }

@@ -425,6 +425,7 @@ class PassengersReviewActivity : AppCompatActivity() {
 
     private fun userInfo(passengersData: ArrayList<ParticipationData>?) {
         if (passengersData?.isNotEmpty() == true) {
+            Log.e("userInfo", "$passengersData")
             for (i in passengersData) {
                 RetrofitServerConnect.create(this@PassengersReviewActivity)
                     .getUserProfileData(i.userId)
@@ -471,10 +472,6 @@ class PassengersReviewActivity : AppCompatActivity() {
 
 
     private fun sendReviewData() {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-
         if (type == "DRIVER") { //내가 운전자일 때 손님들의 리뷰데이터를 전송
             if (passengersData != null) {
                 for (i in passengerReviewHashMapData) {
@@ -486,6 +483,7 @@ class PassengersReviewActivity : AppCompatActivity() {
                         ) {
                             if (response.isSuccessful) {
                                 Log.d("SUCCESS review", "탑승자들의 review를 잘보냄 : ${response.code()}")
+                                Toast.makeText(this@PassengersReviewActivity, "후기 감사드립니다!", Toast.LENGTH_SHORT).show()
                                 this@PassengersReviewActivity.finish()
                             } else {
                                 Log.e("ERROR", "review1 : ${response.errorBody()?.string()!!}")
@@ -510,6 +508,7 @@ class PassengersReviewActivity : AppCompatActivity() {
                 ) {
                     if (response.isSuccessful) {
                         Log.d("SUCCESS review", "운전자의 review를 잘보냄 : ${response.code()}")
+                        Toast.makeText(this@PassengersReviewActivity, "후기 감사드립니다!", Toast.LENGTH_SHORT).show()
                         this@PassengersReviewActivity.finish()
                     } else {
                         Log.e("ERROR", "review1 : ${response.errorBody()?.string()!!}")

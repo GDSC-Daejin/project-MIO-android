@@ -42,12 +42,10 @@ import kotlin.collections.ArrayList
 class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.ParticipationViewHolder>() {
     private lateinit var binding: ParticipationItemLayoutBinding
     var participationItemData = ArrayList<ParticipationData>()
-    var participantsUserData = kotlin.collections.ArrayList<User?>()  // 사용자 데이터를 Map으로 변경하여 빠른 검색 가능
+    var participantsUserData = kotlin.collections.ArrayList<User?>()
     private lateinit var context: Context
-    private var selectedItemPosition: Int? = null
+    private val selectedItemPositions = HashSet<Int>() // 선택된 항목의 position을 저장하는 Set
     var target = ""
-
-
 
     inner class ParticipationViewHolder(private val binding: ParticipationItemLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(partData: ParticipationData, position: Int) {
@@ -65,14 +63,14 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             Log.e("binding", partData.toString())
 
             // 선택된 아이템인지 확인하고 배경 색상 설정
-            if (selectedItemPosition == position) {
+            if (selectedItemPositions.contains(position)) {
                 setItemSelected(binding)
             } else {
                 setItemUnselected(binding)
             }
 
             val gender = if (participantsUserData.find { it?.id == user?.id }?.gender != null) {
-                if (participantsUserData.find {it?.id == user?.id}?.gender == true) {
+                if (participantsUserData.find { it?.id == user?.id }?.gender == true) {
                     "여성"
                 } else {
                     "남성"
@@ -81,8 +79,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 "설정X"
             }
 
-            val smoke = if (participantsUserData.find { it?.id == user?.id}?.verifySmoker != null) {
-                if (participantsUserData.find {it?.id == user?.id}?.verifySmoker == true) {
+            val smoke = if (participantsUserData.find { it?.id == user?.id }?.verifySmoker != null) {
+                if (participantsUserData.find { it?.id == user?.id }?.verifySmoker == true) {
                     "흡연 O"
                 } else {
                     "흡연 X"
@@ -94,8 +92,15 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             binding.participationFilterTv.text = "${user?.studentId} | $gender $smoke"
             binding.participationContentTv.text = partData.content
 
-            if (partData.approvalOrReject == "APPROVAL") {
+            /*if (partData.approvalOrReject == "APPROVAL" ) {
                 setItemSelected(binding)
+            }*/
+
+            // 조건에 따라 선택 상태 처리 (isDeleteYN == "N" && approvalOrReject == "APPROVAL")
+            if (partData.isDeleteYN == "N" && partData.approvalOrReject == "APPROVAL" || partData.isDeleteYN == "N" && partData.approvalOrReject == "FINISH") {
+                setItemSelected(binding)
+            } else {
+                setItemUnselected(binding)
             }
 
             // 승인, 거절, 취소 버튼 클릭 리스너 설정
@@ -122,7 +127,12 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
 
         private fun setButtonListeners(binding: ParticipationItemLayoutBinding, partData: ParticipationData, position: Int) {
             binding.participationApproval.setOnClickListener {
-                selectedItemPosition = position
+                // 선택 상태 토글
+                if (selectedItemPositions.contains(position)) {
+                    selectedItemPositions.remove(position)
+                } else {
+                    selectedItemPositions.add(position)
+                }
                 notifyDataSetChanged()
                 fetchItemDetails(partData.participantId)
                 itemClickListener.onApprovalClick(position, partData.participantId.toString())
@@ -181,63 +191,24 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
 
-        /*/////////interceptor
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("participation", "adapter")
-                    val intent = Intent(context, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(context, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    context.startActivity(intent)
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else {
-                newRequest = chain.request()
-            }
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        /////////
-
-
         //당일 취소 불가능, 마감이면 취소 불가능,
-        CoroutineScope(Dispatchers.IO).launch {
-            RetrofitServerConnect.create(context).deleteParticipants(participantsId).enqueue(object : Callback<Void> {
-                override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                    if (response.isSuccessful) {
-                        Log.d("PART Remove Success ", response.code().toString())
-                    } else {
-                        Log.e("PART Remove ERROR ", response.code().toString())
-                        Log.e("PART Remove ERROR ", response.errorBody()?.string()!!)
-                        Log.e("PART Remove ERROR ", response.message().toString())
+        RetrofitServerConnect.create(context).deleteParticipants(participantsId).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    Log.d("PART Remove Success ", response.code().toString())
+                } else {
+                    Log.e("PART Remove ERROR ", response.code().toString())
+                    Log.e("PART Remove ERROR ", response.errorBody()?.string()!!)
+                    Log.e("PART Remove ERROR ", response.message().toString())
 
 
-                    }
                 }
+            }
 
-                override fun onFailure(call: Call<Void>, t: Throwable) {
-                    Log.e("PART Remove ERROR ", t.toString())
-                }
-            })
-        }
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                Log.e("PART Remove ERROR ", t.toString())
+            }
+        })
     }
 
     private fun fetchItemDetails(participantsId: Int) {
@@ -245,56 +216,23 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
 
-        /////////interceptor
-        /*val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    Log.e("participation", "adapter")
-                    val intent = Intent(context, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(context, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    context.startActivity(intent)
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        /////////
-
         //200확인 완료
-        CoroutineScope(Dispatchers.IO).launch {
-            RetrofitServerConnect.create(context).patchParticipantsApproval(participantsId).enqueue(object : Callback<Void> {
-                override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                    if (response.isSuccessful) {
-                        println(response.code())
-                    } else {
-                        val stringToJson = JSONObject(response.errorBody()?.string()!!)
-                        Log.e("YMC", "stringToJson: $stringToJson")
-                        println(response.code())
-                    }
+        RetrofitServerConnect.create(context).patchParticipantsApproval(participantsId).enqueue(object : Callback<Void> {
+            override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                if (response.isSuccessful) {
+                    Log.d("fetchItemDetails", response.code().toString())
+                } else {
+                    /*val stringToJson = JSONObject(response.errorBody()?.string()!!)
+                    Log.e("YMC", "stringToJson: $stringToJson")
+                    println(response.code())*/
+                    Log.e("fetchItemDetails", response.errorBody()?.string()!!)
                 }
+            }
 
-                override fun onFailure(call: Call<Void>, t: Throwable) {
-                    Log.d("ERROR", t.toString())
-                }
-            })
-        }
+            override fun onFailure(call: Call<Void>, t: Throwable) {
+                Log.d("ERROR", t.toString())
+            }
+        })
     }
 
 

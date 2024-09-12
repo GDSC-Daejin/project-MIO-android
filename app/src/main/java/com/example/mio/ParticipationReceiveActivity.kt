@@ -157,6 +157,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                                     val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@ParticipationReceiveActivity , R.color.mio_gray_4)) //마감
                                     pBinding.receiveDeadlineBtn.backgroundTintList = colorStateList
                                     pBinding.receiveDeadlineBtn.text = "운행 종료"
+                                    setParticipationData()
                                     pBinding.receiveDeadlineBtn.isClickable = false
                                 }
                             }
@@ -245,43 +246,6 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
 
-        /////////interceptor
-        /*val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("receive", "receive1")
-                    val intent = Intent(this@ParticipationReceiveActivity, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(this@ParticipationReceiveActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        /////////
-        //val call = RetrofitServerConnect.service
-        //val thisData : ArrayList<ParticipationData>? = ArrayList()
         RetrofitServerConnect.create(this@ParticipationReceiveActivity).getParticipationData(postId).enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                 if (response.isSuccessful) {
@@ -329,43 +293,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         Log.e("ParticipationReceiveActivity PostId Test", "진입완료")
         Log.e("setParticipantsUserData", postList.toString())
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-        /*val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.substring(0 until 8)
-        val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(this)!!*/
 
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("receive", "receive2")
-                    val intent = Intent(this, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(this@ParticipationReceiveActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        ///////////////////////////////////////////////////
         participantsUserAllData.clear()
 
         if (postList?.isNotEmpty() == true) {

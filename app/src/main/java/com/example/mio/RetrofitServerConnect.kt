@@ -2,6 +2,8 @@ package com.example.mio
 
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat.startActivity
@@ -48,11 +50,14 @@ object RetrofitServerConnect {
 
     private fun checkTokenExpiry(expireDate: Long, context: Context): Boolean {
         return if (expireDate <= System.currentTimeMillis()) {
-            val intent = Intent(context, LoginActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            // 메인 스레드에서 UI 작업을 처리하기 위해 Handler 사용
+            Handler(Looper.getMainLooper()).post {
+                val intent = Intent(context, LoginActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                }
+                Toast.makeText(context, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
+                context.startActivity(intent)
             }
-            Toast.makeText(context, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-            context.startActivity(intent)
             true
         } else {
             false

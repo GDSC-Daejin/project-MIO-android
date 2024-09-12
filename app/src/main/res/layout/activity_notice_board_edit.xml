@@ -638,7 +638,7 @@
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="15dp"
                 android:fontFamily="@font/pretendard_bold"
-                android:text="상세 정보를 입력해주세요"
+                android:text="운전자의 정보를 입력해주세요"
                 android:textColor="@color/mio_gray_11" />
 
             <LinearLayout

@@ -476,20 +476,30 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             }
 
             val cal = Calendar.getInstance()
+            val today = Calendar.getInstance()
+
             val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
-                selectTargetDate = "${year}년/${month+1}월/${day}일"
+                selectTargetDate = "${year}년/${month + 1}월/${day}일"
                 selectFormattedDate = LocalDate.parse(selectTargetDate, DateTimeFormatter.ofPattern("yyyy년/M월/d일")).format(DateTimeFormatter.ISO_DATE)
-                mBinding.editSelectDateTv.text = "${year}년/${month+1}월/${day}일"
-                mBinding.editSelectDateTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_gray_11))
-                //isCalendar = true
+                mBinding.editSelectDateTv.text = "${year}년/${month + 1}월/${day}일"
+                mBinding.editSelectDateTv.setTextColor(ContextCompat.getColor(this, R.color.mio_gray_11))
                 isAllCheck.isFirstVF.isCalendar = true
                 myViewModel.postCheckValue(isAllCheck)
                 if (selectTargetDate != null) {
                     mBinding.editCalendar.setImageResource(R.drawable.filter_calendar_update_icon)
                 }
             }
-            DatePickerDialog(this, R.style.MySpinnerDatePickerStyle, data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(
-                Calendar.DAY_OF_MONTH)).show()
+
+            val datePickerDialog = DatePickerDialog(this, R.style.MySpinnerDatePickerStyle, data,
+                cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
+
+            // Get the DatePicker instance from the DatePickerDialog
+            val datePicker = datePickerDialog.datePicker
+
+            // Set minimum date to today
+            datePicker.minDate = today.timeInMillis
+
+            datePickerDialog.show()
         }
 
 

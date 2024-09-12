@@ -83,6 +83,11 @@ class MyReviewWriteableFragment : Fragment() {
         initScrollListener()
         initRecyclerview()
 
+        return wBinding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         wAdapter?.setItemClickListener(object : MyReviewWriteableAdapter.ItemClickListener{
             override fun onClick(view: View, position: Int, itemId: Int) {
                 val temp = reviewWriteableReadAllData[position]
@@ -90,22 +95,21 @@ class MyReviewWriteableFragment : Fragment() {
                 Log.e("wWriteable", reviewPassengersData.toString())
                 if (identification != reviewWriteableReadAllData[position]!!.user.email) {
                     val intent = Intent(activity, PassengersReviewActivity::class.java).apply {
-                        putExtra("type",  CurrentNoticeBoardAdapter.PostStatus.Passenger)
+                        putExtra("type", "PASSENGER")
                         putExtra("postDriver", temp!!.user)
+                        putExtra("Data", temp)
                     }
                     requestActivity.launch(intent)
-
                 } else { //내가 작성자(운전자)일때
-                    //val s = reviewPassengersData.find { it.postId == itemId }
                     val intent = Intent(activity, PassengersReviewActivity::class.java).apply {
-                        putExtra("type",  CurrentNoticeBoardAdapter.PostStatus.Driver)
+                        putExtra("type",  "DRIVER")
                         putExtra("postPassengers", reviewPassengersData)
+                        putExtra("Data", temp)
                     }
                     requestActivity.launch(intent)
                 }
             }
         })
-        return wBinding.root
     }
 
 

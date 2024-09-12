@@ -560,14 +560,15 @@ class NotificationFragment : Fragment() {
        // setReadReviewData()
         // LiveData 관찰
         viewModel.notifications.observe(viewLifecycleOwner) { notifications ->
-            nAdapter.updateNotifications(notifications.toList())
+            nAdapter.updateNotifications(notifications.sortedByDescending { it.createDate }.toList())
             updateUI2(notifications)
             Log.e("observeNoti1", notifications.toString())
+            Log.e("sortedByDescending", "${notifications.sortedByDescending { it.createDate }.toList()}")
             /*CoroutineScope(Dispatchers.IO).launch {
                 initNotificationPostData(notificationAllData)
             }*/
             CoroutineScope(Dispatchers.IO).launch {
-                initNotificationPostData(notifications)
+                initNotificationPostData(notifications.sortedByDescending { it.createDate }.toList())
             }
         }
 

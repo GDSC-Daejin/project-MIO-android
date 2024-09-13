@@ -31,6 +31,7 @@ data class CommentData(
     val user : CommentUser,
     @SerializedName("childComments")
     var childComments : List<CommentData>?,
+    var isParent : Boolean? // true 부모, false 댓글
 )
 
 data class CommentUser(

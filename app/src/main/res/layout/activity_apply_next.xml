@@ -136,125 +136,128 @@
                 android:textSize="20dp" />
 
 
-            <!--등하교-->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="30dp"
-                android:fontFamily="@font/pretendard_medium"
-                android:text="등/하교"
-                android:textColor="@color/mio_gray_9" />
-
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/all_c"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
-                android:orientation="horizontal">
+                android:orientation="vertical"
+                android:visibility="visible">
 
-                <Button
-                    android:id="@+id/apply_gtschool_btn"
-                    android:layout_width="wrap_content"
+
+                <TextView
+                    android:id="@+id/textView7"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/edit_check_btn"
-                    android:text="등교"
+                    android:layout_marginTop="15dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="등/하교"
                     android:textColor="@color/mio_gray_11"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <Button
-                    android:id="@+id/apply_aschool_btn"
+                    android:id="@+id/applyGtschoolBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="5dp"
+                    android:background="@drawable/edit_check_btn"
+                    android:text="등교"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView7" />
+
+
+                <Button
+                    android:id="@+id/applyAschoolBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="5dp"
                     android:background="@drawable/edit_check_btn"
                     android:text="하교"
                     android:textColor="@color/mio_gray_11"
-                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintTop_toBottomOf="@+id/textView7" />
 
+                <TextView
+                    android:id="@+id/textView8"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="성별"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/applyGtschoolBtn" />
 
-            <!--성별-->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="30dp"
-                android:fontFamily="@font/pretendard_medium"
-                android:text="성별"
-                android:textColor="@color/mio_gray_9" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                android:orientation="horizontal">
 
                 <Button
-                    android:id="@+id/apply_man_btn"
+                    android:id="@+id/applyManBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginTop="10dp"
                     android:background="@drawable/edit_check_btn"
                     android:contentDescription="남성"
                     android:text="남성"
                     android:textColor="@color/mio_gray_11"
-                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@+id/textView8" />
 
                 <Button
-                    android:id="@+id/apply_woman_btn"
+                    android:id="@+id/applyWomanBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="5dp"
                     android:background="@drawable/edit_check_btn"
                     android:text="여성"
                     android:textColor="@color/mio_gray_11"
-                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    app:layout_constraintTop_toBottomOf="@+id/textView8" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="30dp"
-                android:fontFamily="@font/pretendard_medium"
-                android:text="흡연여부"
-                android:textColor="@color/mio_gray_9" />
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"
-                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/textView9"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="흡연여부"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintTop_toBottomOf="@+id/applyManBtn"
+                    tools:layout_editor_absoluteX="10dp" />
 
                 <Button
-                    android:id="@+id/apply_smoker_btn"
+                    android:id="@+id/applySmokerBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="5dp"
                     android:background="@drawable/edit_check_btn"
                     android:text="O"
                     android:textColor="@color/mio_gray_11"
-                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@+id/textView9" />
 
                 <Button
-                    android:id="@+id/apply_nsmoker_btn"
+                    android:id="@+id/applyNsmokerBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="5dp"
                     android:background="@drawable/edit_check_btn"
                     android:text="X"
                     android:textColor="@color/mio_gray_11"
-                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@+id/textView9" />
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>

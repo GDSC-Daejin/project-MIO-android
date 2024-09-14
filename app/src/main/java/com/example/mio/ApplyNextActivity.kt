@@ -118,6 +118,13 @@ class ApplyNextActivity : AppCompatActivity() {
                     currentPage += 1
                     println(currentPage)
                     myViewModel.postCheckPage(currentPage)
+                    // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                    val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                    if (inputMethodManager.isActive) {
+                        // 가상 키보드가 올라가 있다면 내립니다.
+                        inputMethodManager.hideSoftInputFromWindow(anaBinding.applyNext.windowToken, 0)
+                    }
                 }
             } else {
                 CoroutineScope(Dispatchers.Main).launch {
@@ -126,8 +133,12 @@ class ApplyNextActivity : AppCompatActivity() {
                         setTextColor(ContextCompat.getColor(this@ApplyNextActivity ,R.color.mio_gray_8))
                     }
                 }
-                anaBinding.applyNext.setOnClickListener {
-
+                // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                if (inputMethodManager.isActive) {
+                    // 가상 키보드가 올라가 있다면 내립니다.
+                    inputMethodManager.hideSoftInputFromWindow(anaBinding.applyNext.windowToken, 0)
                 }
             }
         }
@@ -146,6 +157,7 @@ class ApplyNextActivity : AppCompatActivity() {
                     val fadeIn = ObjectAnimator.ofFloat(anaBinding.applyCompleteBtn, "alpha", 0f, 1f)
                     fadeIn.duration = 1500
                     fadeIn.start()
+
                 }
                 else -> {
                     anaBinding.applyNext.visibility = View.VISIBLE
@@ -289,45 +301,6 @@ class ApplyNextActivity : AppCompatActivity() {
             inputMethodManager.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
         }
         anaBinding.applyCompleteBtn.setOnClickListener {
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-            //val SERVER_URL = BuildConfig.server_URL
-            /*val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-            //.client(clientBuilder)
-
-            //Authorization jwt토큰 로그인
-            val interceptor = Interceptor { chain ->
-
-                var newRequest: Request
-                if (token != null && token != "") { // 토큰이 없는 경우
-                    // Authorization 헤더에 토큰 추가
-                    newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                    val expireDate: Long = getExpireDate.toLong()
-                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                        //refresh 들어갈 곳
-                        *//*newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                        val intent = Intent(this@ApplyNextActivity, LoginActivity::class.java)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                        Toast.makeText(this@ApplyNextActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                        startActivity(intent)
-                        finish()
-                        return@Interceptor chain.proceed(newRequest)
-                    }
-
-                } else newRequest = chain.request()
-                chain.proceed(newRequest)
-            }
-            val builder = OkHttpClient.Builder()
-            builder.interceptors().add(interceptor)
-            val client: OkHttpClient = builder.build()
-            retrofit.client(client)
-            val retrofit2: Retrofit = retrofit.build()
-            val api = retrofit2.create(MioInterface::class.java)*/
-            ///////////////////////////////
             val temp = ParticipateData(applyEditContent)
 
             RetrofitServerConnect.create(this@ApplyNextActivity).addParticipate(postId, temp).enqueue(object : Callback<ParticipationData> {

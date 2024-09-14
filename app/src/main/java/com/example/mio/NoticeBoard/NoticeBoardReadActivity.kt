@@ -209,7 +209,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     .load(imageUrl)
                     .error(R.drawable.top_icon_vector)
                     .centerCrop()
-                    .override(40,40)
+                    .circleCrop()
+                    .override(32,32)
                     .listener(object : RequestListener<Drawable> {
                         override fun onLoadFailed(
                             e: GlideException?,

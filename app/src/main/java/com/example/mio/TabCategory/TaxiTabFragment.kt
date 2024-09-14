@@ -114,7 +114,7 @@ class TaxiTabFragment : Fragment() {
     private lateinit var loadingDialog : LoadingProgressDialog
     private var adRequest : AdRequest? = null
 
-    private var isFirst = false
+    private var isFirst = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -590,23 +590,31 @@ class TaxiTabFragment : Fragment() {
 
                         Log.e("taxiAllData", "$taxiAllData")
                         // 어댑터 데이터 갱신
-                        if (!isFirst) {
-                            isFirst = true
-                            if (taxiAllData.none {
-                                    it.postTargetDate == LocalDate.now().toString() }) {
+                        if (isFirst) {
+                            // 첫 호출일 때, 오늘 날짜에 해당하는 데이터만 필터링
+                            isFirst = false
+                            val todayDate = LocalDate.now().toString()
+                            val todayFilteredList = taxiAllData.filter {
+                                it.postTargetDate == todayDate
+                            }
+
+                            if (todayFilteredList.isEmpty()) {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                                 taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
                             } else {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                                 taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
                             }
+
+                            // 어댑터에 필터링된 데이터 적용
                             noticeBoardAdapter?.let { adapter ->
-                                adapter.postItemData = taxiAllData.filter {
-                                    it.postTargetDate == LocalDate.now().toString()
-                                } as ArrayList<PostData>
+                                Log.e("First Call - carpoolAllData", "$todayFilteredList")
+                                adapter.postItemData = todayFilteredList as ArrayList<PostData>
                                 adapter.notifyDataSetChanged()
                             }
+
                         } else {
+                            // 첫 호출이 아닐 때는 전체 데이터를 반영
                             if (taxiAllData.isEmpty()) {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                                 taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
@@ -614,12 +622,14 @@ class TaxiTabFragment : Fragment() {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                                 taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
                             }
+
+                            // 어댑터에 전체 데이터를 적용
                             noticeBoardAdapter?.let { adapter ->
+                                Log.e("Second Call - carpoolAllData", "$taxiAllData")
                                 adapter.postItemData = taxiAllData
                                 adapter.notifyDataSetChanged()
                             }
                         }
-                        calendarAdapter!!.notifyDataSetChanged()
 
                         loadingDialog.dismiss()
 
@@ -1202,9 +1212,6 @@ class TaxiTabFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        /*val localDate = LocalDate.now().toString()
-        val currentDate = localDate.substring(8..9).toInt()
-        triggerFirstItemOfCalendarAdapter(currentDate)*/
     }
     override fun onResume() {
         super.onResume()

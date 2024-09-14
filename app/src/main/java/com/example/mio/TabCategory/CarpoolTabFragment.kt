@@ -117,7 +117,7 @@ class CarpoolTabFragment : Fragment() {
 
     private var adRequest : AdRequest? = null
 
-    private var isFirst = false
+    private var isFirst = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -587,7 +587,7 @@ class CarpoolTabFragment : Fragment() {
 
 
     private fun setData() {
-        RetrofitServerConnect.create(requireContext()).getCategoryPostData(1,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+        RetrofitServerConnect.create(requireContext()).getCategoryPostData(1, "createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
             override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                 if (response.isSuccessful) {
                     response.body()?.let { responseData ->
@@ -632,27 +632,31 @@ class CarpoolTabFragment : Fragment() {
                             )
                         }
 
-                        Log.e("carpoolAllData", "$carpoolAllData")
-                        // 어댑터 데이터 갱신
-                        Log.e("CarpoolTabDataCheck", carpoolAllData.toString())
-                        if (!isFirst) {
-                            isFirst = true
-                            if (carpoolAllData.none {
-                                    it.postTargetDate == LocalDate.now().toString()
-                                }) {
+                        if (isFirst) {
+                            // 첫 호출일 때, 오늘 날짜에 해당하는 데이터만 필터링
+                            isFirst = false
+                            val todayDate = LocalDate.now().toString()
+                            val todayFilteredList = carpoolAllData.filter {
+                                it.postTargetDate == todayDate
+                            }
+
+                            if (todayFilteredList.isEmpty()) {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                                 taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
                             } else {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                                 taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
                             }
+
+                            // 어댑터에 필터링된 데이터 적용
                             noticeBoardAdapter?.let { adapter ->
-                                adapter.postItemData = carpoolAllData.filter {
-                                    it.postTargetDate == LocalDate.now().toString()
-                                } as ArrayList<PostData>
+                                Log.e("First Call - carpoolAllData", "$todayFilteredList")
+                                adapter.postItemData = todayFilteredList as ArrayList<PostData>
                                 adapter.notifyDataSetChanged()
                             }
+
                         } else {
+                            // 첫 호출이 아닐 때는 전체 데이터를 반영
                             if (carpoolAllData.isEmpty()) {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                                 taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
@@ -660,28 +664,29 @@ class CarpoolTabFragment : Fragment() {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                                 taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
                             }
+
+                            // 어댑터에 전체 데이터를 적용
                             noticeBoardAdapter?.let { adapter ->
+                                Log.e("Second Call - carpoolAllData", "$carpoolAllData")
                                 adapter.postItemData = carpoolAllData
                                 adapter.notifyDataSetChanged()
                             }
                         }
-                        calendarAdapter!!.notifyDataSetChanged()
 
+                        //calendarAdapter!!.notifyDataSetChanged()
                         loadingDialog?.dismiss()
-
                     }
                 } else {
-                    Log.e("f", response.code().toString())
+                    Log.e("Response Error", response.code().toString())
                     loadingDialog?.dismiss()
                 }
             }
 
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                Log.e("error", t.toString())
+                Log.e("Request Failure", t.toString())
                 loadingDialog?.dismiss()
             }
         })
-
     }
 
     private fun setMyAreaData() {
@@ -1307,8 +1312,7 @@ class CarpoolTabFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        Log.d("CarpoolTabFragment", "start")
-        setData()
+        //setData()
     }
 
     override fun onDestroy() {

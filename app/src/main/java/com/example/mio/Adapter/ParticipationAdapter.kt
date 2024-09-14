@@ -59,13 +59,12 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         }
 
         private fun updateUI(binding: ParticipationItemLayoutBinding, partData: ParticipationData, user: User?, position: Int) {
-            Log.e("binding", user.toString())
-            Log.e("binding", partData.toString())
-
             // 선택된 아이템인지 확인하고 배경 색상 설정
             if (selectedItemPositions.contains(position)) {
+                Log.e("setItemSelected", "setItemSelected")
                 setItemSelected(binding)
             } else {
+                Log.e("setItemUnselected", "setItemUnselected")
                 setItemUnselected(binding)
             }
 
@@ -133,15 +132,26 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 } else {
                     selectedItemPositions.add(position)
                 }
-                notifyDataSetChanged()
-                fetchItemDetails(partData.participantId)
+
+                // 서버에 승인 요청
+                fetchItemDetails(partData.participantId) { isSuccess ->
+                    if (isSuccess) {
+                        // 서버 응답 후 아이템 갱신
+                        participationItemData[position].approvalOrReject = "APPROVAL"
+                        notifyItemChanged(position)
+                    } else {
+                        // 에러 처리 (필요시)
+                        Log.e("fetchItemDetails", "Failed to approve participation")
+                    }
+                }
+
                 itemClickListener.onApprovalClick(position, partData.participantId.toString())
             }
 
             binding.participationRefuse.setOnClickListener {
                 removeData(partData.participantId, position)
                 itemClickListener.onRefuseClick(position, partData.participantId.toString())
-                notifyDataSetChanged()
+                notifyItemChanged(position)
             }
 
             binding.participationCancel.setOnClickListener {
@@ -151,7 +161,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 } else {
                     removeData(partData.participantId, position)
                     itemClickListener.onRefuseClick(position, partData.participantId.toString())
-                    notifyDataSetChanged()
+                    notifyItemChanged(position)
                 }
             }
         }
@@ -196,6 +206,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
                     Log.d("PART Remove Success ", response.code().toString())
+                    participationItemData[position].approvalOrReject = "REJECT"
                 } else {
                     Log.e("PART Remove ERROR ", response.code().toString())
                     Log.e("PART Remove ERROR ", response.errorBody()?.string()!!)
@@ -211,26 +222,21 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         })
     }
 
-    private fun fetchItemDetails(participantsId: Int) {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
-
-        //200확인 완료
+    private fun fetchItemDetails(participantsId: Int, callback: (Boolean) -> Unit) {
         RetrofitServerConnect.create(context).patchParticipantsApproval(participantsId).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
                     Log.d("fetchItemDetails", response.code().toString())
+                    callback(true)  // 성공 시 true 반환
                 } else {
-                    /*val stringToJson = JSONObject(response.errorBody()?.string()!!)
-                    Log.e("YMC", "stringToJson: $stringToJson")
-                    println(response.code())*/
                     Log.e("fetchItemDetails", response.errorBody()?.string()!!)
+                    callback(false)  // 실패 시 false 반환
                 }
             }
 
             override fun onFailure(call: Call<Void>, t: Throwable) {
                 Log.d("ERROR", t.toString())
+                callback(false)  // 실패 시 false 반환
             }
         })
     }

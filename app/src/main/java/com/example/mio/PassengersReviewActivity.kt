@@ -270,7 +270,7 @@ class PassengersReviewActivity : AppCompatActivity() {
             Log.e("passengerReviewHashMapData", currentUser)
             prBinding.passengersReviewEt.isClickable = true
 
-            if (currentContent.isNotEmpty() && currentMannerCount.isNotEmpty()) {
+            if (currentContent.isNotEmpty() && currentMannerCount.isNotEmpty() && currentUser.isNotEmpty()) {
                 // 모든 필드가 채워진 경우의 로직
                 passengerReviewHashMapData[passengersChipItemData.find { it.chipName == currentUser }!!.chipId] = PassengersReviewData(
                     currentMannerCount,
@@ -292,6 +292,9 @@ class PassengersReviewActivity : AppCompatActivity() {
                     }
                     currentMannerCount.isEmpty() -> {
                         Toast.makeText(this, "매너 점수를 선택해 주세요.", Toast.LENGTH_SHORT).show()
+                    }
+                    currentUser.isEmpty() -> {
+                        Toast.makeText(this, "평가를 등록할 사용자를 선택해주세요.", Toast.LENGTH_SHORT).show()
                     }
                 }
             }

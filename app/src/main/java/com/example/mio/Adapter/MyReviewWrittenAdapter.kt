@@ -143,7 +143,7 @@ class MyReviewWrittenAdapter : ListAdapter<MyAccountReviewData, MyReviewWrittenA
         Log.d("NotificationAdapter", "Previous data: ${currentList}") // currentList는 현재 어댑터의 데이터
         Log.d("NotificationAdapter", "New data: $newData")
         //Log.d("NotificationAdapter", "data: $notificationItemData")
-        submitList(newData.toList())
+        submitList(newData.toList().sortedByDescending { it.createDate })
     }
 
 }

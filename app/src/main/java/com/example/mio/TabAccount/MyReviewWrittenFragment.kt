@@ -156,7 +156,7 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
         setReadReviewData()
         // LiveData 관찰
         viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
-            rwAdapter?.submitList(reviews.toList())
+            rwAdapter?.submitList(reviews.toList().sortedByDescending { it.createDate })
             updateUI2(reviews)
             Log.e("myreviewwritten", reviews.toString())
             /*CoroutineScope(Dispatchers.IO).launch {

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
-import android.graphics.PointF
 import android.graphics.drawable.ColorDrawable
 import android.location.Geocoder
 import android.os.Build
@@ -12,7 +11,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.util.TypedValue
 import android.view.*
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -36,15 +34,9 @@ import com.kakao.vectormap.label.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.internal.sse.ServerSentEventReader.Companion.options
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -79,8 +71,6 @@ class SearchFragment : Fragment() {
     //private val locationRequest: LocationRequest? = null
     private var startPosition: LatLng? = null
     private var labelLayer: LabelLayer? = null
-    //주위 게시글
-    private var latLngList = ArrayList<LatLng>()
 
     private var hashMapPoiAndPostData : HashMap<String, LocationReadAllResponse>? = HashMap()
     //로딩창
@@ -220,10 +210,6 @@ class SearchFragment : Fragment() {
     }
 
     private fun loadSearchPost(location : String?) {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-
         /*val interceptor = Interceptor { chain ->
             val newRequest: Request
             if (token != null && token != "") { // 토큰이 없지 않은 경우

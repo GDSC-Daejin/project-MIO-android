@@ -23,9 +23,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.mio.Adapter.AccountTabAdapter
-import com.example.mio.Adapter.CategoryTabAdapter
 import com.example.mio.LoadingProgressDialog
-import com.example.mio.Model.PostReadAllResponse
 import com.example.mio.Model.User
 import com.example.mio.R
 import com.example.mio.RetrofitServerConnect
@@ -40,7 +38,6 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.util.Objects
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -62,7 +59,6 @@ class AccountFragment : Fragment() {
     private var saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var email = ""
     private var myAccountData : User? = null
-    private var userGrade = ""
 
     private var gender : Boolean? = null //false 남, true 여
     private var accountNumber : String? = null
@@ -204,7 +200,7 @@ class AccountFragment : Fragment() {
                         val end = start + word.length
                         val spannableString = SpannableString(aBinding.accountGradeTv.text) //객체 생성
                         //등급 글자의 색변경
-                        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                         aBinding.accountGradeTv.text = spannableString
 
                         CoroutineScope(Dispatchers.Main).launch {
@@ -225,7 +221,7 @@ class AccountFragment : Fragment() {
                         val end = start + word.length
                         val spannableString = SpannableString(aBinding.accountGradeTv.text) //객체 생성
                         //등급 글자의 색변경
-                        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                         aBinding.accountGradeTv.text = spannableString
 
                         CoroutineScope(Dispatchers.Main).launch {

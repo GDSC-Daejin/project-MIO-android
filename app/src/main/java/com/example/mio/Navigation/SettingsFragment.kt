@@ -4,15 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Switch
 import android.widget.Toast
 import androidx.appcompat.widget.SwitchCompat
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceManager
-import androidx.preference.SwitchPreference
 import androidx.preference.SwitchPreferenceCompat
-import com.example.mio.Helper.NotificationHelper
 import com.example.mio.OpenSourceManagementActivity
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin

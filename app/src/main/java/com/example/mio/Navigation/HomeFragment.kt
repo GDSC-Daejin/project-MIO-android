@@ -1,11 +1,9 @@
 package com.example.mio.Navigation
 
-import android.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.graphics.TypefaceCompat
 import androidx.fragment.app.Fragment
 import com.example.mio.Adapter.CategoryTabAdapter
 import com.example.mio.databinding.FragmentHomeBinding
@@ -44,7 +42,7 @@ class HomeFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         homeBinding = FragmentHomeBinding.inflate(inflater, container, false)
         // Bundle에서 데이터 추출
         selectedTab = arguments?.getString("selectedTab") //택시

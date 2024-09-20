@@ -33,10 +33,6 @@ import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.CountDownLatch
 
@@ -58,9 +54,7 @@ class NotificationFragment : Fragment() {
 
     private lateinit var nfBinding : FragmentNotificationBinding
     private lateinit var nAdapter : NotificationAdapter
-    private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     var sharedPref : SharedPref? = null
-    private var setKey = "setting_history"
     //notification data
     private var notificationAllData : ArrayList<AddAlarmResponseData> = ArrayList()
     private var sharedViewModel: SharedViewModel? = null
@@ -215,9 +209,6 @@ class NotificationFragment : Fragment() {
                                 putExtra("postItem", contentPost)
                             }
                         }
-                        else -> {
-                            // No operation for other statuses
-                        }
                     }
 
                     intent?.let {
@@ -246,19 +237,6 @@ class NotificationFragment : Fragment() {
 
                 dialogRightBtn.setOnClickListener {
                     viewModel.setLoading(true)
-                    val now = System.currentTimeMillis()
-                    val date = Date(now)
-                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-                    val currentDate = sdf.format(date)
-                    val formatter = DateTimeFormatter
-                        .ofPattern("yyyy-MM-dd HH:mm:ss")
-                        .withZone(ZoneId.systemDefault())
-                    val result: Instant = Instant.from(formatter.parse(currentDate))
-
-                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                    val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-                    val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-
                     /////////interceptor
                     /*val SERVER_URL = BuildConfig.server_URL
                     val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
@@ -397,7 +375,6 @@ class NotificationFragment : Fragment() {
 
     private fun initNotificationPostData(alarmList: List<AddAlarmResponseData>?) {
 
-        var shouldBreak = false
         Log.e("alarmList", alarmList.toString())
         //var latch : CountDownLatch? = null
         alarmList?.let { list ->

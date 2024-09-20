@@ -1,4 +1,5 @@
 package com.example.mio.Adapter
+
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,7 +14,6 @@ import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.NotificationItemBinding
 import java.text.SimpleDateFormat
 import java.util.*
-
 
 class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapter.NotificationViewHolder>(NotificationDiffUtil){
     enum class NotificationStatus {

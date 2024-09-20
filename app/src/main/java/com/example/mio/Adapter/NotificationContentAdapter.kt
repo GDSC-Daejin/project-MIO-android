@@ -1,20 +1,15 @@
 package com.example.mio.Adapter
-import android.app.AlertDialog
+
+
 import android.content.Context
-import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Helper.SharedPref
 import com.example.mio.Model.AddAlarmResponseData
-import com.example.mio.Model.CommentData
-import com.example.mio.Model.NotificationData
-import com.example.mio.Model.PostData
 import com.example.mio.R
-import com.example.mio.databinding.NotificationItemBinding
 import com.example.mio.databinding.NotificationItemRvLayoutBinding
-import com.example.mio.databinding.PostItemBinding
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList

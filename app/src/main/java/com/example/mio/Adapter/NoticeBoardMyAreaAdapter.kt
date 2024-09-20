@@ -1,16 +1,13 @@
 package com.example.mio.Adapter
-import android.annotation.SuppressLint
+
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.Content
-import com.example.mio.Model.LocationReadAllResponse
-import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
-import java.lang.ref.WeakReference
 
 
 class NoticeBoardMyAreaAdapter : RecyclerView.Adapter<NoticeBoardMyAreaAdapter.NoticeBoardMyAreaViewHolder>(){

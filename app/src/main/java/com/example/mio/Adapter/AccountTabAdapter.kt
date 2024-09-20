@@ -5,8 +5,6 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.mio.TabAccount.MyBookmarkFragment
 import com.example.mio.TabAccount.MyParticipationFragment
 import com.example.mio.TabAccount.MyPostFragment
-import com.example.mio.TabCategory.CarpoolTabFragment
-import com.example.mio.TabCategory.TaxiTabFragment
 
 //여기 페이지 변경하기
 class AccountTabAdapter(fragmentActivity: FragmentActivity): FragmentStateAdapter(fragmentActivity) {

@@ -1,22 +1,16 @@
 package com.example.mio.Adapter
 import android.content.Context
 import android.graphics.Color
-import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mio.CalendarUtil
 import com.example.mio.Model.DateData
 import com.example.mio.R
 import com.example.mio.databinding.CalendarCellBinding
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>(){

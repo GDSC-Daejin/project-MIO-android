@@ -1,5 +1,5 @@
 package com.example.mio.Adapter
-import android.annotation.SuppressLint
+
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -8,8 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
-import java.lang.ref.WeakReference
-
 
 class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardViewHolder>(){
     private lateinit var binding : PostItemBinding

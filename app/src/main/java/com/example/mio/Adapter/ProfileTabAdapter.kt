@@ -1,10 +1,9 @@
 package com.example.mio.Adapter
+
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.mio.TabAccount.*
-import com.example.mio.TabCategory.CarpoolTabFragment
-import com.example.mio.TabCategory.TaxiTabFragment
 
 class ProfileTabAdapter(fragmentActivity: FragmentActivity): FragmentStateAdapter(fragmentActivity) {
 

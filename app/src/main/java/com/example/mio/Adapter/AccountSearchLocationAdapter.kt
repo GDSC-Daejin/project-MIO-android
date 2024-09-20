@@ -2,7 +2,6 @@ package com.example.mio.Adapter
 
 import android.content.Context
 import android.graphics.Color
-import android.location.Address
 import android.location.Geocoder
 import android.os.Build
 import android.text.Spannable
@@ -11,31 +10,18 @@ import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.BuildConfig
-import com.example.mio.KakaoApiService
 import com.example.mio.Model.AddressData
-import com.example.mio.Model.LocationReadAllResponse
-import com.example.mio.Model.Place
-import com.example.mio.NoticeBoard.NoticeBoardEditActivity
-import com.example.mio.PlaceDocument
-import com.example.mio.SearchResult
 import com.example.mio.databinding.ListLayoutBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonDisposableHandle.parent
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 
 class AccountSearchLocationAdapter(private var items: List<AddressData>) : RecyclerView.Adapter<AccountSearchLocationAdapter.AccountSearchViewHolder>() {

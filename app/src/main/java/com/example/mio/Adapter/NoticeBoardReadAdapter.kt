@@ -1,26 +1,19 @@
 package com.example.mio.Adapter
+
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.CommentData
 import com.example.mio.Model.CommentsViewModel
 import com.example.mio.R
-import com.example.mio.ReadSettingBottomSheetFragment
-import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.CommentItemLayoutBinding
 import com.example.mio.databinding.ReplyCommentsItemLayoutBinding
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class NoticeBoardReadAdapter(private val commentsViewModel: CommentsViewModel) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

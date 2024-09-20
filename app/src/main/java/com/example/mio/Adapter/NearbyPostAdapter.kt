@@ -1,12 +1,9 @@
 package com.example.mio.Adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.Model.LocationReadAllResponse
-import com.example.mio.R
 import com.example.mio.databinding.PostItem2Binding
 
 class NearbyPostAdapter(private val onItemClick: (LocationReadAllResponse) -> Unit) :

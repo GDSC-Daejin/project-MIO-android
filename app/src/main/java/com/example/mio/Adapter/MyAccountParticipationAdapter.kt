@@ -1,5 +1,5 @@
 package com.example.mio.Adapter
-import android.annotation.SuppressLint
+
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -10,10 +10,6 @@ import com.example.mio.Model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
 import com.example.mio.databinding.RvLoadingBinding
-import kotlinx.coroutines.NonDisposableHandle.parent
-import java.lang.ref.WeakReference
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlin.collections.ArrayList
 
 

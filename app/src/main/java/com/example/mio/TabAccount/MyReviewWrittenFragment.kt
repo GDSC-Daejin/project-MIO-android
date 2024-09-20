@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -47,6 +48,9 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
     private var reviewWrittenAllData = ArrayList<MyAccountReviewData>()
     private lateinit var viewModel: ReviewWrittenViewModel
     private var loadingDialog : LoadingProgressDialog? = null
+
+    private var isLoading = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -58,24 +62,16 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         rwBinding = FragmentMyReivewWrittenBinding.inflate(inflater, container, false)
 
 
+        initSwipeRefresh()
         initRecyclerview()
 
         return rwBinding.root
     }
-    private fun checkTokenExpiry(expireDate: Long) {
-        if (expireDate <= System.currentTimeMillis()) {
-            // 토큰 만료 처리
-            val intent = Intent(requireActivity(), LoginActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-            startActivity(intent)
-            requireActivity().finish()
-        }
-    }
+
     private fun setReadReviewData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
@@ -91,26 +87,10 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
                         viewModel.setReviews(it)
                         reviewWrittenAllData.clear()
                         reviewWrittenAllData.addAll(it)
-
-                        Log.e("written", it.toString())
                     }
-                    /*if (reviewWrittenAllData.isEmpty()) {
+                    if (reviewWrittenAllData.isEmpty()) {
                         updateUI2(reviewWrittenAllData)
-                    }*/
-                    /*for (i in response.body()!!.indices) {
-                        reviewWrittenAllData.add(
-                            MyAccountReviewData(
-                                response.body()!![i].id,
-                                response.body()!![i].manner,
-                                response.body()!![i].content,
-                                response.body()!![i].getUserId,
-                                response.body()!![i].postUserId,
-                                response.body()!![i].createDate,
-                            )
-                        )
-                    }*/
-
-
+                    }
                 } else {
                     Log.d("f", response.code().toString())
                 }
@@ -140,6 +120,21 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
             rwBinding.writtenReviewPostRv.visibility = View.GONE
         }
     }
+
+
+    private fun initSwipeRefresh() {
+        rwBinding.writtenSwipe.setOnRefreshListener {
+            refreshData()
+        }
+    }
+
+    private fun refreshData() {
+        isLoading = false
+        setReadReviewData()
+        rwBinding.writtenSwipe.isRefreshing = false
+    }
+
+
     private fun initRecyclerview() {
         //setReadReviewData()
         rwAdapter = MyReviewWrittenAdapter()
@@ -159,10 +154,6 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
             rwAdapter?.submitList(reviews.toList().sortedByDescending { it.createDate })
             updateUI2(reviews)
             Log.e("myreviewwritten", reviews.toString())
-            /*CoroutineScope(Dispatchers.IO).launch {
-                initNotificationPostData(notificationAllData)
-            }*/
-
         }
 
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->

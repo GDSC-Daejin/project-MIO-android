@@ -24,6 +24,7 @@ import com.example.mio.databinding.FragmentMyReviewWriteableBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -32,6 +33,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.stream.Collectors.toList
 
 import kotlin.collections.ArrayList
 
@@ -54,7 +56,7 @@ class MyReviewWriteableFragment : Fragment() {
     private var wAdapter : MyReviewWriteableAdapter? = null
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     private var reviewWriteableReadAllData = ArrayList<PostData?>()
-    private var reviewPassengersData = ArrayList<ParticipationData>()
+    private var reviewPassengersData = HashMap<String, ArrayList<ParticipationData>>()
 
     //로딩 즉 item의 끝이며 스크롤의 끝인지
     private var isLoading = false
@@ -63,7 +65,7 @@ class MyReviewWriteableFragment : Fragment() {
     //데이터의 전체 페이지 수
     private var totalPages = 0
 
-
+    private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var identification = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,10 +78,10 @@ class MyReviewWriteableFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         wBinding = FragmentMyReviewWriteableBinding.inflate(inflater, container, false)
 
-        //initSwipeRefresh()
+        initSwipeRefresh()
         initScrollListener()
         initRecyclerview()
 
@@ -88,25 +90,33 @@ class MyReviewWriteableFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity()).toString()
+        Log.e("initWriteable", identification)
+
         wAdapter?.setItemClickListener(object : MyReviewWriteableAdapter.ItemClickListener{
             override fun onClick(view: View, position: Int, itemId: Int) {
-                val temp = reviewWriteableReadAllData[position]
-                //내가 손님일때
-                Log.e("wWriteable", reviewPassengersData.toString())
-                if (identification != reviewWriteableReadAllData[position]!!.user.email) {
-                    val intent = Intent(activity, PassengersReviewActivity::class.java).apply {
-                        putExtra("type", "PASSENGER")
-                        putExtra("postDriver", temp!!.user)
-                        putExtra("Data", temp)
+                if (!wBinding.writeableSwipe.isRefreshing) { // 새로고침 중일 때는 클릭을 막음
+                    val temp = reviewWriteableReadAllData[position]
+                    //내가 손님일때
+                    Log.e("wWriteable", reviewPassengersData.toString())
+                    Log.e("wWriteable", identification.toString())
+                    Log.e("wWriteable", reviewWriteableReadAllData.toString())
+                    Log.e("wWriteable", temp.toString())
+                    if (identification != temp?.user?.email) {
+                        val intent = Intent(activity, PassengersReviewActivity::class.java).apply {
+                            putExtra("type", "PASSENGER")
+                            putExtra("postDriver", temp!!.user)
+                            putExtra("Data", temp)
+                        }
+                        requestActivity.launch(intent)
+                    } else { //내가 작성자(운전자)일때
+                        val intent = Intent(activity, PassengersReviewActivity::class.java).apply {
+                            putExtra("type",  "DRIVER")
+                            putExtra("postPassengers", reviewPassengersData[reviewWriteableReadAllData[position]?.postCreateDate])
+                            putExtra("Data", temp)
+                        }
+                        requestActivity.launch(intent)
                     }
-                    requestActivity.launch(intent)
-                } else { //내가 작성자(운전자)일때
-                    val intent = Intent(activity, PassengersReviewActivity::class.java).apply {
-                        putExtra("type",  "DRIVER")
-                        putExtra("postPassengers", reviewPassengersData)
-                        putExtra("Data", temp)
-                    }
-                    requestActivity.launch(intent)
                 }
             }
         })
@@ -114,126 +124,77 @@ class MyReviewWriteableFragment : Fragment() {
 
 
     private fun setReadReviewData() {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
+        RetrofitServerConnect.create(requireActivity()).getMyMannersWriteableReview("createDate,desc",0, 5).enqueue(object :
+            Callback<PostReadAllResponse> {
+            override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                if (response.isSuccessful) {
+                    //데이터 청소
+                    reviewWriteableReadAllData.clear()
+                    totalPages = response.body()?.totalPages ?: 0
+                    val responseData = response.body()
+                    //데드라인 체크안함
+                    if (responseData != null) {
+                        for (i in responseData.content.filter { it.isDeleteYN == "N" }.indices) {
+                            val part = response.body()!!.content[i].participantsCount ?: 0
+                            val location = response.body()!!.content[i].location ?: "수락산역 3번 출구"
+                            val title = response.body()!!.content[i].title ?: "null"
+                            val content = response.body()!!.content[i].content ?: "null"
+                            val targetDate = response.body()!!.content[i].targetDate ?: "null"
+                            val targetTime = response.body()!!.content[i].targetTime ?: "null"
+                            val categoryName = response.body()!!.content[i].category.categoryName ?: "null"
+                            val cost = response.body()!!.content[i].cost ?: 0
+                            val verifyGoReturn = response.body()!!.content[i].verifyGoReturn ?: false
 
-
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("reviewWriteabl", "reviewWriteabl1")
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        /////////////////////////////////////////////////////
-
-        CoroutineScope(Dispatchers.IO).launch {
-            RetrofitServerConnect.create(requireActivity()).getMyMannersWriteableReview("createDate,desc",0, 5).enqueue(object :
-                Callback<PostReadAllResponse> {
-                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                    if (response.isSuccessful) {
-                        //데이터 청소
-                        reviewWriteableReadAllData.clear()
-                        totalPages = response.body()?.totalPages ?: 0
-                        val responseData = response.body()
-                        //데드라인 체크안함
-                        if (responseData != null) {
-                            for (i in responseData.content.filter { it.isDeleteYN == "N" }.indices) {
-                                val part = response.body()!!.content[i].participantsCount ?: 0
-                                val location = response.body()!!.content[i].location ?: "수락산역 3번 출구"
-                                val title = response.body()!!.content[i].title ?: "null"
-                                val content = response.body()!!.content[i].content ?: "null"
-                                val targetDate = response.body()!!.content[i].targetDate ?: "null"
-                                val targetTime = response.body()!!.content[i].targetTime ?: "null"
-                                val categoryName = response.body()!!.content[i].category.categoryName ?: "null"
-                                val cost = response.body()!!.content[i].cost ?: 0
-                                val verifyGoReturn = response.body()!!.content[i].verifyGoReturn ?: false
-
-                                //println(response!!.body()!!.content[i].user.studentId)
-                                reviewWriteableReadAllData.add(
-                                    PostData(
-                                        response.body()!!.content[i].user.studentId,
-                                        response.body()!!.content[i].postId,
-                                        title,
-                                        content,
-                                        response.body()!!.content[i].createDate,
-                                        targetDate,
-                                        targetTime,
-                                        categoryName,
-                                        location,
-                                        //participantscount가 현재 참여하는 인원들
-                                        part,
-                                        //numberOfPassengers은 총 탑승자 수
-                                        response.body()!!.content[i].numberOfPassengers,
-                                        cost,
-                                        verifyGoReturn,
-                                        response.body()!!.content[i].user,
-                                        response.body()!!.content[i].latitude,
-                                        response.body()!!.content[i].longitude
-                                    ))
-
-                                if (responseData.content[i].participants?.isNotEmpty() == true /*&& identification == responseData.content[i].user.email*/) {
-                                    reviewPassengersData.addAll(responseData.content[i].participants!!)
-                                }
+                            //println(response!!.body()!!.content[i].user.studentId)
+                            reviewWriteableReadAllData.add(
+                                PostData(
+                                    response.body()!!.content[i].user.studentId,
+                                    response.body()!!.content[i].postId,
+                                    title,
+                                    content,
+                                    response.body()!!.content[i].createDate,
+                                    targetDate,
+                                    targetTime,
+                                    categoryName,
+                                    location,
+                                    //participantscount가 현재 참여하는 인원들
+                                    part,
+                                    //numberOfPassengers은 총 탑승자 수
+                                    response.body()!!.content[i].numberOfPassengers,
+                                    cost,
+                                    verifyGoReturn,
+                                    response.body()!!.content[i].user,
+                                    response.body()!!.content[i].latitude,
+                                    response.body()!!.content[i].longitude
+                                ))
+                            if (responseData.content[i].participants?.isNotEmpty() == true /*&& identification == responseData.content[i].user.email*/) {
+                                reviewPassengersData[responseData.content[i].createDate] = responseData.content[i].participants!!
                             }
-                            wAdapter?.updateDataList(reviewWriteableReadAllData)
                         }
-                       /* CoroutineScope(Dispatchers.IO).launch {
-                            response.body()?.content?.forEach { content ->
-                                content.participants?.forEach { participationData  ->
 
-                                }
-                            }
-                        }*/
-                        if (reviewWriteableReadAllData.isNotEmpty()) {
-                            wBinding.writeableReviewPostNotDataLl.visibility = View.GONE
-                            wBinding.writeablReviewPostRv.visibility = View.VISIBLE
-                        } else {
-                            wBinding.writeableReviewPostNotDataLl.visibility = View.VISIBLE
-                            wBinding.writeablReviewPostRv.visibility = View.GONE
-                        }
-                        requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-
-                    } else {
-                        Log.d("f", response.code().toString())
+                        reviewWriteableReadAllData.sortByDescending {item -> item?.postCreateDate}
+                        wAdapter?.updateDataList(reviewWriteableReadAllData.toList().sortedByDescending { it?.postCreateDate })
                     }
-                }
+                    if (reviewWriteableReadAllData.isNotEmpty()) {
+                        wBinding.writeableReviewPostNotDataLl.visibility = View.GONE
+                        wBinding.writeablReviewPostRv.visibility = View.VISIBLE
+                    } else {
+                        wBinding.writeableReviewPostNotDataLl.visibility = View.VISIBLE
+                        wBinding.writeablReviewPostRv.visibility = View.GONE
+                    }
 
-                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.d("error", t.toString())
+                } else {
+                    Log.d("f", response.code().toString())
                 }
-            })
-        }
+            }
+
+            override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                Log.d("error", t.toString())
+            }
+        })
     }
 
     private fun initRecyclerview() {
-        val s = SaveSharedPreferenceGoogleLogin()
-        identification = s.getUserEMAIL(requireActivity()).toString()
         setReadReviewData()
         wAdapter = MyReviewWriteableAdapter()
         //wAdapter!!.myReviewWriteableData = reviewWriteableReadAllData
@@ -256,30 +217,25 @@ class MyReviewWriteableFragment : Fragment() {
         }
     }
 
-
-    /*private fun initSwipeRefresh() {
-        wBinding.writeablReviewSwipe.setOnRefreshListener {
-            // 화면 터치 불가능하도록 설정
-            requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-
-            // 데이터 새로 고침
+    private fun initSwipeRefresh() {
+        wBinding.writeableSwipe.setOnRefreshListener {
             refreshData()
-
-            *//* // 새로 고침 완료 및 터치 가능하게 설정
-             mttBinding.moreRefreshSwipeLayout.isRefreshing = false
-             this.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)*//*
-
             // 스크롤 리스너 초기화
             initScrollListener()
+
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                wBinding.writeableSwipe.isRefreshing = false
+                requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            }, 1000)
         }
-    }*/
+    }
 
     private fun refreshData() {
         isLoading = false
         currentPage = 0
         //moreCarpoolAllData.clear() // Clear existing data
-        wAdapter?.notifyDataSetChanged() // Notify adapter of data change
-
+        wAdapter?.updateDataList(emptyList()) // Notify adapter of data change
         // Fetch fresh data
         setReadReviewData()
     }
@@ -353,10 +309,10 @@ class MyReviewWriteableFragment : Fragment() {
                                         item.longitude
                                     )
                                 }
-
                                 reviewWriteableReadAllData.addAll(newItems)
-                                wAdapter?.notifyDataSetChanged()
+                                wAdapter?.updateDataList(reviewWriteableReadAllData)
                             }
+                            reviewWriteableReadAllData.sortByDescending { it?.postCreateDate }
                         } else {
                             Log.d("Error", "Response code: ${response.code()}")
                         }

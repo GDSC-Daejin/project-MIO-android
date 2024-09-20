@@ -65,6 +65,7 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
     ): View {
         mrBinding = FragmentMyReviewReadBinding.inflate(inflater, container, false)
 
+        initSwipeRefresh()
         initRecyclerview()
 
         return mrBinding.root
@@ -81,10 +82,6 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
             reviewAdapter?.submitList(reviews.toList().sortedByDescending { it.createDate })
             updateUI2(reviews)
             Log.e("myreviewread", reviews.toString())
-            /*CoroutineScope(Dispatchers.IO).launch {
-                initNotificationPostData(notificationAllData)
-            }*/
-
         }
 
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
@@ -111,19 +108,6 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
             }
         }
 
-        /*nfBinding.notificationSwipe.setOnRefreshListener {
-            // 화면 터치 불가능하도록 설정
-            requireActivity().window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-
-            setNotificationData()
-            //viewModel.refreshNotifications(requireContext())
-            val handler = Handler(Looper.getMainLooper())
-            handler.postDelayed({
-                nfBinding.notificationSwipe.isRefreshing = false
-                requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            }, 1500)
-        }*/
-
         viewModel.error.observe(viewLifecycleOwner) { errorMessage ->
             if (errorMessage != null) {
                 Log.e("error observe", errorMessage)
@@ -149,8 +133,6 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
     }
     private fun setReadReviewData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
         val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
         viewModel.setLoading(true)
         /*val interceptor = Interceptor { chain ->
@@ -191,25 +173,11 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
             override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
                 if (response.isSuccessful) {
                     viewModel.setLoading(false)
-                    /*for (i in response.body()!!.indices) {
-                        reviewReadAllData.add(
-                            MyAccountReviewData(
-                                response.body()!![i].id,
-                                response.body()!![i].manner,
-                                response.body()!![i].content,
-                                response.body()!![i].getUserId,
-                                response.body()!![i].postUserId,
-                                response.body()!![i].createDate,
-                            )
-                        )
-                    }*/
-
                     response.body()?.let {
                         reviewReadAllData.clear()
                         reviewReadAllData.addAll(it)
                         viewModel.setReviews(it)
                     }
-
                     if (reviewReadAllData.isEmpty()) {
                         updateUI2(reviewReadAllData)
                     }
@@ -223,6 +191,22 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
                 Log.d("error", t.toString())
             }
         })
+    }
+
+    private fun initSwipeRefresh() {
+        mrBinding.reviewSwipe.setOnRefreshListener {
+            // 데이터 새로 고침
+            refreshData()
+
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                mrBinding.reviewSwipe.isRefreshing = false
+            }, 1000)
+        }
+    }
+
+    private fun refreshData() {
+        setReadReviewData()
     }
 
     private fun initRecyclerview() {

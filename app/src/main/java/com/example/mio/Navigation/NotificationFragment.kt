@@ -30,14 +30,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.ZoneId
@@ -610,7 +605,7 @@ class NotificationFragment : Fragment() {
             handler.postDelayed({
                 nfBinding.notificationSwipe.isRefreshing = false
                 requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            }, 1500)
+            }, 500)
         }
 
         viewModel.error.observe(viewLifecycleOwner) { errorMessage ->

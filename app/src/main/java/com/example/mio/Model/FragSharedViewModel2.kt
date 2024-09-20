@@ -2,7 +2,6 @@ package com.example.mio.Model
 
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.work.Configuration

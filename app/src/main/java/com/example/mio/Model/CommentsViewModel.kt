@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.google.android.gms.common.util.ArrayUtils.removeAll
 
 class CommentsViewModel : ViewModel() {
     // LiveData for all comments (flattened list for RecyclerView handling)

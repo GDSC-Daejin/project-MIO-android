@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import com.example.mio.R
 import com.example.mio.ReadSettingBottomSheetFragment
 import com.example.mio.databinding.FragmentReadSettingBottomSheet2Binding
-import com.example.mio.databinding.FragmentReadSettingBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment

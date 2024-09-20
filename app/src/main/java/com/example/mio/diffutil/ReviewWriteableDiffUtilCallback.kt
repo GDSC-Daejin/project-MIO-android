@@ -1,7 +1,6 @@
 package com.example.mio.diffutil
 
 import androidx.recyclerview.widget.DiffUtil
-import com.example.mio.Model.MyAccountReviewData
 import com.example.mio.Model.PostData
 
 

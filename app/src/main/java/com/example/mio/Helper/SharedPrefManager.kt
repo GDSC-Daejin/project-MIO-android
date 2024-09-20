@@ -1,7 +1,6 @@
 package com.example.mio.Helper
 
 import android.content.Context
-import android.location.Location
 import android.util.Log
 import com.example.mio.Model.LocationReadAllResponse
 import com.google.gson.Gson

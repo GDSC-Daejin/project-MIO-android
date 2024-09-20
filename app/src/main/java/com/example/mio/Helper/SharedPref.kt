@@ -3,7 +3,6 @@ package com.example.mio.Helper
 import android.content.Context
 import android.content.SharedPreferences
 import com.example.mio.Model.AddAlarmResponseData
-import com.example.mio.Model.NotificationData
 import com.example.mio.Model.SearchWordData
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

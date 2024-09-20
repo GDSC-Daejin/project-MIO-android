@@ -2,7 +2,6 @@ package com.example.mio.diffutil
 
 import android.util.Log
 import androidx.recyclerview.widget.DiffUtil
-import com.example.mio.Model.AddAlarmResponseData
 import com.example.mio.Model.MyAccountReviewData
 
 

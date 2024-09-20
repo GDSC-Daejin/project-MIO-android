@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
 import com.example.mio.R
-import com.example.mio.databinding.FragmentAnotherBottomSheetBinding
 import com.example.mio.databinding.FragmentNearPostBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog

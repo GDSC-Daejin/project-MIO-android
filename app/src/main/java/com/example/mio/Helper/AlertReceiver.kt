@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import com.example.mio.Helper.NotificationHelper
 
 class AlertReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {

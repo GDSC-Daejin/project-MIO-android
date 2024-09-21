@@ -22,10 +22,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.splashscreen.SplashScreenViewProvider
-import com.example.mio.Model.LoginResponsesData
-import com.example.mio.Model.LoginGoogleResponse
-import com.example.mio.Model.RefreshTokenRequest
-import com.example.mio.Model.TokenRequest
+import com.example.mio.model.LoginResponsesData
+import com.example.mio.model.LoginGoogleResponse
+import com.example.mio.model.RefreshTokenRequest
+import com.example.mio.model.TokenRequest
 import com.example.mio.databinding.ActivityLoginBinding
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.auth.api.signin.GoogleSignIn

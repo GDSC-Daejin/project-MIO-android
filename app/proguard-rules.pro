@@ -25,9 +25,9 @@
 -keep interface com.example.mio.MioInterface.* { *; }
 -keepclassmembers enum MyApi.models.* { *; }
 # model, utils
--keep class com.example.mio.Model.** { *; }
+-keep class com.example.mio.model.** { *; }
 -keep class com.example.mio.KakaoAPI.** {*;}
--keepclassmembers class com.example.mio.Model.** { *; }
+-keepclassmembers class com.example.mio.model.** { *; }
 -keepclassmembers enum * { *; }
 # azure call
 

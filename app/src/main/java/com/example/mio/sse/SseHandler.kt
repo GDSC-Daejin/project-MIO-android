@@ -14,9 +14,9 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.example.mio.Helper.NotificationHelper
+import com.example.mio.helper.NotificationHelper
 import com.example.mio.LoginActivity
-import com.example.mio.Navigation.NotificationFragment
+import com.example.mio.navigation.NotificationFragment
 import com.example.mio.R
 import com.launchdarkly.eventsource.MessageEvent
 import com.launchdarkly.eventsource.background.BackgroundEventHandler

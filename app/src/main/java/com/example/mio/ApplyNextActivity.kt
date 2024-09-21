@@ -14,8 +14,8 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-import com.example.mio.Model.*
-import com.example.mio.NoticeBoard.NoticeBoardReadActivity
+import com.example.mio.model.*
+import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityApplyNextBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

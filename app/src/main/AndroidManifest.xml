@@ -29,7 +29,7 @@
     </queries>
 
     <application
-        android:name=".Model.FragSharedViewModel2"
+        android:name=".model.FragSharedViewModel2"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"
@@ -72,17 +72,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".TabAccount.AccountSearchLocationActivity"
+            android:name=".tabaccount.AccountSearchLocationActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".TabAccount.AccountReviewActivity"
+            android:name=".tabaccount.AccountReviewActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".TabAccount.ProfileActivity"
+            android:name=".tabaccount.ProfileActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
@@ -98,27 +98,27 @@
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".TabAccount.AccountSettingActivity"
+            android:name=".tabaccount.AccountSettingActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".TabAccount.AccountSelectBankActivity"
+            android:name=".tabaccount.AccountSelectBankActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".TabCategory.MoreCarpoolTabActivity"
+            android:name=".tabcategory.MoreCarpoolTabActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".TabCategory.MoreTaxiTabActivity"
+            android:name=".tabcategory.MoreTaxiTabActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".TabCategory.MoreAreaActivity"
+            android:name=".tabcategory.MoreAreaActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity"/>
@@ -146,12 +146,12 @@
             android:hardwareAccelerated="true"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".NoticeBoard.NoticeBoardEditActivity"
+            android:name=".noticeboard.NoticeBoardEditActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".NoticeBoard.NoticeBoardReadActivity"
+            android:name=".noticeboard.NoticeBoardReadActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"
@@ -162,18 +162,18 @@
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />-->
         <activity
-            android:name=".TapSearch.SearchResultActivity"
+            android:name=".tapsearch.SearchResultActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustNothing"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".TapSearch.NearbypostActivity"
+            android:name=".tapsearch.NearbypostActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />
         <activity
-            android:name=".NoticeBoard.LocationActivity"
+            android:name=".noticeboard.LocationActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             tools:ignore="LockedOrientationActivity" />

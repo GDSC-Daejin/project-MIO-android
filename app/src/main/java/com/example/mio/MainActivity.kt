@@ -22,11 +22,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import com.example.mio.Model.AddAlarmResponseData
-import com.example.mio.Model.SharedViewModel
-import com.example.mio.Model.User
-import com.example.mio.Navigation.*
-import com.example.mio.NoticeBoard.NoticeBoardEditActivity
+import com.example.mio.model.AddAlarmResponseData
+import com.example.mio.model.SharedViewModel
+import com.example.mio.model.User
+import com.example.mio.navigation.*
+import com.example.mio.noticeboard.NoticeBoardEditActivity
 import com.example.mio.databinding.ActivityMainBinding
 import com.example.mio.sse.SSEForegroundService
 import com.google.android.gms.ads.MobileAds

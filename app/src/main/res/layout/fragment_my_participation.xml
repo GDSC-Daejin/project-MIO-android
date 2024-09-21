@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".TabAccount.MyParticipationFragment">
+    tools:context=".tabaccount.MyParticipationFragment">
 
     <LinearLayout
         android:id="@+id/account_participation_not_data_ll"

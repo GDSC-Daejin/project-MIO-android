@@ -2,7 +2,7 @@ package com.example.mio.diffutil
 
 import android.util.Log
 import androidx.recyclerview.widget.DiffUtil
-import com.example.mio.Model.MyAccountReviewData
+import com.example.mio.model.MyAccountReviewData
 
 
 object ProfileReviewDiffUtilCallback : DiffUtil.ItemCallback<MyAccountReviewData>() {

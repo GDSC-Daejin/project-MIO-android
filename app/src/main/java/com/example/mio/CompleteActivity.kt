@@ -17,10 +17,10 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
-import com.example.mio.Model.PostData
-import com.example.mio.Model.User
-import com.example.mio.TabCategory.CarpoolTabFragment
-import com.example.mio.TabCategory.TaxiTabFragment
+import com.example.mio.model.PostData
+import com.example.mio.model.User
+import com.example.mio.tabcategory.CarpoolTabFragment
+import com.example.mio.tabcategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityCompleteBinding
 
 class CompleteActivity : AppCompatActivity() {

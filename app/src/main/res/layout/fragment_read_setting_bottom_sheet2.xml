@@ -9,7 +9,7 @@
     android:paddingBottom="24dp"
     app:behavior_hideable="true"
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-    tools:context=".BottomSheetFragment.AnotherBottomSheetFragment">
+    tools:context=".bottomsheetfragment.AnotherBottomSheetFragment">
 
     <!--<TextView
         android:id="@+id/read_setting_report"

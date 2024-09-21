@@ -12,10 +12,10 @@ import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mio.Adapter.NoticeBoardAdapter
-import com.example.mio.Adapter.ParticipationAdapter
-import com.example.mio.Model.*
-import com.example.mio.NoticeBoard.NoticeBoardReadActivity
+import com.example.mio.adapter.NoticeBoardAdapter
+import com.example.mio.adapter.ParticipationAdapter
+import com.example.mio.model.*
+import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityParticipationReceiveBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

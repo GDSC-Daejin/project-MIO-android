@@ -1,6 +1,6 @@
 package com.example.mio
 
-import com.example.mio.Model.*
+import com.example.mio.model.*
 import com.example.mio.sse.SSEData
 import retrofit2.Call
 import retrofit2.http.*

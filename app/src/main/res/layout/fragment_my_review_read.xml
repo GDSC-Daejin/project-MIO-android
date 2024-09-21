@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".TabAccount.MyReviewReadFragment">
+    tools:context=".tabaccount.MyReviewReadFragment">
 
     <LinearLayout
         android:id="@+id/read_review_post_not_data_ll"

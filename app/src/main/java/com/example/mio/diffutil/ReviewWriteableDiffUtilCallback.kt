@@ -1,7 +1,7 @@
 package com.example.mio.diffutil
 
 import androidx.recyclerview.widget.DiffUtil
-import com.example.mio.Model.PostData
+import com.example.mio.model.PostData
 
 
 class ReviewWriteableDiffUtilCallback(

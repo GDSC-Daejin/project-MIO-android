@@ -15,7 +15,7 @@ import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
-import com.example.mio.Model.*
+import com.example.mio.model.*
 import com.example.mio.databinding.ActivityPassengersReviewBinding
 import com.google.android.material.chip.Chip
 import retrofit2.Call

@@ -26,6 +26,7 @@ class AccountSelectBankAdapter  : RecyclerView.Adapter<AccountSelectBankAdapter.
             Glide.with(context)
                 .load(bankData.image)
                 .error(R.drawable.top_icon_vector)
+                .fitCenter()
                 .circleCrop()
                 .override(90,90)
                 .listener(object : RequestListener<Drawable> {

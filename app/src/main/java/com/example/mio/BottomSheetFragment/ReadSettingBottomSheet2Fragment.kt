@@ -45,12 +45,12 @@ class ReadSettingBottomSheet2Fragment : BottomSheetDialogFragment() { //유저�
     ): View {
         rsBinding = FragmentReadSettingBottomSheet2Binding.inflate(inflater, container, false)
 
-        rsBinding.readSettingReport.setOnClickListener {
+        /*rsBinding.readSettingReport.setOnClickListener {
             //Toast.makeText(requireActivity(), "최신 순", Toast.LENGTH_SHORT).show()
             if (listener == null) return@setOnClickListener
             listener?.sendValue("신고")
             dismiss()
-        }
+        }*/
 
         rsBinding.readSettingBookmark.setOnClickListener {
             //Toast.makeText(requireActivity(), "최신 순", Toast.LENGTH_SHORT).show()

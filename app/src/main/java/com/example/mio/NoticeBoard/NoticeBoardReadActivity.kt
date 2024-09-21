@@ -168,7 +168,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             //tempProfile = intent.getSerializableExtra("uri") as String
             tempProfile = temp?.user?.profileImageUrl.toString()
             isCategory = temp!!.postCategory == "carpool"
-
+            nbrBinding.readCategory.text = if (isCategory == true) {
+                "카테고리: 카풀"
+            } else {
+                "카테고리: 택시"
+            }
             //initParticipationCheck()
             if (temp?.user?.gender != null && temp?.user?.verifySmoker != null && temp?.postVerifyGoReturn != null) {
                 chipList.add(createNewChip(text = if (temp?.user?.verifySmoker == true) {

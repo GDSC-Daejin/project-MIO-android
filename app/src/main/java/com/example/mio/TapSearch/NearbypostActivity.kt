@@ -100,13 +100,22 @@ class NearbypostActivity  : AppCompatActivity() { //검색에서 게시글 더�
                 "최신 순" -> {
                     nbinding.nearFilter.text = "최신 순"
                     nbinding.nearFilter.setTextColor(ContextCompat.getColor(this , R.color.mio_blue_4))
-                    nearPostAllData.sortByDescending {data ->  data.createDate }
-                    adapter.setData(nearPostAllData)
+                    //nearPostAllData.sortByDescending { it.createDate }
+
+
+                    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+                    val sortedTargets = nearPostAllData.sortedByDescending {
+                        // 시간과 날짜를 하나로 결합하여 내림차순으로 정렬
+                        LocalDate.parse(it.targetDate, dateFormatter).atTime(LocalTime.parse(it.targetTime, timeFormatter))
+                    }
+
+                    adapter.setData(sortedTargets)
                 }
                 "마감 임박 순" -> {
                     nbinding.nearFilter.text = "마감 임박 순"
                     nbinding.nearFilter.setTextColor(ContextCompat.getColor(this , R.color.mio_blue_4))
-                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
                     // 날짜 및 시간 형식 지정
                     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -127,16 +136,12 @@ class NearbypostActivity  : AppCompatActivity() { //검색에서 게시글 더�
                         }
                     }
 
-                    // 리스트를 날짜(date) 먼저, 시간(time) 다음으로 정렬
-                   /* nearPostAllData.sortedWith(compareBy<LocationReadAllResponse?> { sdf.parse(it?.targetDate + " " + it?.targetTime) }
-                        .thenBy { it?.targetTime })*/
-
                     adapter.setData(sortedTargets)
                 }
                 "낮은 가격 순" -> {
                     nbinding.nearFilter.text = "낮은 가격 순"
                     nbinding.nearFilter.setTextColor(ContextCompat.getColor(this , R.color.mio_blue_4))
-                    nearPostAllData.sortBy { it?.cost }
+                    nearPostAllData.sortBy { it.cost }
                     adapter.setData(nearPostAllData)
                 }
                 "가까운 순" -> {

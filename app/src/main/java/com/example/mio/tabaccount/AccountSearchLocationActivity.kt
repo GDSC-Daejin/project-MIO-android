@@ -13,15 +13,12 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.adapter.AccountSearchLocationAdapter
-import com.example.mio.adapter.NoticeBoardAdapter
 import com.example.mio.adapter.RecentSearchAdapter
-import com.example.mio.adapter.SearchResultAdapter
 import com.example.mio.BuildConfig
 import com.example.mio.helper.SharedPrefManager
 import com.example.mio.helper.SharedPrefManager.convertAccountLocationToJSON
 import com.example.mio.KakaoAPI
 import com.example.mio.model.*
-import com.example.mio.R
 import com.example.mio.databinding.ActivityAccountSearchLocationBinding
 import retrofit2.Call
 import retrofit2.Callback

@@ -8,7 +8,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.location.Address
 import android.location.Geocoder
-import android.location.LocationRequest
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -19,10 +18,8 @@ import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.annotation.Keep
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -32,10 +29,6 @@ import com.airbnb.lottie.model.Marker
 import com.example.mio.*
 import com.example.mio.adapter.PlaceAdapter
 import com.example.mio.model.*
-import com.example.mio.navigation.SearchFragment
-import com.example.mio.tabaccount.AccountSearchLocationActivity
-import com.example.mio.tabcategory.CarpoolTabFragment
-import com.example.mio.tabcategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -44,13 +37,10 @@ import com.kakao.vectormap.KakaoMapReadyCallback
 import com.kakao.vectormap.LatLng
 import com.kakao.vectormap.MapLifeCycleCallback
 import com.kakao.vectormap.label.*
-import com.kakao.vectormap.mapwidget.InfoWindow
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import net.daum.mf.map.api.MapPOIItem
 import net.daum.mf.map.api.MapPoint
-import net.daum.mf.map.api.MapView
 import okhttp3.*
 import org.json.JSONObject
 import retrofit2.Call

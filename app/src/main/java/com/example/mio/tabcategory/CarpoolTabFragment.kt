@@ -8,19 +8,14 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
-import android.service.autofill.Validators.or
 import android.util.Log
 import android.view.*
 import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -40,16 +35,9 @@ import com.google.android.gms.ads.AdRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -137,7 +125,6 @@ class CarpoolTabFragment : Fragment() {
         initNoticeBoardRecyclerView()
         initCurrentNoticeBoardRecyclerView()
         initCalendarRecyclerView()
-        initSwipeRefresh()
         initMyAreaRecyclerView()
 
 
@@ -226,7 +213,7 @@ class CarpoolTabFragment : Fragment() {
 
                             //noticeBoardAdapter = NoticeBoardAdapter()
                             noticeBoardAdapter!!.postItemData = selectCalendarCarpoolData
-                            taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                            taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
                             taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                             noticeBoardAdapter!!.notifyDataSetChanged()
 
@@ -248,7 +235,7 @@ class CarpoolTabFragment : Fragment() {
 
                         } else {
                             CoroutineScope(Dispatchers.Main).launch {
-                                taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                                taxiTabBinding.noticeBoardRV.visibility = View.GONE
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                             }
                         }
@@ -479,7 +466,7 @@ class CarpoolTabFragment : Fragment() {
         taxiTabBinding.currentRv.addOnScrollListener(recyclerViewScrollListener)
 
         currentNoticeBoardAdapter = CurrentNoticeBoardAdapter()
-        currentNoticeBoardAdapter!!.currentPostItemData = currentTaxiAllData
+        //currentNoticeBoardAdapter!!.currentPostItemData = currentTaxiAllData
         taxiTabBinding.currentRv.adapter = currentNoticeBoardAdapter
         taxiTabBinding.currentRv.setHasFixedSize(true)
         horizonManager2.orientation = LinearLayoutManager.HORIZONTAL
@@ -520,24 +507,6 @@ class CarpoolTabFragment : Fragment() {
         }
     }
 
-    private fun initSwipeRefresh() {
-        taxiTabBinding.refreshSwipeLayout.setOnRefreshListener {
-            //새로고침 시 터치불가능하도록
-            activity?.window!!.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) // 화면 터치 못하게 하기
-            val handler = Handler(Looper.getMainLooper())
-            handler.postDelayed({
-                setData()
-                noticeBoardAdapter!!.postItemData = carpoolAllData
-                //noticeBoardAdapter.recyclerView.startLayoutAnimation()
-                taxiTabBinding.refreshSwipeLayout.isRefreshing = false
-                noticeBoardAdapter!!.notifyDataSetChanged()
-                activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            }, 1000)
-            //터치불가능 해제ss
-            //activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        }
-    }
 
     private fun setCalendarData() {
 
@@ -642,10 +611,10 @@ class CarpoolTabFragment : Fragment() {
 
                             if (todayFilteredList.isEmpty()) {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
-                                taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                                taxiTabBinding.noticeBoardRV.visibility = View.GONE
                             } else {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
-                                taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                                taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
                             }
 
                             // 어댑터에 필터링된 데이터 적용
@@ -659,10 +628,10 @@ class CarpoolTabFragment : Fragment() {
                             // 첫 호출이 아닐 때는 전체 데이터를 반영
                             if (carpoolAllData.isEmpty()) {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
-                                taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                                taxiTabBinding.noticeBoardRV.visibility = View.GONE
                             } else {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
-                                taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                                taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
                             }
 
                             // 어댑터에 전체 데이터를 적용
@@ -817,51 +786,6 @@ class CarpoolTabFragment : Fragment() {
     }
 
     private fun setCurrentCarpoolData() {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-
-                if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.d("CarpoolFragment", expireDate.toString())
-
-                    // UI 스레드에서 Toast 실행
-                    requireActivity().runOnUiThread {
-                        Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    }
-
-                    Log.e("CarpoolFragment", "순서체크")
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-
         //println(userId)
         //작성자 제거 x
         RetrofitServerConnect.create(requireActivity()).getMyParticipantsUserData().enqueue(object : Callback<List<Content>> {
@@ -875,7 +799,7 @@ class CarpoolTabFragment : Fragment() {
 
                     if (responseData != null) {
                         for (i in responseData) {
-                            if (i.isDeleteYN != "Y" && i.postType == "BEFORE_DEADLINE") {
+                            if (i.isDeleteYN != "Y") {
                                 currentTaxiAllData.add(
                                     PostData(
                                         i.user.studentId,
@@ -903,7 +827,7 @@ class CarpoolTabFragment : Fragment() {
                         }
                     }
 
-                    currentNoticeBoardAdapter!!.notifyDataSetChanged()
+                    currentNoticeBoardAdapter?.updateDataList(currentTaxiAllData)
 
                     //val list : ArrayList<Participants> = ArrayList(
 
@@ -1019,63 +943,6 @@ class CarpoolTabFragment : Fragment() {
                     }
 
                 }
-                //getSerializableExtra = intent의 값을 보내고 받을때사용
-                //타입 변경을 해주지 않으면 Serializable객체로 만들어지니 as로 캐스팅해주자
-                /*val pill = it.data?.getSerializableExtra("pill") as PillData
-                val selectCategory = it.data?.getSerializableExtra("cg") as String*/
-
-                //선택한 카테고리 및 데이터 추가
-
-
-                /*if (selectCategory.isNotEmpty()) {
-                    selectCategoryData[selectCategory] = categoryArr
-                }*/
-
-
-                //api 33이후 아래로 변경됨
-                /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    getSerializable(key, T::class.java)
-                } else {
-                    getSerializable(key) as? T
-                }*/
-                /*when(it.data?.getIntExtra("flag", -1)) {
-                    //add
-                    0 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            data.add(pill)
-                            categoryArr.add(pill)
-                            //add면 그냥 추가
-                            selectCategoryData[selectCategory] = categoryArr
-                            //전
-                            //println( categoryArr[dataPosition])
-                        }
-                        println("전 ${selectCategoryData[selectCategory]}")
-                        //livedata
-                        sharedViewModel!!.setCategoryLiveData("add", selectCategoryData)
-
-
-                        homeAdapter!!.notifyDataSetChanged()
-                        Toast.makeText(activity, "추가되었습니다.", Toast.LENGTH_SHORT).show()
-                    }
-                    //edit
-                    1 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            data[dataPosition] = pill
-                            categoryArr[dataPosition] = pill
-                            selectCategoryData.clear()
-                            selectCategoryData[selectCategory] = categoryArr
-                            //후
-                            //println(categoryArr[dataPosition])
-                        }
-                        println("선택 $selectCategory")
-                        //livedata
-                        sharedViewModel!!.categoryLiveData.value = selectCategoryData
-                        println(testselectCategoryData)
-                        homeAdapter!!.notifyDataSetChanged()
-                        //Toast.makeText(activity, "수정되었습니다.", Toast.LENGTH_SHORT).show()
-                        Toast.makeText(activity, "$testselectCategoryData", Toast.LENGTH_SHORT).show()
-                    }
-                }*/
             }
         }
     }
@@ -1084,139 +951,6 @@ class CarpoolTabFragment : Fragment() {
     private fun triggerFirstItemOfCalendarAdapter(currentDatePos: Int) {
         taxiTabBinding.calendarRV.post {
             taxiTabBinding.calendarRV.findViewHolderForAdapterPosition(currentDatePos)?.itemView?.performClick()
-        }
-    }
-
-    private fun sendAlarmData(status:String , dataPos : Int, postData : PostData) { //카풀이 종료(종료버튼 눌렀을 때) 되었을 때 후기 알림
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val myId = saveSharedPreferenceGoogleLogin.getUserId(requireActivity()).toString()
-        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity()).toString().split("@")
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-        /*val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //.client(clientBuilder)
-
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("carpool", "carpool2")
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        ///////////////////////////////
-
-        var thisParticipationData : kotlin.collections.List<ParticipationData>? = null
-        RetrofitServerConnect.create(requireActivity()).getParticipationData(postData.postID).enqueue(object : Callback<List<ParticipationData>> {
-            override fun onResponse(
-                call: Call<List<ParticipationData>>,
-                response: Response<List<ParticipationData>>
-            ) {
-                if (response.isSuccessful) {
-                    //response.body()[1].
-                    response.body().let {
-                        thisParticipationData = it
-                    }
-                    /*Log.e("participants", "successssssssssssssssss")
-                    println(thisParticipationData)
-                    println(response.body())*/
-                } else {
-                    Log.e("participants", response.code().toString())
-
-                }
-            }
-
-            override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
-                Log.e("participants", t.message.toString())
-            }
-
-        })
-
-
-        //내가 운전자 일때 후기를 받을 손님들한테 알림 전송
-        if (status == "DRIVER") {
-            if (thisParticipationData?.isNotEmpty() == true) {
-                val filterData = thisParticipationData?.filter { it.approvalOrReject == "APPROVAL" }
-                for (i in filterData?.indices!!) {
-                    //userId 가 알람 받는 사람
-                    val temp = AddAlarmData("운전자님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
-
-                    //entity가 알람 받는 사람, user가 알람 전송한 사람
-                    CoroutineScope(Dispatchers.IO).launch {
-                        RetrofitServerConnect.create(requireActivity()).addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
-                            override fun onResponse(
-                                call: Call<AddAlarmResponseData?>,
-                                response: Response<AddAlarmResponseData?>
-                            ) {
-                                if (response.isSuccessful) {
-                                    println("succcc send alarm")
-                                } else {
-                                    println("faafa alarm")
-                                    Log.d("alarm", response.errorBody()?.string()!!)
-                                    Log.d("message", call.request().toString())
-                                    println(response.code())
-                                }
-                            }
-
-                            override fun onFailure(call: Call<AddAlarmResponseData?>, t: Throwable) {
-                                Log.d("error", t.toString())
-                            }
-
-                        })
-                    }
-                }
-            }
-        } else {
-            //내가 손님일 때 후기를 써주길 원하는 운전자에게 쓰도록 유도
-            val temp = AddAlarmData("손님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
-
-            //entity가 알람 받는 사람, user가 알람 전송한 사람
-            CoroutineScope(Dispatchers.IO).launch {
-                RetrofitServerConnect.create(requireActivity()).addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
-                    override fun onResponse(
-                        call: Call<AddAlarmResponseData?>,
-                        response: Response<AddAlarmResponseData?>
-                    ) {
-                        if (response.isSuccessful) {
-                            println("succcc send alarm")
-                        } else {
-                            println("faafa alarm")
-                            Log.d("alarm", response.errorBody()?.string()!!)
-                            Log.d("message", call.request().toString())
-                            println(response.code())
-                        }
-                    }
-
-                    override fun onFailure(call: Call<AddAlarmResponseData?>, t: Throwable) {
-                        Log.d("error", t.toString())
-                    }
-
-                })
-            }
         }
     }
 
@@ -1275,9 +1009,8 @@ class CarpoolTabFragment : Fragment() {
                 response: Response<Content>
             ) {
                 if (response.isSuccessful) {
-                    Log.d("patchVerifyFinishSuccess", response.code().toString())
                     currentTaxiAllData.removeIf { it.postID == postId }
-                    currentNoticeBoardAdapter?.notifyDataSetChanged()
+                    currentNoticeBoardAdapter?.updateDataList(currentTaxiAllData)
                 } else {
                     Log.e("patchVerifyFinishSuccess", response.code().toString())
                     Log.e("patchVerifyFinishSuccess", response.errorBody()?.string()!!)

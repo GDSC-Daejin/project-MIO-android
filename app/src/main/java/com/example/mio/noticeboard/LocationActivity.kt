@@ -1,9 +1,7 @@
 package com.example.mio.noticeboard
 
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mio.R
 import com.example.mio.databinding.ActivityLocationBinding

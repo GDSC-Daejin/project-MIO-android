@@ -5,22 +5,17 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Paint
-import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import com.example.mio.model.PostData
 import com.example.mio.model.User
-import com.example.mio.tabcategory.CarpoolTabFragment
-import com.example.mio.tabcategory.TaxiTabFragment
 import com.example.mio.databinding.ActivityCompleteBinding
 
 class CompleteActivity : AppCompatActivity() {

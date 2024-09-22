@@ -13,7 +13,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,25 +37,15 @@ import com.google.android.gms.ads.AdRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.lang.ref.WeakReference
-import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
-import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -134,7 +123,7 @@ class TaxiTabFragment : Fragment() {
         initNoticeBoardRecyclerView()
 
         initCalendarRecyclerView()
-        initSwipeRefresh()
+        //initSwipeRefresh()
 
         initCurrentNoticeBoardRecyclerView()
         initMyAreaRecyclerView()
@@ -227,7 +216,7 @@ class TaxiTabFragment : Fragment() {
 
                             //noticeBoardAdapter = NoticeBoardAdapter()
                             noticeBoardAdapter!!.postItemData = selectCalendarTaxiData
-                            taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                            taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
                             taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                             /* noticeBoardAdapter?.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
                                  override fun onClick(view: View, position: Int, itemId: Int) {
@@ -246,7 +235,7 @@ class TaxiTabFragment : Fragment() {
 
 
                         } else {
-                            taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                            taxiTabBinding.noticeBoardRV.visibility = View.GONE
                             taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                         }
 
@@ -432,7 +421,7 @@ class TaxiTabFragment : Fragment() {
 
 
         currentNoticeBoardAdapter = CurrentNoticeBoardAdapter()
-        currentNoticeBoardAdapter!!.currentPostItemData = currentTaxiAllData
+        //currentNoticeBoardAdapter!!.currentPostItemData = currentTaxiAllData
         taxiTabBinding.currentRv.adapter = currentNoticeBoardAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true
@@ -473,25 +462,6 @@ class TaxiTabFragment : Fragment() {
             if (todayPosition >= 0) {
                 triggerFirstItemOfCalendarAdapter(todayPosition)
             }
-        }
-    }
-
-    private fun initSwipeRefresh() {
-        taxiTabBinding.refreshSwipeLayout.setOnRefreshListener {
-            //새로고침 시 터치불가능하도록
-            activity?.window!!.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) // 화면 터치 못하게 하기
-            val handler = Handler(Looper.getMainLooper())
-            handler.postDelayed({
-                setData()
-                noticeBoardAdapter!!.postItemData = taxiAllData
-                //noticeBoardAdapter.recyclerView.startLayoutAnimation()
-                taxiTabBinding.refreshSwipeLayout.isRefreshing = false
-                noticeBoardAdapter!!.notifyDataSetChanged()
-                activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            }, 1000)
-            //터치불가능 해제ss
-            //activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
         }
     }
 
@@ -600,10 +570,10 @@ class TaxiTabFragment : Fragment() {
 
                             if (todayFilteredList.isEmpty()) {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
-                                taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                                taxiTabBinding.noticeBoardRV.visibility = View.GONE
                             } else {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
-                                taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                                taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
                             }
 
                             // 어댑터에 필터링된 데이터 적용
@@ -617,10 +587,10 @@ class TaxiTabFragment : Fragment() {
                             // 첫 호출이 아닐 때는 전체 데이터를 반영
                             if (taxiAllData.isEmpty()) {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
-                                taxiTabBinding.refreshSwipeLayout.visibility = View.GONE
+                                taxiTabBinding.noticeBoardRV.visibility = View.GONE
                             } else {
                                 taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
-                                taxiTabBinding.refreshSwipeLayout.visibility = View.VISIBLE
+                                taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
                             }
 
                             // 어댑터에 전체 데이터를 적용
@@ -773,53 +743,6 @@ class TaxiTabFragment : Fragment() {
     }
 
     private fun setCurrentTaxiData() {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-
-                if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.d("TaxiFragment", expireDate.toString())
-
-                    // UI 스레드에서 Toast 실행
-                    requireActivity().runOnUiThread {
-                        Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    }
-
-                    Log.e("TaxiFragment", "순서체크")
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-
-        //println(userId)
-
         RetrofitServerConnect.create(requireActivity()).getMyParticipantsUserData().enqueue(object : Callback<List<Content>> {
             override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
                 if (response.isSuccessful) {
@@ -830,7 +753,7 @@ class TaxiTabFragment : Fragment() {
 
                     if (responseData != null) {
                         for (i in responseData) {
-                            if (i.isDeleteYN != "Y" && i.postType == "BEFORE_DEADLINE") {
+                            if (i.isDeleteYN != "Y") {
                                 currentTaxiAllData.add(PostData(
                                     i.user.studentId,
                                     i.postId,
@@ -855,7 +778,7 @@ class TaxiTabFragment : Fragment() {
                             }
                         }
                     }
-                    currentNoticeBoardAdapter!!.notifyDataSetChanged()
+                    currentNoticeBoardAdapter?.updateDataList(currentTaxiAllData)
 
                     if (currentTaxiAllData.isEmpty()) {
                         taxiTabBinding.currentRv.visibility = View.GONE
@@ -992,140 +915,6 @@ class TaxiTabFragment : Fragment() {
             }
         })
     }
-
-    private fun sendAlarmData(status:String , dataPos : Int, postData : PostData) { //카풀이 종료(종료버튼 눌렀을 때) 되었을 때 후기 알림
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val myId = saveSharedPreferenceGoogleLogin.getUserId(requireActivity()).toString()
-        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity()).toString().split("@").map { it }.first()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-        /*val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //.client(clientBuilder)
-
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("taxi", "taxi2")
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        ///////////////////////////////
-
-        var thisParticipationData : kotlin.collections.List<ParticipationData>? = null
-        RetrofitServerConnect.create(requireActivity()).getParticipationData(postData.postID).enqueue(object : Callback<List<ParticipationData>> {
-            override fun onResponse(
-                call: Call<List<ParticipationData>>,
-                response: Response<List<ParticipationData>>
-            ) {
-                if (response.isSuccessful) {
-                    //response.body()[1].
-                    response.body().let {
-                        thisParticipationData = it
-                    }
-                    /*Log.e("participants", "successssssssssssssssss")
-                    println(thisParticipationData)
-                    println(response.body())*/
-                } else {
-                    Log.e("participants", response.code().toString())
-
-                }
-            }
-
-            override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
-                Log.e("participants", t.message.toString())
-            }
-
-        })
-
-
-        //내가 운전자 일때 후기를 받을 손님들한테 알림 전송
-        if (status == "DRIVER") {
-            if (thisParticipationData?.isNotEmpty() == true) {
-                val filterData = thisParticipationData?.filter { it.approvalOrReject == "APPROVAL" }
-                for (i in filterData?.indices!!) {
-                    //userId 가 알람 받는 사람
-                    val temp = AddAlarmData("운전자님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
-
-                    //entity가 알람 받는 사람, user가 알람 전송한 사람
-                    CoroutineScope(Dispatchers.IO).launch {
-                        RetrofitServerConnect.create(requireActivity()).addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
-                            override fun onResponse(
-                                call: Call<AddAlarmResponseData?>,
-                                response: Response<AddAlarmResponseData?>
-                            ) {
-                                if (response.isSuccessful) {
-                                    println("succcc send alarm")
-                                } else {
-                                    println("faafa alarm")
-                                    Log.d("alarm", response.errorBody()?.string()!!)
-                                    Log.d("message", call.request().toString())
-                                    println(response.code())
-                                }
-                            }
-
-                            override fun onFailure(call: Call<AddAlarmResponseData?>, t: Throwable) {
-                                Log.d("error", t.toString())
-                            }
-
-                        })
-                    }
-                }
-            }
-        } else {
-            //내가 손님일 때 후기를 써주길 원하는 운전자에게 쓰도록 유도
-            val temp = AddAlarmData("손님이 후기를 기다리고 있어요", postData.postID, myId.toInt())
-
-            //entity가 알람 받는 사람, user가 알람 전송한 사람
-            CoroutineScope(Dispatchers.IO).launch {
-                RetrofitServerConnect.create(requireActivity()).addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
-                    override fun onResponse(
-                        call: Call<AddAlarmResponseData?>,
-                        response: Response<AddAlarmResponseData?>
-                    ) {
-                        if (response.isSuccessful) {
-                            println("succcc send alarm")
-                        } else {
-                            println("faafa alarm")
-                            Log.d("alarm", response.errorBody()?.string()!!)
-                            Log.d("message", call.request().toString())
-                            println(response.code())
-                        }
-                    }
-
-                    override fun onFailure(call: Call<AddAlarmResponseData?>, t: Throwable) {
-                        Log.d("error", t.toString())
-                    }
-
-                })
-            }
-        }
-    }
-
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {

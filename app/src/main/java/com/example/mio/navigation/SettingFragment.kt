@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.mio.MainActivity
 import com.example.mio.OpenSourceManagementActivity
 import com.example.mio.R
@@ -21,6 +22,8 @@ import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentSettingBinding
 import com.example.mio.sse.SSEForegroundService
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -54,32 +57,6 @@ class SettingFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentSettingBinding.inflate(inflater, container, false)
-        //requireActivity()를 호출하기 전에 isAdded() 메서드를 사용하여 프래그먼트가 액티비티에 연결되어 있는지 확인하는 isAdded
-        if (isAdded) {
-            // 프래그먼트가 아직 액티비티에 연결되어 있는 경우에만 작업 수행
-            requireActivity().runOnUiThread {
-                // 뒤로가기 동작 핸들링
-                requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-                    override fun handleOnBackPressed() {
-                        // MainActivity의 changeFragment 메서드를 호출하여 HomeFragment로 전환
-                        (activity as MainActivity).changeFragment(HomeFragment())
-
-                        // 툴바도 "기본"으로 변경
-                        (activity as MainActivity).toolbarType = "기본"
-                        (activity as MainActivity).setToolbarView("기본")
-
-                        // 뒤로가기 플래그 설정 초기화
-                        (activity as MainActivity).isClicked = false
-                        (activity as MainActivity).isSettingClicked = false
-
-                        // 네비게이션 바의 선택된 항목을 "Home"으로 설정
-                        (activity as MainActivity).mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
-                    }
-                })
-                binding.enableFeature.isChecked = sharedPreference.getSharedAlarm(requireActivity())
-            }
-        }
-
 
         binding.enableFeature.setOnCheckedChangeListener { compoundButton, check ->
             sharedPreference.setSharedAlarm(requireActivity(), check)
@@ -132,6 +109,36 @@ class SettingFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        requireActivity().let { currentActivity ->
+            // 뒤로가기 콜백 설정
+            currentActivity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    // 현재 액티비티가 MainActivity인지 확인
+                    if (currentActivity is MainActivity) {
+                        // SettingFragment를 종료할지 HomeFragment로 이동할지 결정하는 로직
+                        val fragmentManager = currentActivity.supportFragmentManager
+                        val homeFragment = fragmentManager.findFragmentByTag(HomeFragment::class.java.simpleName)
+
+                        if (homeFragment == null) {
+                            // HomeFragment가 존재하지 않으면 HomeFragment로 이동
+                            currentActivity.changeFragment(HomeFragment())
+                            currentActivity.toolbarType = "기본"
+                            currentActivity.setToolbarView("기본")
+                            currentActivity.isClicked = false
+                            currentActivity.isSettingClicked = false
+                            currentActivity.mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
+                        } else {
+                            // HomeFragment가 이미 존재하면 SettingFragment 종료
+                            fragmentManager.popBackStack() // 현재 프래그먼트를 스택에서 제거
+                        }
+                    }
+                }
+            })
+        }
     }
 
     private fun foregroundServiceRunning(): Boolean {

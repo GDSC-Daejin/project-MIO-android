@@ -94,7 +94,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             binding.participationItemLl.backgroundTintList = colorStateList
             binding.participationRefuse.visibility = View.GONE
             binding.participationApproval.visibility = View.GONE
-            binding.participationCancel.visibility = View.VISIBLE
+            //binding.participationCancel.visibility = View.VISIBLE
         }
 
         private fun setItemUnselected(binding: ParticipationItemLayoutBinding) {
@@ -103,7 +103,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             binding.participationItemLl.backgroundTintList = colorStateList
             binding.participationRefuse.visibility = View.VISIBLE
             binding.participationApproval.visibility = View.VISIBLE
-            binding.participationCancel.visibility = View.GONE
+            //binding.participationCancel.visibility = View.GONE
         }
 
         private fun setButtonListeners(binding: ParticipationItemLayoutBinding, partData: ParticipationData, position: Int) {
@@ -136,7 +136,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 notifyItemChanged(position)
             }
 
-            binding.participationCancel.setOnClickListener {
+            /*binding.participationCancel.setOnClickListener {
                 if (isTargetTimePassed(target)) {
                     Log.e("participation", "예정된")
                     Toast.makeText(context, "예정된 시간이 지나 취소하실 수 없습니다", Toast.LENGTH_SHORT).show()
@@ -145,7 +145,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                     itemClickListener.onRefuseClick(position, partData.participantId.toString())
                     notifyItemChanged(position)
                 }
-            }
+            }*/
         }
     }
 

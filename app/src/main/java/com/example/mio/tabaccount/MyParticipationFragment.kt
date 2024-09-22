@@ -12,30 +12,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat.canScrollVertically
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.*
 import com.example.mio.adapter.MyAccountParticipationAdapter
-import com.example.mio.adapter.MyAccountPostAdapter
 import com.example.mio.model.*
 import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentMyParticipationBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -61,7 +54,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
     //자신이 신청한 예약의 게시글 정보를 순서대로 담은 데이터 변수
     private var myParticipationAllData = ArrayList<PostData?>()
     //자신이 신청한 예약의 정보(waiting, approval등)을 순서대로 담은 데이터변수
-    private var myParticipationApprovalOrRejectAllData = ArrayList<String?>()
+    private var myParticipationApprovalOrRejectAllData = HashMap<String?,String?>()
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
 
     private var dataPosition = 0
@@ -84,7 +77,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         mpBinding = FragmentMyParticipationBinding.inflate(inflater, container, false)
 
         initMyParticipationRecyclerView()
@@ -126,7 +119,6 @@ class MyParticipationFragment : Fragment() { //두번쨰
         }
 
         myAdapter = MyAccountParticipationAdapter()
-        myAdapter!!.myPostItemData = myParticipationAllData
         myAdapter!!.myPostReservationCheck = myParticipationApprovalOrRejectAllData
         mpBinding.participationPostRv.adapter = myAdapter
         //레이아웃 뒤집기 안씀
@@ -142,10 +134,8 @@ class MyParticipationFragment : Fragment() { //두번쨰
             val handler = Handler(Looper.getMainLooper())
             handler.postDelayed({
                 setMyParticipationData()
-                myAdapter!!.myPostItemData = myParticipationAllData
                 //noticeBoardAdapter.recyclerView.startLayoutAnimation()
                 mpBinding.participationAccountSwipe.isRefreshing = false
-                myAdapter!!.notifyDataSetChanged()
                 activity?.window!!.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
             }, 1000)
             //터치불가능 해제ss
@@ -154,46 +144,6 @@ class MyParticipationFragment : Fragment() { //두번쨰
         }
     }
     private fun setMyParticipationData() {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-        val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity)!!.split("@").map { it }.first()
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
-
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("particiFragg", "particiFragg1")
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-
-        //println(userId)
-
         RetrofitServerConnect.create(requireActivity()).getMyParticipantsData().enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                 if (response.isSuccessful) {
@@ -221,14 +171,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
                         }
                         Log.d("mypartipationFragment", myParticipationAllData.toString())
                     } else {
-                        for (i in responseData) {
-                            if (i.isDeleteYN == "N") {
-                                myParticipationApprovalOrRejectAllData.add(
-                                    i.approvalOrReject
-                                )
-                            }
-                        }
-                        Log.d("Notification Fragment Data", "Received data: $myParticipationApprovalOrRejectAllData")
+                        //Log.d("Notification Fragment Data", "Received data: $myParticipationApprovalOrRejectAllData")
                         CoroutineScope(Dispatchers.IO).launch {
                             setPostUserData(postList = responseData.filter { it.isDeleteYN != "Y" })
                         }
@@ -257,7 +200,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
             loadingDialog?.dismiss()
             loadingDialog = null // 다이얼로그 인스턴스 참조 해제
         }
-        myAdapter?.notifyDataSetChanged()
+        myAdapter?.updateDataList(myParticipationAllData)
         if (myParticipationAllData.size > 0) {
             mpBinding.accountParticipationNotDataLl.visibility = View.GONE
             mpBinding.participationAccountSwipe.visibility = View.VISIBLE
@@ -273,44 +216,6 @@ class MyParticipationFragment : Fragment() { //두번쨰
     //게시글 승인 예약 인원정보
     private fun setPostUserData(postList: List<ParticipationData>?) {
         Log.e("participationFragment PostId Test", "진입완료")
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-        /*val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.substring(0 until 8)
-        val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(this)!!*/
-
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("particiFragg", "particiFragg2")
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        ///////////////////////////////////////////////////
         if (postList?.isNotEmpty() == true) {
             for (i in postList.indices) {
                 RetrofitServerConnect.create(requireActivity()).getPostIdDetailSearch(postId = postList[i].postId).enqueue(object : Callback<Content> {
@@ -341,6 +246,29 @@ class MyParticipationFragment : Fragment() { //두번쨰
                                             it.latitude,
                                             it.longitude
                                         ))
+
+                                        /*val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                                        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+                                        val sortedTargets = nearPostAllData.sortedByDescending {
+                                            // 시간과 날짜를 하나로 결합하여 내림차순으로 정렬
+                                            LocalDate.parse(it.targetDate, dateFormatter).atTime(LocalTime.parse(it.targetTime, timeFormatter))
+                                        }
+
+                                        adapter.setData(sortedTargets)
+                                        * */
+                                        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                                        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+                                        myParticipationApprovalOrRejectAllData[LocalDate.parse(it.targetDate, dateFormatter).atTime(
+                                            LocalTime.parse(it.targetTime, timeFormatter)).toString()] = postList[i].approvalOrReject
+                                        val sortedTargets = myParticipationAllData.sortedByDescending {
+                                            // 시간과 날짜를 하나로 결합하여 내림차순으로 정렬
+                                            LocalDate.parse(it?.postTargetDate, dateFormatter).atTime(LocalTime.parse(it?.postTargetTime, timeFormatter))
+                                        }
+                                        myParticipationAllData.clear()
+                                        myParticipationAllData.addAll(sortedTargets)
+                                        //updateUI(myParticipationAllData)
+                                        Log.e("myParticipationAllData", myParticipationAllData.toString())
                                     }
                                     updateUI()
                                 }

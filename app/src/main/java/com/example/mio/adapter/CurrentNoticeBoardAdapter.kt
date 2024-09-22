@@ -4,11 +4,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.model.PostData
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.CurrentPostItemBinding
+import com.example.mio.diffutil.ReviewWriteableDiffUtilCallback
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -16,7 +18,7 @@ import kotlin.collections.ArrayList
 
 class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter.CurrentNoticeBoardViewHolder>(){
     private lateinit var binding : CurrentPostItemBinding
-    var currentPostItemData = ArrayList<PostData>()
+    private var currentPostItemData = ArrayList<PostData>()
     private var hashMapCurrentPostItemData = HashMap<Int, PostStatus>()
     private lateinit var context : Context
 
@@ -212,6 +214,19 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
 
     fun setItemClickListener(itemClickListener: CurrentNoticeBoardAdapter.ItemClickListener) {
         this.itemClickListener = itemClickListener
+    }
+
+    fun updateDataList(newItems: List<PostData>) {
+        // Create a new DiffUtil.Callback instance
+        val diffCallback = ReviewWriteableDiffUtilCallback(currentPostItemData, newItems)
+
+        // Calculate the diff
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        currentPostItemData.clear()
+        currentPostItemData.addAll(newItems.sortedByDescending { it.postCreateDate })
+
+        diffResult.dispatchUpdatesTo(this)
     }
 
 }

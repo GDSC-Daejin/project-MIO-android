@@ -1,7 +1,6 @@
 package com.example.mio
 
 import android.app.ActivityManager
-import android.app.ProgressDialog.show
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -33,14 +32,9 @@ import com.google.android.gms.ads.MobileAds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 
 class MainActivity : AppCompatActivity(), FinishAdInterface {

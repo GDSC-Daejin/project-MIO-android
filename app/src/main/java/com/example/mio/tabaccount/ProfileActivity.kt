@@ -2,20 +2,15 @@ package com.example.mio.tabaccount
 
 import android.animation.ObjectAnimator
 import android.graphics.Color
-import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
-import com.example.mio.adapter.AccountTabAdapter
 import com.example.mio.adapter.ProfileTabAdapter
 import com.example.mio.model.User
-import com.example.mio.R
 import com.example.mio.RetrofitServerConnect
-import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.ActivityProflieBinding
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.CoroutineScope

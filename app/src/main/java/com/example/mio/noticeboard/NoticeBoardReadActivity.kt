@@ -23,7 +23,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -43,12 +42,8 @@ import com.example.mio.tabcategory.MoreTaxiTabActivity
 import com.example.mio.databinding.ActivityNoticeBoardReadBinding
 import com.google.android.gms.ads.AdRequest
 import com.google.android.material.chip.Chip
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import kotlinx.coroutines.*
 import retrofit2.*
-import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.time.*
 import java.time.format.DateTimeFormatter

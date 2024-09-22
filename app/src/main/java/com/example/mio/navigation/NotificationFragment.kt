@@ -91,30 +91,6 @@ class NotificationFragment : Fragment() {
         sharedPref = SharedPref(requireContext())
         identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
 
-        if (isAdded) {
-            // 프래그먼트가 아직 액티비티에 연결되어 있는 경우에만 작업 수행
-            requireActivity().runOnUiThread {
-                // 뒤로가기 동작 핸들링
-                requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-                    override fun handleOnBackPressed() {
-                        // MainActivity의 changeFragment 메서드를 호출하여 HomeFragment로 전환
-                        (activity as MainActivity).changeFragment(HomeFragment())
-
-                        // 툴바도 "기본"으로 변경
-                        (activity as MainActivity).toolbarType = "기본"
-                        (activity as MainActivity).setToolbarView("기본")
-
-                        // 뒤로가기 플래그 설정 초기화
-                        (activity as MainActivity).isClicked = false
-                        (activity as MainActivity).isSettingClicked = false
-
-                        // 네비게이션 바의 선택된 항목을 "Home"으로 설정
-                        (activity as MainActivity).mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
-                    }
-                })
-            }
-        }
-
         if (arguments != null) {
             title = requireArguments().getString("title")
         }
@@ -523,6 +499,33 @@ class NotificationFragment : Fragment() {
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().let { currentActivity ->
+            // 뒤로가기 콜백 설정
+            currentActivity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    // 현재 액티비티가 MainActivity인지 확인
+                    if (currentActivity is MainActivity) {
+                        // SettingFragment를 종료할지 HomeFragment로 이동할지 결정하는 로직
+                        val fragmentManager = currentActivity.supportFragmentManager
+                        val homeFragment = fragmentManager.findFragmentByTag(HomeFragment::class.java.simpleName)
+
+                        if (homeFragment == null) {
+                            // HomeFragment가 존재하지 않으면 HomeFragment로 이동
+                            currentActivity.changeFragment(HomeFragment())
+                            currentActivity.toolbarType = "기본"
+                            currentActivity.setToolbarView("기본")
+                            currentActivity.isClicked = false
+                            currentActivity.isSettingClicked = false
+                            currentActivity.mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
+                        } else {
+                            // HomeFragment가 이미 존재하면 SettingFragment 종료
+                            fragmentManager.popBackStack() // 현재 프래그먼트를 스택에서 제거
+                        }
+                    }
+                }
+            })
+        }
 
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         // ViewModel 초기화

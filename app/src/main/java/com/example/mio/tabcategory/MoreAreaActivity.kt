@@ -8,7 +8,6 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -21,20 +20,14 @@ import com.example.mio.bottomsheetfragment.BottomSheetFragment
 import com.example.mio.model.*
 import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityMoreAreaBinding
-import com.example.mio.databinding.ActivityMoreCarpoolBinding
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalTime
@@ -54,8 +47,7 @@ class MoreAreaActivity : AppCompatActivity() {
     //필터 리셋시 사용
     //private var moreTempCarpoolAllData =  ArrayList<PostData?>()
     private var dataPosition = 0
-    private var date = ""
-    //var tempFilterPostData : ArrayList<PostData?> = ArrayList()
+
     private var tempFilterPostData : ArrayList<PostData?> = ArrayList()
 
     //칩 생성

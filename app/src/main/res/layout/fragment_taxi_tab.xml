@@ -123,39 +123,22 @@
                     android:visibility="gone"
                     />
 
-                <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                    android:id="@+id/refresh_swipe_layout"
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/noticeBoard_RV"
                     android:layout_width="match_parent"
-                    android:layout_height="400dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
                     android:layout_marginTop="20dp"
                     android:layout_marginEnd="20dp"
-                    android:layout_marginBottom="10dp"
-                    android:layout_weight="1"
+                    tools:itemCount="5"
+                    android:clickable="true"
+                    android:descendantFocusability="blocksDescendants"
                     android:visibility="visible"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/calendar_container_ll">
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/noticeBoard_RV"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="20dp"
-                        android:layout_marginEnd="20dp"
-                        android:clickable="true"
-                        android:descendantFocusability="blocksDescendants"
-                        android:visibility="visible"
-                        app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/calendar_RV"
-                        tools:listitem="@layout/post_item" />
-
-
-                </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                    app:layout_constraintTop_toBottomOf="@+id/calendar_RV"
+                    tools:listitem="@layout/post_item" />
             </LinearLayout>
 
             <TextView

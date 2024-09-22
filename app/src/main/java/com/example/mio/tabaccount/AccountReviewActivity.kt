@@ -2,9 +2,7 @@ package com.example.mio.tabaccount
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.example.mio.adapter.AccountTabAdapter
 import com.example.mio.adapter.ReviewTabAdapter
-import com.example.mio.R
 import com.example.mio.databinding.ActivityAccountReviewBinding
 import com.google.android.material.tabs.TabLayoutMediator
 

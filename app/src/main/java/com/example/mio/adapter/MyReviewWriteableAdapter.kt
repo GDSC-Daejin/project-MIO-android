@@ -13,7 +13,7 @@ import com.example.mio.databinding.*
 
 class MyReviewWriteableAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     private lateinit var binding : MyReviewWriteableItemBinding
-    var myReviewWriteableData = ArrayList<PostData?>()
+    private var myReviewWriteableData = ArrayList<PostData?>()
     private lateinit var context : Context
 
     companion object {

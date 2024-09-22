@@ -11,21 +11,15 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.mio.*
 import com.example.mio.model.AddressData
 import com.example.mio.model.EditAccountData
-import com.example.mio.model.Place
 import com.example.mio.model.User
 import com.example.mio.navigation.AccountFragment
 import com.example.mio.databinding.ActivityAccountSettingBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class AccountSettingActivity : AppCompatActivity() {
     private var aBinding: ActivityAccountSettingBinding? = null

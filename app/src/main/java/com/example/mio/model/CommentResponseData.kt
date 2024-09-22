@@ -1,6 +1,5 @@
 package com.example.mio.model
 
-import com.example.mio.R
 import com.google.gson.annotations.SerializedName
 
 data class CommentResponseData(

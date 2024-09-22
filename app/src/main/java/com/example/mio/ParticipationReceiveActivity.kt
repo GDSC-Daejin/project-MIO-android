@@ -6,13 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.animation.OvershootInterpolator
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mio.adapter.NoticeBoardAdapter
 import com.example.mio.adapter.ParticipationAdapter
 import com.example.mio.model.*
 import com.example.mio.noticeboard.NoticeBoardReadActivity
@@ -20,16 +16,9 @@ import com.example.mio.databinding.ActivityParticipationReceiveBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.util.HashMap
 
 class ParticipationReceiveActivity : AppCompatActivity() {
     private lateinit var pBinding : ActivityParticipationReceiveBinding

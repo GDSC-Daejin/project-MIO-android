@@ -5,19 +5,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
 import com.example.mio.databinding.RvLoadingBinding
+import com.example.mio.diffutil.ReviewWriteableDiffUtilCallback
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import kotlin.collections.ArrayList
 
 
 class MyAccountParticipationAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     private lateinit var binding : PostItemBinding
-    var myPostItemData = ArrayList<PostData?>()
+    private var myPostItemData = ArrayList<PostData?>()
     //예약정보 가져온거 approval같은거
-    var myPostReservationCheck = kotlin.collections.ArrayList<String?>()
+    var myPostReservationCheck = kotlin.collections.HashMap<String?, String?>()
     private lateinit var context : Context
     companion object {
         //item을 표시할 때
@@ -53,9 +58,12 @@ class MyAccountParticipationAdapter : RecyclerView.Adapter<RecyclerView.ViewHold
 
             //accountProfile.setImageURI() = pillData.pillTakeTime
             //val listener = itemClickListener?.get()
+            val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+            val date = LocalDate.parse(accountData.postTargetDate, dateFormatter).atTime(
+                LocalTime.parse(accountData.postTargetTime, timeFormatter)).toString()
 
-
-            when(myPostReservationCheck[position]) {
+            when(myPostReservationCheck[date]) {
                 "APPROVAL" -> {
                     binding.postStatus.setImageResource(R.drawable.reservation_complete)
                     binding.postStatus.visibility = View.VISIBLE
@@ -138,6 +146,20 @@ class MyAccountParticipationAdapter : RecyclerView.Adapter<RecyclerView.ViewHold
 
     fun setItemClickListener(itemClickListener: MyAccountParticipationAdapter.ItemClickListener) {
         this.itemClickListener = itemClickListener
+    }
+
+
+    fun updateDataList(newItems: List<PostData?>) {
+        // Create a new DiffUtil.Callback instance
+        val diffCallback = ReviewWriteableDiffUtilCallback(myPostItemData, newItems)
+
+        // Calculate the diff
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        myPostItemData.clear()
+        myPostItemData.addAll(newItems.toList())
+
+        diffResult.dispatchUpdatesTo(this)
     }
 
 }

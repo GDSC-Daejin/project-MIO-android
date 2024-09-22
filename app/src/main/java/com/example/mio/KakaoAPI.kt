@@ -1,7 +1,6 @@
 package com.example.mio
 
 // REST API 통신 인터페이스
-import androidx.annotation.Keep
 import com.example.mio.model.ResultSearchAddress
 import com.example.mio.model.ResultSearchKeyword
 import retrofit2.Call

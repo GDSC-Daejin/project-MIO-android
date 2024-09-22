@@ -1,7 +1,5 @@
 package com.example.mio
 
-import android.animation.ObjectAnimator
-import android.animation.PropertyValuesHolder
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -13,18 +11,13 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.view.animation.AnticipateInterpolator
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.animation.doOnEnd
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.splashscreen.SplashScreenViewProvider
 import com.example.mio.model.LoginResponsesData
 import com.example.mio.model.LoginGoogleResponse
-import com.example.mio.model.RefreshTokenRequest
 import com.example.mio.model.TokenRequest
 import com.example.mio.databinding.ActivityLoginBinding
 import com.google.android.gms.ads.MobileAds

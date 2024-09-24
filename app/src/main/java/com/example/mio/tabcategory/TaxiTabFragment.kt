@@ -33,6 +33,7 @@ import com.example.mio.model.*
 import com.example.mio.noticeboard.NoticeBoardEditActivity
 import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentTaxiTabBinding
+import com.example.mio.viewmodel.CurrentDataViewModel
 import com.google.android.gms.ads.AdRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,9 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
 import kotlin.collections.ArrayList
@@ -104,6 +107,8 @@ class TaxiTabFragment : Fragment() {
     private var adRequest : AdRequest? = null
 
     private var isFirst = true
+
+    private lateinit var viewModel : CurrentDataViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -404,9 +409,6 @@ class TaxiTabFragment : Fragment() {
         loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
         loadingDialog.show()*/
 
-        CoroutineScope(Dispatchers.IO).launch {
-            setCurrentTaxiData()
-        }
         val recyclerViewScrollListener = object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
@@ -419,9 +421,9 @@ class TaxiTabFragment : Fragment() {
         // RecyclerView 스크롤 이벤트 리스너 등록
         taxiTabBinding.currentRv.addOnScrollListener(recyclerViewScrollListener)
 
-
+        setCurrentTaxiData()
         currentNoticeBoardAdapter = CurrentNoticeBoardAdapter()
-        //currentNoticeBoardAdapter!!.currentPostItemData = currentTaxiAllData
+        currentNoticeBoardAdapter!!.currentPostItemData = currentTaxiAllData
         taxiTabBinding.currentRv.adapter = currentNoticeBoardAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true
@@ -778,7 +780,17 @@ class TaxiTabFragment : Fragment() {
                             }
                         }
                     }
-                    currentNoticeBoardAdapter?.updateDataList(currentTaxiAllData)
+                    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+                    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+                    val sortedTargets = currentTaxiAllData.sortedByDescending {
+                        // 날짜와 시간을 각각 파싱하고 결합하여 내림차순으로 정렬
+                        val targetDate = LocalDate.parse(it.postTargetDate, dateFormatter) // 날짜 파싱
+                        val targetTime = LocalTime.parse(it.postTargetTime, timeFormatter) // 시간 파싱
+                        targetDate.atTime(targetTime) // 날짜와 시간을 결합하여 정렬 기준 생성
+                    }
+                    currentNoticeBoardAdapter?.currentPostItemData = sortedTargets.toMutableList()
+                    currentNoticeBoardAdapter!!.notifyDataSetChanged()
 
                     if (currentTaxiAllData.isEmpty()) {
                         taxiTabBinding.currentRv.visibility = View.GONE
@@ -845,6 +857,7 @@ class TaxiTabFragment : Fragment() {
             }
         })
     }
+
     //오늘날짜에 선택되게
     private fun triggerFirstItemOfCalendarAdapter(currentDatePos: Int) {
         taxiTabBinding.calendarRV.post {
@@ -852,69 +865,6 @@ class TaxiTabFragment : Fragment() {
         }
     }
 
-    private fun patchVerifyFinish(postId : Int) {
-        //저장된 값
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-
-        //통신
-        /*val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //.client(clientBuilder)
-
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-
-            val newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("taxi", "taxi")
-                    val intent = Intent(requireContext(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        ///
-        RetrofitServerConnect.create(requireActivity()).patchVerifyFinish(verifyFinish = VerifyFinishData(true), postId).enqueue(object : Callback<AddPostResponse> {
-            override fun onResponse(
-                call: Call<AddPostResponse>,
-                response: Response<AddPostResponse>
-            ) {
-                if (response.isSuccessful) {
-                    Log.d("patchVerifyFinishSuccess", response.code().toString())
-                } else {
-                    Log.e("patchVerifyFinishSuccess", response.code().toString())
-                    Log.e("patchVerifyFinishSuccess", response.errorBody()?.string()!!)
-                    Log.e("patchVerifyFinishSuccess", response.message().toString())
-                }
-            }
-
-            override fun onFailure(call: Call<AddPostResponse>, t: Throwable) {
-                Log.e("patchVerifyFinishSuccess", t.toString())
-            }
-        })
-    }
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
         when (it.resultCode) {
@@ -981,7 +931,34 @@ class TaxiTabFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //저장된 livemodel들을 가져옴
+        /*viewModel = ViewModelProvider(requireActivity())[CurrentDataViewModel::class.java]
+        setCurrentTaxiData()
+
+        viewModel.currentTaxiLiveData.observe(viewLifecycleOwner) { postDataList ->
+            viewModel.setLoading(false)
+            Log.e("viewmodelstarttax", postDataList.toString())
+            updateUI(postDataList)
+        }
+
+        viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
+            if (isLoading) {
+                // 로딩 다이얼로그를 생성하고 표시
+                loadingDialog = LoadingProgressDialog(requireActivity())
+                loadingDialog.setCancelable(false)
+                loadingDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                loadingDialog.window?.attributes?.windowAnimations = R.style.FullScreenDialog
+                loadingDialog.window!!.setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                loadingDialog.show()
+            } else {
+                // 로딩 다이얼로그를 해제
+                loadingDialog.dismiss()
+            }
+        }*/
+
+
 
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         //이건 나중에
@@ -1005,6 +982,10 @@ class TaxiTabFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         loadAdIfNeeded()
+        Log.e("taxi resume", "taxi resume")
+        /*viewModel.currentTaxiLiveData.value?.let { postDataList ->
+            currentNoticeBoardAdapter?.updateDataList(postDataList)
+        }*/
     }
 
     override fun onPause() {

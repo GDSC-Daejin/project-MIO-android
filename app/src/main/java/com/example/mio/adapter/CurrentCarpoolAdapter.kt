@@ -1,28 +1,32 @@
 package com.example.mio.adapter
+
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mio.model.PostData
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.CurrentPostItemBinding
+import com.example.mio.diffutil.CurrentReservationDiffUtilCallback
 import com.example.mio.diffutil.ReviewWriteableDiffUtilCallback
+import com.example.mio.model.Content
+import com.example.mio.model.PostData
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
-class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter.CurrentNoticeBoardViewHolder>(){
+class CurrentCarpoolAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     private lateinit var binding : CurrentPostItemBinding
-    var currentPostItemData = mutableListOf<PostData>()
+    var currentPostItemData = mutableListOf<PostData?>()
     private var hashMapCurrentPostItemData = HashMap<Int, PostStatus>()
     private lateinit var context : Context
 
     private var identification = ""
+
     enum class PostStatus {
         Passenger, //손님이면서 카풀완료
         Driver, //운전자이면서 카풀완료
@@ -31,14 +35,9 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
 
     init {
         setHasStableIds(true)
-
-        for (i in currentPostItemData.indices) {
-            hashMapCurrentPostItemData[i] = PostStatus.Neither
-        }
-
     }
 
-    inner class CurrentNoticeBoardViewHolder(private val binding : CurrentPostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
+    inner class CurrentViewHolder(private val binding : CurrentPostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
         //var accountId = binding.accountId
         //var accountProfile = binding.accountImage
@@ -107,86 +106,52 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
                     binding.currentCompleteFl.visibility = View.VISIBLE
                     binding.currentCompleteTv.text = "운행 종료"
 
-                    if (identification == currentPostItemData[position].user.email) {
-                        Log.d("identification Driver", currentPostItemData[position].user.email)
+                    if (identification == currentPostItemData[position]?.user?.email) {
+                        Log.d("identification Driver", currentPostItemData[position]?.user?.email.toString())
                         Log.d("identification", identification)
-                        hashMapCurrentPostItemData[position] = PostStatus.Driver
+                        hashMapCurrentPostItemData[position] = CurrentCarpoolAdapter.PostStatus.Driver
                     } else {
-                        Log.d("identification Passenger", currentPostItemData[position].user.email)
+                        Log.d("identification Passenger", currentPostItemData[position]?.user?.email.toString())
                         hashMapCurrentPostItemData[position] = PostStatus.Passenger
                     }
 
                 } else {
                     binding.currentCompleteFl.visibility = View.GONE
                 }
-                /*if (diffMinutes > 0) {
-                    binding.commentRealtimeCheck.text = "${diffMinutes.toString()}분전"
-                }
-                if (diffHours > 0) {
-                    binding.commentRealtimeCheck.text = "${diffHours.toString()}시간전"
-                }
-                if (diffDays > 0) {
-                    binding.commentRealtimeCheck.text = "${diffDays.toString()}일전"
-                }*/
             }
         } //bind
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrentNoticeBoardViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrentCarpoolAdapter.CurrentViewHolder {
         context = parent.context
         binding = CurrentPostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return CurrentNoticeBoardViewHolder(binding)
+        return CurrentViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder:CurrentNoticeBoardViewHolder, position: Int) {
-        holder.bind(currentPostItemData[holder.adapterPosition], position)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is CurrentCarpoolAdapter.CurrentViewHolder) {
+            holder.bind(currentPostItemData[position]!!, position)
 
-
-
-
-        //본인이 작성자(운전자) 이면서 카풀이 완료
-        if (identification == currentPostItemData[holder.adapterPosition].user.email && hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Driver) {
-            Log.d("current", "Driver")
-            holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID, PostStatus.Driver)
-            }
-        } else if (hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Passenger) { //본인은 운전자가 아니고 손님
-            Log.d("current", "Passenger")
-            holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID,  PostStatus.Passenger)
-            }
-        } else { //그냥 자기 게시글 확인
-            holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID, PostStatus.Neither)
+            //본인이 작성자(운전자) 이면서 카풀이 완료
+            if (identification == currentPostItemData[holder.adapterPosition]?.user?.email && hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Driver) {
+                Log.d("current", "Driver")
+                holder.itemView.setOnClickListener {
+                    currentPostItemData[holder.adapterPosition]?.postID?.let { it1 ->
+                        itemClickListener.onClick(it, holder.adapterPosition,
+                            it1, PostStatus.Driver)
+                    }
+                }
+            } else if (hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Passenger) { //본인은 운전자가 아니고 손님
+                Log.d("current", "Passenger")
+                holder.itemView.setOnClickListener {
+                    currentPostItemData[holder.adapterPosition]?.let { it1 -> itemClickListener.onClick(it, holder.adapterPosition, it1.postID,  PostStatus.Passenger) }
+                }
+            } else { //그냥 자기 게시글 확인
+                holder.itemView.setOnClickListener {
+                    currentPostItemData[holder.adapterPosition]?.let { it1 -> itemClickListener.onClick(it, holder.adapterPosition, it1.postID, PostStatus.Neither) }
+                }
             }
         }
-
-
-
-        /*binding.homeRemoveIv.setOnClickListener {
-                val builder : AlertDialog.Builder = AlertDialog.Builder(context)
-                val ad : AlertDialog = builder.create()
-                var deleteData = pillItemData[holder.adapterPosition]!!.pillName
-                builder.setTitle(deleteData)
-                builder.setMessage("정말로 삭제하시겠습니까?")
-                builder.setNegativeButton("예",
-                    DialogInterface.OnClickListener { dialog, which ->
-                        ad.dismiss()
-                        //temp = listData[holder.adapterPosition]!!
-                        //extraditeData()
-                        //testData.add(temp)
-                        //deleteServerData = tempServerData[holder.adapterPosition]!!.api_id
-                        removeData(holder.adapterPosition)
-                        //removeServerData(deleteServerData!!)
-                        //println(deleteServerData)
-                    })
-
-                builder.setPositiveButton("아니오",
-                    DialogInterface.OnClickListener { dialog, which ->
-                        ad.dismiss()
-                    })
-                builder.show()
-            }*/
     }
 
     override fun getItemCount(): Int {
@@ -197,22 +162,34 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
         return position.toLong()
     }
 
-    //데이터 Handle 함수
-    fun removeData(position: Int) {
-        currentPostItemData.removeAt(position)
-        //temp = null
-        notifyItemRemoved(position)
-    }
-
     interface ItemClickListener {
         fun onClick(view: View, position: Int, itemId: Int, status : PostStatus?)
     }
 
     //약한 참조로 참조하는 객체가 사용되지 않을 경우 가비지 콜렉션에 의해 자동해제
     //private var itemClickListener: WeakReference<ItemClickListener>? = null
-    private lateinit var itemClickListener: CurrentNoticeBoardAdapter.ItemClickListener
+    private lateinit var itemClickListener: ItemClickListener
 
-    fun setItemClickListener(itemClickListener: CurrentNoticeBoardAdapter.ItemClickListener) {
+    fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener
+    }
+
+    fun updateDataList(newItems: List<PostData?>) {
+        Log.e("updateCar", newItems.toString())
+        // Create a new DiffUtil.Callback instance
+        val diffCallback = ReviewWriteableDiffUtilCallback(currentPostItemData, newItems)
+
+        // Calculate the diff
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        currentPostItemData.clear()
+        currentPostItemData.addAll(newItems.sortedByDescending { it?.postCreateDate })
+
+        hashMapCurrentPostItemData.clear()
+        for (i in currentPostItemData.indices) {
+            hashMapCurrentPostItemData[i] = PostStatus.Neither
+        }
+
+        diffResult.dispatchUpdatesTo(this)
     }
 }

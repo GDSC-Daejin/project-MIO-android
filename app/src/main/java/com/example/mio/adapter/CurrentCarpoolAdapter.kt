@@ -1,61 +1,47 @@
-package com.example.mio.adapter
-
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.CurrentPostItemBinding
 import com.example.mio.diffutil.CurrentReservationDiffUtilCallback
 import com.example.mio.diffutil.ReviewWriteableDiffUtilCallback
-import com.example.mio.model.Content
 import com.example.mio.model.PostData
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.HashMap
 
-
-class CurrentCarpoolAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
-    private lateinit var binding : CurrentPostItemBinding
-    var currentPostItemData = mutableListOf<PostData?>()
+class CurrentCarpoolAdapter : RecyclerView.Adapter<CurrentCarpoolAdapter.CurrentViewHolder>() {
+    private lateinit var binding: CurrentPostItemBinding
+    private var currentPostItemData = ArrayList<PostData?>()
     private var hashMapCurrentPostItemData = HashMap<Int, PostStatus>()
-    private lateinit var context : Context
+    private lateinit var context: Context
 
     private var identification = ""
 
     enum class PostStatus {
-        Passenger, //손님이면서 카풀완료
-        Driver, //운전자이면서 카풀완료
-        Neither //둘 다 아니고 그냥 자기가 예약한 게시글 보고 싶음
+        Passenger,
+        Driver,
+        Neither
     }
 
     init {
         setHasStableIds(true)
     }
 
-    inner class CurrentViewHolder(private val binding : CurrentPostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
-        private var position : Int? = null
-        //var accountId = binding.accountId
-        //var accountProfile = binding.accountImage
-        var cPostDate = binding.currentPostDate
-        var cPostLocation = binding.currentPostLocation
-
-        fun bind(accountData: PostData, position : Int) {
-            this.position = position
-            //accountId.text = accountData.accountID
-            //val s = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime) //10-34.5.67.8.910 , 8-5
-
-            //요일 구하기
+    inner class CurrentViewHolder(private val binding: CurrentPostItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(accountData: PostData, position: Int) {
+            // 날짜 및 시간 포맷팅
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.KOREA)
             val dayDate = dateFormat.parse(accountData.postTargetDate)
-            val cal = Calendar.getInstance()
-            if (dayDate != null) {
-                cal.time = dayDate
+            val cal = Calendar.getInstance().apply {
+                time = dayDate ?: Date() // null 체크
             }
+
             val dayOfWeek = when (cal.get(Calendar.DAY_OF_WEEK)) {
                 Calendar.SUNDAY -> "일"
                 Calendar.MONDAY -> "월"
@@ -66,108 +52,90 @@ class CurrentCarpoolAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
                 Calendar.SATURDAY -> "토"
                 else -> ""
             }
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
 
+            // 사용자 이메일 가져오기
+            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+            identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context) ?: ""
+
+            // 날짜 및 시간 포맷팅
             val year = accountData.postTargetDate.substring(2..3)
             val month = accountData.postTargetDate.substring(5..6)
             val date1 = accountData.postTargetDate.substring(8..9)
             val hour = accountData.postTargetTime.substring(0..1)
             val minute = accountData.postTargetTime.substring(3..4)
+            binding.currentPostDate.text = "${year}.${month}.${date1} ($dayOfWeek) ${hour}:${minute}"
 
-            cPostDate.text = "${year}.${month}.${date1} ($dayOfWeek) ${hour}:${minute}"
-            cPostLocation.text = if (accountData.postLocation.split(" ").last().toString() == " ") {
-                accountData.postLocation.split(" ").dropLast(1).joinToString(" ")
+            // 위치 정보 설정
+            val location = accountData.postLocation.split(" ")
+            binding.currentPostLocation.text = if (location.last() == " ") {
+                location.dropLast(1).joinToString(" ")
             } else {
-                accountData.postLocation.split(" ").last().toString()
+                location.last()
             }
+
+            // 현재 시간과 비교하여 상태 업데이트
+            updatePostCompletionStatus(accountData, position)
+        }
+
+        private fun updatePostCompletionStatus(accountData: PostData, position: Int) {
             val now = System.currentTimeMillis()
             val date = Date(now)
             val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
             val currentDate = sdf.format(date)
-
-
             val postDateTime = context.getString(R.string.setText, accountData.postTargetDate, accountData.postTargetTime)
-            //println(postDateTime)
 
-            val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
-            val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)
-            val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time!!)
-            val diffSeconds = diffMilliseconds?.div(1000)
-            val diffMinutes = diffMilliseconds?.div((60 * 1000))
-            val diffHours = diffMilliseconds?.div((60 * 60 * 1000))
-            val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
-            if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
+            // 시간 차이 계산
+            val nowFormat = sdf.parse(currentDate)
+            val beforeFormat = sdf.parse(postDateTime)
+            val diffMilliseconds = nowFormat?.time?.minus(beforeFormat?.time ?: 0) ?: 0
+            val diffSeconds = diffMilliseconds / 1000
 
-                if(diffSeconds > -1){
+            if (diffSeconds > 0) {
+                binding.currentCompleteFl.visibility = View.VISIBLE
+                binding.currentCompleteTv.text = "운행 종료"
 
-                }
-                if (diffSeconds > 0) {
-                    binding.currentCompleteFl.visibility = View.VISIBLE
-                    binding.currentCompleteTv.text = "운행 종료"
-
-                    if (identification == currentPostItemData[position]?.user?.email) {
-                        Log.d("identification Driver", currentPostItemData[position]?.user?.email.toString())
-                        Log.d("identification", identification)
-                        hashMapCurrentPostItemData[position] = CurrentCarpoolAdapter.PostStatus.Driver
-                    } else {
-                        Log.d("identification Passenger", currentPostItemData[position]?.user?.email.toString())
-                        hashMapCurrentPostItemData[position] = PostStatus.Passenger
-                    }
-
+                // 운전자가 아니라면 손님으로 설정
+                if (identification == currentPostItemData[position]?.user?.email) {
+                    hashMapCurrentPostItemData[position] = PostStatus.Driver
                 } else {
-                    binding.currentCompleteFl.visibility = View.GONE
+                    hashMapCurrentPostItemData[position] = PostStatus.Passenger
                 }
-            }
-        } //bind
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrentCarpoolAdapter.CurrentViewHolder {
-        context = parent.context
-        binding = CurrentPostItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return CurrentViewHolder(binding)
-    }
-
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is CurrentCarpoolAdapter.CurrentViewHolder) {
-            holder.bind(currentPostItemData[position]!!, position)
-
-            //본인이 작성자(운전자) 이면서 카풀이 완료
-            if (identification == currentPostItemData[holder.adapterPosition]?.user?.email && hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Driver) {
-                Log.d("current", "Driver")
-                holder.itemView.setOnClickListener {
-                    currentPostItemData[holder.adapterPosition]?.postID?.let { it1 ->
-                        itemClickListener.onClick(it, holder.adapterPosition,
-                            it1, PostStatus.Driver)
-                    }
-                }
-            } else if (hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Passenger) { //본인은 운전자가 아니고 손님
-                Log.d("current", "Passenger")
-                holder.itemView.setOnClickListener {
-                    currentPostItemData[holder.adapterPosition]?.let { it1 -> itemClickListener.onClick(it, holder.adapterPosition, it1.postID,  PostStatus.Passenger) }
-                }
-            } else { //그냥 자기 게시글 확인
-                holder.itemView.setOnClickListener {
-                    currentPostItemData[holder.adapterPosition]?.let { it1 -> itemClickListener.onClick(it, holder.adapterPosition, it1.postID, PostStatus.Neither) }
-                }
+            } else {
+                binding.currentCompleteFl.visibility = View.GONE
             }
         }
     }
 
-    override fun getItemCount(): Int {
-        return currentPostItemData.size
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CurrentViewHolder {
+        context = parent.context
+        binding = CurrentPostItemBinding.inflate(LayoutInflater.from(context), parent, false)
+        return CurrentViewHolder(binding)
     }
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
+    override fun onBindViewHolder(holder: CurrentViewHolder, position: Int) {
+        currentPostItemData[position]?.let { postData ->
+            holder.bind(postData, position)
+            setupClickListener(holder, position)
+        }
     }
+
+    private fun setupClickListener(holder: CurrentViewHolder, position: Int) {
+        val status = hashMapCurrentPostItemData[position]
+        val itemId = currentPostItemData[position]?.postID ?: -1 // 안전한 아이디 할당
+
+        holder.itemView.setOnClickListener {
+            itemClickListener.onClick(it, position, itemId, status)
+        }
+    }
+
+    override fun getItemCount(): Int = currentPostItemData.size
+
+    override fun getItemId(position: Int): Long = position.toLong()
 
     interface ItemClickListener {
-        fun onClick(view: View, position: Int, itemId: Int, status : PostStatus?)
+        fun onClick(view: View, position: Int, itemId: Int, status: PostStatus?)
     }
 
-    //약한 참조로 참조하는 객체가 사용되지 않을 경우 가비지 콜렉션에 의해 자동해제
-    //private var itemClickListener: WeakReference<ItemClickListener>? = null
     private lateinit var itemClickListener: ItemClickListener
 
     fun setItemClickListener(itemClickListener: ItemClickListener) {
@@ -175,21 +143,55 @@ class CurrentCarpoolAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     }
 
     fun updateDataList(newItems: List<PostData?>) {
-        Log.e("updateCar", newItems.toString())
-        // Create a new DiffUtil.Callback instance
-        val diffCallback = ReviewWriteableDiffUtilCallback(currentPostItemData, newItems)
+        Log.e("updateCar", "New data items: $newItems")
 
-        // Calculate the diff
-        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        // Log currentPostItemData before update
+        Log.e("updateCar", "Current data items before update: $currentPostItemData")
 
-        currentPostItemData.clear()
-        currentPostItemData.addAll(newItems.sortedByDescending { it?.postCreateDate })
+        if (currentPostItemData.isEmpty()) {
+            Log.d("updateCar", "Initial data set, using notifyDataSetChanged()")
+            currentPostItemData.clear()
+            currentPostItemData.addAll(newItems)
 
-        hashMapCurrentPostItemData.clear()
-        for (i in currentPostItemData.indices) {
-            hashMapCurrentPostItemData[i] = PostStatus.Neither
+            // Update the HashMap based on newItems
+            hashMapCurrentPostItemData.clear() // 해시맵 초기화
+            newItems.forEachIndexed { index, postData ->
+                hashMapCurrentPostItemData[index] = PostStatus.Neither // 기본 상태 설정
+                Log.d("updateCar", "HashMap updated: index=$index, status=Neither")
+            }
+
+            // Use notifyDataSetChanged for the first update
+            notifyDataSetChanged()
+        } else {
+            // Create a new DiffUtil.Callback instance
+            val diffCallback = CurrentReservationDiffUtilCallback(currentPostItemData, newItems)
+
+            // Calculate the diff
+            Log.d("updateCar", "Calculating DiffUtil...")
+            val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+            // Clear and update the list only once
+            Log.d("updateCar", "Clearing current data list and adding new items...")
+            currentPostItemData.clear()
+            currentPostItemData.addAll(newItems)
+
+            // Log currentPostItemData after update
+            Log.e("updateCar", "Current data items after update: $currentPostItemData")
+
+            // Update the HashMap based on newItems
+            Log.d("updateCar", "Updating hashMapCurrentPostItemData...")
+            hashMapCurrentPostItemData.clear() // 해시맵 초기화
+            newItems.forEachIndexed { index, postData ->
+                hashMapCurrentPostItemData[index] = PostStatus.Neither // 기본 상태 설정
+                Log.d("updateCar", "HashMap updated: index=$index, status=Neither")
+            }
+
+            // Log before dispatching updates to adapter
+            Log.d("updateCar", "Dispatching updates to adapter...")
+            diffResult.dispatchUpdatesTo(this@CurrentCarpoolAdapter)
+
+            // Log to confirm dispatch completion
+            Log.d("updateCar", "RecyclerView update dispatched.")
         }
-
-        diffResult.dispatchUpdatesTo(this)
     }
 }

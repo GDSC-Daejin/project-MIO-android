@@ -10,6 +10,7 @@ import com.example.mio.model.PostData
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.CurrentPostItemBinding
+import com.example.mio.diffutil.CurrentReservationDiffUtilCallback
 import com.example.mio.diffutil.ReviewWriteableDiffUtilCallback
 import java.text.SimpleDateFormat
 import java.util.*
@@ -18,7 +19,7 @@ import kotlin.collections.ArrayList
 
 class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter.CurrentNoticeBoardViewHolder>(){
     private lateinit var binding : CurrentPostItemBinding
-    var currentPostItemData = mutableListOf<PostData>()
+    private var currentPostItemData = kotlin.collections.ArrayList<PostData?>()
     private var hashMapCurrentPostItemData = HashMap<Int, PostStatus>()
     private lateinit var context : Context
 
@@ -31,11 +32,6 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
 
     init {
         setHasStableIds(true)
-
-        for (i in currentPostItemData.indices) {
-            hashMapCurrentPostItemData[i] = PostStatus.Neither
-        }
-
     }
 
     inner class CurrentNoticeBoardViewHolder(private val binding : CurrentPostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
@@ -107,12 +103,9 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
                     binding.currentCompleteFl.visibility = View.VISIBLE
                     binding.currentCompleteTv.text = "운행 종료"
 
-                    if (identification == currentPostItemData[position].user.email) {
-                        Log.d("identification Driver", currentPostItemData[position].user.email)
-                        Log.d("identification", identification)
+                    if (identification == currentPostItemData[position]?.user?.email) {
                         hashMapCurrentPostItemData[position] = PostStatus.Driver
                     } else {
-                        Log.d("identification Passenger", currentPostItemData[position].user.email)
                         hashMapCurrentPostItemData[position] = PostStatus.Passenger
                     }
 
@@ -139,25 +132,25 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
     }
 
     override fun onBindViewHolder(holder:CurrentNoticeBoardViewHolder, position: Int) {
-        holder.bind(currentPostItemData[holder.adapterPosition], position)
+        holder.bind(currentPostItemData[position]!!, position)
 
 
 
 
         //본인이 작성자(운전자) 이면서 카풀이 완료
-        if (identification == currentPostItemData[holder.adapterPosition].user.email && hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Driver) {
+        if (identification == currentPostItemData[position]?.user?.email && hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Driver) {
             Log.d("current", "Driver")
             holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID, PostStatus.Driver)
+                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[position]?.postID!!, PostStatus.Driver)
             }
         } else if (hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Passenger) { //본인은 운전자가 아니고 손님
             Log.d("current", "Passenger")
             holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID,  PostStatus.Passenger)
+                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition]?.postID!!,  PostStatus.Passenger)
             }
         } else { //그냥 자기 게시글 확인
             holder.itemView.setOnClickListener {
-                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition].postID, PostStatus.Neither)
+                itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition]?.postID!!, PostStatus.Neither)
             }
         }
 
@@ -214,5 +207,55 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
 
     fun setItemClickListener(itemClickListener: CurrentNoticeBoardAdapter.ItemClickListener) {
         this.itemClickListener = itemClickListener
+    }
+
+    fun updateDataList(newItems: List<PostData?>) {
+        Log.e("updateCar", "New data items: $newItems")
+
+        // Log currentPostItemData before update
+        Log.e("updateCar", "Current data items before update: $currentPostItemData")
+
+        if (currentPostItemData.isEmpty()) {
+            Log.d("updateCar", "Initial data set, using notifyDataSetChanged()")
+            currentPostItemData.clear()
+            currentPostItemData.addAll(newItems)
+
+            // Update the HashMap based on newItems
+            hashMapCurrentPostItemData.clear() // 해시맵 초기화
+            newItems.forEachIndexed { index, postData ->
+                hashMapCurrentPostItemData[index] = PostStatus.Neither // 기본 상태 설정
+                Log.d("updateCar", "HashMap updated: index=$index, status=Neither")
+            }
+
+            // Use notifyDataSetChanged for the first update
+            notifyDataSetChanged()
+        } else {
+            // Create a new DiffUtil.Callback instance
+            val diffCallback = CurrentReservationDiffUtilCallback(currentPostItemData, newItems)
+
+            // Calculate the diff
+            Log.d("updateCar", "Calculating DiffUtil...")
+            val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+            // Clear and update the list only once
+            Log.d("updateCar", "Clearing current data list and adding new items...")
+            currentPostItemData.clear()
+            currentPostItemData.addAll(newItems)
+
+            // Log currentPostItemData after update
+            Log.e("updateCar", "Current data items after update: $currentPostItemData")
+
+            // Update the HashMap based on newItems
+            Log.d("updateCar", "Updating hashMapCurrentPostItemData...")
+            hashMapCurrentPostItemData.clear() // 해시맵 초기화
+            newItems.forEachIndexed { index, postData ->
+                hashMapCurrentPostItemData[index] = PostStatus.Neither // 기본 상태 설정
+                Log.d("updateCar", "HashMap updated: index=$index, status=Neither")
+            }
+
+            // Log before dispatching updates to adapter
+            Log.d("updateCar", "Dispatching updates to adapter...")
+            diffResult.dispatchUpdatesTo(this@CurrentNoticeBoardAdapter)
+        }
     }
 }

@@ -4,14 +4,11 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.mio.model.AddAlarmResponseData
-import com.example.mio.model.Content
-import com.example.mio.model.MyAccountReviewData
 import com.example.mio.model.PostData
 
 class CurrentDataViewModel : ViewModel() {
-    private val _currentCarpoolLiveData = MutableLiveData<List<Content>>()
-    val currentCarpoolLiveData: LiveData<List<Content>> get()= _currentCarpoolLiveData
+    private val _currentCarpoolLiveData = MutableLiveData<List<PostData?>>()
+    val currentCarpoolLiveData: LiveData<List<PostData?>> get()= _currentCarpoolLiveData
 
     private val _currentTaxiLiveData = MutableLiveData<List<PostData>>()
     val currentTaxiLiveData: LiveData<List<PostData>> get()= _currentTaxiLiveData
@@ -19,7 +16,7 @@ class CurrentDataViewModel : ViewModel() {
     val reviews: LiveData<List<MyAccountReviewData>> get() = _reviews*/
 
 
-    fun setCurrentData(newData: List<Content>) {
+    fun setCurrentData(newData: List<PostData?>) {
         Log.e("setCurrentData", newData.toString())
         _currentCarpoolLiveData.value = newData
     }

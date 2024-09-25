@@ -1,5 +1,6 @@
 package com.example.mio.tabcategory
 
+import CurrentCarpoolAdapter
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -336,15 +337,13 @@ class CarpoolTabFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         // ViewModel 초기화
         viewModel = ViewModelProvider(requireActivity())[CurrentDataViewModel::class.java]
-
+        setCurrentCarpoolData()
         // LiveData 구독 (데이터 관찰)
-        /*viewModel.currentCarpoolLiveData.observe(viewLifecycleOwner) { data ->
+        viewModel.currentCarpoolLiveData.observe(viewLifecycleOwner) { data ->
             Log.e("viewcarppol", data.toString())
             currentTaxiAllData.sortByDescending {item -> item?.postCreateDate}
-            currentCarpoolAdapter?.updateDataList(data.toList().sortedByDescending { it.createDate })
-
-            updateUI(data)
-        }*/
+            currentCarpoolAdapter?.updateDataList(data.toList())
+        }
 
         // 로딩 상태 관찰
         /*viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
@@ -496,9 +495,9 @@ class CarpoolTabFragment : Fragment() {
     }
 
     private fun initCurrentNoticeBoardRecyclerView() {
-        CoroutineScope(Dispatchers.IO).launch {
+        /*CoroutineScope(Dispatchers.IO).launch {
             setCurrentCarpoolData()
-        }
+        }*/
         val recyclerViewScrollListener = object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
@@ -513,7 +512,7 @@ class CarpoolTabFragment : Fragment() {
 
         taxiTabBinding.currentRv.addOnScrollListener(recyclerViewScrollListener)
         currentCarpoolAdapter = CurrentCarpoolAdapter()
-        currentCarpoolAdapter!!.currentPostItemData = currentTaxiAllData
+        //currentCarpoolAdapter!!.currentPostItemData = currentTaxiAllData
         taxiTabBinding.currentRv.adapter = currentCarpoolAdapter
         taxiTabBinding.currentRv.setHasFixedSize(true)
         horizonManager2.orientation = LinearLayoutManager.HORIZONTAL
@@ -876,8 +875,9 @@ class CarpoolTabFragment : Fragment() {
                         val targetTime = LocalTime.parse(it?.postTargetTime, timeFormatter) // 시간 파싱
                         targetDate.atTime(targetTime) // 날짜와 시간을 결합하여 정렬 기준 생성
                     }
-                    currentCarpoolAdapter?.currentPostItemData = sortedTargets.toMutableList()
-                    currentCarpoolAdapter!!.notifyDataSetChanged()
+                    //currentCarpoolAdapter?.currentPostItemData = sortedTargets.toMutableList()
+                    viewModel.setCurrentData(sortedTargets.toMutableList())
+                    //currentCarpoolAdapter!!.notifyDataSetChanged()
 
                     if (currentTaxiAllData.isEmpty()) {
                         taxiTabBinding.currentRv.visibility = View.GONE

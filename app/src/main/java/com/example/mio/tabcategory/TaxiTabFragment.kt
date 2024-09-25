@@ -421,9 +421,9 @@ class TaxiTabFragment : Fragment() {
         // RecyclerView 스크롤 이벤트 리스너 등록
         taxiTabBinding.currentRv.addOnScrollListener(recyclerViewScrollListener)
 
-        setCurrentTaxiData()
+        //setCurrentTaxiData()
         currentNoticeBoardAdapter = CurrentNoticeBoardAdapter()
-        currentNoticeBoardAdapter!!.currentPostItemData = currentTaxiAllData
+        //currentNoticeBoardAdapter!!.currentPostItemData = currentTaxiAllData
         taxiTabBinding.currentRv.adapter = currentNoticeBoardAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true
@@ -789,8 +789,7 @@ class TaxiTabFragment : Fragment() {
                         val targetTime = LocalTime.parse(it.postTargetTime, timeFormatter) // 시간 파싱
                         targetDate.atTime(targetTime) // 날짜와 시간을 결합하여 정렬 기준 생성
                     }
-                    currentNoticeBoardAdapter?.currentPostItemData = sortedTargets.toMutableList()
-                    currentNoticeBoardAdapter!!.notifyDataSetChanged()
+                    viewModel.setTaxiCurrentData(sortedTargets.toMutableList())
 
                     if (currentTaxiAllData.isEmpty()) {
                         taxiTabBinding.currentRv.visibility = View.GONE
@@ -931,14 +930,15 @@ class TaxiTabFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        /*viewModel = ViewModelProvider(requireActivity())[CurrentDataViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity())[CurrentDataViewModel::class.java]
         setCurrentTaxiData()
 
         viewModel.currentTaxiLiveData.observe(viewLifecycleOwner) { postDataList ->
-            viewModel.setLoading(false)
             Log.e("viewmodelstarttax", postDataList.toString())
-            updateUI(postDataList)
+            currentTaxiAllData.sortByDescending {item -> item.postCreateDate}
+            currentNoticeBoardAdapter?.updateDataList(postDataList.toList())
         }
+        /*
 
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
             if (isLoading) {

@@ -117,25 +117,8 @@ class SettingFragment : Fragment() {
             // 뒤로가기 콜백 설정
             currentActivity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    // 현재 액티비티가 MainActivity인지 확인
-                    if (currentActivity is MainActivity) {
-                        // SettingFragment를 종료할지 HomeFragment로 이동할지 결정하는 로직
-                        val fragmentManager = currentActivity.supportFragmentManager
-                        val homeFragment = fragmentManager.findFragmentByTag(HomeFragment::class.java.simpleName)
-
-                        if (homeFragment == null) {
-                            // HomeFragment가 존재하지 않으면 HomeFragment로 이동
-                            currentActivity.changeFragment(HomeFragment())
-                            currentActivity.toolbarType = "기본"
-                            currentActivity.setToolbarView("기본")
-                            currentActivity.isClicked = false
-                            currentActivity.isSettingClicked = false
-                            currentActivity.mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
-                        } else {
-                            // HomeFragment가 이미 존재하면 SettingFragment 종료
-                            fragmentManager.popBackStack() // 현재 프래그먼트를 스택에서 제거
-                        }
-                    }
+                    val fragmentManager = currentActivity.supportFragmentManager
+                    fragmentManager.popBackStack()
                 }
             })
         }

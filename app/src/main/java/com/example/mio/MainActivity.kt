@@ -21,8 +21,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.mio.model.AddAlarmResponseData
-import com.example.mio.model.SharedViewModel
+import com.example.mio.viewmodel.SharedViewModel
 import com.example.mio.model.User
 import com.example.mio.navigation.*
 import com.example.mio.noticeboard.NoticeBoardEditActivity
@@ -53,12 +55,9 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
     // private lateinit var loadingDialog : LoadingProgressDialog
     private var backPressedTime = 0L
 
-    private var sharedViewModel: SharedViewModel? = null
-
+    private lateinit var sharedViewModel: SharedViewModel
     var toolbarType = "기본"
-
     private var isFirstAccountEdit : String? = null
-
     private var selectedTab = ""
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var notificationIcon : MenuItem? = null
@@ -70,9 +69,13 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         setContentView(mBinding.root)
         MobileAds.initialize(this@MainActivity) {}
         this.onBackPressedDispatcher.addCallback(this, callback)
-        /*sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
-        sharedViewModel!!.getCalendarLiveData().observe(this)
-        */
+
+        sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
+        sharedViewModel.notificationType.observe(this) { type ->
+            setToolbarView("기본")
+            isClicked = false
+            isSettingClicked = false
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestNotificationPermission()
@@ -220,11 +223,16 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         return when(item.itemId){
             R.id.action_notification -> {
                 isClicked = true
-
-                changeFragment(NotificationFragment())
+                supportFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.fragment_content, NotificationFragment())
+                    .addToBackStack(null)
+                    .commit()
+                //changeFragment(NotificationFragment())
                 toolbarType = "알림"
                 setToolbarView(toolbarType)
                 //setFragment(TAG_NOTIFICATION, NotificationFragment())
+
 
                 super.onOptionsItemSelected(item)
             }
@@ -233,7 +241,12 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
                 isSettingClicked = true
 
                 //setFragment(TAG_SETTING, SettingsFragment())
-                changeFragment(SettingFragment())
+                //changeFragment(SettingFragment())
+                supportFragmentManager
+                    .beginTransaction()
+                    .replace(R.id.fragment_content, SettingFragment())
+                    .addToBackStack(null)
+                    .commit()
                 toolbarType = "설정"
                 setToolbarView(toolbarType)
 
@@ -545,7 +558,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
 
                 supportActionBar?.setHomeAsUpIndicator(R.drawable.baseline_arrow_back_24)
                 supportActionBar?.setDisplayShowTitleEnabled(true)
-
             }
             "알림" -> {
                 setSupportActionBar(mBinding.toolBar)

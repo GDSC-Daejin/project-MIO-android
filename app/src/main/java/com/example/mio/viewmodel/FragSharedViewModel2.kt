@@ -1,4 +1,4 @@
-package com.example.mio.model
+package com.example.mio.viewmodel
 
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate

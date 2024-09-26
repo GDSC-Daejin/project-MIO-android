@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
 import com.example.mio.adapter.ProfileReviewAdapter
 import com.example.mio.model.MyAccountReviewData
-import com.example.mio.model.ReviewViewModel
+import com.example.mio.viewmodel.ReviewViewModel
 import com.example.mio.databinding.FragmentProfileReviewBinding
 import retrofit2.Call
 import retrofit2.Callback

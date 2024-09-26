@@ -19,6 +19,8 @@ import com.example.mio.helper.SharedPrefManager.convertLocationToJSON
 import com.example.mio.model.*
 import com.example.mio.RetrofitServerConnect
 import com.example.mio.databinding.ActivitySearchResultBinding
+import com.example.mio.viewmodel.FragSharedViewModel
+import com.example.mio.viewmodel.FragSharedViewModel2
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.mio.model.*
 import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityApplyNextBinding
+import com.example.mio.viewmodel.SharedViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

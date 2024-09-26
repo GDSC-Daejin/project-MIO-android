@@ -27,6 +27,8 @@ import com.example.mio.R
 import com.example.mio.tapsearch.NearbypostActivity
 import com.example.mio.tapsearch.SearchResultActivity
 import com.example.mio.databinding.FragmentSearchBinding
+import com.example.mio.viewmodel.FragSharedViewModel
+import com.example.mio.viewmodel.FragSharedViewModel2
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.kakao.vectormap.*

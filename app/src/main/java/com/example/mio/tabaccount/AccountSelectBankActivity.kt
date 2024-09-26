@@ -15,7 +15,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.mio.adapter.AccountSelectBankAdapter
 import com.example.mio.model.BankItemData
-import com.example.mio.model.SharedViewModel
+import com.example.mio.viewmodel.SharedViewModel
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.ActivityAccountSelectBankBinding

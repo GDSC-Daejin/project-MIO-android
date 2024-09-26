@@ -29,7 +29,7 @@
     </queries>
 
     <application
-        android:name=".model.FragSharedViewModel2"
+        android:name=".viewmodel.FragSharedViewModel2"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="true"

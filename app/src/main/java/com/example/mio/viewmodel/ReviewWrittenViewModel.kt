@@ -1,8 +1,9 @@
-package com.example.mio.model
+package com.example.mio.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.mio.model.MyAccountReviewData
 
 class ReviewWrittenViewModel : ViewModel() {
     private val _reviews = MutableLiveData<List<MyAccountReviewData>>()

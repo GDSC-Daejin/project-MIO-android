@@ -26,6 +26,8 @@ import com.example.mio.helper.SharedPref
 import com.example.mio.model.*
 import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentNotificationBinding
+import com.example.mio.viewmodel.NotificationViewModel
+import com.example.mio.viewmodel.SharedViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -499,18 +501,11 @@ class NotificationFragment : Fragment() {
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        requireActivity().let { currentActivity ->
-            // 뒤로가기 콜백 설정
-            currentActivity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    val fragmentManager = currentActivity.supportFragmentManager
-                    fragmentManager.popBackStack()
-                }
-            })
-        }
-
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
+
+
+
+
         // ViewModel 초기화
         viewModel = ViewModelProvider(requireActivity())[NotificationViewModel::class.java]
         //reviewViewModel = ViewModelProvider(requireActivity())[ReviewViewModel::class.java]
@@ -582,15 +577,24 @@ class NotificationFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        view?.post {
+            val currentActivity = activity ?: return@post
+
+            if (isAdded) {
+                currentActivity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        isEnabled = false
+                        sharedViewModel?.setNotificationType("알림")
+                        currentActivity.supportFragmentManager.popBackStack()
+                    }
+                })
+            }
+        }
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
+    override fun onDestroyView() {
+        super.onDestroyView()
 
-
-    override fun onPause() {
-        super.onPause()
     }
 
     companion object {

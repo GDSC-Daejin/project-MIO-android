@@ -20,6 +20,8 @@ import com.example.mio.helper.SharedPrefManager.convertAccountLocationToJSON
 import com.example.mio.KakaoAPI
 import com.example.mio.model.*
 import com.example.mio.databinding.ActivityAccountSearchLocationBinding
+import com.example.mio.viewmodel.FragSharedViewModel
+import com.example.mio.viewmodel.FragSharedViewModel2
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

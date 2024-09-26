@@ -1,10 +1,11 @@
-package com.example.mio.model
+package com.example.mio.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.mio.model.MyAccountReviewData
 
-class ReviewViewModel : ViewModel() {
+class MyReviewReadViewModel : ViewModel() {
     private val _reviews = MutableLiveData<List<MyAccountReviewData>>()
     val reviews: LiveData<List<MyAccountReviewData>> get() = _reviews
 
@@ -16,7 +17,7 @@ class ReviewViewModel : ViewModel() {
 
     // 데이터를 설정하는 메서드 추가
     fun setReviews(reviews: List<MyAccountReviewData>) {
-        _reviews.value = reviews.toList()
+        _reviews.value = reviews
     }
 
     // 로딩 상태를 설정하는 메서드 추가

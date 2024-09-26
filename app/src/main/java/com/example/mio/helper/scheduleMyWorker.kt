@@ -7,6 +7,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 
+/*
 fun scheduleMyWorker(context: Context) {
     val constraints = Constraints.Builder()
         .setRequiresCharging(false)
@@ -23,4 +24,4 @@ fun scheduleMyWorker(context: Context) {
         ExistingPeriodicWorkPolicy.REPLACE,
         workRequest
     )
-}
+}*/

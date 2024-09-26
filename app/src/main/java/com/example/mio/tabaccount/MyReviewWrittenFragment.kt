@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
 import com.example.mio.adapter.MyReviewWrittenAdapter
 import com.example.mio.model.MyAccountReviewData
-import com.example.mio.model.ReviewWrittenViewModel
+import com.example.mio.viewmodel.ReviewWrittenViewModel
 import com.example.mio.databinding.FragmentMyReivewWrittenBinding
 import retrofit2.Call
 import retrofit2.Callback

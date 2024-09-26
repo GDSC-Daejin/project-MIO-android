@@ -1,9 +1,10 @@
-package com.example.mio.model
+package com.example.mio.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.mio.model.CommentData
 
 class CommentsViewModel : ViewModel() {
     // LiveData for all comments (flattened list for RecyclerView handling)

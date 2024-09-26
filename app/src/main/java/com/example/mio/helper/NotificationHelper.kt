@@ -10,6 +10,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.mio.R
 
+/*
 class NotificationHelper(context : Context?) : ContextWrapper(context) {
     private val channelID = "channelID"
     private val channelName = "channelName"
@@ -54,4 +55,4 @@ class NotificationHelper(context : Context?) : ContextWrapper(context) {
     fun deleteChannel() {
         getManager().deleteNotificationChannel("channelID")
     }
-}
+}*/

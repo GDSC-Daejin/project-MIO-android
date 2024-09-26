@@ -16,6 +16,7 @@ import com.example.mio.*
 import com.example.mio.adapter.MyReviewAdapter
 import com.example.mio.model.*
 import com.example.mio.databinding.FragmentMyReviewReadBinding
+import com.example.mio.viewmodel.MyReviewReadViewModel
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

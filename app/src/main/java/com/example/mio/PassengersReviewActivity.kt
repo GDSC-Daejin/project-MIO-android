@@ -33,7 +33,7 @@ class PassengersReviewActivity : AppCompatActivity() {
     private var passengersChipList = ArrayList<Chip>()
     //chip에 담긴 내용
     private var passengersChipItemData = ArrayList<ChipData>()
-    private var passengersReviewData = ArrayList<String?>()
+    //private var passengersReviewData = ArrayList<String?>()
     private var passengerUserData = ArrayList<User?>() //유저들의 정보
 
     private var passengerReviewHashMapData = HashMap<Int?, PassengersReviewData?>() //유저id 와 유저에따른리뷰정보

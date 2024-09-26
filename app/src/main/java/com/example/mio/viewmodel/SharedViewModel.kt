@@ -1,4 +1,4 @@
-package com.example.mio.model
+package com.example.mio.viewmodel
 
 import android.content.Context
 import android.util.Log
@@ -9,6 +9,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mio.RetrofitServerConnect
+import com.example.mio.model.NotificationData
+import com.example.mio.model.PostData
+import com.example.mio.model.RequirementData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -51,7 +54,11 @@ class SharedViewModel : ViewModel() {
 
 
 
-
+    private val _notificationType : MutableLiveData<String> = MutableLiveData()
+    val notificationType : LiveData<String> = _notificationType
+    fun setNotificationType (type :String) {
+        _notificationType.value = type
+    }
 
 
     //최신순 등
@@ -67,24 +74,6 @@ class SharedViewModel : ViewModel() {
     fun postCheckFilter(searchWord : String) {
         _checkFilter.value = searchWord
     }
-
-    /*private val _checkSchoolFilter : MutableLiveData<String> = MutableLiveData()
-    val checkSchoolFilter : LiveData<String> = _checkSchoolFilter
-    fun postCheckSchoolFilter(searchWord : String) {
-        _checkSchoolFilter.value = searchWord
-    }
-
-    private val _checkSmokeFilter : MutableLiveData<String> = MutableLiveData()
-    val checkSmokeFilter : LiveData<String> = _checkSmokeFilter
-    fun postCheckSmokeFilter(searchWord : String) {
-        _checkSmokeFilter.value = searchWord
-    }
-
-    private val _checkGenderFilter : MutableLiveData<String> = MutableLiveData()
-    val checkGenderFilter : LiveData<String> = _checkGenderFilter
-    fun postCheckGenderFilter(searchWord : String) {
-        _checkGenderFilter.value = searchWord
-    }*/
 
 
 
@@ -137,67 +126,16 @@ class SharedViewModel : ViewModel() {
         _isSmoker.value = Smoker
     }
 
-
-
-
-
-
-
-
-
-
     //추가된 targetDate data 받기
     private val liveData = MutableLiveData<ArrayList<String>>()
-    var notificationLiveData = MutableLiveData<ArrayList<NotificationData>>()
-    /*private val _users: MutableLiveData<List<User>> by lazy {
-        MutableLiveData<List<User>>().also {
-            loadUsers()
-        }
-    }
-    val users: LiveData<List<User>> = _users
 
-    fun getUsers(userLise: List<User>>) {
-        _users.value = userLise
-    }
-
-    // Model쪽에 List<User> 값을 요청하는 메소드
-    fun loadUsers() {
-    	// 유저를 불러오는 기능...
-    }
-
-    */
     //선택된 캘린더 데이터 받기
     var calendarLiveData = MutableLiveData<HashMap<String, ArrayList<PostData>>>()
     fun getLiveData(): LiveData<ArrayList<String>> {
         return liveData
     }
 
-    //livedata로 사용할 데이터를 저장하는 함수수
-   fun setLiveData(arr: ArrayList<String>) {
-        liveData.value = arr
-    }
-
     fun getCalendarLiveData(): LiveData<HashMap<String, ArrayList<PostData>>> {
         return calendarLiveData
-    }
-
-    fun setCalendarLiveData(key : String, arr: HashMap<String, ArrayList<PostData>>) {
-        if (key == "add") {
-            calendarLiveData.value = arr
-        }
-    }
-
-    fun getNotificationLiveData(): LiveData<ArrayList<NotificationData>> {
-        return notificationLiveData
-    }
-
-    fun setNotificationLiveData(key : String, arr: ArrayList<NotificationData>) {
-        if (key == "add") {
-            notificationLiveData.value = arr
-        }
-    }
-
-    fun removeCategoryLiveData() {
-        calendarLiveData.value!!.clear()
     }
 }

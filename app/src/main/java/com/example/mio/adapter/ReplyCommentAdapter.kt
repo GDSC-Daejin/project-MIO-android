@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.model.CommentData
-import com.example.mio.model.CommentsViewModel
+import com.example.mio.viewmodel.CommentsViewModel
 import com.example.mio.R
 import com.example.mio.databinding.ReplyCommentsItemLayoutBinding
 import java.text.SimpleDateFormat

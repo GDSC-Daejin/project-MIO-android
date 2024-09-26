@@ -20,6 +20,7 @@ import com.example.mio.bottomsheetfragment.BottomSheetFragment
 import com.example.mio.model.*
 import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityMoreAreaBinding
+import com.example.mio.viewmodel.SharedViewModel
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

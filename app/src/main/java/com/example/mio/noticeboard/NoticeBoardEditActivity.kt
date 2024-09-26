@@ -30,6 +30,7 @@ import com.example.mio.*
 import com.example.mio.adapter.PlaceAdapter
 import com.example.mio.model.*
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
+import com.example.mio.viewmodel.SharedViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.kakao.vectormap.KakaoMap

@@ -23,7 +23,7 @@ import com.example.mio.bottomsheetfragment.BottomAdFragment
 import com.example.mio.bottomsheetfragment.BottomSheetFragment
 import com.example.mio.model.PostData
 import com.example.mio.model.PostReadAllResponse
-import com.example.mio.model.SharedViewModel
+import com.example.mio.viewmodel.SharedViewModel
 import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityMoreCarpoolBinding
 import com.google.android.material.chip.Chip

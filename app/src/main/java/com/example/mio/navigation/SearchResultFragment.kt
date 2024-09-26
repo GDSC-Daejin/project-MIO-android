@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.adapter.SearchResultAdapter
-import com.example.mio.model.FragSharedViewModel
+import com.example.mio.viewmodel.FragSharedViewModel
 import com.example.mio.model.LocationReadAllResponse
 import com.example.mio.R
 import com.example.mio.RetrofitServerConnect

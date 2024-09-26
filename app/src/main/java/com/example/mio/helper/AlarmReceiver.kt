@@ -8,7 +8,7 @@ import android.util.Log
 import androidx.work.Configuration
 import androidx.work.WorkManager
 
-class AlarmReceiver : BroadcastReceiver() {
+/*class AlarmReceiver : BroadcastReceiver() {
     object WorkManagerInitializer {
         private var initialized = false
 
@@ -38,4 +38,4 @@ class AlarmReceiver : BroadcastReceiver() {
             Log.d("AlarmReceiver", "WorkManager is already initialized")
         }
     }
-}
+}*/

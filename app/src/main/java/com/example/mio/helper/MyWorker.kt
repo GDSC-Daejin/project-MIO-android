@@ -35,6 +35,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.ArrayList
 
+/*
 class MyWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(appContext, params) {
 
     private var beforeNotificationAllData = ArrayList<AddAlarmResponseData>()
@@ -182,4 +183,4 @@ class MyWorker(appContext: Context, params: WorkerParameters) : CoroutineWorker(
     private fun getManager(): NotificationManagerCompat {
         return NotificationManagerCompat.from(workContext)
     }
-}
+}*/

@@ -8,7 +8,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.model.CommentData
-import com.example.mio.model.CommentsViewModel
+import com.example.mio.viewmodel.CommentsViewModel
 import com.example.mio.R
 import com.example.mio.databinding.CommentItemLayoutBinding
 import com.example.mio.databinding.ReplyCommentsItemLayoutBinding

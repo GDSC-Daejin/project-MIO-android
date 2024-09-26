@@ -1,6 +1,6 @@
 package com.example.mio.noticeboard
 
-import com.example.mio.model.CommentsViewModel
+import com.example.mio.viewmodel.CommentsViewModel
 import android.app.*
 import android.content.Context
 import android.content.Intent
@@ -40,6 +40,7 @@ import com.example.mio.tabaccount.ProfileActivity
 import com.example.mio.tabcategory.MoreCarpoolTabActivity
 import com.example.mio.tabcategory.MoreTaxiTabActivity
 import com.example.mio.databinding.ActivityNoticeBoardReadBinding
+import com.example.mio.viewmodel.SharedViewModel
 import com.google.android.gms.ads.AdRequest
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.*

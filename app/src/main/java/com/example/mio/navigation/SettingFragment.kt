@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.example.mio.MainActivity
 import com.example.mio.OpenSourceManagementActivity
@@ -21,6 +22,7 @@ import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentSettingBinding
 import com.example.mio.sse.SSEForegroundService
+import com.example.mio.viewmodel.SharedViewModel
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,6 +45,8 @@ class SettingFragment : Fragment() {
     private lateinit var binding : FragmentSettingBinding
     private var sharedPreference = SaveSharedPreferenceGoogleLogin()
     private var serviceIntent: Intent? = null
+
+    private lateinit var sharedViewModel : SharedViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -113,15 +117,7 @@ class SettingFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        requireActivity().let { currentActivity ->
-            // 뒤로가기 콜백 설정
-            currentActivity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    val fragmentManager = currentActivity.supportFragmentManager
-                    fragmentManager.popBackStack()
-                }
-            })
-        }
+        sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
     }
 
     private fun foregroundServiceRunning(): Boolean {
@@ -134,6 +130,22 @@ class SettingFragment : Fragment() {
             }
         }
         return false // 기본은 false 로 설정
+    }
+
+    override fun onStart() {
+        super.onStart()
+        view?.post {
+            val currentActivity = activity ?: return@post
+            if (isAdded) {
+                currentActivity.onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+                    override fun handleOnBackPressed() {
+                        isEnabled = false
+                        sharedViewModel.setNotificationType("알림")
+                        currentActivity.supportFragmentManager.popBackStack()
+                    }
+                })
+            }
+        }
     }
 
     companion object {

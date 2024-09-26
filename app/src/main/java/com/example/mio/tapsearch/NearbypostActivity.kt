@@ -11,7 +11,7 @@ import com.example.mio.adapter.NearbyPostAdapter
 import com.example.mio.bottomsheetfragment.AnotherBottomSheetFragment
 import com.example.mio.model.LocationReadAllResponse
 import com.example.mio.model.PostData
-import com.example.mio.model.SharedViewModel
+import com.example.mio.viewmodel.SharedViewModel
 import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.R
 import com.example.mio.RetrofitServerConnect

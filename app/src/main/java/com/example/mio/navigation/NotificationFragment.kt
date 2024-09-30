@@ -307,33 +307,17 @@ class NotificationFragment : Fragment() {
                     println("scssucsucsucs")
                     val responseData = response.body()
                     Log.d("taxi", response.code().toString())
-                    notificationAllData.clear()
+                    //notificationAllData.clear()
                     viewModel.setLoading(false)
                     if (response.isSuccessful) {
-                        viewModel.setNotifications(response.body() ?: emptyList())
+                        viewModel.setNotifications(responseData ?: emptyList())
                         if (responseData != null) {
-                            notificationAllData.addAll(responseData)
-                            if (response.body().isNullOrEmpty()) {
-                                updateUI2(responseData)
-                            }
+                            updateUI2(responseData)
                         }
 
                     } else {
                         viewModel.setError("Failed to load notifications")
                     }
-                    /*synchronized(notificationAllData) {
-                        notificationAllData.clear()
-                        if (responseData != null) {
-                            viewModel.setLoading(false)
-                            notificationAllData.addAll(responseData)
-                        }
-                        viewModel.setNotifications(response.body() ?: emptyList())
-                    }*/
-                    //nAdapter.notifyDataSetChanged()
-                    //updateUI()
-                    /*CoroutineScope(Dispatchers.IO).launch {
-                        initNotificationPostData(notificationAllData)
-                    }*/
                 } else {
                     println("faafa")
                     viewModel.setError("Failed to load notifications")
@@ -509,10 +493,14 @@ class NotificationFragment : Fragment() {
         // ViewModel 초기화
         viewModel = ViewModelProvider(requireActivity())[NotificationViewModel::class.java]
         //reviewViewModel = ViewModelProvider(requireActivity())[ReviewViewModel::class.java]
-        setNotificationData()
+        //setNotificationData()
+        viewModel.fetchNotificationData(requireActivity())
+
        // setReadReviewData()
         // LiveData 관찰
         viewModel.notifications.observe(viewLifecycleOwner) { notifications ->
+            notificationAllData.clear()
+            notificationAllData.addAll(notifications)
             nAdapter.updateNotifications(notifications.sortedByDescending { it.createDate }.toList())
             updateUI2(notifications)
             Log.e("observeNoti1", notifications.toString())

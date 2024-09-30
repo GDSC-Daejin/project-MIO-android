@@ -11,6 +11,8 @@ import com.example.mio.RetrofitServerConnect
 import com.example.mio.model.AddAlarmResponseData
 import com.example.mio.model.ParticipationData
 import com.example.mio.model.PostData
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import retrofit2.awaitResponse
 
@@ -18,14 +20,13 @@ class NotificationViewModel : ViewModel() {
     private val _notifications = MutableLiveData<List<AddAlarmResponseData>>()
     val notifications: LiveData<List<AddAlarmResponseData>> get() = _notifications
 
-    private val _notificationsPostData = MutableLiveData<List<PostData>>()
-    val notificationsPostData: LiveData<List<PostData>> get() = _notificationsPostData
+    private val _notificationsPostData = MutableStateFlow<List<PostData>>(emptyList())
+    val notificationsPostData: StateFlow<List<PostData>> get() = _notificationsPostData
 
-    private val _notificationsParticipationData = MutableLiveData<List<Pair<Int, ArrayList<ParticipationData>?>>>()
-    val notificationsParticipationData: LiveData<List<Pair<Int, ArrayList<ParticipationData>?>>> get() = _notificationsParticipationData
-    /*private var notificationPostAllData : ArrayList<PostData?> = ArrayList()
-    private var notificationPostParticipationAllData : ArrayList<Pair<Int, ArrayList<ParticipationData>?>> = ArrayList()*/
-
+    private val _notificationsParticipationData = MutableStateFlow<List<Pair<Int, ArrayList<ParticipationData>?>>>(
+        emptyList()
+    )
+    val notificationsParticipationData: StateFlow<List<Pair<Int, ArrayList<ParticipationData>?>>> get() = _notificationsParticipationData
 
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> get() = _loading
@@ -48,6 +49,7 @@ class NotificationViewModel : ViewModel() {
                     Log.d("fetchNotificationData", "Response Code: ${response.code()}")
                     Log.d("fetchNotificationData", "Response Body: ${responseData?.toString()}")
                     Log.d("fetchNotificationData", "${_notifications.value}")
+                    fetchNotificationsPostData(context, _notifications.value)
                 } else {
                     // Log the error body
                     Log.e("fetchIsBeforeDeadLine", "Response Error Code: ${response.code()}")
@@ -58,6 +60,56 @@ class NotificationViewModel : ViewModel() {
                 // Log the exception
                 Log.e("fetchNotificationData", "Exception: ${e.message}")
                 _notifications.value = emptyList()
+            }
+        }
+    }
+
+
+    private fun fetchNotificationsPostData(context: Context, alarmList: List<AddAlarmResponseData>?) {
+        viewModelScope.launch {
+            try {
+                alarmList?.let { list ->
+                    for (i in list.indices) {
+                        val response = RetrofitServerConnect.create(context)
+                            .getPostIdDetailSearch(list[i].postId)
+                            .awaitResponse()
+
+                        if (response.isSuccessful) {
+                            val responseData = response.body()
+                            if (responseData != null && responseData.isDeleteYN == "N") {
+                                val postData = PostData(
+                                    responseData.user.studentId,
+                                    responseData.postId,
+                                    responseData.title,
+                                    responseData.content,
+                                    responseData.createDate,
+                                    responseData.targetDate,
+                                    responseData.targetTime,
+                                    responseData.category.categoryName,
+                                    responseData.location,
+                                    responseData.participantsCount,
+                                    responseData.numberOfPassengers,
+                                    responseData.cost,
+                                    responseData.verifyGoReturn,
+                                    responseData.user,
+                                    responseData.latitude,
+                                    responseData.longitude
+                                )
+
+                                // 새로운 데이터를 기존 리스트에 추가하고 StateFlow를 업데이트
+                                _notificationsPostData.value = _notificationsPostData.value + postData
+
+                                if (responseData.participants != null) {
+                                    _notificationsParticipationData.value = _notificationsParticipationData.value + Pair(responseData.postId, responseData.participants)
+                                }
+                            }
+                        } else {
+                            Log.e("fetchNotificationData", "Error: ${response.code()} - ${response.errorBody()?.string()}")
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("fetchNotificationData", "Exception: ${e.message}")
             }
         }
     }

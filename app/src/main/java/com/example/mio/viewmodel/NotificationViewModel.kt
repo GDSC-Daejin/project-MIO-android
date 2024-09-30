@@ -10,6 +10,11 @@ class NotificationViewModel : ViewModel() {
     private val _notifications = MutableLiveData<List<AddAlarmResponseData>>()
     val notifications: LiveData<List<AddAlarmResponseData>> get() = _notifications
 
+    /*private var notificationPostAllData : ArrayList<PostData?> = ArrayList()
+    private var notificationPostParticipationAllData : ArrayList<Pair<Int, ArrayList<ParticipationData>?>> = ArrayList()*/
+
+
+
     private val _loading = MutableLiveData<Boolean>()
     val loading: LiveData<Boolean> get() = _loading
 

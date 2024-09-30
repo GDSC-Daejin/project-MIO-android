@@ -9,8 +9,7 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
+import android.view.*
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResult
@@ -21,7 +20,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.example.mio.model.AddAlarmResponseData
 import com.example.mio.viewmodel.SharedViewModel
@@ -40,15 +38,15 @@ import retrofit2.Response
 
 
 class MainActivity : AppCompatActivity(), FinishAdInterface {
-    lateinit var mBinding : ActivityMainBinding
+    private lateinit var mBinding : ActivityMainBinding
 
     private val TAG_HOME = "home_fragment"
     private val TAG_SEARCH = "search_fragment"
     private val TAG_ACCOUNT = "account_fragment"
     private val TAG_NOTIFICATION = "notification_fragment"
     private val TAG_SETTING = "setting_fragment"
-    var isClicked = false
-    var isSettingClicked = false
+    private var isClicked = false
+    private var isSettingClicked = false
     //notification에서 뒤로가기 구현할 때 그 전에 어느 fragment에 있었는 지 알기위한 변수
     private var oldFragment : Fragment? = null
     private var oldTAG = ""
@@ -56,7 +54,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
     private var backPressedTime = 0L
 
     private lateinit var sharedViewModel: SharedViewModel
-    var toolbarType = "기본"
+    private var toolbarType = "기본"
     private var isFirstAccountEdit : String? = null
     private var selectedTab = ""
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
@@ -71,7 +69,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         this.onBackPressedDispatcher.addCallback(this, callback)
 
         sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
-        sharedViewModel.notificationType.observe(this) { type ->
+        sharedViewModel.notificationType.observe(this) {
             setToolbarView("기본")
             isClicked = false
             isSettingClicked = false
@@ -80,37 +78,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestNotificationPermission()
         }
-
-       if (saveSharedPreferenceGoogleLogin.getSharedAlarm(this)) {
-           //foreground실행행
-           serviceIntent =
-               Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
-
-
-           //절전사용금지앱
-           val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
-           var isWhiteListing = false
-           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-               isWhiteListing = pm.isIgnoringBatteryOptimizations(applicationContext.packageName)
-           }
-           if (!isWhiteListing) {
-               val intent = Intent()
-               intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-               intent.data = Uri.parse("package:" + applicationContext.packageName)
-               startActivity(intent)
-           }
-
-           if (!foregroundServiceRunning()) { // 이미 작동중인 동일한 서비스가 없다면 실행
-               serviceIntent =
-                   Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
-               if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // 빌드 버전코드 "O" 보다 높은 버전일 경우
-                   startService(serviceIntent) // 서비스 인텐트를 전달한 서비스 시작 메서드 실행
-               }
-           } else {
-               serviceIntent = SSEForegroundService().serviceIntent
-           }
-       }
-
 
 
         if (oldFragment != null && oldTAG != "") {
@@ -125,6 +92,21 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         initNavigationBar()
         initUserSet()
         saveSettingData()
+    }
+
+    private fun SseStartCheck() {
+        //foreground실행행
+        serviceIntent =
+            Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
+
+        if (!foregroundServiceRunning()) { // 이미 작동중인 동일한 서비스가 없다면 실행
+            serviceIntent =
+                Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
+            // 빌드 버전코드 "O" 보다 높은 버전일 경우
+            startService(serviceIntent) // 서비스 인텐트를 전달한 서비스 시작 메서드 실행
+        } else {
+            serviceIntent = SSEForegroundService().serviceIntent
+        }
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -146,11 +128,11 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
     ) { isGranted: Boolean ->
         if (isGranted) {
             // 알림 권한이 허용되었습니다.
-            Toast.makeText(this, "알림 권한이 허용되었습니다", Toast.LENGTH_SHORT).show()
+            Log.e("alarm permission", "$isGranted")
+            requestIgnoreBatteryOptimization()
         } else {
             // 알림 권한이 거부되었습니다.
             Toast.makeText(this, "알림 권한이 거부되었습니다", Toast.LENGTH_SHORT).show()
-
         }
     }
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -164,6 +146,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
             setNegativeButton("취소") { dialog, _ ->
                 // 알림 권한이 거부되었습니다.
                 Toast.makeText(this@MainActivity, "알림 권한이 거부되었습니다", Toast.LENGTH_SHORT).show()
+                saveSharedPreferenceGoogleLogin.setSharedAlarm(this@MainActivity, false)
                 dialog.dismiss()
             }
             create()
@@ -171,15 +154,42 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         }
     }
 
+    // 배터리 최적화 제외 요청
+    private fun requestIgnoreBatteryOptimization() {//절전사용금지앱
+        Log.e("Battery", "isCreate")
+        val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
+        val isWhiteListing: Boolean = pm.isIgnoringBatteryOptimizations(applicationContext.packageName)
+        Log.e("isWhiteListing", "$isWhiteListing")
+        if (!isWhiteListing) {
+            Log.e("isWhiteListing", "false")
+            AlertDialog.Builder(this).apply {
+                setTitle("배터리 최적화 제외 요청")
+                setMessage("정상적인 알림을 수신하기 위해 배터리 사용량 최적화 목록에서 제외해야 합니다. 제외하시겠습니까?")
+                setPositiveButton("권한 허용") { _, _ ->
+                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    intent.data = Uri.parse("package:" + applicationContext.packageName)
+                    saveSharedPreferenceGoogleLogin.setSharedAlarm(this@MainActivity, true)
+                    SseStartCheck()
+                    startActivity(intent)
+                }
+                setNegativeButton("취소") { dialog, _ ->
+                    // 배터리 최적화 제외 권한이 거부되었습니다.
+                    Toast.makeText(this@MainActivity, "배터리 최적화 제외가 거부되었습니다", Toast.LENGTH_SHORT).show()
+                    saveSharedPreferenceGoogleLogin.setSharedAlarm(this@MainActivity, false)
+                    dialog.dismiss()
+                }
+                create()
+                show()
+            }
+        }
+    }
+
     private fun foregroundServiceRunning(): Boolean {
         val activityManager =
             this.getSystemService(ACTIVITY_SERVICE) as ActivityManager // 액티비티 매니져를 통해 작동중인 서비스 가져오기
 
-        //val temp = activityManager.runningAppProcesses.any { it.processName == SSEForegroundService::class.java.name && it.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE}
-
-
-        for (service in activityManager.getRunningServices(Int.MAX_VALUE)) { // 작동중인 서비스수 만큼 반복
-            if (SSEForegroundService::class.java.name == service.service.className) { // 비교한 서비스의 이름이 MyForgroundService 와 같다면
+        for (service in activityManager.runningAppProcesses) { // 작동중인 서비스수 만큼 반복
+            if (SSEForegroundService::class.java.name == service.processName) { // 비교한 서비스의 이름이 MyForgroundService 와 같다면
                 return true // true 반환
             }
         }
@@ -194,25 +204,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
 
         notificationIcon = actionNotification
 
-
-       /*if (isClicked) {
-            Log.e("isclicked", isClicked.toString())
-            actionNotification?.isVisible = !isClicked
-            actionNotification?.isVisible = false
-        } else {
-            actionNotification?.isVisible = !isClicked
-        }
-
-        if (isSettingClicked) {
-            actionSetting?.isVisible = !isSettingClicked
-            actionNotification?.isVisible = false
-        } else {
-            actionSetting?.isVisible = !isSettingClicked
-        }
-        actionNotification?.isVisible = !isClicked
-        Log.e("actionNotificaion", isClicked.toString())
-        actionSetting?.isVisible = !isSettingClicked
-        Log.e("actionSetting", isSettingClicked.toString())*/
         actionNotification?.isVisible = !isClicked
         actionSetting?.isVisible = !isSettingClicked
 
@@ -261,7 +252,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
                 setToolbarView(toolbarType)
                 isClicked = false
                 isSettingClicked = false
-                Log.e("eoerer", oldTAG)
                 mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
 
                 super.onOptionsItemSelected(item)
@@ -273,20 +263,15 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
     private fun saveSettingData() { //처음 앱 사용 시 저장한 isFirstAccountEdit가 없어서 null이니 true로 저장 후 dialog를 실행토록함
         //다음에는 true가 저장되어있었으니 false로 저장내용을 바꾸고 다시 저장하여 dialog가 나오지 않도록 함
         val sharedPref = this.getSharedPreferences("saveSetting", Context.MODE_PRIVATE)
-        isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", "") ?: ""
-
-        if (isFirstAccountEdit?.isEmpty() == true) {
-            Log.d("MainActivity", isFirstAccountEdit.toString())
-            Log.d("MainActivity", "비었으니까 처음실행한듯 ")
-
+        isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", "") ?: "true"
+        if (isFirstAccountEdit == "true") {
+            Log.e("isFirstAccountEdit", "true")
             with(sharedPref.edit()) {
                 putString("isFirstAccountEdit", "true")
                 apply() // 비동기적으로 데이터를 저장
             }
         } else {
-            Log.d("MainActivity", isFirstAccountEdit.toString())
-            Log.d("MainActivity", "안 비었으니까 처음실행x")
-
+            Log.e("isFirstAccountEdit", "false")
             with(sharedPref.edit()) {
                 putString("isFirstAccountEdit", "false")
                 apply() // 비동기적으로 데이터를 저장
@@ -375,7 +360,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
 
 
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) {
             CoroutineScope(Dispatchers.Main).launch {
                 val flag = it.data?.getIntExtra("flag", -1) ?: -1
@@ -425,17 +410,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
                 mBinding.bottomNavigationView.selectedItemId = R.id.navigation_account
             }
 
-            //여기는 알람 클릭 시 notificationFragment로 이동하기 위함
-            /*8 -> {
-                isClicked = true
-                toolbarType = "알림"
-                setToolbarView(toolbarType)
-                oldFragment = NotificationFragment()
-                oldTAG = TAG_NOTIFICATION
-                //setToolbarView(TAG_HOME, oldTAG)
-                setFragment(TAG_NOTIFICATION, NotificationFragment())
-                //mBinding.bottomNavigationView.selectedItemId = R.id.action_notification
-            }*/
 
             9 -> {
                 toolbarType = "기본"
@@ -462,7 +436,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
             }
 
             1234 -> {
-                Log.e("flag", "1234")
                 // HomeFragment로 전환
                 oldFragment = HomeFragment()
                 oldTAG = TAG_HOME
@@ -542,7 +515,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         bt.commitAllowingStateLoss()
     }
 
-    fun setToolbarView(type : String) {
+    private fun setToolbarView(type : String) {
         when (type) {
             "기본" -> {
                 setSupportActionBar(mBinding.toolBar)
@@ -572,51 +545,8 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
     }
 
     private fun initUserSet() {
-        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
         val userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
 
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-
-                if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.d("MainActivitu Notification", expireDate.toString())
-
-                    // UI 스레드에서 Toast 실행
-                    this@MainActivity.runOnUiThread {
-                        Toast.makeText(this@MainActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    }
-                    Log.e("main", "main")
-                    // Log.d("MainActivitu Notification", expireDate.toString())
-                    val intent = Intent(this@MainActivity, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    startActivity(intent)
-                    finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        /////
         RetrofitServerConnect.create(this@MainActivity).getAccountData(userEmail).enqueue(object : Callback<User> {
             override fun onResponse(call: Call<User>, response: Response<User>) {
                 if (response.isSuccessful) {
@@ -640,89 +570,38 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
     }
 
     private fun initNotification(menuItem: MenuItem?) {
-        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
         val notificationCheck = saveSharedPreferenceGoogleLogin.getSharedNotification(this).toString()
 
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-
-                if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.d("MainActivitu Notification", expireDate.toString())
-
-                    // UI 스레드에서 Toast 실행
-                    this@MainActivity.runOnUiThread {
-                        Toast.makeText(this@MainActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    }
-
-                   // Log.d("MainActivitu Notification", expireDate.toString())
-                    val intent = Intent(this@MainActivity, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    startActivity(intent)
-                    finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        /////
         RetrofitServerConnect.create(this@MainActivity).getMyAlarm().enqueue(object : Callback<List<AddAlarmResponseData>> {
             override fun onResponse(
                 call: Call<List<AddAlarmResponseData>>,
                 response: Response<List<AddAlarmResponseData>>
             ) {
                 if (response.isSuccessful) {
-                    Log.e("MainActivitu Notification??0", notificationCheck.toString())
                     if (response.body().isNullOrEmpty() && response.body()?.toString() == "") {
                         menuItem?.setIcon(R.drawable.top_menu_notification)
-                        Log.e("MainActivitu Notification??1", notificationCheck.toString())
                     } else {
-                        Log.e("MainActivitu Notification??0-1", response.body()?.size.toString())
-                       if (response.body()?.size!! > notificationCheck.toInt()) { //사이즈가 달라짐 = 데이터가 더 추가되었다
+                        if (response.body()?.size!! > notificationCheck.toInt()) { //사이즈가 달라짐 = 데이터가 더 추가되었다
                            menuItem?.setIcon(R.drawable.notification_update_icon)
-                           Log.e("MainActivitu Notification??2", notificationCheck.toString())
-                       } else { //달라진게없으면? 다시 원상태 즉 봣다는거니
+                        } else { //달라진게없으면? 다시 원상태 즉 봣다는거니
                            menuItem?.setIcon(R.drawable.top_menu_notification)
-                           Log.e("MainActivitu Notification??3", notificationCheck.toString())
-                       }
+                        }
                         /*Log.e("MainActivitu Notification", response.body()?.size.toString())
                         Log.e("MainActivitu Notification", notificationCheck.toString())*/
                     }
-
                 } else {
-                    Log.e("MainActivitu Notification", response.code().toString())
-                    Log.e("MainActivitu Notification", response.errorBody()?.string()!!)
-                    Log.e("MainActivitu Notification", response.message().toString())
+                    menuItem?.setIcon(R.drawable.top_menu_notification)
                 }
             }
 
             override fun onFailure(call: Call<List<AddAlarmResponseData>>, t: Throwable) {
                 Log.d("MainActivitu Notification", t.message.toString())
+                menuItem?.setIcon(R.drawable.top_menu_notification)
             }
-
         })
     }
 
-    fun changeFragment(fragment : Fragment) {
+    private fun changeFragment(fragment : Fragment) {
         //프래그먼트를 교체 하는 작업을 수행할 수 있게 해줍니다.
         supportFragmentManager
             .beginTransaction()

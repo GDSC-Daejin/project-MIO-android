@@ -409,11 +409,11 @@ class CarpoolTabFragment : Fragment() {
 
 
         val sharedPref = requireActivity().getSharedPreferences("saveSetting", Context.MODE_PRIVATE)
-        isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", "") ?: ""
+        isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", "") ?: "true"
         Log.e("shaerdPref", isFirstAccountEdit.toString())
+
         if (isFirstAccountEdit == "true") {
             initSettingDialog()
-            //println("setting")
         }
     }
 

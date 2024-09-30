@@ -1,25 +1,221 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!-- 권한 요청 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" /> <!-- <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <queries>
+        <package android:name="viva.republica.toss" /> <!-- 토스뱅크 -->
+        <package android:name="com.kakao.talk" /> <!-- 카카오페이 -->
+        <package android:name="com.kbstar.kbbank" /> <!-- kb국민은행 -->
+        <package android:name="com.kebhana.hanapush" /> <!-- 하나은행 -->
+        <package android:name="com.shinhan.sbanking" /> <!-- 신한페이판 -->
+        <package android:name="com.ibk.android.ionebank" /> <!-- ibk기업은행 -->
+        <package android:name="com.kakaobank.channel" />
+    </queries>
 
     <application
+        android:name=".viewmodel.FragSharedViewModel2"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_mio_launcher"
         android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@style/Theme.MIO"
-        tools:targetApi="31">
+        android:usesCleartextTraffic="true"
+        android:windowSoftInputMode="adjustResize"
+        tools:targetApi="33">
+
+        <service android:name=".sse.SSEForegroundService" />
+        <service android:name=".sse.SSERestartService"/>
+        <receiver android:name=".sse.SSEAlarmReceiver"/>
+        <receiver android:name=".sse.SSEBroadcastReceiver"/>
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:node="remove" />
+
+        <activity
+            android:name=".CompleteActivity"
+            android:exported="true"
+            android:noHistory="true"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- host와 scheme이 이렇게 설정되었다면 ~uitest://deeplink~ 라는 URI는 무조건 해당 Activity가 실행됩니다. -->
+                <data
+                    android:host="deeplink"
+                    android:scheme="miopay" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".tabaccount.AccountSearchLocationActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".tabaccount.AccountReviewActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".tabaccount.ProfileActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".PassengersReviewActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".ParticipationReceiveActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".tabaccount.AccountSettingActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".tabaccount.AccountSelectBankActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".tabcategory.MoreCarpoolTabActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".tabcategory.MoreTaxiTabActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".tabcategory.MoreAreaActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity"/>
+
+        <!--<receiver
+            android:name=".Helper.AlarmReceiver"
+            android:enabled="true"
+            android:exported="false">
+
+            &lt;!&ndash; 디바이스 부팅 시 바로 실행되게 설정 &ndash;&gt;
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>-->
+
+        <activity
+            android:name=".ApplyNextActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:hardwareAccelerated="true"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".noticeboard.NoticeBoardEditActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".noticeboard.NoticeBoardReadActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize"
+            tools:ignore="LockedOrientationActivity" />
+        <!--<activity
+            android:name=".NoticeBoard.NoticeBoardActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />-->
+        <activity
+            android:name=".tapsearch.SearchResultActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustNothing"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".tapsearch.NearbypostActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".noticeboard.LocationActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".OpenSourceManagementActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            tools:ignore="LockedOrientationActivity" />
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.MIO"
+            tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="com.kakao.sdk.AppKey"
+            android:value="${kakaoNativeAppKey}" />
+        <meta-data
+            android:name="com.kakao.vectormap.APP_KEY"
+            android:value="${kakaoNativeAppKey}"/>
+
+        <!--
+           Adding this meta data is required as of Google Mobile Ads SDK version 17.0.0 as explained in
+           https://developers.google.com/ad-manager/mobile-ads-sdk/android/quick-start#update_your_androidmanifestxml
+        -->
+        <meta-data
+            android:name="com.google.android.gms.ads.AD_MANAGER_APP"
+            android:value="true" />
+        <!--
+        This is the sample AdMob App ID. Insert your own AdMob App ID in quotes
+        https://googlemobileadssdk.page.link/admob-android-update-manifest
+        -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${applicationKey}" />
     </application>
 
 </manifest>

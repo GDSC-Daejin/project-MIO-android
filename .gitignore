@@ -13,3 +13,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+client_secret.json
+client_secret_web.json
+client_secret_975290935363-qg66opspojqo7t634irvt0vkv0h79p6r.apps.googleusercontent.com.json
+client_secret_975290935363-ur55ncmdui0ihrs8dcn8olpcqks195ra.apps.googleusercontent.com.json
+strings.xml

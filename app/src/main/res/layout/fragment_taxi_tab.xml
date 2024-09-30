@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".tabcategory.TaxiTabFragment">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:id="@+id/carpool_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/pretendard_bold"
+                android:text="나의 예약"
+                android:textSize="18sp"
+                android:textColor="@color/mio_gray_11"
+                android:layout_marginStart="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/current_rv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:nestedScrollingEnabled="true"
+                android:visibility="visible"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/current_post_item" />
+
+            <TextView
+                android:id="@+id/non_current_rv_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/pretendard_bold"
+                android:text="오늘 예약된 카풀이 없습니다"
+                android:textColor="@color/mio_gray_7"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/non_current_rv_tv2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="미오에서 카풀을 구해보세요!"
+                android:textColor="@color/mio_gray_6"
+                android:visibility="gone" />
+
+
+            <TextView
+                android:id="@+id/this_week_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:fontFamily="@font/pretendard_bold"
+                android:text="이번주 택시 캘린더"
+                android:textSize="18sp"
+                android:textColor="@color/mio_gray_11"
+                android:layout_marginStart="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <LinearLayout
+                android:id="@+id/calendar_container_ll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/calendar_RV"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="2dp"
+                    android:orientation="horizontal"
+                    android:layout_gravity="center"
+                    android:nestedScrollingEnabled="true"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:layout_constraintBottom_toTopOf="@+id/refresh_swipe_layout"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/month_linearlayout"
+                    tools:listitem="@layout/calendar_cell" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:id="@+id/non_taxi_data"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="예약된 택시 게시글이 없습니다!"
+                    android:textColor="@color/mio_gray_12"
+                    android:fontFamily="@font/pretendard_bold"
+                    android:textSize="24sp"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/noticeBoard_RV"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="20dp"
+                    tools:itemCount="5"
+                    android:clickable="true"
+                    android:descendantFocusability="blocksDescendants"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/calendar_RV"
+                    tools:listitem="@layout/post_item" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/non_calendar_data_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="20dp"
+                android:clickable="true"
+                android:descendantFocusability="blocksDescendants"
+                android:fontFamily="@font/pretendard_bold"
+                android:gravity="center"
+                android:text="선택한 날짜의 글이 존재하지 않습니다."
+                android:textColor="@color/mio_gray_12"
+                android:textSize="16sp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/calendar_RV" />
+
+            <Button
+                android:id="@+id/moreBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:fontFamily="@font/pretendard_medium"
+                android:backgroundTint="@color/mio_gray_4"
+                android:stateListAnimator="@null"
+                android:layout_gravity="center"
+                android:text="더보기"
+                android:textColor="@color/mio_gray_8"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/refresh_swipe_layout" />
+
+            <com.google.android.gms.ads.AdView
+                android:id="@+id/taxi_ad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@color/white"
+                android:layout_gravity="center"
+                android:layout_marginBottom="20dp"
+                app:adSize="BANNER"
+                app:adUnitId="@string/test_banner_ad"
+                />
+
+
+            <ImageView
+                android:id="@+id/carpool_banner_iv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/home_banner_iv"
+                />
+
+            <TextView
+                android:id="@+id/carpool_my_area_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/pretendard_bold"
+                android:text="나의 활동 지역 택시"
+                android:textSize="18sp"
+                android:textColor="@color/mio_gray_11"
+                android:layout_marginStart="20dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+
+            <LinearLayout
+                android:id="@+id/area_rv_ll"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/my_area_of_activity_RV"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:layout_marginBottom="20dp"
+                    android:clickable="true"
+                    android:descendantFocusability="blocksDescendants"
+                    tools:listitem="@layout/post_item" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/non_area_rv_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/pretendard_bold"
+                android:text="내 활동 지역에 해당하는 택시가 없습니다."
+                android:textColor="@color/mio_gray_7"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/non_area_rv_tv2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="미오에서 글을 써보세요!"
+                android:textColor="@color/mio_gray_6"
+                android:visibility="gone" />
+
+
+            <Button
+                android:id="@+id/more_area_Btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:fontFamily="@font/pretendard_medium"
+                android:backgroundTint="@color/mio_gray_4"
+                android:stateListAnimator="@null"
+                android:layout_gravity="center"
+                android:text="더보기"
+                android:textColor="@color/mio_gray_8"
+                android:visibility="visible" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

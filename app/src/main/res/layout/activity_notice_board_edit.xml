@@ -1,0 +1,934 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white"
+    tools:context=".noticeboard.NoticeBoardEditActivity">
+
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp">
+
+            <ImageView
+                android:id="@+id/back_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/baseline_arrow_back_24" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="14dp"
+                android:padding="8dp"
+                android:src="@drawable/top_icon_vector" />
+
+        </RelativeLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <LinearLayout
+        android:id="@+id/edit_fifth_vf"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/edit_bottom_ll"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+        <ImageView
+            android:id="@+id/edit_complete_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/edit_complete_icon" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:fontFamily="@font/pretendard_bold"
+            android:gravity="center"
+            android:text="게시물 작성완료"
+            android:textColor="@color/mio_gray_11"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/pretendard_bold"
+            android:gravity="center"
+            android:text="업로드 된 게시물을 마이페이지에서 확인하세요!"
+            android:textColor="@color/mio_gray_6" />
+
+    </LinearLayout>
+
+    <ViewFlipper
+        android:id="@+id/edit_viewflipper"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="20dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/edit_bottom_ll"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
+        <!--첫번째 뷰플립-->
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar"
+            >
+            <LinearLayout
+                android:id="@+id/edit_first_vf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="18dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/edit_page_current"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:text="1"
+                        android:textColor="@color/mio_gray_10"
+                        android:textSize="10sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:text=" / "
+                        android:textColor="@color/mio_gray_6"
+                        android:textSize="10sp" />
+
+                    <TextView
+                        android:id="@+id/edit_page_total"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:text="4"
+                        android:textColor="@color/mio_gray_6"
+                        android:textSize="10sp" />
+                </LinearLayout>
+
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="27dp"
+                    android:layout_marginTop="15dp"
+                    android:fontFamily="@font/pretendard_bold"
+                    android:text="일정을 만들어보세요"
+                    android:textColor="@color/mio_gray_11"
+                    android:textSize="20sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="27dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="27dp"
+                    android:background="@drawable/round_layout">
+
+                    <EditText
+                        android:id="@+id/edit_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="15dp"
+                        android:layout_marginEnd="15dp"
+                        android:autofillHints=""
+                        android:background="@android:color/transparent"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:hint="제목을 입력해주세요"
+                        android:inputType="textMultiLine"
+                        android:scrollHorizontally="false"
+                        android:textColorHint="@color/mio_gray_6"
+                        android:textSize="18sp" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="27dp"
+                    android:layout_marginTop="32dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="날짜"
+                    android:textColor="@color/mio_gray_9"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="27dp"
+                    android:layout_marginEnd="27dp"
+                    android:background="@drawable/round_layout">
+
+                    <TextView
+                        android:id="@+id/edit_select_date_tv"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="15dp"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:gravity="center|fill"
+                        android:text="yyyy/mm/dd"
+                        android:textColor="@color/mio_gray_6" />
+
+                    <ImageView
+                        android:id="@+id/edit_calendar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginEnd="12dp"
+                        android:contentDescription="캘린더 선택"
+                        android:src="@drawable/filter_calendar_icon" />
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="27dp"
+                    android:layout_marginTop="50dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="시간"
+                    android:textColor="@color/mio_gray_9"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="27dp"
+                    android:layout_marginEnd="27dp"
+                    android:background="@drawable/round_layout">
+
+                    <TextView
+                        android:id="@+id/edit_select_time"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="15dp"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:gravity="center|fill"
+                        android:text="오전 00:00"
+                        android:textColor="@color/mio_gray_6" />
+
+                    <ImageView
+                        android:id="@+id/edit_time"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginEnd="12dp"
+                        android:contentDescription="시간 선택"
+                        android:src="@drawable/filter_time_icon" />
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@color/mio_gray_4" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="27dp"
+                    android:layout_marginTop="15dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="카풀 / 택시"
+                    android:textColor="@color/mio_gray_9"
+                    android:textSize="18sp" />
+
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/edit_category_carpool_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/edit_check_btn"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:text="카풀"
+                        android:textColor="@color/mio_gray_9"
+                        android:visibility="visible"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <Space
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/edit_category_taxi_btn"
+                        app:layout_constraintStart_toEndOf="@+id/edit_category_carpool_btn"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintVertical_weight="1" />
+
+                    <Button
+                        android:id="@+id/edit_category_taxi_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/edit_check_btn"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:text="택시"
+                        android:textColor="@color/mio_gray_9"
+                        android:visibility="visible"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="27dp"
+                    android:layout_marginTop="40dp"
+                    android:layout_marginEnd="27dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:fontFamily="@font/pretendard_medium"
+                        android:text="탑승인원"
+                        android:textColor="@color/mio_gray_9"
+                        android:textSize="18sp" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1" />
+
+                    <ImageView
+                        android:id="@+id/edit_minus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/filter_participate_minus_icon" />
+
+                    <TextView
+                        android:id="@+id/edit_participate_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:text="0"
+                        android:textColor="@color/mio_gray_11" />
+
+                    <ImageView
+                        android:id="@+id/edit_plus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/filter_participate_plus_icon" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+
+        <!--두번째 뷰플립-->
+        <LinearLayout
+            android:id="@+id/edit_second_vf"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+            <LinearLayout
+                android:id="@+id/page_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="18dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/edit_page_2current"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="2"
+                    android:textColor="@color/mio_gray_10"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text=" / "
+                    android:textColor="@color/mio_gray_6"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/edit_page_2total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="4"
+                    android:textColor="@color/mio_gray_6"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="15dp"
+                android:fontFamily="@font/pretendard_bold"
+                android:text="어디에서 만날까요?"
+                android:textColor="@color/mio_gray_11" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="27dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="27dp"
+                android:background="@drawable/round_layout">
+
+                <EditText
+                    android:id="@+id/et_search_field"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="26dp"
+                    android:background="@null"
+                    android:hint="장소를 입력해주세요"
+                    android:textColor="@color/mio_gray_8"
+                    android:textColorHint="@color/mio_gray_6"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:singleLine="true"
+                    android:autofillHints="" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/btn_search"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:background="@android:color/transparent"
+                    android:padding="13dp"
+                    app:srcCompat="@drawable/search_btn_icon" />
+            </LinearLayout>
+
+           <View
+                android:id="@+id/line2"
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:layout_marginTop="40dp"
+                android:background="@color/mio_gray_4" />
+
+            <TextView
+                android:id="@+id/recent_search"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="27dp"
+                android:layout_marginTop="30dp"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="최근 검색어"
+                android:textColor="@color/mio_gray_6" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/recent_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvRecentSearchList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:listitem="@layout/search_word_layout"/>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+        </LinearLayout>
+
+        <!--2.5번째 뷰플립-->
+        <LinearLayout
+            android:id="@+id/edit_second2_vf"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <com.kakao.vectormap.MapView
+                    android:id="@+id/map_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!--<TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/map_explain"
+                    android:gravity="center"
+                    android:text="지도를 움직여 위치를 설정하세요"
+                    android:textColor="@color/mio_gray_8"
+                    android:layout_marginTop="30dp"
+                    android:paddingBottom="2dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>-->
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/map_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent">
+
+                    <TextView
+                        android:id="@+id/place_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:layout_marginStart="20dp"
+                        android:textColor="@color/mio_gray_10"
+                        android:textSize="20sp"
+                        android:fontFamily="@font/pretendard_bold"
+                        app:layout_constraintBottom_toTopOf="@+id/place_road"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <TextView
+                        android:id="@+id/place_road"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginBottom="20dp"
+                        android:textColor="@color/mio_gray_8"
+                        android:fontFamily="@font/pretendard_bold"
+                        android:textSize="20sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+
+        <!--세번째 뷰플립-->
+        <LinearLayout
+            android:id="@+id/edit_third_vf"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="18dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/edit_page_3current"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="3"
+                    android:textColor="@color/mio_gray_10"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text=" / "
+                    android:textColor="@color/mio_gray_6"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/edit_page_3total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="4"
+                    android:textColor="@color/mio_gray_6"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="15dp"
+                android:fontFamily="@font/pretendard_bold"
+                android:text="운전자의 정보를 입력해주세요"
+                android:textColor="@color/mio_gray_11" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="27dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="27dp"
+                android:background="@drawable/round_layout">
+
+                <EditText
+                    android:id="@+id/edit_select_amount"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="15dp"
+                    android:layout_weight="1"
+                    android:autofillHints=""
+                    android:fontFamily="@font/pretendard_medium"
+                    android:background="@android:color/transparent"
+                    android:gravity="center|fill"
+                    android:inputType="number"
+                    android:hint="금액을 입력해주세요"
+                    android:textColorHint="@color/mio_gray_6" />
+            </LinearLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/all_c"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="27dp"
+                android:layout_marginEnd="27dp"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+
+                <TextView
+                    android:id="@+id/textView7"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="등/하교"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <Button
+                    android:id="@+id/edit_gtschool_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="5dp"
+                    android:background="@drawable/edit_check_btn"
+                    android:text="등교"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView7" />
+
+
+                <Button
+                    android:id="@+id/edit_aschool_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="5dp"
+                    android:background="@drawable/edit_check_btn"
+                    android:text="하교"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1.0"
+                    app:layout_constraintTop_toBottomOf="@+id/textView7" />
+
+                <TextView
+                    android:id="@+id/textView8"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="성별"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/edit_gtschool_btn" />
+
+
+                <Button
+                    android:id="@+id/edit_man_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/edit_check_btn"
+                    android:contentDescription="남성"
+                    android:text="남성"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView8" />
+
+                <Button
+                    android:id="@+id/edit_woman_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="5dp"
+                    android:background="@drawable/edit_check_btn"
+                    android:text="여성"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView8" />
+
+                <TextView
+                    android:id="@+id/textView9"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="30dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="흡연여부"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintTop_toBottomOf="@+id/edit_man_btn"
+                    tools:layout_editor_absoluteX="10dp" />
+
+                <Button
+                    android:id="@+id/edit_smoker_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="5dp"
+                    android:background="@drawable/edit_check_btn"
+                    android:text="O"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView9" />
+
+                <Button
+                    android:id="@+id/edit_nsmoker_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="5dp"
+                    android:background="@drawable/edit_check_btn"
+                    android:text="X"
+                    android:textColor="@color/mio_gray_11"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView9" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+
+        <!--네번째 뷰플립-->
+        <LinearLayout
+            android:id="@+id/edit_fourth_vf"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/toolbar">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="18dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/edit_page_4current"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="4"
+                    android:textColor="@color/mio_gray_10"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text=" / "
+                    android:textColor="@color/mio_gray_6"
+                    android:textSize="10sp" />
+
+                <TextView
+                    android:id="@+id/edit_page_4total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="4"
+                    android:textColor="@color/mio_gray_6"
+                    android:textSize="10sp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="15dp"
+                android:fontFamily="@font/pretendard_bold"
+                android:text="추가로 내용을 작성해주세요"
+                android:textColor="@color/mio_gray_11" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="27dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginEnd="27dp"
+                android:background="@drawable/round_layout2"
+                >
+
+                <EditText
+                    android:id="@+id/edit_detail_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:autofillHints=""
+                    android:background="@null"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:gravity="top"
+                    android:hint="약속 시간 철저히 지키시는 분 좋아요"
+                    android:inputType="textMultiLine"
+                    android:scrollHorizontally="false"
+                    android:scrollbars="vertical"
+                    android:textColorHint="@color/mio_gray_6"
+                    android:textSize="18sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </ViewFlipper>
+
+
+
+    <LinearLayout
+        android:id="@+id/edit_bottom_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/edit_pre"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/btn_default_background"
+            android:fontFamily="@font/pretendard_medium"
+            android:text="이전"
+            android:textColor="@color/mio_gray_8"
+            android:visibility="visible" />
+
+        <Space
+            android:id="@+id/edit_bottom_space"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="visible" />
+
+        <Button
+            android:id="@+id/edit_next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:background="@drawable/btn_default_background"
+            android:fontFamily="@font/pretendard_medium"
+            android:text="다음"
+            android:textColor="@color/mio_gray_8"
+            android:visibility="visible" />
+
+        <Button
+            android:id="@+id/complete_btn"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="25dp"
+            android:background="@drawable/edit_complete_btn"
+            android:fontFamily="@font/pretendard_medium"
+            android:text="네, 알겠습니다!"
+            android:textColor="@color/mio_gray_2"
+            android:visibility="gone" />
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+
+    <!--전체-->
+    <LinearLayout
+        android:id="@+id/post_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:layout_marginEnd="5dp"
+        android:background="@drawable/round_layout2"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="25dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/post_item_icon" />
+
+
+        <!--안에 내용-->
+        <LinearLayout
+            android:id="@+id/post_inner_ll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="15dp"
+            android:layout_marginBottom="20dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/post_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="택시 N빵 할 머진인 구해요"
+                    android:textColor="@color/black"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+
+                <ImageView
+                    android:id="@+id/post_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:src="@drawable/reservation_ing"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+
+            <!--날짜-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/post_item_calendar_icon" />
+
+                <TextView
+                    android:id="@+id/post_date"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="4dp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:text="23.06.05 (월) 9:00"
+                    android:textColor="@color/mio_gray_6" />
+            </LinearLayout>
+
+
+            <!--위치-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/post_item_location_icon" />
+
+                <TextView
+                    android:id="@+id/post_location"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:text="수락산역 3번출구"
+                    android:textColor="@color/mio_gray_6"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!--가격-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="3dp"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/read_cost_icon" />
+
+                <TextView
+                    android:id="@+id/post_cost"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:text="5000원"
+                    android:textColor="@color/mio_gray_6"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <!--인원 수-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="6dp"
+                android:layout_weight="1">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:src="@drawable/post_item_participation_icon" />
+
+                <TextView
+                    android:id="@+id/post_participation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:gravity="center"
+                    android:text="1"
+                    android:textColor="@color/mio_gray_6" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:gravity="center"
+                    android:text="/"
+                    android:textColor="@color/mio_gray_6" />
+
+                <TextView
+                    android:id="@+id/post_participation_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:fontFamily="@font/pretendard_medium"
+                    android:gravity="center"
+                    android:text="4"
+                    android:textColor="@color/mio_gray_6" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

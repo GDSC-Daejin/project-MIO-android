@@ -1,4 +1,17 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        mavenCentral()
+        // Check that you have the following line (if not, add it):
+        google()  // Google's Maven repository
+    }
+    dependencies {
+        classpath 'com.google.gms:google-services:4.3.13'
+
+        // oss licenses plugin 추가
+        classpath 'com.google.android.gms:oss-licenses-plugin:0.10.4'
+    }
+}
 plugins {
     id 'com.android.application' version '7.4.0' apply false
     id 'com.android.library' version '7.4.0' apply false

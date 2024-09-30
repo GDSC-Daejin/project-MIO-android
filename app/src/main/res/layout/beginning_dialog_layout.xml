@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:background="@drawable/dialog_round_background"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="30dp"
+            android:src="@drawable/top_icon_vector" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="20dp"
+            android:fontFamily="@font/pretendard_bold"
+            android:textColor="@color/black"
+            android:text="MIO에 오신 것을 환영합니다!"
+            android:textSize="24sp"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/pretendard_medium"
+            android:textColor="@color/black"
+            android:text=" - 원활한 MIO 앱 사용을 위해 버튼을 눌러 계정 정보를 수정해 주세요. \n\n - 계정 정보 수정에 문제가 있을 시 앱 이용에 불편함이 생기실 수 있습니다."
+            android:textSize="18sp"
+            />
+
+        <Button
+            android:id="@+id/beginning_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="20dp"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:background="@drawable/round_btn_update_layout"
+            android:text="수정하기"
+            android:textColor="@color/white"
+            android:fontFamily="@font/pretendard_medium"
+            />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

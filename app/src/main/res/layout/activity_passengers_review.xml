@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PassengersReviewActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/passengers_toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp">
+
+            <ImageView
+                android:id="@+id/back_arrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:src="@drawable/baseline_arrow_back_24" />
+
+
+        </RelativeLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+
+    <LinearLayout
+        android:id="@+id/passengers_review_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passengers_toolbar">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="카풀은 어떠셨나요?"
+            android:textSize="24sp"
+            android:fontFamily="@font/pretendard_bold"
+            android:textColor="@color/mio_gray_11"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="이번 카풀의 내용을 공유해주세요."
+            android:textSize="14sp"
+            android:fontFamily="@font/pretendard_medium"
+            android:textColor="@color/mio_gray_7"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:orientation="horizontal"
+            android:gravity="center"
+            >
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
+
+                <ImageView
+                    android:id="@+id/passengers_satisfaction_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/review_satisfaction_icon"
+                    />
+                <TextView
+                    android:id="@+id/passengers_satisfaction_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="만족"
+                    android:textSize="14sp"
+                    android:textColor="@color/mio_gray_6"
+                    android:fontFamily="@font/pretendard_medium"
+                    />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <ImageView
+                    android:id="@+id/passengers_commonly_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/review_commonly_icon"
+                    />
+
+                <TextView
+                    android:id="@+id/passengers_commonly_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="보통"
+                    android:textSize="14sp"
+                    android:textColor="@color/mio_gray_6"
+                    android:fontFamily="@font/pretendard_medium"
+                    />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
+
+                <ImageView
+                    android:id="@+id/passengers_dissatisfaction_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/review_dissatisfaction_icon"
+                    />
+
+                <TextView
+                    android:id="@+id/passengers_dissatisfaction_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="불만족"
+                    android:textSize="14sp"
+                    android:textColor="@color/mio_gray_6"
+                    android:fontFamily="@font/pretendard_medium"
+                    />
+            </LinearLayout>
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/round_layout"
+            android:backgroundTint="@color/mio_gray_4">
+
+            <EditText
+                android:id="@+id/passengers_review_et"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:gravity="top"
+                android:autofillHints=""
+                android:background="@drawable/round_layout"
+                android:backgroundTint="@color/mio_gray_4"
+                android:fontFamily="@font/pretendard_medium"
+                android:hint="후기를 입력해주세요"
+                android:textColorHint="@color/mio_gray_6"
+                android:inputType="textMultiLine"
+                android:maxLines="3"
+                android:scrollbars="vertical"
+                android:scrollHorizontally="false"
+                android:textSize="16sp"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/review_participants_id_ll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/passengers_review_registration_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passengers_review_ll">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/review_set_passengers_cg"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <!--<com.google.android.material.chip.Chip
+                style="@style/MioChipStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/mio_blue_4"
+                android:text="등교"
+                />-->
+        </com.google.android.material.chip.ChipGroup>
+        <!--<com.google.android.material.chip.Chip
+            android:id="@+id/review_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/MioChipStyle"
+            android:text="전체"
+            android:textAlignment="center"
+            />-->
+
+    </HorizontalScrollView>
+
+    <Button
+        android:id="@+id/passengers_review_registration_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/round_btn2_layout"
+        android:backgroundTint="@color/mio_blue_5"
+        android:fontFamily="@font/pretendard_medium"
+        android:gravity="center"
+        android:text="등록"
+        android:textColor="@color/mio_gray_1"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passengers_review_ll" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

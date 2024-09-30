@@ -1,7 +1,16 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+
+    // plugin 추가
+    id 'com.google.android.gms.oss-licenses-plugin'
 }
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+def kakao_native_app_key = properties.getProperty('kakao_native_app_key')
+def applicationKey = properties.getProperty('mio_application_id')
 
 android {
     namespace 'com.example.mio'
@@ -9,26 +18,105 @@ android {
 
     defaultConfig {
         applicationId "com.example.mio"
-        minSdk 24
+        minSdk 26
         targetSdk 33
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        //key set
+        buildConfigField "String", "client_web_api_key", properties['client_web_api_key']
+        buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
+        buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
+        buildConfigField "String", "kakao_native_app_key",  "\"${properties['kakao_native_app_key']}\""
+
+        buildConfigField "String", "client_web_release_id_key", properties['client_web_release_id_key']
+        buildConfigField "String", "client_web_release_secret_key", properties['client_web_release_secret_key']
+        // 릴리즈 빌드 설정
+        buildConfigField "String", "client_web_id_key", properties['client_web_release_id_key']
+        buildConfigField "String", "client_web_secret_key", properties['client_web_release_secret_key']
+
+        buildConfigField "String", "client_release_id_key", properties['client_release_id_key']
+
+        buildConfigField "String", "server_URL", properties['server_URL']
+        buildConfigField "String", "map_api_key", properties['map_api_key']
+        buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
+        buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
+
+        manifestPlaceholders = [kakaoNativeAppKey: kakao_native_app_key, applicationKey: applicationKey]
+    }
+
+    signingConfigs {
+        release {
+            storeFile file('C:\\kotlinStore\\androidReleaseMioKeyStore.jks')
+            storePassword "!bluegagel5676"
+            keyAlias "mio0"
+            keyPassword "!bluegagel5676"
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+
+            // 릴리즈 빌드 설정
+            buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
+            buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
+            buildConfigField "String", "client_release_id_key", properties['client_release_id_key']
+            buildConfigField "String", "kakao_native_app_key",  "\"${properties['kakao_native_app_key']}\""
+            buildConfigField "String", "server_URL", properties['server_URL']
+            buildConfigField "String", "map_api_key", properties['map_api_key']
+            buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
+            buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
+            manifestPlaceholders = [kakaoNativeAppKey: kakao_native_app_key, applicationKey: applicationKey]
+            //debugger true
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+
+        debug {
+            buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
+            buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
+            buildConfigField "String", "client_id_key", properties['client_id_key']
+            buildConfigField "String", "server_URL", properties['server_URL']
+            buildConfigField "String", "kakao_native_app_key",  "\"${properties['kakao_native_app_key']}\""
+            buildConfigField "String", "map_api_key", properties['map_api_key']
+            buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
+            buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
+            manifestPlaceholders = [kakaoNativeAppKey: kakao_native_app_key, applicationKey: applicationKey]
         }
     }
+
+    /*splits {
+        abi {
+            enable true
+            reset()
+            include 'x86', 'x86_64', 'armeabi-v7a', 'armeabi'
+            universalApk false
+        }
+    }*/
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+
+    buildFeatures {
+        viewBinding true
+        dataBinding true
+    }
+
+    packagingOptions {
+        exclude "lib/arm64-v8a/librealm-jni.so"
+    }
+}
+allprojects {
+    repositories {
+        maven {url 'https://jitpack.io'}
+        maven { url 'https://devrepo.kakao.com/nexus/repository/kakaomap-releases/' }
     }
 }
 
@@ -38,7 +126,62 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    //auth
+    implementation 'com.google.android.gms:play-services-auth:21.0.0'
+    //okhttp
+    // define a BOM and its version
+    implementation(platform("com.squareup.okhttp3:okhttp-bom:4.11.0"))
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation 'com.squareup.okhttp3:okhttp-sse:4.9.3'
+    implementation 'com.launchdarkly:okhttp-eventsource:4.1.0'
+
+    // define any required OkHttp artifacts without version
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("com.squareup.okhttp3:logging-interceptor")
+
+    //kakao map API
+    api files('libs/libDaumMapAndroid.jar')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation files('libs/libDaumMapAndroid.jar')
+    implementation 'com.kakao.maps.open:android:2.11.9'
+
+    //preference
+    implementation 'androidx.preference:preference-ktx:1.2.0'
+
+    //retrofit2
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.6.0'
+    //통신 로그
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.11.0'
+
+    //splashScreen
+    implementation 'androidx.core:core-splashscreen:1.0.0-alpha01'
+
+    //sticky
+    implementation 'com.github.amarjain07:StickyScrollView:1.0.3'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+
+    //glide
+    implementation("com.github.bumptech.glide:glide:4.14.2")
+    implementation 'androidx.preference:preference:1.2.1'
+    kapt("com.github.bumptech.glide:compiler:4.14.2")
+    //lottie
+    implementation 'com.airbnb.android:lottie:3.0.7'
+
+    //work
+    implementation "androidx.work:work-runtime-ktx:2.7.1"
+
+    //license library추가
+    // library 추가
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.0.1'
+
+    //admob
+    implementation 'com.google.android.gms:play-services-ads:23.0.0'
+
+    ////
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    implementation "androidx.activity:activity-ktx:1.2.3"
 }

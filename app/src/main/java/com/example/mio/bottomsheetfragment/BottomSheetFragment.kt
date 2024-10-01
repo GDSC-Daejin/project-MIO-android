@@ -3,8 +3,6 @@ package com.example.mio.bottomsheetfragment
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.Dialog
-import android.app.TimePickerDialog
-import android.app.TimePickerDialog.OnTimeSetListener
 import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
@@ -25,8 +23,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.time.LocalTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 
@@ -364,7 +360,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 val selectedMinute = timePicker.minute // API 23 이상
 
                 // 선택한 시간과 분을 이용해 문자열 생성
-                val tempS = "${selectedHour}시 ${selectedMinute}분"
+
                 sendSelectTime = String.format("%02d:%02d:00", selectedHour, selectedMinute)
 
                 // 오전/오후 표시 처리

@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.DialogFragment
 import com.example.mio.model.CommentData
@@ -19,11 +18,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
-/**
- * A simple [Fragment] subclass.
- * Use the [AnotherBottomSheetFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
+
 class BottomSheetCommentFragment(setEditText : CommentData?, parentId : String?) : BottomSheetDialogFragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
@@ -58,7 +53,7 @@ class BottomSheetCommentFragment(setEditText : CommentData?, parentId : String?)
         }
 
         if (parentCommentId != null) {
-            abBinding.bottomCommentUserTv.text = "${parentCommentId}님에게"
+            abBinding.bottomCommentUserTv.text = requireActivity().getString(R.string.setBottomSheetComment, parentCommentId)
         } else {
             abBinding.bottomCommentUserTv.visibility = View.GONE
         }
@@ -75,22 +70,17 @@ class BottomSheetCommentFragment(setEditText : CommentData?, parentId : String?)
 
             override fun afterTextChanged(editable: Editable) {
                 val newText = editable.toString()
-                Log.e("commentTest", "After text changed: $newText")
-
                 if (newText.isNotEmpty()) {
                     commentEditText = newText
                 }
 
                 if (newText.isEmpty() && getBottomSheetCommentData != "수정") {
-                    Log.e("commentTest", "비어있고 수정아닐때")
                     //commentEditText = newText
                 } else if (newText.isNotEmpty() && getBottomSheetCommentData != "수정") {
-                    Log.e("commentTest", "일반 댓글")
                     commentEditText = newText
                     abBinding.readSendComment.visibility = View.VISIBLE
                     abBinding.readEditSendComment.visibility = View.GONE
                 } else {
-                    Log.e("commentTest", "댓글 수정할때")
                     commentEditText = newText
                     abBinding.readSendComment.visibility = View.GONE
                     abBinding.readEditSendComment.visibility = View.VISIBLE
@@ -105,18 +95,6 @@ class BottomSheetCommentFragment(setEditText : CommentData?, parentId : String?)
         }
 
         return abBinding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-    }
-
-
-    private fun setupFullHeight(bottomSheet: View) {
-        val layoutParams = bottomSheet.layoutParams
-        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
-        bottomSheet.layoutParams = layoutParams
     }
 
     /*override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

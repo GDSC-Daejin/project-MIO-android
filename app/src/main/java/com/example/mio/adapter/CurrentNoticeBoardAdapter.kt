@@ -11,10 +11,8 @@ import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.CurrentPostItemBinding
 import com.example.mio.diffutil.CurrentReservationDiffUtilCallback
-import com.example.mio.diffutil.ReviewWriteableDiffUtilCallback
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter.CurrentNoticeBoardViewHolder>(){
@@ -38,8 +36,8 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
         private var position : Int? = null
         //var accountId = binding.accountId
         //var accountProfile = binding.accountImage
-        var cPostDate = binding.currentPostDate
-        var cPostLocation = binding.currentPostLocation
+        private var cPostDate = binding.currentPostDate
+        private var cPostLocation = binding.currentPostLocation
 
         fun bind(accountData: PostData, position : Int) {
             this.position = position
@@ -72,7 +70,7 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
             val hour = accountData.postTargetTime.substring(0..1)
             val minute = accountData.postTargetTime.substring(3..4)
 
-            cPostDate.text = "${year}.${month}.${date1} ($dayOfWeek) ${hour}:${minute}"
+            cPostDate.text = context.getString(R.string.setDateText, year, month, date1, dayOfWeek, hour, minute)
             cPostLocation.text = if (accountData.postLocation.split(" ").last().toString() == " ") {
                 accountData.postLocation.split(" ").dropLast(1).joinToString(" ")
             } else {
@@ -96,9 +94,6 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
             val diffDays = diffMilliseconds?.div((24 * 60 * 60 * 1000))
             if (diffMinutes != null && diffDays != null && diffHours != null && diffSeconds != null) {
 
-                if(diffSeconds > -1){
-
-                }
                 if (diffSeconds > 0) {
                     binding.currentCompleteFl.visibility = View.VISIBLE
                     binding.currentCompleteTv.text = "운행 종료"
@@ -139,12 +134,10 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
 
         //본인이 작성자(운전자) 이면서 카풀이 완료
         if (identification == currentPostItemData[position]?.user?.email && hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Driver) {
-            Log.d("current", "Driver")
             holder.itemView.setOnClickListener {
                 itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[position]?.postID!!, PostStatus.Driver)
             }
         } else if (hashMapCurrentPostItemData[holder.adapterPosition] == PostStatus.Passenger) { //본인은 운전자가 아니고 손님
-            Log.d("current", "Passenger")
             holder.itemView.setOnClickListener {
                 itemClickListener.onClick(it, holder.adapterPosition, currentPostItemData[holder.adapterPosition]?.postID!!,  PostStatus.Passenger)
             }
@@ -203,28 +196,21 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
 
     //약한 참조로 참조하는 객체가 사용되지 않을 경우 가비지 콜렉션에 의해 자동해제
     //private var itemClickListener: WeakReference<ItemClickListener>? = null
-    private lateinit var itemClickListener: CurrentNoticeBoardAdapter.ItemClickListener
+    private lateinit var itemClickListener: ItemClickListener
 
-    fun setItemClickListener(itemClickListener: CurrentNoticeBoardAdapter.ItemClickListener) {
+    fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
 
     fun updateDataList(newItems: List<PostData?>) {
-        Log.e("updateCar", "New data items: $newItems")
-
-        // Log currentPostItemData before update
-        Log.e("updateCar", "Current data items before update: $currentPostItemData")
-
         if (currentPostItemData.isEmpty()) {
-            Log.d("updateCar", "Initial data set, using notifyDataSetChanged()")
             currentPostItemData.clear()
             currentPostItemData.addAll(newItems)
 
             // Update the HashMap based on newItems
             hashMapCurrentPostItemData.clear() // 해시맵 초기화
-            newItems.forEachIndexed { index, postData ->
+            newItems.forEachIndexed { index, _ ->
                 hashMapCurrentPostItemData[index] = PostStatus.Neither // 기본 상태 설정
-                Log.d("updateCar", "HashMap updated: index=$index, status=Neither")
             }
 
             // Use notifyDataSetChanged for the first update
@@ -233,28 +219,17 @@ class CurrentNoticeBoardAdapter : RecyclerView.Adapter<CurrentNoticeBoardAdapter
             // Create a new DiffUtil.Callback instance
             val diffCallback = CurrentReservationDiffUtilCallback(currentPostItemData, newItems)
 
-            // Calculate the diff
-            Log.d("updateCar", "Calculating DiffUtil...")
             val diffResult = DiffUtil.calculateDiff(diffCallback)
 
-            // Clear and update the list only once
-            Log.d("updateCar", "Clearing current data list and adding new items...")
             currentPostItemData.clear()
             currentPostItemData.addAll(newItems)
 
-            // Log currentPostItemData after update
-            Log.e("updateCar", "Current data items after update: $currentPostItemData")
 
-            // Update the HashMap based on newItems
-            Log.d("updateCar", "Updating hashMapCurrentPostItemData...")
             hashMapCurrentPostItemData.clear() // 해시맵 초기화
-            newItems.forEachIndexed { index, postData ->
+            newItems.forEachIndexed { index, _ ->
                 hashMapCurrentPostItemData[index] = PostStatus.Neither // 기본 상태 설정
-                Log.d("updateCar", "HashMap updated: index=$index, status=Neither")
             }
 
-            // Log before dispatching updates to adapter
-            Log.d("updateCar", "Dispatching updates to adapter...")
             diffResult.dispatchUpdatesTo(this@CurrentNoticeBoardAdapter)
         }
     }

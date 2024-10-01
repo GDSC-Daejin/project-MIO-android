@@ -2526,7 +2526,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
     private fun initCommentRecyclerView() {
         //setCommentData()
-        noticeBoardReadAdapter = NoticeBoardReadAdapter(commentsViewModel)
+        noticeBoardReadAdapter = NoticeBoardReadAdapter()
         //noticeBoardReadAdapter!!.commentItemData = commentAllData
         //noticeBoardReadAdapter!!.replyCommentItemData = replyCommentAllData
         noticeBoardReadAdapter.supportFragment = this@NoticeBoardReadActivity.supportFragmentManager

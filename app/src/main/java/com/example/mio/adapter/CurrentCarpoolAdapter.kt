@@ -1,5 +1,6 @@
+package com.example.mio.adapter
+
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +10,6 @@ import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.CurrentPostItemBinding
 import com.example.mio.diffutil.CurrentReservationDiffUtilCallback
-import com.example.mio.diffutil.ReviewWriteableDiffUtilCallback
 import com.example.mio.model.PostData
 import java.text.SimpleDateFormat
 import java.util.*
@@ -63,7 +63,7 @@ class CurrentCarpoolAdapter : RecyclerView.Adapter<CurrentCarpoolAdapter.Current
             val date1 = accountData.postTargetDate.substring(8..9)
             val hour = accountData.postTargetTime.substring(0..1)
             val minute = accountData.postTargetTime.substring(3..4)
-            binding.currentPostDate.text = "${year}.${month}.${date1} ($dayOfWeek) ${hour}:${minute}"
+            binding.currentPostDate.text = context.getString(R.string.setDateText, year, month, date1, dayOfWeek, hour, minute)
 
             // 위치 정보 설정
             val location = accountData.postLocation.split(" ")
@@ -143,21 +143,14 @@ class CurrentCarpoolAdapter : RecyclerView.Adapter<CurrentCarpoolAdapter.Current
     }
 
     fun updateDataList(newItems: List<PostData?>) {
-        Log.e("updateCar", "New data items: $newItems")
-
-        // Log currentPostItemData before update
-        Log.e("updateCar", "Current data items before update: $currentPostItemData")
-
         if (currentPostItemData.isEmpty()) {
-            Log.d("updateCar", "Initial data set, using notifyDataSetChanged()")
             currentPostItemData.clear()
             currentPostItemData.addAll(newItems)
 
             // Update the HashMap based on newItems
             hashMapCurrentPostItemData.clear() // 해시맵 초기화
-            newItems.forEachIndexed { index, postData ->
+            newItems.forEachIndexed { index, _ ->
                 hashMapCurrentPostItemData[index] = PostStatus.Neither // 기본 상태 설정
-                Log.d("updateCar", "HashMap updated: index=$index, status=Neither")
             }
 
             // Use notifyDataSetChanged for the first update
@@ -165,33 +158,17 @@ class CurrentCarpoolAdapter : RecyclerView.Adapter<CurrentCarpoolAdapter.Current
         } else {
             // Create a new DiffUtil.Callback instance
             val diffCallback = CurrentReservationDiffUtilCallback(currentPostItemData, newItems)
-
-            // Calculate the diff
-            Log.d("updateCar", "Calculating DiffUtil...")
             val diffResult = DiffUtil.calculateDiff(diffCallback)
 
-            // Clear and update the list only once
-            Log.d("updateCar", "Clearing current data list and adding new items...")
             currentPostItemData.clear()
             currentPostItemData.addAll(newItems)
 
-            // Log currentPostItemData after update
-            Log.e("updateCar", "Current data items after update: $currentPostItemData")
-
-            // Update the HashMap based on newItems
-            Log.d("updateCar", "Updating hashMapCurrentPostItemData...")
             hashMapCurrentPostItemData.clear() // 해시맵 초기화
-            newItems.forEachIndexed { index, postData ->
+            newItems.forEachIndexed { index, _ ->
                 hashMapCurrentPostItemData[index] = PostStatus.Neither // 기본 상태 설정
-                Log.d("updateCar", "HashMap updated: index=$index, status=Neither")
             }
 
-            // Log before dispatching updates to adapter
-            Log.d("updateCar", "Dispatching updates to adapter...")
             diffResult.dispatchUpdatesTo(this@CurrentCarpoolAdapter)
-
-            // Log to confirm dispatch completion
-            Log.d("updateCar", "RecyclerView update dispatched.")
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.example.mio.adapter
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -135,9 +134,6 @@ class MyReviewWrittenAdapter : ListAdapter<MyAccountReviewData, MyReviewWrittenA
         diff.dispatchUpdatesTo(this)
     }*/
     fun updateData(newData: List<MyAccountReviewData>) {
-        Log.d("NotificationAdapter", "Previous data: ${currentList}") // currentList는 현재 어댑터의 데이터
-        Log.d("NotificationAdapter", "New data: $newData")
-        //Log.d("NotificationAdapter", "data: $notificationItemData")
         submitList(newData.toList().sortedByDescending { it.createDate })
     }
 
@@ -145,15 +141,17 @@ class MyReviewWrittenAdapter : ListAdapter<MyAccountReviewData, MyReviewWrittenA
 
 object WrittenDiffUtil : DiffUtil.ItemCallback<MyAccountReviewData>() {
 
-    override fun areItemsTheSame(oldItem: MyAccountReviewData, newItem: MyAccountReviewData): Boolean {
-        val result = oldItem.id == newItem.id // Assuming 'id' is unique for each notification
-        Log.d("CommentData", "areItemsTheSame: Comparing oldItem.id = ${oldItem.id} with newItem.id = ${newItem.id}, result: $result")
-        return result
+    override fun areItemsTheSame(
+        oldItem: MyAccountReviewData,
+        newItem: MyAccountReviewData
+    ): Boolean {
+        return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: MyAccountReviewData, newItem: MyAccountReviewData): Boolean {
-        val result = oldItem == newItem // This checks if all fields are the same
-        Log.d("CommentData", "areContentsTheSame: Comparing oldItem = $oldItem with newItem = $newItem, result: $result")
-        return result
+    override fun areContentsTheSame(
+        oldItem: MyAccountReviewData,
+        newItem: MyAccountReviewData
+    ): Boolean {
+        return oldItem == newItem
     }
 }

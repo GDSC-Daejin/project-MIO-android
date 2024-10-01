@@ -28,8 +28,7 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
     private lateinit var binding : PostItemBinding
     //var searchWordData = ArrayList<SearchWordData>()
     var moreTaxiData: List<PostData?> = ArrayList()
-    private val mMoreTaxiData: List<PostData> = ArrayList()
-    var sharedPref : SharedPref? = null
+    private var sharedPref : SharedPref? = null
     private lateinit var context : Context
 
     init {
@@ -39,10 +38,10 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
     inner class MoreTaxiViewHolder(private val binding : PostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
         var postTitle = binding.postTitle
-        var postDate = binding.postDate
+        private var postDate = binding.postDate
         var postLocation = binding.postLocation
         var postParticipation = binding.postParticipation
-        var postParticipantTotal = binding.postParticipationTotal
+        private var postParticipantTotal = binding.postParticipationTotal
         var postCost = binding.postCost
 
         fun bind(moreData: PostData, position : Int) {
@@ -66,7 +65,7 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
             }
         }
     }
-    inner class LoadingViewHolder(var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
+    inner class LoadingViewHolder(private var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
         val processBar : ProgressBar = loadingBinding.loadingPb
     }
 

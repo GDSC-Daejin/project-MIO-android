@@ -131,9 +131,6 @@ class MyReviewAdapter : ListAdapter<MyAccountReviewData, MyReviewAdapter.MyRevie
         diff.dispatchUpdatesTo(this)
     }*/
     fun updateData(newData: List<MyAccountReviewData>) {
-        Log.d("NotificationAdapter", "Previous data: ${currentList}") // currentList는 현재 어댑터의 데이터
-        Log.d("NotificationAdapter", "New data: $newData")
-        //Log.d("NotificationAdapter", "data: $notificationItemData")
         submitList(newData.toList().sortedByDescending { it.createDate })
     }
 

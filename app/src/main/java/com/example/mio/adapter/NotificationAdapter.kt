@@ -1,13 +1,13 @@
 package com.example.mio.adapter
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mio.R
 import com.example.mio.helper.SharedPref
 import com.example.mio.model.*
 import com.example.mio.SaveSharedPreferenceGoogleLogin
@@ -27,7 +27,7 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
     //private var notificationItemData: List<AddAlarmResponseData> = ArrayList()
     //private var notificationItemData = kotlin.collections.ArrayList<AddAlarmResponseData>()
     private lateinit var context : Context
-    var sharedPref : SharedPref? = null
+    private var sharedPref : SharedPref? = null
 
     private var identification = ""
     //var notificationContentItemData = ArrayList<PostData?>()
@@ -52,7 +52,7 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
             val currentDate = sdf.format(date)
 
 
-            val postDateTime = notification.createDate.replace("T", " ").split(".")[0] ?: ""
+            val postDateTime = notification.createDate.replace("T", " ").split(".")[0]
 
             val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
             val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime) //위 두개는 알림이 온 시간체크용용
@@ -81,16 +81,16 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
                     binding.notificationTime.text = "방금전"
                 }
                 if (diffSeconds > 0) {
-                    binding.notificationTime.text = "${diffSeconds.toString()}초전"
+                    binding.notificationTime.text = context.getString(R.string.setTimeTextSeconds, "$diffSeconds")
                 }
                 if (diffMinutes > 0) {
-                    binding.notificationTime.text = "${diffMinutes.toString()}분전"
+                    binding.notificationTime.text = context.getString(R.string.setTimeTextMinutes, "$diffMinutes")
                 }
                 if (diffHours > 0) {
-                    binding.notificationTime.text = "${diffHours.toString()}시간전"
+                    binding.notificationTime.text = context.getString(R.string.setTimeTextHours, "$diffHours")
                 }
                 if (diffDays > 0) {
-                    binding.notificationTime.text = "${diffDays.toString()}일전"
+                    binding.notificationTime.text = context.getString(R.string.setTimeTextDays, "$diffDays")
                 }
             }
         }
@@ -105,7 +105,6 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
 
     override fun onBindViewHolder(holder: NotificationViewHolder, position: Int) {
         holder.bind(currentList[position], position)
-        Log.d("AdapterData", "Binding item at position $position: $currentList[position]")
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
 
@@ -164,9 +163,6 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
     }*/
 
     fun updateNotifications(newData: List<AddAlarmResponseData>) {
-        Log.d("NotificationAdapter", "Previous data: ${currentList}") // currentList는 현재 어댑터의 데이터
-        Log.d("NotificationAdapter", "New data: $newData")
-        //Log.d("NotificationAdapter", "data: $notificationItemData")
         submitList(newData.toList())
         //notifyDataSetChanged()
     }
@@ -174,15 +170,17 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
 
 object NotificationDiffUtil : DiffUtil.ItemCallback<AddAlarmResponseData>() {
 
-    override fun areItemsTheSame(oldItem: AddAlarmResponseData, newItem: AddAlarmResponseData): Boolean {
-        val result = oldItem.id == newItem.id // Assuming 'id' is unique for each notification
-        Log.d("NotificationDiffUtil", "areItemsTheSame: Comparing oldItem.id = ${oldItem.id} with newItem.id = ${newItem.id}, result: $result")
-        return result
+    override fun areItemsTheSame(
+        oldItem: AddAlarmResponseData,
+        newItem: AddAlarmResponseData
+    ): Boolean {
+        return oldItem.id == newItem.id
     }
 
-    override fun areContentsTheSame(oldItem: AddAlarmResponseData, newItem: AddAlarmResponseData): Boolean {
-        val result = oldItem == newItem // This checks if all fields are the same
-        Log.d("NotificationDiffUtil", "areContentsTheSame: Comparing oldItem = $oldItem with newItem = $newItem, result: $result")
-        return result
+    override fun areContentsTheSame(
+        oldItem: AddAlarmResponseData,
+        newItem: AddAlarmResponseData
+    ): Boolean {
+        return oldItem == newItem
     }
 }

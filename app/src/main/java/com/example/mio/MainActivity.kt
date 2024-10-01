@@ -560,11 +560,13 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
                     Log.e("MainActivity set user", response.message().toString())
                     Log.e("MainActivity set user", response.code().toString())
                     Log.e("MainActivity set user", response.errorBody()?.string()!!)
+                    Toast.makeText(this@MainActivity, "유저 정보를 가져오지 못했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<User>, t: Throwable) {
                 Log.e("MainActivity set user", t.message.toString())
+                Toast.makeText(this@MainActivity, "유저 정보를 가져오지 못했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }

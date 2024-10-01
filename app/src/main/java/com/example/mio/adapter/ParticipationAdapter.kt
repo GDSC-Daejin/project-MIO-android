@@ -15,8 +15,6 @@ import com.example.mio.databinding.ParticipationItemLayoutBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -70,7 +68,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 "설정X"
             }
 
-            binding.participationFilterTv.text = "${user?.studentId} | $gender $smoke"
+            binding.participationFilterTv.text = context.getString(R.string.setUserFilterText, "${user?.studentId}", gender, smoke)//"${user?.studentId} | $gender $smoke"
             binding.participationContentTv.text = partData.content
 
             /*if (partData.approvalOrReject == "APPROVAL" ) {
@@ -167,39 +165,23 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         return position.toLong()
     }
 
-    private fun isTargetTimePassed(targetDate: String): Boolean {
-        // targetDate와 targetTime을 합쳐서 하나의 LocalDateTime으로 변환
-        val targetDateTime = LocalDateTime.parse(targetDate, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-
-        // 현재 시간을 가져옴
-        val now = LocalDateTime.now()
-
-        // 현재 시간이 targetDateTime을 지났으면 true, 아니면 false 반환
-        return now.isAfter(targetDateTime)
-    }
-
     fun removeData(participantsId: Int, position: Int) {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
-
         //당일 취소 불가능, 마감이면 취소 불가능,
         RetrofitServerConnect.create(context).deleteParticipants(participantsId).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
-                    Log.d("PART Remove Success ", response.code().toString())
                     participationItemData[position].approvalOrReject = "REJECT"
                 } else {
                     Log.e("PART Remove ERROR ", response.code().toString())
                     Log.e("PART Remove ERROR ", response.errorBody()?.string()!!)
                     Log.e("PART Remove ERROR ", response.message().toString())
-
-
+                    Toast.makeText(context, "삭제 오류가 발생했습니다. 다시 시도해주세요. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<Void>, t: Throwable) {
                 Log.e("PART Remove ERROR ", t.toString())
+                Toast.makeText(context, "삭제 오류가 발생했습니다. 다시 시도해주세요. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -208,16 +190,13 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         RetrofitServerConnect.create(context).patchParticipantsApproval(participantsId).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
-                    Log.d("fetchItemDetails", response.code().toString())
                     callback(true)  // 성공 시 true 반환
                 } else {
-                    Log.e("fetchItemDetails", response.errorBody()?.string()!!)
                     callback(false)  // 실패 시 false 반환
                 }
             }
 
             override fun onFailure(call: Call<Void>, t: Throwable) {
-                Log.d("ERROR", t.toString())
                 callback(false)  // 실패 시 false 반환
             }
         })

@@ -1,7 +1,5 @@
 package com.example.mio.adapter
 
-import android.location.Geocoder
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -22,7 +20,6 @@ class RecentSearchAdapter(private var items: List<LocationReadAllResponse>) : Re
     }
 
     inner class ViewHolder(val binding: SearchListLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
-        private val geocoder = Geocoder(binding.root.context)
         init {
             itemView.setOnClickListener {
                 val position = adapterPosition
@@ -48,31 +45,10 @@ class RecentSearchAdapter(private var items: List<LocationReadAllResponse>) : Re
 
         fun bind(item: LocationReadAllResponse) {
             if (item.location.isNotEmpty()) {
-                Log.e("recentSearch", item.location)
                 binding.tvListName.text = item.location.split("/").first()
                 binding.tvListRoad.text = item.location.split("/").last().toString()
             }
-            /*CoroutineScope(Dispatchers.IO).launch {
-                val s = getAddressFromLatLng(item.latitude, item.longitude)
-                Log.e("getAddressFromLatLng", s)
-            }*/
         }
-
-        private fun getAddressFromLatLng(latitude: Double, longitude: Double): String {
-            val addresses = geocoder.getFromLocation(latitude, longitude, 1)
-            if (addresses?.isNotEmpty() == true) {
-                val address = addresses[0]
-                val adminArea = address.adminArea ?: ""
-                val subAdminArea = address.subAdminArea ?: ""
-                val locality = address.locality ?: ""
-                val subLocality = address.subLocality ?: ""
-                val thoroughfare = address.thoroughfare ?: ""
-                val featureName = address.featureName ?: ""
-                return "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
-            }
-            return "Unknown Address"
-        }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

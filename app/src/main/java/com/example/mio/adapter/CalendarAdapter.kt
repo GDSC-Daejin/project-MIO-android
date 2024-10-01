@@ -20,15 +20,14 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
     //리사이클러뷰 특정 아이템 선택
     private var oldSelectedPostion = -1
     private var selectedPostion = -1
-    var crDate = ""
 
 
 
-    inner class CalendarViewHolder(private val binding : CalendarCellBinding ) : RecyclerView.ViewHolder(binding.root) {
+    inner class CalendarViewHolder(binding : CalendarCellBinding ) : RecyclerView.ViewHolder(binding.root) {
 
         private var position : Int? = null
         var dateTV = binding.dateCell
-        var dayTV = binding.dayCell
+        private var dayTV = binding.dayCell
         var containerLL = binding.calendarLl
 
         fun bind(calendarData: DateData, position : Int) {
@@ -50,7 +49,7 @@ class CalendarAdapter : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>
 
     override fun onBindViewHolder(holder: CalendarAdapter.CalendarViewHolder, position: Int) {
         holder.bind(calendarItemData[holder.adapterPosition]!!, holder.adapterPosition)
-        var day = calendarItemData[holder.adapterPosition]
+        val day = calendarItemData[holder.adapterPosition]
         val dateNow: Date = Calendar.getInstance().time
         val format = SimpleDateFormat("d", Locale.getDefault())
         format.format(dateNow)

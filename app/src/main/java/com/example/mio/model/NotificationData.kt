@@ -7,6 +7,4 @@ data class NotificationData(
     var isApply : Boolean, //참석 체크
     var applyDate : String //참석 체크한 날짜
 
-) : java.io.Serializable {
-
-}
+) : java.io.Serializable

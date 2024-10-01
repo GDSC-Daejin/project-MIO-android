@@ -43,6 +43,7 @@ data class Address(
     var y : String, //latitude
 ) : java.io.Serializable
 
+/*
 data class RoadAddress(
     var address_name : String, //전체 도로명 주소
     var region_1depth_name : String, //지역 1 Depth, 시도 단위
@@ -56,4 +57,4 @@ data class RoadAddress(
     var zone_no : String, //우편번호
     var x : String, //longitude
     var y : String, //latitude
-) : java.io.Serializable
+) : java.io.Serializable*/

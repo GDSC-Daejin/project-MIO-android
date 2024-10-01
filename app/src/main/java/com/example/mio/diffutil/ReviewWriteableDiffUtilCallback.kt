@@ -27,8 +27,8 @@ class ReviewWriteableDiffUtilCallback(
         return oldItem == newItem
     }
 
-    override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
+   /* override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
         // Implement this method if you're going to use item change payloads.
         return super.getChangePayload(oldItemPosition, newItemPosition)
-    }
+    }*/
 }

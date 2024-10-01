@@ -25,6 +25,4 @@ data class ParticipationData(
     @SerializedName("isDeleteYN")
     var isDeleteYN : String?,
 
-) : java.io.Serializable {
-
-}
+) : java.io.Serializable

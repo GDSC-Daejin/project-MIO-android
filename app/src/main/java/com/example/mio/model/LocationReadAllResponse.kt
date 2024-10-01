@@ -56,6 +56,7 @@ data class LocationCategory(
     var categoryName : String,
 ): java.io.Serializable
 
+/*
 data class LocationUser(
     @SerializedName("id")
     var id : Int,
@@ -82,6 +83,7 @@ data class LocationUser(
     @SerializedName("grade")
     var grade : String,
 )
+*/
 
 data class LocationParticipants(
     @SerializedName("id")

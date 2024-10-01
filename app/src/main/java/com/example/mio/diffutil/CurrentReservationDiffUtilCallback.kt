@@ -47,9 +47,9 @@ class CurrentReservationDiffUtilCallback(
         return result
     }
 
-    override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
+    /*override fun getChangePayload(oldItemPosition: Int, newItemPosition: Int): Any? {
         // 여기서 필요한 경우 변경된 필드에 대한 정보를 추가로 전달할 수 있습니다.
         //Log.d("DiffUtil", "getChangePayload: oldItemPosition=$oldItemPosition, newItemPosition=$newItemPosition")
         return super.getChangePayload(oldItemPosition, newItemPosition)
-    }
+    }*/
 }

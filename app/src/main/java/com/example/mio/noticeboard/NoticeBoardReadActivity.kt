@@ -83,7 +83,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     private var isCategory : Boolean? = null //true = 카풀, false = 택시
     //deadline 체크
     private var isDeadLineCheck2 : Boolean? = null //현재 시간이 타겟 시간 이전이면 true, 그렇지 않으면 false
-    private var isNotDeadLine2 : Boolean? = null //현재 시간이 타겟 시간 이전이면 true, 그렇지 않으면 false
+    //private var isNotDeadLine2 : Boolean? = null //현재 시간이 타겟 시간 이전이면 true, 그렇지 않으면 false
 
 
     //유저확인
@@ -135,31 +135,31 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         /////
         val type = intent.getStringExtra("type")
         tabType = intent.getStringExtra("tabType").toString()
-        temp = intent.getSerializableExtra("postItem") as PostData?
-        //isBeforeDeadLine()
-        //someFunction()
-        // Observe LiveData
-        // Fetch data from the ViewModel
-        sharedViewModel!!.fetchIsBeforeDeadLine(this, temp!!.postID)
+
+        temp = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra("postItem")
+        } else {
+            intent.getParcelableExtra("postItem", PostData::class.java)
+        }
+
+        sharedViewModel!!.fetchIsBeforeDeadLine(this, temp?.postID!!)
 
         lifecycleScope.launch {
             sharedViewModel!!.isNotDeadLine.collect { isNotDeadLine ->
                 //게시글의 정해진 시간이 넘었는지
                 val isBeforeTarget = isBeforeTarget(temp!!.postTargetDate, temp!!.postTargetTime)
-                Log.e("sharedViewmodel", isNotDeadLine.toString())
                 //responseData?.postType == "BEFORE_DEADLINE" && responseData.isDeleteYN != "Y" 인지
                 //true면 마감이 아님
                 val isDeadLineCheck3 = isBeforeTarget && isNotDeadLine
-                Log.e("sharedViewmodel", isDeadLineCheck3.toString())
-                Log.e("sharedViewmodel", isDeadLineCheck2.toString())
+
                 updateUI(isDeadLineCheck3)
             }
         }
-        Log.e("isDeadLineCheck", isDeadLineCheck2.toString())
 
         commentsViewModelObserve()
 
         if (type.equals("READ")) {
+
             writerEmail = temp!!.user.email
             //tempProfile = intent.getSerializableExtra("uri") as String
             tempProfile = temp?.user?.profileImageUrl.toString()
@@ -170,22 +170,23 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 "카테고리: 택시"
             }
             //initParticipationCheck()
+            val chipGroup = nbrBinding.readSetFilterCg
             if (temp?.user?.gender != null && temp?.user?.verifySmoker != null && temp?.postVerifyGoReturn != null) {
                 chipList.add(createNewChip(text = if (temp?.user?.verifySmoker == true) {
                     "흡연 O"
                 } else {
                     "흡연 X"
-                }))
+                }, chipGroup))
                 chipList.add(createNewChip(text = if (temp?.user?.gender == true) {
                     "여성"
                 } else {
                     "남성"
-                }))
+                }, chipGroup))
                 chipList.add(createNewChip(text = if (temp?.postVerifyGoReturn == true) {
                     "등교"
                 } else {
                     "하교"
-                }))
+                }, chipGroup))
 
 
                 for (i in chipList.indices) {
@@ -245,7 +246,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             nbrBinding.readTitle.text = temp!!.postTitle
             nbrBinding.readNumberOfPassengersTotal.text = temp!!.postParticipationTotal.toString()
             nbrBinding.readNumberOfPassengers.text = temp!!.postParticipation.toString()
-            Log.e("READ", temp!!.postLocation.split(" ").toString())
             nbrBinding.readLocation.text = if (temp!!.postLocation.split("/").last().isEmpty()) {
                 temp!!.postLocation.split("/").first()
             } else {
@@ -275,24 +275,17 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             if (diffMilliseconds != null && diffSeconds != null && diffMinutes != null && diffHours != null && diffDays != null) {
                 when {
                     diffSeconds <= 0 -> nbrBinding.readTimeCheck.text = "방금전"
-                    diffSeconds < 60 -> nbrBinding.readTimeCheck.text = "${diffSeconds}초전"
-                    diffMinutes < 60 -> nbrBinding.readTimeCheck.text = "${diffMinutes}분전"
-                    diffHours < 24 -> nbrBinding.readTimeCheck.text = "${diffHours}시간전"
-                    else -> nbrBinding.readTimeCheck.text = "${diffDays}일전"
+                    diffSeconds < 60 -> nbrBinding.readTimeCheck.text = getString(R.string.setTimeTextSeconds, "$diffSeconds")//"${diffSeconds}초전"
+                    diffMinutes < 60 -> nbrBinding.readTimeCheck.text = getString(R.string.setTimeTextMinutes, "$diffMinutes")//"${diffMinutes}분전"
+                    diffHours < 24 -> nbrBinding.readTimeCheck.text = getString(R.string.setTimeTextHours, "$diffHours")//"${diffHours}시간전"
+                    else -> nbrBinding.readTimeCheck.text = getString(R.string.setTimeTextDays, "$diffDays")//"${diffDays}일전"
                 }
             }
             //true면 before, false면 before아닌것들
             //isNotDeadLine = isBeforeTarget(temp?.postTargetDate.toString(), temp?.postTargetTime.toString()) && isNotDeadLine2 == true
-            Log.e("isNotDeadLine", isDeadLineCheck2.toString())
-            Log.e("isNotDeadLine", isBeforeTarget(temp?.postTargetDate.toString(), temp?.postTargetTime.toString()).toString())
-            Log.e("isNotDeadLine", isNotDeadLine2.toString())
 
 
             // 글쓴이가 자기자신 이라면 , 게시글 참가 + 글쓴이가 자기 자신이라면 받은 신청 보러가기고
-            Log.e("NoticeBoardRead WriterCheck", email)
-            Log.e("NoticeBoardRead WriterCheck", temp!!.user.email)
-            Log.e("NoticeBoardRead WriterCheck", isParticipation.toString())
-            Log.e("NoticeBoardRead WriterCheck", (email == temp!!.user.email).toString())
         }
 
         //setCommentData()
@@ -409,63 +402,17 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 }
 
                                 "북마크" -> {
-                                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                                    val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
-                                    val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
-                                    //val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this@NoticeBoardReadActivity)!!.split("@").map { it }.first()
-                                    val userId = saveSharedPreferenceGoogleLogin.getUserId(this@NoticeBoardReadActivity)!!
-
-                                    /*val interceptor = Interceptor { chain ->
-                                        val newRequest: Request
-                                        if (token != null && token != "") { // 토큰이 없는 경우
-                                            // Authorization 헤더에 토큰 추가
-                                            newRequest =
-                                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                                            val expireDate: Long = getExpireDate.toLong()
-                                            if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                                                //refresh 들어갈 곳
-                                                *//*newRequest =
-                                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                                                Log.e("read", "read")
-                                                val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
-                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                                Toast.makeText(this@NoticeBoardReadActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                                                startActivity(intent)
-                                                finish()
-                                                return@Interceptor chain.proceed(newRequest)
-                                            }
-                                        } else newRequest = chain.request()
-                                        chain.proceed(newRequest)
-                                    }
-                                    val SERVER_URL = BuildConfig.server_URL
-                                    val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                                        .addConverterFactory(GsonConverterFactory.create())
-                                    val builder = OkHttpClient.Builder()
-                                    builder.interceptors().add(interceptor)
-                                    val client: OkHttpClient = builder.build()
-                                    retrofit.client(client)
-                                    val retrofit2: Retrofit = retrofit.build()
-                                    val api = retrofit2.create(MioInterface::class.java)*/
-
-                                    //println(userId)
-                                    Log.d("NoticeReadGetParticipation", userId.toString())
                                     RetrofitServerConnect.create(this@NoticeBoardReadActivity).addBookmark(postId = temp?.postID!!).enqueue(object : Callback<Void> {
                                         override fun onResponse(call: Call<Void>, response: Response<Void>) {
                                             if (response.isSuccessful) {
                                                 Log.d("noticeboardread", response.code().toString())
                                             } else {
-                                                Log.e("read addbookmark",response.errorBody()?.string()!!)
-                                                println(response.message().toString())
-                                                println("실패")
-                                                println("faafa")
-                                                Log.d("add", response.errorBody()?.string()!!)
-                                                Log.d("message", call.request().toString())
-                                                Log.d("f", response.code().toString())
+                                                Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패했습니다", Toast.LENGTH_SHORT).show()
                                             }
                                         }
 
                                         override fun onFailure(call: Call<Void>, t: Throwable) {
-                                            Log.d("error", t.toString())
+                                            Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패했습니다 ${t.message}", Toast.LENGTH_SHORT).show()
                                         }
                                     })
                                 }
@@ -484,10 +431,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             bottomSheet.apply {
                 setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
                     override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
                         commentEditText = value
-                        Log.e("readSendComment", commentEditText)
-                        Log.e("nbrBinding.readSendComment", isReplyComment.toString())
                         // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
                         val inputMethodManager = this@NoticeBoardReadActivity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                         // 가상 키보드가 올라가 있는지 여부를 확인합니다.
@@ -498,51 +442,9 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         if (isReplyComment) { //대댓글
                             commentsViewModel.setLoading(true)
                             val nowInKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
-                            // KST 시간을 UTC 시간대로 변환
-                            val nowInUTC2 = nowInKST.withZoneSameInstant(ZoneId.of("UTC"))
                             // ISO 8601 형식으로 변환 (UTC 시간대, 'Z' 포함)
                             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                             val result = nowInKST.format(formatter)
-
-                            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                            val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
-                            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
-
-                            /////////interceptor
-                            /*val SERVER_URL = BuildConfig.server_URL
-                            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                                .addConverterFactory(GsonConverterFactory.create())
-                            //Authorization jwt토큰 로그인
-                            val interceptor = Interceptor { chain ->
-                                var newRequest: Request
-                                if (token != null && token != "") { // 토큰이 없는 경우
-                                    // Authorization 헤더에 토큰 추가
-                                    newRequest =
-                                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                                    val expireDate: Long = getExpireDate.toLong()
-                                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                                        //refresh 들어갈 곳
-                                        *//*newRequest =
-                                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                                        Log.e("read", "read2")
-                                        val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                        Toast.makeText(this@NoticeBoardReadActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                                        startActivity(intent)
-                                        finish()
-                                        return@Interceptor chain.proceed(newRequest)
-                                    }
-
-                                } else newRequest = chain.request()
-                                chain.proceed(newRequest)
-                            }
-                            val builder = OkHttpClient.Builder()
-                            builder.interceptors().add(interceptor)
-                            val client: OkHttpClient = builder.build()
-                            retrofit.client(client)
-                            val retrofit2: Retrofit = retrofit.build()
-                            val api = retrofit2.create(MioInterface::class.java)*/
-                            /////////
 
                             //댓글 잠시 저장
                             val childCommentTemp = SendChildCommentData(commentEditText, result.toString() ,temp!!.postID, parentPosition)
@@ -594,53 +496,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
                         } else {  //댓글
                             commentsViewModel.setLoading(true)
-                            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                            val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
-                            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
-
-                            /////////interceptor
-                            /*val SERVER_URL = BuildConfig.server_URL
-                            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                                .addConverterFactory(GsonConverterFactory.create())
-                            //Authorization jwt토큰 로그인
-                            val interceptor = Interceptor { chain ->
-                                var newRequest: Request
-                                if (token != null && token != "") { // 토큰이 없는 경우
-                                    // Authorization 헤더에 토큰 추가
-                                    newRequest =
-                                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                                    val expireDate: Long = getExpireDate.toLong()
-                                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                                        //refresh 들어갈 곳
-                                        *//*newRequest =
-                                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                                        Log.e("read", "read3")
-                                        val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
-                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                        Toast.makeText(this@NoticeBoardReadActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                                        startActivity(intent)
-                                        finish()
-                                        return@Interceptor chain.proceed(newRequest)
-                                    }
-
-                                } else newRequest = chain.request()
-                                chain.proceed(newRequest)
-                            }
-                            val builder = OkHttpClient.Builder()
-                            builder.interceptors().add(interceptor)
-                            val client: OkHttpClient = builder.build()
-                            retrofit.client(client)
-                            val retrofit2: Retrofit = retrofit.build()
-                            val api = retrofit2.create(MioInterface::class.java)*/
-                            /////////
 
                             //댓글 잠시 저장
                             val commentTemp = SendCommentData(commentEditText)
-                            Log.d("commentTemt", "$commentTemp")
+
                             RetrofitServerConnect.create(this@NoticeBoardReadActivity).addCommentData(commentTemp, temp!!.postID).enqueue(object : Callback<CommentData> {
                                 override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
                                     if (response.isSuccessful) {
-                                        Log.e("addComment", "댓글담")
                                         commentsViewModel.setLoading(false)
                                         response.body()?.let {
                                             val temp = CommentData(
@@ -696,7 +558,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 if (vibration.hasVibrator()) {
                     vibration.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
                 }
-                Log.e("setItemClickListener", "clclclclclclcl")
                 val parent = commentsViewModel.allComments.value?.find { it.commentId == itemId }?.user?.studentId
                 val bottomSheet = BottomSheetCommentFragment(null, parent)
                 //bottomSheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.RoundCornerBottomSheetDialogTheme)
@@ -725,14 +586,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 val result: Instant = Instant.from(formatter.parse(currentDate))*/
                                 val nowInKST = ZonedDateTime.now(ZoneId.of("Asia/Seoul"))
                                 // KST 시간을 UTC 시간대로 변환
-                                val nowInUTC2 = nowInKST.withZoneSameInstant(ZoneId.of("UTC"))
+
                                 // ISO 8601 형식으로 변환 (UTC 시간대, 'Z' 포함)
                                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
                                 val result = nowInKST.format(formatter)
-
-                                val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                                val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
-                                val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
 
                                 //댓글 잠시 저장
                                 val childCommentTemp = SendChildCommentData(commentEditText, result.toString() ,temp!!.postID, parentPosition)
@@ -809,55 +666,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                                     Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
                                                     commentEditText = value
                                                     commentsViewModel.setLoading(true)
-                                                    Log.e("readEditSendCommentgetBottomSheetCommentData" , getBottomSheetCommentData)
-                                                    val now = System.currentTimeMillis()
-                                                    val date = Date(now)
-                                                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-                                                    val currentDate = sdf.format(date)
-                                                    val formatter = DateTimeFormatter
-                                                        .ofPattern("yyyy-MM-dd HH:mm:ss")
-                                                        .withZone(ZoneId.systemDefault())
-                                                    val result: Instant = Instant.from(formatter.parse(currentDate))
-
-                                                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                                                    val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
-                                                    val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
-
-                                                    /////////interceptor
-                                                    /*val SERVER_URL = BuildConfig.server_URL
-                                                    val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                                                        .addConverterFactory(GsonConverterFactory.create())
-                                                    //Authorization jwt토큰 로그인
-                                                    val interceptor = Interceptor { chain ->
-                                                        var newRequest: Request
-                                                        if (token != null && token != "") { // 토큰이 없는 경우
-                                                            // Authorization 헤더에 토큰 추가
-                                                            newRequest =
-                                                                chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                                                            val expireDate: Long = getExpireDate.toLong()
-                                                            if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                                                                //refresh 들어갈 곳
-                                                                *//*newRequest =
-                                                                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                                                                Log.e("read", "read5")
-                                                                val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
-                                                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                                                                Toast.makeText(this@NoticeBoardReadActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                                                                startActivity(intent)
-                                                                finish()
-                                                                return@Interceptor chain.proceed(newRequest)
-                                                            }
-
-                                                        } else newRequest = chain.request()
-                                                        chain.proceed(newRequest)
-                                                    }
-                                                    val builder = OkHttpClient.Builder()
-                                                    builder.interceptors().add(interceptor)
-                                                    val client: OkHttpClient = builder.build()
-                                                    retrofit.client(client)
-                                                    val retrofit2: Retrofit = retrofit.build()
-                                                    val api = retrofit2.create(MioInterface::class.java)*/
-                                                    /////////
                                                     val editCommentTemp = SendCommentData(commentEditText)
 
 
@@ -930,18 +738,14 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 commentData: CommentData?
             ) {
                 if (status == "수정") {
-                    println(status)
-                    Log.e("onReplyClicked", "onReplyClicked $status")
                     getBottomSheetCommentData = "수정"
                     val bottomSheet2 = BottomSheetCommentFragment(commentData, null)
                     bottomSheet2.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet2.tag)
                     bottomSheet2.apply {
                         setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
                             override fun sendValue(value: String) {
-                                Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
                                 commentEditText = value
                                 commentsViewModel.setLoading(true)
-                                Log.e("readEditSendCommentgetBottomSheetCommentData" , getBottomSheetCommentData)
                                 val editCommentTemp = SendCommentData(commentEditText)
                                 RetrofitServerConnect.create(this@NoticeBoardReadActivity).editCommentData(editCommentTemp, commentId!!).enqueue(object : Callback<CommentData> {
                                     override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
@@ -958,14 +762,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                             response.body()?.let {
                                                 commentsViewModel.updateComment(it)
                                             }
-                                            println("대댓글수정성공")
+
                                         } else {
-                                            println("faafa")
+
                                             commentsViewModel.setLoading(false)
                                             commentsViewModel.setError(response.errorBody()?.string()!!)
-                                            Log.d("comment", response.errorBody()?.string()!!)
-                                            Log.d("message", call.request().toString())
-                                            println(response.code())
+
                                         }
                                     }
 
@@ -981,7 +783,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
                 } else {
                     if (commentId != null) {
-                        Log.e("onReplyClicked", "onReplyClicked $status")
                         deleteCommentData(commentId)
                         //fetchAllComments()
                     }
@@ -997,10 +798,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         noticeBoardReadAdapter.setChildItemClickListener(object : NoticeBoardReadAdapter.ChildClickListener {
             //수정,삭제
             override fun onLongClick(view: View, position: Int, itemId: Int, comment: CommentData?) {
-                Log.e("noticeboardadapter", "onlongclick")
                 //위에 요거는 itemId가 10인 commentItemData의 childComment를 찾고 아래가 부모댓글찾는거
                 //즉 이거는 클릭한 대댓글의 모든 정보
-                val longClickChildComment = comment
 
                 //any 함수는 하나라도 만족하는지 체크합니다.
                 //이거는 클릭한 대댓글의 부모 댓글의 모든 정보
@@ -1008,29 +807,30 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 /*val parentComment = parentComments.find { comment ->
                 comment?.childComments?.any { it.commentId == itemId }!! } //부모 댓글 찾기*/
 
-                if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@NoticeBoardReadActivity)!!.split("@").first() == longClickChildComment!!.user.studentId && longClickChildComment.content != "삭제된 댓글입니다.") {
+                if (saveSharedPreferenceGoogleLogin.getUserEMAIL(this@NoticeBoardReadActivity)!!
+                        .split("@")
+                        .first() == comment!!.user.studentId && comment.content != "삭제된 댓글입니다.") {
                     //수정용
                     val bottomSheet = ReadSettingBottomSheetFragment()
                     bottomSheet.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet.tag)
                     bottomSheet.apply {
                         setCallback(object : ReadSettingBottomSheetFragment.OnSendFromBottomSheetDialog{
                             override fun sendValue(value: String) {
-                                Log.d("child comment adapter", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                                 getBottomSheetData = value
                                 when(value) {
                                     "수정" -> {
                                         bottomSheet.dismiss()
-                                        Log.d("adpater Read Test", "${temp}")
+
                                         getBottomSheetCommentData = "수정"
-                                        val bottomSheet2 = BottomSheetCommentFragment(longClickChildComment, null)
+                                        val bottomSheet2 = BottomSheetCommentFragment(comment, null)
                                         bottomSheet2.show(this@NoticeBoardReadActivity.supportFragmentManager, bottomSheet2.tag)
                                         bottomSheet2.apply {
                                             setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
                                                 override fun sendValue(value: String) {
-                                                    Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
+
                                                     commentEditText = value
                                                     commentsViewModel.setLoading(true)
-                                                    Log.e("readEditSendCommentgetBottomSheetCommentData" , getBottomSheetCommentData)
+
                                                     val editCommentTemp = SendCommentData(commentEditText)
                                                     RetrofitServerConnect.create(this@NoticeBoardReadActivity).editCommentData(editCommentTemp, itemId).enqueue(object : Callback<CommentData> {
                                                         override fun onResponse(call: Call<CommentData>, response: Response<CommentData>) {
@@ -1070,11 +870,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     }
 
                                     "삭제" -> {
-                                        if (itemId != null) {
-                                            Log.e("onReplyClicked", "onReplyClicked 삭제")
-                                            deleteCommentData(itemId)
-                                            //fetchAllComments()
-                                        }
+                                        deleteCommentData(itemId)
                                     }
                                 }
                             }
@@ -1094,7 +890,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     false
                 }
             }
-            Log.e("sharedViewmodel" , isReplyComment.toString())
         }
 
         nbrBinding.readUserId.setOnClickListener {
@@ -1114,32 +909,18 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
 
         nbrBinding.readBookmark.setOnClickListener {
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            val token = saveSharedPreferenceGoogleLogin.getToken(this@NoticeBoardReadActivity).toString()
-            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this@NoticeBoardReadActivity).toString()
-            val email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this@NoticeBoardReadActivity)!!.split("@").map { it }.first()
-            val userId = saveSharedPreferenceGoogleLogin.getUserId(this@NoticeBoardReadActivity)!!
-
-
-            Log.d("NoticeReadGetParticipation", temp?.postID!!.toString())
             RetrofitServerConnect.create(this@NoticeBoardReadActivity).addBookmark(postId = temp?.postID!!).enqueue(object : Callback<Void> {
                 override fun onResponse(call: Call<Void>, response: Response<Void>) {
                     if (response.isSuccessful) {
-                        Log.d("noticeboardread", response.code().toString())
                         initMyBookmarkData()
                     } else {
-                        Log.e("read addbookmark", response.errorBody()?.string()!!)
-                        println(response.message().toString())
-                        println("실패")
-                        println("faafa")
-                        Log.d("add", response.errorBody()?.string()!!)
-                        Log.d("message", call.request().toString())
-                        Log.d("f", response.code().toString())
+                        Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패하였습니다 ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<Void>, t: Throwable) {
                     Log.d("error", t.toString())
+                    Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패하였습니다 ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
         }
@@ -1179,14 +960,10 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
 
         commentsViewModel.parentComments.observe(this) { parentComments ->
-            Log.e("commentObserve", "Parent Comments Updated")
-            Log.e("commentObserve", "$parentComments")
             noticeBoardReadAdapter.updateComments(parentComments)
         }
 
         commentsViewModel.childCommentsMap.observe(this) { childComments ->
-            Log.e("childCommentsMap", "Child Comments Updated")
-            Log.e("childCommentsMap", "$childComments")
             noticeBoardReadAdapter.updateChildComments(childComments)
         }
 
@@ -1199,8 +976,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
                     loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog
                     loadingDialog?.window!!.setLayout(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
+                        LayoutParams.MATCH_PARENT,
+                        LayoutParams.MATCH_PARENT
                     )
                     loadingDialog?.show()
                 }
@@ -1218,7 +995,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         commentsViewModel.error.observe(this) { errorMessage ->
             if (errorMessage != null) {
-                Log.e("error observe", errorMessage)
                 Toast.makeText(this@NoticeBoardReadActivity, errorMessage, Toast.LENGTH_SHORT).show()
             }
         }
@@ -1226,11 +1002,16 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         setCommentData()
     }
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         when (it.resultCode) {
-            AppCompatActivity.RESULT_OK -> {
-                val post = it.data?.getSerializableExtra("postData") as PostData?
-                Log.d("read post", post.toString())
+            RESULT_OK -> {
+                val post = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    it.data?.getParcelableExtra("postData")
+                } else {
+                    it.data?.getParcelableExtra("postData", PostData::class.java)
+                }
+                // = it.data?.getSerializableExtra("postData") as PostData?
+
                 when(it.data?.getIntExtra("flag", -1)) {
                     //edit 게시글 수정 시
                     0 -> {
@@ -1258,6 +1039,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         if (post != null) {
                             CoroutineScope(Dispatchers.IO).launch {
                                 temp = post
+                                val chipGroup = nbrBinding.readSetFilterCg
                                 nbrBinding.readContent.text = post.postContent
                                 nbrBinding.readUserId.text = post.accountID
                                 nbrBinding.readCost.text = post.postCost.toString()
@@ -1278,17 +1060,17 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     "흡연 O"
                                 } else {
                                     "흡연 X"
-                                }))
+                                }, chipGroup))
                                 chipList.add(createNewChip(text = if (post.user.gender == true) {
                                     "여성"
                                 } else {
                                     "남성"
-                                }))
+                                }, chipGroup))
                                 chipList.add(createNewChip(text = if (post.postVerifyGoReturn) {
                                     "등교"
                                 } else {
                                     "하교"
-                                }))
+                                }, chipGroup))
 
 
                                 for (i in chipList.indices) {
@@ -1364,11 +1146,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 it.longitude
                             )
                             // 글쓴이가 자기자신 이라면 , 게시글 참가 + 글쓴이가 자기 자신이라면 받은 신청 보러가기고
-                            Log.e("NoticeBoardRead refresh", email)
-                            Log.e("NoticeBoardRead refresh", temp!!.user.email)
-                            Log.e("NoticeBoardRead refresh", isParticipation.toString())
-                            Log.e("NoticeBoardRead refresh", (email == temp!!.user.email).toString())
-                            Log.e("NoticeBoardRead refresh", "${it.postType != "BEFORE_DEADLINE"}")
+
 
                             if (it.postType == "BEFORE_DEADLINE") {
                                 initParticipationCheck(true)
@@ -1403,7 +1181,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             val currentDate = sdf.format(date)
 
 
-                            val postDateTime = "${temp?.postCreateDate}".replace("T", " ").split(".")[0] ?: ""
+                            val postDateTime = "${temp?.postCreateDate}".replace("T", " ").split(".")[0]
 
                             val nowFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(currentDate)
                             val beforeFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA).parse(postDateTime)
@@ -1416,22 +1194,22 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             if (diffMilliseconds != null && diffSeconds != null && diffMinutes != null && diffHours != null && diffDays != null) {
                                 when {
                                     diffSeconds <= 0 -> nbrBinding.readTimeCheck.text = "방금전"
-                                    diffSeconds < 60 -> nbrBinding.readTimeCheck.text = "${diffSeconds}초전"
-                                    diffMinutes < 60 -> nbrBinding.readTimeCheck.text = "${diffMinutes}분전"
-                                    diffHours < 24 -> nbrBinding.readTimeCheck.text = "${diffHours}시간전"
-                                    else -> nbrBinding.readTimeCheck.text = "${diffDays}일전"
+                                    diffSeconds < 60 -> nbrBinding.readTimeCheck.text = getString(R.string.setTimeTextSeconds, "$diffSeconds")//"${diffSeconds}초전"
+                                    diffMinutes < 60 -> nbrBinding.readTimeCheck.text = getString(R.string.setTimeTextMinutes, "$diffMinutes")//"${diffMinutes}분전"
+                                    diffHours < 24 -> nbrBinding.readTimeCheck.text = getString(R.string.setTimeTextHours, "$diffHours")//"${diffHours}시간전"
+                                    else -> nbrBinding.readTimeCheck.text = getString(R.string.setTimeTextDays, "$diffDays")//"${diffDays}일전"
                                 }
                             }
                         }
                     }
                 } else {
-                    Log.e("notice read detail", response.code().toString())
-                    Log.e("notice read detail", response.errorBody()?.string()!!)
+
+                    Toast.makeText(this@NoticeBoardReadActivity, "게시글 정보를 가져오는데 실패하였습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<Content>, t: Throwable) {
-                Log.e("notice read onFailure", t.toString())
+                Toast.makeText(this@NoticeBoardReadActivity, "게시글 정보를 가져오는데 실패하였습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -1442,9 +1220,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         RetrofitServerConnect.create(this@NoticeBoardReadActivity).getBookmark().enqueue(object : Callback<List<BookMarkResponseData>> {
             override fun onResponse(call: Call<List<BookMarkResponseData>>, response: Response<List<BookMarkResponseData>>) {
                 if (response.isSuccessful) {
-                    Log.e("success getBookmark", response.code().toString())
+
                     val responseData = response.body()
-                    Log.d("success getBookmark", responseData.toString())
                     responseData.let {
                         thisData = it
                     }
@@ -1458,62 +1235,51 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         }
                     }
                 } else {
-                    Log.e("f", response.code().toString())
+                    Toast.makeText(this@NoticeBoardReadActivity, "북마크 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<BookMarkResponseData>>, t: Throwable) {
-                Log.d("error", t.toString())
+                Toast.makeText(this@NoticeBoardReadActivity, "북마크 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
+
     private fun initParticipationCheck(isDeadLineCheck2: Boolean) {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
 
-        Log.d("initParticipationCheck", userId.toString())
-        Log.e("initParticipationCheck", "$isDeadLineCheck2")
-
         RetrofitServerConnect.create(this@NoticeBoardReadActivity).getParticipationData(postId = temp?.postID!!).enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                 if (response.isSuccessful) {
-                    Log.d("initParticipationCheck", "suceessssssss")
                     if (response.body()?.find { it.userId == userId} != null){
                         isParticipation = true
-                        Log.d("initParticipationCheck", isParticipation.toString())
                         participantApplyBtnSet(isParticipation!!, isDeadLineCheck2)
-                        Log.d("initParticipationCheck", isDeadLineCheck2.toString())
                     } else {
                         isParticipation = false
-                        Log.d("initParticipationCheck", isParticipation.toString())
+
                         //participantApplyBtnSet(isParticipation!!)
                         participantApplyBtnSet(isParticipation!!, isDeadLineCheck2)
-                        Log.d("initParticipationCheck", isDeadLineCheck2.toString())
                     }
                 } else {
-                    Log.e("read participation", response.errorBody()?.string()!!)
-                    Log.d("f", response.code().toString())
+                    Toast.makeText(this@NoticeBoardReadActivity, "참여 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
                 Log.d("error", t.toString())
+                Toast.makeText(this@NoticeBoardReadActivity, "참여 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
     private fun updateUI(isDeadLineCheck: Boolean) {
         // Implement your UI update logic based on isDeadLineCheck2
+        isDeadLineCheck2 = isDeadLineCheck
         if (isDeadLineCheck) {
-            // Actions when deadline check is true
-            isDeadLineCheck2 = isDeadLineCheck
-            Log.d("NoticeBoardReadActivity", "Deadline check is true")
             nbrBinding.readSetting.visibility = View.VISIBLE
             initParticipationCheck(true)
         } else {
-            // Actions when deadline check is false
-            isDeadLineCheck2 = isDeadLineCheck
-            Log.d("NoticeBoardReadActivity", "Deadline check is false")
             nbrBinding.readSetting.visibility = View.GONE
             initParticipationCheck(false)
         }
@@ -1523,10 +1289,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         //작성자로 참여되어있을 때
         if (email == temp!!.user.email) {
             val typeface = resources.getFont(R.font.pretendard_medium)
-            Log.e("participantApplyBtnSet", isParticipation.toString())
-            Log.e("participantApplyBtnSet", email)
-            Log.e("participantApplyBtnSet", temp!!.user.email)
-            Log.e("participantApplyBtnSet", "first")
             nbrBinding.readApplyBtn.text = "받은 신청 보러가기"
             CoroutineScope(Dispatchers.Main).launch {
                 nbrBinding.readApplyBtn.apply {
@@ -1537,7 +1299,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             }
 
             nbrBinding.readApplyBtn.setOnClickListener {
-                Log.e("readApplyBtn1", "clickckckckckckckckck")
                 val intent = Intent(this@NoticeBoardReadActivity, ParticipationReceiveActivity::class.java).apply {
                     putExtra("postId", temp!!.postID)
                     putExtra("targetDate", "${temp!!.postTargetDate} ${temp!!.postTargetTime}")
@@ -1545,10 +1306,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 requestActivity.launch(intent)
             }
         } else if (!isParticipation && email != temp!!.user.email) { //게시글에 참여하지도 않았고 글쓴이도 아니라면? 신청하기
-            Log.e("participantApplyBtnSet", isParticipation.toString())
-            Log.e("participantApplyBtnSet", email)
-            Log.e("participantApplyBtnSet", temp!!.user.email)
-            Log.e("participantApplyBtnSet", "second")
             val typeface = resources.getFont(R.font.pretendard_medium)
 
             nbrBinding.readApplyBtn.text = "신청하기"
@@ -1564,7 +1321,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
             if (isDeadLineCheck2) {
                 nbrBinding.readApplyBtn.setOnClickListener {
-                    Log.e("readApplyBtn2", "clickckckckckckckckck")
                     setApplyNoticeBoard()
                 }
             } else {
@@ -1599,11 +1355,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             }
 
         } else if (isParticipation && email != temp?.user?.email) { //신청은 되있으나 글쓴이가 아닐 때는 신청취소쪽으로
-            Log.e("participantApplyBtnSet", isParticipation.toString())
-            Log.e("participantApplyBtnSet", email)
-            Log.e("participantApplyBtnSet", temp!!.user.email)
-            Log.e("participantApplyBtnSet", "third")
-            val typeface = resources.getFont(com.example.mio.R.font.pretendard_medium)
+            val typeface = resources.getFont(R.font.pretendard_medium)
             nbrBinding.readApplyBtn.text = "신청 취소하기"
             CoroutineScope(Dispatchers.Main).launch {
                 nbrBinding.readApplyBtn.apply {
@@ -1618,9 +1370,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 }
             }
 
-            if (isDeadLineCheck2 == true) {
+            if (isDeadLineCheck2) {
                 nbrBinding.readApplyBtn.setOnClickListener {
-                    Log.e("readApplyBtn3", "clickckckckckckckckck")
                     val layoutInflater = LayoutInflater.from(this@NoticeBoardReadActivity)
                     val view = layoutInflater.inflate(R.layout.dialog_layout, null)
                     val alertDialog = AlertDialog.Builder(this@NoticeBoardReadActivity, R.style.CustomAlertDialog)
@@ -1636,7 +1387,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         window?.setBackgroundDrawableResource(android.R.color.transparent)
 
                         val layoutParams = window?.attributes
-                        layoutParams?.width = ViewGroup.LayoutParams.MATCH_PARENT // 다이얼로그의 폭을 MATCH_PARENT로 설정
+                        layoutParams?.width = LayoutParams.MATCH_PARENT // 다이얼로그의 폭을 MATCH_PARENT로 설정
                         window?.attributes = layoutParams
 
                         // 루트 뷰의 마진을 설정
@@ -1694,13 +1445,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         }
                                         alertDialog1.show()
                                     } else {
-                                        Log.e("cancel error", response.errorBody()?.string()!!)
+                                        Toast.makeText(this@NoticeBoardReadActivity, "참여 취소에 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
 
                             override fun onFailure(call: Call<Void>, t: Throwable) {
-                                Log.d("error", t.toString())
+                                Toast.makeText(this@NoticeBoardReadActivity, "참여 취소에 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
                             }
                         })
                         alertDialog.dismiss()
@@ -1741,7 +1492,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         }
     }
 
-    fun isBeforeTarget(targetDate: String, targetTime: String): Boolean {
+    private fun isBeforeTarget(targetDate: String, targetTime: String): Boolean {
         // 타겟 날짜와 시간을 문자열로 결합
         val targetDateTimeStr = "${targetDate}T${targetTime}"
 
@@ -1804,65 +1555,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     }*/
 
     private fun setApplyNoticeBoard() {
-        Log.d("setApplyNoticeBoard", "setApplyNoticeBoard")
-        val now = System.currentTimeMillis()
-        val date = Date(now)
-        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREA)
-        val currentDate = sdf.format(date)
-        val formatter = DateTimeFormatter
-            .ofPattern("yyyy-MM-dd HH:mm:ss")
-            .withZone(ZoneId.systemDefault())
-        val result: Instant = Instant.from(formatter.parse(currentDate))
-
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-
-        /////////interceptor
-        /*val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("read", "read8")
-                    val intent = Intent(this@NoticeBoardReadActivity, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(this@NoticeBoardReadActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        /////////
-
         RetrofitServerConnect.create(this@NoticeBoardReadActivity).checkParticipate(postId = temp!!.postID).enqueue(object : Callback<CheckParticipateData> {
             override fun onResponse(call: Call<CheckParticipateData>, response: Response<CheckParticipateData>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
                     //true가 예약된 게 없음
                     if (responseData?.check == true) {
-                        Log.d("setApplyNoticeBoard", "API call success")
-                        Log.d("setApplyNoticeBoard", "Response body: ${response.body()}")
-                        Log.d("setApplyNoticeBoard", "Response body: $isDeadLineCheck2")
                         //예약된 게 없음
                         //현재 시간이 타겟 시간 이전이면 true, 그렇지 않으면 false
                         if (isDeadLineCheck2 == true) {
@@ -2099,13 +1797,11 @@ class NoticeBoardReadActivity : AppCompatActivity() {
             override fun onFailure(call: Call<List<CommentResponseData>>, t: Throwable) {
                 commentsViewModel.setLoading(false)
                 commentsViewModel.setError(t.toString())
-                Log.d("error", t.toString())
             }
         })
     }
 
     private fun updateUIWithComments(comments: List<CommentData>) {
-        Log.e("updateUIWithComments", "$comments")
         if (comments.isEmpty()) {
             nbrBinding.commentRV.visibility = View.GONE
             nbrBinding.notCommentTv.visibility = View.VISIBLE
@@ -2118,7 +1814,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         // Update total size
         val totalSize = comments.size
-        Log.e("updateUIWithComments", "${comments.size}")
         nbrBinding.readCommentTotal.text = totalSize.toString()
     }
 
@@ -2609,23 +2304,18 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 } else {
                     commentsViewModel.setLoading(false)
                     commentsViewModel.setError(response.errorBody()?.string()!!)
-                    println("faafa")
-                    Log.d("add", response.errorBody()?.string()!!)
-                    Log.d("message", call.request().toString())
-                    println(response.code())
                 }
             }
 
             override fun onFailure(call: Call<CommentData>, t: Throwable) {
                 commentsViewModel.setLoading(false)
                 commentsViewModel.setError(t.toString())
-                Log.e("ERROR", t.toString())
             }
         })
     }
 
-    private fun createNewChip(text: String): Chip {
-        val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, null, false) as Chip
+    private fun createNewChip(text: String, parent : ViewGroup): Chip {
+        val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, parent, false) as Chip
         chip.text = text
         //chip.isCloseIconVisible = false
         return chip
@@ -2639,20 +2329,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.toString()
-        Log.d("NoticeRead", email)
-        Log.e("read onStart", "$isDeadLineCheck2")
     }
 
 
     override fun onPause() {
         super.onPause()
-        Log.e("read onPause", "$isDeadLineCheck2")
         stopAdLoading()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.e("read onDestroy", "$isDeadLineCheck2")
     }
 
     private fun loadAdIfNeeded() {

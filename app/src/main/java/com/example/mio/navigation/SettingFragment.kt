@@ -3,29 +3,24 @@ package com.example.mio.navigation
 import android.app.ActivityManager
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import com.example.mio.MainActivity
 import com.example.mio.OpenSourceManagementActivity
-import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentSettingBinding
 import com.example.mio.sse.SSEForegroundService
 import com.example.mio.viewmodel.SharedViewModel
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -62,12 +57,11 @@ class SettingFragment : Fragment() {
     ): View {
         binding = FragmentSettingBinding.inflate(inflater, container, false)
 
-        binding.enableFeature.setOnCheckedChangeListener { compoundButton, check ->
+        binding.enableFeature.setOnCheckedChangeListener { _, check ->
             sharedPreference.setSharedAlarm(requireActivity(), check)
-            Log.e("switch", sharedPreference.getSharedAlarm(requireActivity()).toString())
-            Log.e("switch", check.toString())
             if (sharedPreference.getSharedAlarm(requireActivity())) {
-                Log.e("switch", "start service")
+                requestIgnoreBatteryOptimization()
+                /*Log.e("switch", "start service")
                 //foreground실행행
                 serviceIntent =
                     Intent(requireActivity(), SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
@@ -76,9 +70,7 @@ class SettingFragment : Fragment() {
                 //절전사용금지앱
                 val pm = requireActivity().applicationContext.getSystemService(AppCompatActivity.POWER_SERVICE) as PowerManager
                 var isWhiteListing = false
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    isWhiteListing = pm.isIgnoringBatteryOptimizations(requireActivity().applicationContext.packageName)
-                }
+                isWhiteListing = pm.isIgnoringBatteryOptimizations(requireActivity().applicationContext.packageName)
                 if (!isWhiteListing) {
                     val intent = Intent()
                     intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
@@ -94,7 +86,7 @@ class SettingFragment : Fragment() {
                     }
                 } else {
                     serviceIntent = SSEForegroundService().serviceIntent
-                }
+                }*/
             }
         }
 
@@ -115,6 +107,46 @@ class SettingFragment : Fragment() {
         return binding.root
     }
 
+    private fun requestIgnoreBatteryOptimization() {//절전사용금지앱
+        val pm = requireActivity().applicationContext.getSystemService(AppCompatActivity.POWER_SERVICE) as PowerManager
+        val isWhiteListing: Boolean = pm.isIgnoringBatteryOptimizations(requireActivity().applicationContext.packageName)
+        if (!isWhiteListing) {
+            AlertDialog.Builder(requireActivity()).apply {
+                setTitle("배터리 최적화 제외 요청")
+                setMessage("정상적인 알림을 수신하기 위해 배터리 사용량 최적화 목록에서 제외해야 합니다. 제외하시겠습니까?")
+                setPositiveButton("권한 허용") { _, _ ->
+                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    intent.data = Uri.parse("package:" + requireActivity().applicationContext.packageName)
+                    sharedPreference.setSharedAlarm(requireActivity(), true)
+                    sseStartCheck()
+                    startActivity(intent)
+                }
+                setNegativeButton("취소") { dialog, _ ->
+                    // 배터리 최적화 제외 권한이 거부되었습니다.
+                    Toast.makeText(requireActivity(), "배터리 최적화 제외가 거부되었습니다", Toast.LENGTH_SHORT).show()
+                    sharedPreference.setSharedAlarm(requireActivity(), false)
+                    dialog.dismiss()
+                }
+                create()
+                show()
+            }
+        }
+    }
+    private fun sseStartCheck() {
+        //foreground실행행
+        serviceIntent =
+            Intent(requireActivity(), SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
+
+        if (!foregroundServiceRunning()) { // 이미 작동중인 동일한 서비스가 없다면 실행
+            serviceIntent =
+                Intent(requireActivity(), SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
+            // 빌드 버전코드 "O" 보다 높은 버전일 경우
+            requireActivity().startService(serviceIntent) // 서비스 인텐트를 전달한 서비스 시작 메서드 실행
+        } else {
+            serviceIntent = SSEForegroundService().serviceIntent
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
@@ -124,8 +156,8 @@ class SettingFragment : Fragment() {
         val activityManager =
             requireActivity().getSystemService(AppCompatActivity.ACTIVITY_SERVICE) as ActivityManager // 액티비티 매니져를 통해 작동중인 서비스 가져오기
 
-        for (service in activityManager.getRunningServices(Int.MAX_VALUE)) { // 작동중인 서비스수 만큼 반복
-            if (SSEForegroundService::class.java.name == service.service.className) { // 비교한 서비스의 이름이 MyForgroundService 와 같다면
+        for (service in activityManager.runningAppProcesses) { // 작동중인 서비스수 만큼 반복
+            if (SSEForegroundService::class.java.name == service.processName) { // 비교한 서비스의 이름이 MyForgroundService 와 같다면
                 return true // true 반환
             }
         }

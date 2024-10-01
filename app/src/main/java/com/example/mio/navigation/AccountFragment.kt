@@ -182,18 +182,11 @@ class AccountFragment : Fragment() {
                         null
                     }
 
-
-                    //나중에 response.body()!!.mannerCount 다시 체크하기  TODO
-                    println("ss")
                     saveSharedPreferenceGoogleLogin.setUserId(requireActivity(), response.body()!!.id)
-                    println(response.body()!!.id)
-                    println(saveSharedPreferenceGoogleLogin.getUserId(requireActivity()))
                     myAccountData = response.body()
 
                     if (grade != null) {
-                        println("mn")
-
-                        aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 $grade 입니다"
+                        aBinding.accountGradeTv.text = requireActivity().getString(R.string.setUserGrade2, myAccountData!!.studentId, grade)//"${myAccountData!!.studentId}님의 현재 등급은 $grade 입니다"
 
                         val word = grade!!
                         val start: Int = aBinding.accountGradeTv.text.indexOf(word)
@@ -213,8 +206,7 @@ class AccountFragment : Fragment() {
                             animator.start()
                         }
                     } else {
-                        println("mmc")
-                        aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 B 입니다"
+                        aBinding.accountGradeTv.text = requireActivity().getString(R.string.setUserGrade, myAccountData!!.studentId)//"${myAccountData!!.studentId}님의 현재 등급은 B 입니다"
 
                         val word = "B"
                         val start: Int = aBinding.accountGradeTv.text.indexOf(word)
@@ -286,33 +278,41 @@ class AccountFragment : Fragment() {
                         loadingDialog = null // 다이얼로그 인스턴스 참조 해제
                     }
                 } else {
-                    println("ff")
                     aBinding.accountGender.text = "기본 세팅"
                     aBinding.accountSmokingStatus.text = "기본 세팅"
                     aBinding.accountBank.text = "기본 세팅"
                     aBinding.accountAddress.text = "기본 세팅"
 
-                    aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 F 입니다"
+                    aBinding.accountGradeTv.text = requireActivity().getString(R.string.setUserGrade,
+                        myAccountData!!.studentId
+                    )//"${myAccountData!!.studentId}님의 현재 등급은 B 입니다"
                     loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                     if (loadingDialog != null && loadingDialog!!.isShowing) {
                         loadingDialog?.dismiss()
                         loadingDialog = null // 다이얼로그 인스턴스 참조 해제
                     }
 
-                    Log.d("add", response.errorBody()?.string()!!)
-                    Log.d("message", call.request().toString())
-                    Log.d("f", response.code().toString())
+                    requireActivity().runOnUiThread {
+                        if (isAdded && !requireActivity().isFinishing) {
+                            Toast.makeText(requireActivity(), "계정 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             }
 
             override fun onFailure(call: Call<User>, t: Throwable) {
                 Log.d("error","error $t")
+                requireActivity().runOnUiThread {
+                    if (isAdded && !requireActivity().isFinishing) {
+                        Toast.makeText(requireActivity(), "계정 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         })
 
     }
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         when (it.resultCode) {
             AppCompatActivity.RESULT_OK -> {
                 when (it.data?.getIntExtra("flag", -1)) {

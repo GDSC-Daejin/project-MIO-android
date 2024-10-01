@@ -252,7 +252,6 @@ class TaxiTabFragment : Fragment() {
                 calendarAdapter!!.notifyItemChanged(oldSelectedPostion)*/
 
                 noticeBoardAdapter!!.notifyDataSetChanged()
-                Toast.makeText(activity, calendarItemData[position]!!.day, Toast.LENGTH_SHORT).show()
             }
         })
 

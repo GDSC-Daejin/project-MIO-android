@@ -57,11 +57,11 @@ class AccountSearchLocationActivity : AppCompatActivity() {
             setOnItemClickListener(object : RecentSearchAdapter.OnItemClickListener {
                 override fun onItemClicked(location: LocationReadAllResponse) {
                     sharedViewModel.selectedAccountLocation.value = location
-                    Log.e("searchAdapterTESTST", location.location)
+
                     if (location.location.split(" ").size < 2) {
                         val locationJson = convertAccountLocationToJSON(location)
                         SharedPrefManager.saveAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
-                        Log.e("searchAdapterTESTST", location.location)
+
                         val intent = Intent(this@AccountSearchLocationActivity, AccountSettingActivity::class.java).apply {
                             putExtra("flag", 4)
                             putExtra("locationData2", location.location.split(" ")[2])
@@ -69,13 +69,13 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                         setResult(RESULT_OK, intent)
                         finish()
                     } else {
-                        Log.e("location", "location2")
+
                         Toast.makeText(this@AccountSearchLocationActivity, "동으로 검색해주세요", Toast.LENGTH_SHORT).show()
                     }
                 }
                 override fun onItemRemove(location: LocationReadAllResponse) {
                     // 선택된 위치를 SharedPref에서 제거합니다.
-                    val locationJson = SharedPrefManager.convertAccountLocationToJSON(location)
+                    val locationJson = convertAccountLocationToJSON(location)
                     SharedPrefManager.removeAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
 
                     // 최근 검색어 목록을 다시 로드하여 UI를 업데이트 합니다.
@@ -184,7 +184,7 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                         "N",
                         "BEFORE_DEADLINE"
                     )
-                    val locationJson = SharedPrefManager.convertAccountLocationToJSON(LocationReadAllResponse(
+                    val locationJson = convertAccountLocationToJSON(LocationReadAllResponse(
                         -1,
                         "",
                         "",
@@ -210,16 +210,13 @@ class AccountSearchLocationActivity : AppCompatActivity() {
 
                     if (SharedPrefManager.isAccountLocationInRecentSearch(this@AccountSearchLocationActivity, locationJson)) {
                         SharedPrefManager.removeAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
-                        Log.e("locationJsonX", locationJson)
                     }
 
                     // 최근 검색어 저장
                     SharedPrefManager.saveAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
-                    Log.e("locationJson?", locationJson)
 
                     if (!SharedPrefManager.isAccountLocationInRecentSearch(this@AccountSearchLocationActivity, locationJson)) {
                         SharedPrefManager.saveAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
-                        Log.e("locationJson!", locationJson)
                     }
 
                     val intent = Intent(this@AccountSearchLocationActivity, AccountSettingActivity::class.java).apply {
@@ -261,7 +258,6 @@ class AccountSearchLocationActivity : AppCompatActivity() {
           override fun onResponse(call: Call<ResultSearchAddress>, response: Response<ResultSearchAddress>) {
               if (response.isSuccessful) {
                   val responseData = response.body()?.documents
-                  Log.e("search Result", response.body()?.documents.toString())
                   if (responseData?.isEmpty() == true) {
                       binding.textView4.visibility = View.VISIBLE
                       binding.textView5.visibility = View.VISIBLE
@@ -274,23 +270,16 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                                   adapter.updateData(it, keyword)
                               }
                           }
-                          /*adapter.updateData(tempList, keyword)
-                          binding.textView4.visibility = View.GONE
-                          binding.textView5.visibility = View.GONE
-                          binding.rvSearchList.visibility = View.VISIBLE*/
                       }
                     }
                 } else {
-                    Log.e("search Result", response.code().toString())
-                    Log.e("search Result", response.errorBody()?.string()!!)
-                    Log.e("search Result", response.errorBody()?.string()!!)
-                    Log.e("search Result", call.request().toString())
-                    Log.e("search Result", response.message().toString())
+                    Toast.makeText(this@AccountSearchLocationActivity, "검색 오류가 발생했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<ResultSearchAddress>, t: Throwable) {
                 Log.w("LocalSearch", "통신 실패: ${t.message}")
+                Toast.makeText(this@AccountSearchLocationActivity, "검색 오류가 발생했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -305,8 +294,6 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                 // Ensure `it` is a String type or modify accordingly
                 SharedPrefManager.convertJSONToAccountLocation(it)
             }
-            println("load "+ recentSearchListJson)
-            //setupAdapter(recentSearchList)
             recentSearchAdapter.updateData(recentSearchList) // 여기에서 최근 검색 데이터를 업데이트
 
             if (recentSearchList.isEmpty()) {
@@ -319,7 +306,7 @@ class AccountSearchLocationActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             // Handle exception
-            Log.e("SearchResultActivity", "Error loading recent searches: ${e.localizedMessage}")
+            Toast.makeText(this@AccountSearchLocationActivity, "Error loading recent searches: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
         }
     }
 

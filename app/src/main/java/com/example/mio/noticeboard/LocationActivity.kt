@@ -51,7 +51,6 @@ class LocationActivity : AppCompatActivity() {
             }
 
             override fun onMapReady(kakaoMap: KakaoMap) {
-                Log.e("LocationActivity", "onMapReady")
                 kakaoMapValue = kakaoMap
                 labelLayer = kakaoMap.labelManager!!.layer
                 val trackingManager = kakaoMap.trackingManager
@@ -100,25 +99,17 @@ class LocationActivity : AppCompatActivity() {
         })
     }
 
-    override fun onStart() {
-        super.onStart()
-        Log.e("LocationActivity", "onSTart")
-    }
-
     override fun onResume() {
         super.onResume()
-        Log.e("LocationActivity", "onREsume")
         startMapLifeCycle()
     }
 
     override fun onPause() {
         super.onPause()
-        Log.e("LocationActivity", "onpause")
         mapView?.pause()
     }
     override fun onDestroy() {
         super.onDestroy()
-        Log.e("LocationActivity", "onDestory")
         mapView?.finish()
         mapView = null
     }

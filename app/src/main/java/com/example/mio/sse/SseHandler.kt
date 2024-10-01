@@ -15,7 +15,6 @@ import com.launchdarkly.eventsource.background.BackgroundEventHandler
 class SseHandler(private val context: Context) : BackgroundEventHandler {
     private val channelId = "channelId"
     private val channelName = "Channel Name"
-    private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     override fun onOpen() {
         // SSE 연결 성공시 처리 로직 작성
@@ -41,7 +40,7 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
         println("Event Data: $eventData")
 
         val comment = if (eventData.contains(":")) {
-            messageEvent.data.split(":").map { it.toString() }.last()
+            messageEvent.data.split(":").map { it }.last()
         } else {
             eventData
         }

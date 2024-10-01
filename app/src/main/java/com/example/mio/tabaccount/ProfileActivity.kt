@@ -7,7 +7,9 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.mio.R
 import com.example.mio.adapter.ProfileTabAdapter
 import com.example.mio.model.User
 import com.example.mio.RetrofitServerConnect
@@ -58,36 +60,25 @@ class ProfileActivity : AppCompatActivity() {
 
                 if (response.isSuccessful) {
 
-                    println("scssucsucsucs")
-
                     profileData = response.body()
 
                     userGrade = try {
                         response.body()!!.grade
                     } catch (e : java.lang.NullPointerException) {
-                        Log.d("null", e.toString())
-                        "F"
+                        "B"
                     }
 
                     mannerCount = try {
                         response.body()!!.mannerCount
                     } catch (e : java.lang.NullPointerException) {
-                        Log.d("null", e.toString())
                         0
                     }
 
-
-                    Log.e("click profile", "$profileData")
-
-
-
-                    pBinding.profileTopTv.text = "${profileData!!.studentId}님의 프로필"
-                    pBinding.profileUserGrade.text = "${profileData!!.studentId}님의 현재 등급은 $userGrade 입니다"
+                    pBinding.profileTopTv.text = getString(R.string.setUserDescribe, profileData?.studentId)//"${profileData!!.studentId}님의 프로필"
+                    pBinding.profileUserGrade.text = getString(R.string.setUserGrade2, profileData?.studentId, "$userGrade")//"${profileData!!.studentId}님의 현재 등급은 $userGrade 입니다"
 
                     if (userGrade != null) {
-                        println("mn")
-
-                        pBinding.profileUserGrade.text = "${profileData!!.studentId}님의 현재 등급은 $userGrade 입니다"
+                        pBinding.profileUserGrade.text = getString(R.string.setUserGrade2, profileData?.studentId, "$userGrade")
 
                         if (userGrade != null) {
                             val word = userGrade!!
@@ -95,10 +86,8 @@ class ProfileActivity : AppCompatActivity() {
                             val end = start + word.length
                             val spannableString = SpannableString(pBinding.profileUserGrade.text) //객체 생성
                             //등급 글자의 색변경
-                            spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                             pBinding.profileUserGrade.text = spannableString
-                        } else {
-
                         }
 
                         CoroutineScope(Dispatchers.Main).launch {
@@ -111,15 +100,14 @@ class ProfileActivity : AppCompatActivity() {
                             animator.start()
                         }
                     } else {
-                        println("mmc")
-                        pBinding.profileUserGrade.text = "${profileData!!.studentId}님의 현재 등급은 B 입니다"
+                        pBinding.profileUserGrade.text = getString(R.string.setUserGrade2, profileData?.studentId, "$userGrade")
 
                         val word = "B"
                         val start: Int = pBinding.profileUserGrade.text.indexOf(word)
                         val end = start + word.length
                         val spannableString = SpannableString(pBinding.profileUserGrade.text) //객체 생성
                         //등급 글자의 색변경
-                        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        spannableString.setSpan(ForegroundColorSpan(Color.parseColor("#0046CC")), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                         pBinding.profileUserGrade.text = spannableString
 
                         CoroutineScope(Dispatchers.Main).launch {
@@ -134,14 +122,13 @@ class ProfileActivity : AppCompatActivity() {
                     }
 
                 } else {
-                    println("faafa")
-                    Log.d("comment", response.errorBody()?.string()!!)
-                    println(response.code())
+                    Toast.makeText(this@ProfileActivity, "사용자 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<User>, t: Throwable) {
                 Log.d("error", t.toString())
+                Toast.makeText(this@ProfileActivity, "사용자 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
 

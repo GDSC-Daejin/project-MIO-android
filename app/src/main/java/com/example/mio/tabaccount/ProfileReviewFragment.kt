@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
@@ -91,18 +92,22 @@ class ProfileReviewFragment : Fragment() {
                         response.body()?.let { profileReview ->
                             viewModel.setReviews(profileReview)
                         }
-                        /*if (profileReviewAllData.isEmpty()) {
-                            updateUI2(profileReviewAllData)
-                        }*/
-
-
                     } else {
                         Log.e("f", response.code().toString())
+                        requireActivity().runOnUiThread {
+                            if (isAdded && !requireActivity().isFinishing) {
+                                Toast.makeText(requireActivity(), "후기 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 }
 
                 override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
-                    Log.d("error", t.toString())
+                    requireActivity().runOnUiThread {
+                        if (isAdded && !requireActivity().isFinishing) {
+                            Toast.makeText(requireActivity(), "후기 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             })
         }
@@ -117,12 +122,10 @@ class ProfileReviewFragment : Fragment() {
         }
 
         if (reviews.isNotEmpty()) {
-            Log.e("reviews", "isnotempty")
             prBinding.profileReviewNotDataLl.visibility = View.GONE
             //prBinding.profileReviewSwipe.visibility = View.VISIBLE
             prBinding.profileReviewRv.visibility = View.VISIBLE
         } else {
-            Log.e("reviews", "isempty")
             prBinding.profileReviewNotDataLl.visibility = View.VISIBLE
             //prBinding.profileReviewSwipe.visibility = View.GONE
             prBinding.profileReviewRv.visibility = View.GONE
@@ -136,11 +139,6 @@ class ProfileReviewFragment : Fragment() {
         viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
             myAdapter?.submitList(reviews.toList())
             updateUI2(reviews)
-            Log.e("observereview1", reviews.toString())
-            /*CoroutineScope(Dispatchers.IO).launch {
-                initNotificationPostData(notificationAllData)
-            }*/
-
         }
 
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
@@ -182,7 +180,11 @@ class ProfileReviewFragment : Fragment() {
 
         viewModel.error.observe(viewLifecycleOwner) { errorMessage ->
             if (errorMessage != null) {
-                Log.e("error observe", errorMessage)
+                requireActivity().runOnUiThread {
+                    if (isAdded && !requireActivity().isFinishing) {
+                        Toast.makeText(requireActivity(), errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         }
     }

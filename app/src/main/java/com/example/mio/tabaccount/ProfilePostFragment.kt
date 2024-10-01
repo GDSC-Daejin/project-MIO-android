@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,11 +29,9 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 import kotlin.collections.ArrayList
 
 // TODO: Rename parameter arguments, choose names that match
@@ -136,7 +135,6 @@ class ProfilePostFragment : Fragment() {
                 "마감 임박 순" -> {
                     ppBinding.profileSearchFilterTv.text = "마감 임박 순"
                     ppBinding.profileSearchFilterTv.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
-                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
                     // 날짜 및 시간 형식 지정
                     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -235,41 +233,7 @@ class ProfilePostFragment : Fragment() {
 
     private fun setMyPostData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
         val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(requireActivity())!!
-
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        ///////////////////////////////////////////////////
 
         //deadLine 안씀
         RetrofitServerConnect.create(requireActivity()).getMyPostData(profileUserId,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
@@ -280,17 +244,16 @@ class ProfilePostFragment : Fragment() {
                     profilePostAllData.clear()
 
                     for (i in response.body()!!.content.filter { it.isDeleteYN == "N" }.indices) {
-                        val part = response.body()!!.content[i].participantsCount ?: 0
-                        val location = response.body()!!.content[i].location ?: "수락산역 3번 출구"
-                        val title = response.body()!!.content[i].title ?: "null"
-                        val content = response.body()!!.content[i].content ?: "null"
-                        val targetDate = response.body()!!.content[i].targetDate ?: "null"
-                        val targetTime = response.body()!!.content[i].targetTime ?: "null"
-                        val categoryName = response.body()!!.content[i].category.categoryName ?: "null"
-                        val cost = response.body()!!.content[i].cost ?: 0
-                        val verifyGoReturn = response.body()!!.content[i].verifyGoReturn ?: false
+                        val part = response.body()!!.content[i].participantsCount
+                        val location = response.body()!!.content[i].location
+                        val title = response.body()!!.content[i].title
+                        val content = response.body()!!.content[i].content
+                        val targetDate = response.body()!!.content[i].targetDate
+                        val targetTime = response.body()!!.content[i].targetTime
+                        val categoryName = response.body()!!.content[i].category.categoryName
+                        val cost = response.body()!!.content[i].cost
+                        val verifyGoReturn = response.body()!!.content[i].verifyGoReturn
 
-                        //println(response!!.body()!!.content[i].user.studentId)
                         profilePostAllData.add(
                             PostData(
                                 response.body()!!.content[i].user.studentId,
@@ -314,7 +277,6 @@ class ProfilePostFragment : Fragment() {
                             ))
                     }
 
-                    Log.e("profilePostData", profilePostAllData.toString())
                     myAdapter!!.notifyDataSetChanged()
 
                     if (getBottomSheetData.isNotEmpty()) {
@@ -336,12 +298,20 @@ class ProfilePostFragment : Fragment() {
                     }
 
                 } else {
-                    Log.d("f", response.code().toString())
+                    requireActivity().runOnUiThread {
+                        if (isAdded && !requireActivity().isFinishing) {
+                            Toast.makeText(requireActivity(), "사용자 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             }
 
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                Log.d("error", t.toString())
+                requireActivity().runOnUiThread {
+                    if (isAdded && !requireActivity().isFinishing) {
+                        Toast.makeText(requireActivity(), "사용자 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         })
     }
@@ -364,8 +334,8 @@ class ProfilePostFragment : Fragment() {
                         override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                             if (response.isSuccessful) {
                                 val responseData = response.body()
-                                responseData?.let {
-                                    val newItems = it.content.filter { item ->
+                                responseData?.let { data ->
+                                    val newItems = data.content.filter { item ->
                                         item.isDeleteYN == "N" && item.postType == "BEFORE_DEADLINE"
                                     }.map { item ->
                                         PostData(
@@ -392,13 +362,21 @@ class ProfilePostFragment : Fragment() {
                                     myAdapter?.notifyDataSetChanged()
                                 }
                             } else {
-                                Log.d("Error", "Response code: ${response.code()}")
+                                requireActivity().runOnUiThread {
+                                    if (isAdded && !requireActivity().isFinishing) {
+                                        Toast.makeText(requireActivity(), "게시글 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             }
                             isLoading = false
                         }
 
                         override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                            Log.d("Error", "Failure: ${t.message}")
+                            requireActivity().runOnUiThread {
+                                if (isAdded && !requireActivity().isFinishing) {
+                                    Toast.makeText(requireActivity(), "게시글 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                             isLoading = false
                         }
                     })

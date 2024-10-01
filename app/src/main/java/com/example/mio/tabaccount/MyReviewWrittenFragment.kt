@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
@@ -100,8 +101,6 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
             loadingDialog = null
         }
 
-        Log.e("updateUI2 written", "suc")
-
         if (reviews.isNotEmpty()) {
             rwBinding.writtenReviewPostNotDataLl.visibility = View.GONE
             //rwBinding.writtenReviewSwipe.visibility = View.VISIBLE
@@ -145,7 +144,6 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
         viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
             rwAdapter?.submitList(reviews.toList().sortedByDescending { it.createDate })
             updateUI2(reviews)
-            Log.e("myreviewwritten", reviews.toString())
         }
 
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
@@ -187,7 +185,7 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
 
         viewModel.error.observe(viewLifecycleOwner) { errorMessage ->
             if (errorMessage != null) {
-                Log.e("error observe", errorMessage)
+                Toast.makeText(requireContext(), "후기 정보를 가져오는데 실패하였습니다. 다시 시도해주세요 $errorMessage", Toast.LENGTH_SHORT).show()
             }
         }
     }

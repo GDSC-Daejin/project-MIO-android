@@ -175,6 +175,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                     Log.e("PART Remove ERROR ", response.code().toString())
                     Log.e("PART Remove ERROR ", response.errorBody()?.string()!!)
                     Log.e("PART Remove ERROR ", response.message().toString())
+                    
                     Toast.makeText(context, "삭제 오류가 발생했습니다. 다시 시도해주세요. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }

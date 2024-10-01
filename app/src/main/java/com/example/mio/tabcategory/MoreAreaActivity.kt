@@ -7,7 +7,9 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -29,11 +31,9 @@ import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 import kotlin.collections.ArrayList
 
 class MoreAreaActivity : AppCompatActivity() {
@@ -61,7 +61,6 @@ class MoreAreaActivity : AppCompatActivity() {
     //데이터의 전체 페이지 수
     private var totalPages = 0
 
-    private var currentData :  ArrayList<PostData?> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,13 +142,12 @@ class MoreAreaActivity : AppCompatActivity() {
                 "최신 순" -> {
                     mttBinding.moreSearchTv.text = "최신 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    moreAreaData.sortByDescending { it?.postCreateDate }
+                    moreAreaData.sortByDescending { areaData -> areaData?.postCreateDate }
                     mtAdapter?.notifyDataSetChanged()
                 }
                 "마감 임박 순" -> {
                     mttBinding.moreSearchTv.text = "마감 임박 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
                     // 날짜 및 시간 형식 지정
                     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -177,22 +175,22 @@ class MoreAreaActivity : AppCompatActivity() {
                 "낮은 가격 순" -> {
                     mttBinding.moreSearchTv.text = "낮은 가격 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    moreAreaData.sortBy { it?.postCost }
+                    moreAreaData.sortBy { area -> area?.postCost }
                     mtAdapter?.notifyDataSetChanged()
                 }
             }
         }
 
-        myViewModel.checkFilter.observe(this) { it ->
+        myViewModel.checkFilter.observe(this) {
             //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
-            println("it$it")
+
             val temp = it.split(",")
-            Log.e("temp Filter Test", temp.toString())
+            val chipGroup = mttBinding.moreAddFilterBtnSg
             tempFilterPostData.clear()
             when (temp[3]) {
                 "등교" -> {
                     chipList.add(createNewChip(
-                        text = "등교"
+                        text = "등교", chipGroup
                     ))
                     /*val params = LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -224,7 +222,7 @@ class MoreAreaActivity : AppCompatActivity() {
                 }
                 "하교" -> {
                     chipList.add(createNewChip(
-                        text = "하교"
+                        text = "하교", chipGroup
                     ))
                 }
                 else -> {
@@ -235,12 +233,12 @@ class MoreAreaActivity : AppCompatActivity() {
             when (temp[4]) {
                 "남성" -> {
                     chipList.add(createNewChip(
-                        text = "남성"
+                        text = "남성", chipGroup
                     ))
                 }
                 "여성" -> {
                     chipList.add(createNewChip(
-                        text = "여성"
+                        text = "여성", chipGroup
                     ))
                 }
                 else -> {
@@ -251,12 +249,12 @@ class MoreAreaActivity : AppCompatActivity() {
             when (temp[5]) {
                 "흡연O" -> {
                     chipList.add(createNewChip(
-                        text = "흡연O"
+                        text = "흡연O", chipGroup
                     ))
                 }
                 "흡연x" -> {
                     chipList.add(createNewChip(
-                        text = "흡연X"
+                        text = "흡연X", chipGroup
                     ))
                 }
                 else -> {
@@ -277,30 +275,20 @@ class MoreAreaActivity : AppCompatActivity() {
                 // temp 배열을 기준으로 필터링 조건 설정
                 for (i in temp.indices) {
                     val currentCondition = temp[i]
-                    Log.e("currentCondition", currentCondition.toString())
                     when (i) {
                         0 -> { // 날짜
                             if (currentCondition.isNotEmpty()) {
                                 noConditionDate = currentCondition
-                                Log.d("condition0", noConditionDate)
-                            } else {
-                                Log.e("No condition0", "empty")
                             }
                         }
                         1 -> { // 시간
                             if (currentCondition.isNotEmpty()) {
                                 noConditionTime = currentCondition
-                                Log.d("condition1", noConditionTime)
-                            } else {
-                                Log.e("No condition1", "empty")
                             }
                         }
                         2 -> { // 인원수
                             if (currentCondition.isNotEmpty()) {
                                 noConditionPeople = currentCondition.toInt()
-                                Log.d("condition2", noConditionPeople.toString())
-                            } else {
-                                Log.e("No condition2", "empty")
                             }
                         }
                         3 -> { // 등하교
@@ -310,9 +298,6 @@ class MoreAreaActivity : AppCompatActivity() {
                                 } else if (currentCondition == "하교") {
                                     noConditionSchool = false
                                 }
-                                Log.d("condition3", noConditionSchool.toString())
-                            } else {
-                                Log.e("No condition3", "empty")
                             }
                         }
                         4 -> { // 성별
@@ -322,9 +307,6 @@ class MoreAreaActivity : AppCompatActivity() {
                                 } else if (currentCondition == "남성") {
                                     noConditionGender = false
                                 }
-                                Log.d("condition4", noConditionGender.toString())
-                            } else {
-                                Log.e("No condition4", "empty")
                             }
                         }
                         5 -> { // 흡연여부
@@ -334,9 +316,6 @@ class MoreAreaActivity : AppCompatActivity() {
                                 } else if (temp[5] == "흡연x") {
                                     noConditionSmoke = false
                                 }
-                                Log.d("condition5", noConditionSmoke.toString())
-                            } else {
-                                Log.e("No condition5", "empty")
                             }
                         }
                         else -> {
@@ -345,8 +324,7 @@ class MoreAreaActivity : AppCompatActivity() {
                         }
                     }
                 }
-                Log.d("filterArea", "$noConditionDate $noConditionTime $noConditionPeople $noConditionSchool $noConditionGender $noConditionSmoke")
-                var tempData: List<PostData?>? = null
+                val tempData: List<PostData?>?
                 if (noConditionPeople > 0) {
                     // 인원수가 0보다 큰 경우, 모든 조건을 적용하여 필터링
                     tempData = moreAreaData.filter { item ->
@@ -417,51 +395,6 @@ class MoreAreaActivity : AppCompatActivity() {
 
     }
     private fun setSelectData() {
-        //저장된 값
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-        //통신
-        /*val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //.client(clientBuilder)
-
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer $token")
-                    .addHeader("Content-Type", "application/json; charset=utf-8")
-                    .build()
-
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("area", "area1")
-                    val intent = Intent(this@MoreAreaActivity, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(this@MoreAreaActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        ///
         RetrofitServerConnect.create(this@MoreAreaActivity).getActivityLocation("createDate,desc", 0, 5).enqueue(object :
             Callback<PostReadAllResponse> {
             override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
@@ -496,7 +429,6 @@ class MoreAreaActivity : AppCompatActivity() {
                         }
 
                         //currentData.addAll(moreAreaData.take(5))
-                        Log.e("morearea", moreAreaData.toString())
                         mtAdapter!!.moreTaxiData = moreAreaData
                         mtAdapter!!.notifyDataSetChanged()
                     }
@@ -529,16 +461,18 @@ class MoreAreaActivity : AppCompatActivity() {
 
                 } else {
                     Log.d("f", response.code().toString())
+                    Toast.makeText(this@MoreAreaActivity, "지역 게시글을 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                 Log.d("error", t.toString())
+                Toast.makeText(this@MoreAreaActivity, "지역 게시글을 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
-    private fun createNewChip(text: String): Chip {
-        val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, null, false) as Chip
+    private fun createNewChip(text: String, parent:ViewGroup): Chip {
+        val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, parent, false) as Chip
         chip.text = text
         //chip.isCloseIconVisible = false
         return chip
@@ -662,13 +596,12 @@ class MoreAreaActivity : AppCompatActivity() {
                                     "최신 순" -> {
                                         mttBinding.moreSearchTv.text = "최신 순"
                                         mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
-                                        moreAreaData.sortByDescending { it?.postCreateDate }
+                                        moreAreaData.sortByDescending { area -> area?.postCreateDate }
                                         mtAdapter?.notifyDataSetChanged()
                                     }
                                     "마감 임박 순" -> {
                                         mttBinding.moreSearchTv.text = "마감 임박 순"
                                         mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
-                                        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
                                         // 날짜 및 시간 형식 지정
                                         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -696,7 +629,7 @@ class MoreAreaActivity : AppCompatActivity() {
                                     "낮은 가격 순" -> {
                                         mttBinding.moreSearchTv.text = "낮은 가격 순"
                                         mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
-                                        moreAreaData.sortBy { it?.postCost }
+                                        moreAreaData.sortBy { area -> area?.postCost }
                                         mtAdapter?.notifyDataSetChanged()
                                     }
                                 }
@@ -718,9 +651,9 @@ class MoreAreaActivity : AppCompatActivity() {
         }, 2000)
     }
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         when (it.resultCode) {
-            AppCompatActivity.RESULT_OK -> {
+            RESULT_OK -> {
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {

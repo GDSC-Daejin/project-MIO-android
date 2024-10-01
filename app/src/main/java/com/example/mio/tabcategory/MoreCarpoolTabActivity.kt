@@ -197,8 +197,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                 "마감 임박 순" -> {
                     mttBinding.moreSearchTv.text = "마감 임박 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-
                     // 날짜 및 시간 형식 지정
                     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
@@ -330,30 +328,20 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                 // temp 배열을 기준으로 필터링 조건 설정
                 for (i in temp.indices) {
                     val currentCondition = temp[i]
-                    Log.e("currentCondition", currentCondition.toString())
                     when (i) {
                         0 -> { // 날짜
                             if (currentCondition.isNotEmpty()) {
                                 noConditionDate = currentCondition
-                                Log.d("condition0", noConditionDate)
-                            } else {
-                                Log.e("No condition0", "empty")
                             }
                         }
                         1 -> { // 시간
                             if (currentCondition.isNotEmpty()) {
                                 noConditionTime = currentCondition
-                                Log.d("condition1", noConditionTime)
-                            } else {
-                                Log.e("No condition1", "empty")
                             }
                         }
                         2 -> { // 인원수
                             if (currentCondition.isNotEmpty()) {
                                 noConditionPeople = currentCondition.toInt()
-                                Log.d("condition2", noConditionPeople.toString())
-                            } else {
-                                Log.e("No condition2", "empty")
                             }
                         }
                         3 -> { // 등하교

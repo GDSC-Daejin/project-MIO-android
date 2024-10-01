@@ -13,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
 import com.example.mio.adapter.MyAccountParticipationAdapter
@@ -261,9 +260,9 @@ class MyParticipationFragment : Fragment() { //두번쨰
                                         val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
                                         myParticipationApprovalOrRejectAllData[LocalDate.parse(it.targetDate, dateFormatter).atTime(
                                             LocalTime.parse(it.targetTime, timeFormatter)).toString()] = postList[i].approvalOrReject
-                                        val sortedTargets = myParticipationAllData.sortedByDescending {
+                                        val sortedTargets = myParticipationAllData.sortedByDescending { sortPostData ->
                                             // 시간과 날짜를 하나로 결합하여 내림차순으로 정렬
-                                            LocalDate.parse(it?.postTargetDate, dateFormatter).atTime(LocalTime.parse(it?.postTargetTime, timeFormatter))
+                                            LocalDate.parse(sortPostData?.postTargetDate, dateFormatter).atTime(LocalTime.parse(sortPostData?.postTargetTime, timeFormatter))
                                         }
                                         myParticipationAllData.clear()
                                         myParticipationAllData.addAll(sortedTargets)
@@ -408,22 +407,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
         }, 2000)
     }*/
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
-        when (it.resultCode) {
-            AppCompatActivity.RESULT_OK -> {
-                //val post = it.data?.getSerializableExtra("postData") as PostData
-                when(it.data?.getIntExtra("flag", -1)) {
-                    //add
-                    0 -> {
-                    }
-                    //edit
-                    1 -> {
-                    }
-
-                }
-            }
-        }
-    }
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
 
 
     companion object {

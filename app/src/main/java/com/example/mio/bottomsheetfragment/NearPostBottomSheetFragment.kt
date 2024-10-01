@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import com.example.mio.R
 import com.example.mio.databinding.FragmentNearPostBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -42,7 +41,6 @@ class NearPostBottomSheetFragment : BottomSheetDialogFragment() {
         abBinding = FragmentNearPostBottomSheetBinding.inflate(inflater, container, false)
 
         abBinding.filterNewest.setOnClickListener {
-            Toast.makeText(requireActivity(), "최신 순", Toast.LENGTH_SHORT).show()
             if (listener == null) return@setOnClickListener
             listener?.sendValue("최신 순")
             dismiss()
@@ -56,14 +54,12 @@ class NearPostBottomSheetFragment : BottomSheetDialogFragment() {
         }*/
 
         abBinding.filterLowestPrice.setOnClickListener {
-            Toast.makeText(requireActivity(), "낮은 가격 순", Toast.LENGTH_SHORT).show()
             if (listener == null) return@setOnClickListener
             listener?.sendValue("낮은 가격 순")
             dismiss()
         }
 
         abBinding.filterNearingEnd.setOnClickListener {
-            Toast.makeText(requireActivity(), "마감 임박 순", Toast.LENGTH_SHORT).show()
             if (listener == null) return@setOnClickListener
             listener?.sendValue("마감 임박 순")
             dismiss()

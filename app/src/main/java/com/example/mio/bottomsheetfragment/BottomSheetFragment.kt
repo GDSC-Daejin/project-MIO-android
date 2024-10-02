@@ -1,8 +1,8 @@
 package com.example.mio.bottomsheetfragment
 
-import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.Dialog
+import android.app.TimePickerDialog
 import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
@@ -10,8 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Button
-import android.widget.TimePicker
 import androidx.core.content.ContextCompat
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
@@ -43,7 +41,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     //선택한 날짜
     private var selectTargetDate = ""
     //선택한 시간
-    private var selectTime = ""
+    private var selectTime : String? = null
+
     private var sendSelectTime = ""
     //필터로 선택한 데이터들을 외부로 전송하기 위한 리스너
     private var listener: OnSendFromBottomSheetDialog? = null
@@ -298,21 +297,21 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         return bsBinding.root
     }
 
-   /* private fun showHourPicker() {
+   private fun showHourPicker() {
         val myCalender = Calendar.getInstance()
         val hour = myCalender[Calendar.HOUR_OF_DAY]
         val minute = myCalender[Calendar.MINUTE]
         val myTimeListener =
-            OnTimeSetListener { view, hourOfDay, _ ->
+            TimePickerDialog.OnTimeSetListener { view, hourOfDay, pickerMinute ->
                 if (view.isShown) {
                     myCalender[Calendar.HOUR_OF_DAY] = hourOfDay
-                    myCalender[Calendar.MINUTE] = minute
-                    sendSelectTime = String.format("%02d:%02d:00", hourOfDay, minute)
+                    myCalender[Calendar.MINUTE] = pickerMinute
+                    sendSelectTime = String.format("%02d:%02d:00", hourOfDay, pickerMinute)
                     selectTime = if (hourOfDay > 12) {
                         val pm = hourOfDay - 12
-                        "오후 " + pm + "시 " + minute + "분 선택"
+                        "오후 " + pm + "시 " + pickerMinute + "분 선택"
                     } else {
-                        "오전 " + hour + "시 " + minute + "분 선택"
+                        "오전 " + hourOfDay + "시 " + pickerMinute + "분 선택"
                     }
                     //selectTime = "${hourOfDay} 시 ${minute} 분"
 
@@ -321,71 +320,39 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                     bsBinding.filterTime.setImageResource(R.drawable.filter_time_update_icon)
                 }
             }
+
         val timePickerDialog = TimePickerDialog(
             activity,
-            //여기서 테마 설정해서 커스텀하기
-            android.R.style.Theme_Material_Light_Dialog_NoActionBar,
             myTimeListener,
             hour,
             minute,
             true
-        )
-        timePickerDialog.setTitle("시간 선택 :")
-        timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        timePickerDialog.show()
-    }*/
-    private fun showHourPicker() {
-        val myCalender = Calendar.getInstance()
-        val hour = myCalender[Calendar.HOUR_OF_DAY]
-        val minute = myCalender[Calendar.MINUTE]
-
-        // 커스텀 다이얼로그 레이아웃 인플레이션
-        val dialogView = layoutInflater.inflate(R.layout.time_picker_layout, null)
-        val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker)
-        val btnOk = dialogView.findViewById<Button>(R.id.btn_ok)
-        val btnCancel = dialogView.findViewById<Button>(R.id.btn_cancel)
-
-        timePicker.hour = hour // API 23 이상
-        timePicker.minute = minute // API 23 이상
-
-        // 다이얼로그 생성
-        val timePickerDialog = AlertDialog.Builder(requireContext())
-            .setTitle("시간 선택 :")
-            .setView(dialogView)
-        val alertDialog = timePickerDialog.create()
-
-         btnOk.setOnClickListener {
-                // 시간 선택 완료 시 처리
-                val selectedHour = timePicker.hour // API 23 이상
-                val selectedMinute = timePicker.minute // API 23 이상
-
-                // 선택한 시간과 분을 이용해 문자열 생성
-
-                sendSelectTime = String.format("%02d:%02d:00", selectedHour, selectedMinute)
-
-                // 오전/오후 표시 처리
-                selectTime = if (selectedHour >= 12) {
-                    val pm = if (selectedHour == 12) selectedHour else selectedHour - 12
-                    "오후 $pm 시 $selectedMinute 분"
-                } else {
-                    "오전 $selectedHour 시 $selectedMinute 분"
-                }
-
-             bsBinding.selectTime.text = selectTime
-             bsBinding.selectTime.setTextColor(Color.BLACK)
-             bsBinding.filterTime.setImageResource(R.drawable.filter_time_update_icon)
-             alertDialog.dismiss()
-         }
-
-
-        btnCancel.setOnClickListener {
-            alertDialog.dismiss()
+        ).apply {
+            setTitle("Select Time")
+            window!!.setBackgroundDrawableResource(R.drawable.dialog_round_background)
         }
 
-        // 다이얼로그 배경 설정
-        alertDialog.window?.setBackgroundDrawableResource(android.R.color.white)
-        alertDialog.show()
+        timePickerDialog.show()
     }
+   /*private fun showHourPicker() {
+       // 현재 시간을 기준으로 TimePickerDialog 호출
+       val calendar = Calendar.getInstance()
+       val hour = calendar.get(Calendar.HOUR_OF_DAY)
+       val minute = calendar.get(Calendar.MINUTE)
+
+       // TimePickerDialog를 Spinner 모드로 호출
+       TimePickerDialog(
+           context,
+           R.style.TimePickerSpinner, // Spinner 스타일 지정
+           this, // TimeSetListener 설정
+           hour,
+           minute,
+           false // 12시간제 사용 여부
+       ).apply {
+           setTitle("Select Time")
+           show()
+       }
+    }*/
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         /*val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme).apply {

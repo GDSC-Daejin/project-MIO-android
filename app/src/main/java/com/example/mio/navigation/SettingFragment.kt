@@ -57,6 +57,8 @@ class SettingFragment : Fragment() {
     ): View {
         binding = FragmentSettingBinding.inflate(inflater, container, false)
 
+        binding.enableFeature.isChecked = sharedPreference.getSharedAlarm(requireActivity())
+
         binding.enableFeature.setOnCheckedChangeListener { _, check ->
             sharedPreference.setSharedAlarm(requireActivity(), check)
             if (sharedPreference.getSharedAlarm(requireActivity())) {

@@ -1,8 +1,8 @@
 package com.example.mio.noticeboard
 
 import android.animation.ObjectAnimator
-import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -18,8 +18,6 @@ import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.TimePicker
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
@@ -1034,59 +1032,44 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         val myCalender = Calendar.getInstance()
         val hour = myCalender[Calendar.HOUR_OF_DAY]
         val minute = myCalender[Calendar.MINUTE]
+        val myTimeListener =
+            TimePickerDialog.OnTimeSetListener { view, hourOfDay, pickerMinute ->
+                if (view.isShown) {
 
-        // 커스텀 다이얼로그 레이아웃 인플레이션
-        val dialogView = layoutInflater.inflate(R.layout.time_picker_layout, null)
-        val timePicker = dialogView.findViewById<TimePicker>(R.id.timePicker)
-        val btnOk = dialogView.findViewById<Button>(R.id.btn_ok)
-        val btnCancel = dialogView.findViewById<Button>(R.id.btn_cancel)
+                    val tempS = "${hourOfDay}시 ${pickerMinute}분"
+                    selectFormattedTime = LocalTime.parse(tempS, DateTimeFormatter.ofPattern("H시 m분")).format(DateTimeFormatter.ofPattern("HH:mm"))
 
-        timePicker.hour = hour // API 23 이상
-        timePicker.minute = minute // API 23 이상
+                    // 오전/오후 표시 처리
+                    selectTime = if (hourOfDay >= 12) {
+                        val pm = if (hourOfDay == 12) hourOfDay else hourOfDay - 12
+                        "오후 $pm 시 $pickerMinute 분"
+                    } else {
+                        "오전 $hourOfDay 시 $pickerMinute 분"
+                    }
 
-        // 다이얼로그 생성
-        val timePickerDialog = AlertDialog.Builder(this)
-            .setTitle("시간 선택 :")
-            .setView(dialogView)
-        val alertDialog = timePickerDialog.create()
+                    // 선택된 시간 UI 업데이트
+                    mBinding.editSelectTime.text = selectTime
+                    mBinding.editSelectTime.setTextColor(ContextCompat.getColor(this, R.color.mio_gray_11))
+                    isAllCheck.isFirstVF.isTime = true
 
-         btnOk.setOnClickListener {
-                // 시간 선택 완료 시 처리
-                val selectedHour = timePicker.hour // API 23 이상
-                val selectedMinute = timePicker.minute // API 23 이상
-
-                // 선택한 시간과 분을 이용해 문자열 생성
-                val tempS = "${selectedHour}시 ${selectedMinute}분"
-                selectFormattedTime = LocalTime.parse(tempS, DateTimeFormatter.ofPattern("H시 m분")).format(DateTimeFormatter.ofPattern("HH:mm"))
-
-                // 오전/오후 표시 처리
-                selectTime = if (selectedHour >= 12) {
-                    val pm = if (selectedHour == 12) selectedHour else selectedHour - 12
-                    "오후 $pm 시 $selectedMinute 분"
-                } else {
-                    "오전 $selectedHour 시 $selectedMinute 분"
+                    // 아이콘 변경
+                    if (selectTime != null) {
+                        mBinding.editTime.setImageResource(R.drawable.filter_time_update_icon)
+                    }
                 }
-
-                // 선택된 시간 UI 업데이트
-                mBinding.editSelectTime.text = selectTime
-                mBinding.editSelectTime.setTextColor(ContextCompat.getColor(this, R.color.mio_gray_11))
-                isAllCheck.isFirstVF.isTime = true
-
-                // 아이콘 변경
-                if (selectTime != null) {
-                    mBinding.editTime.setImageResource(R.drawable.filter_time_update_icon)
-                }
-             alertDialog.dismiss()
-         }
-
-
-        btnCancel.setOnClickListener {
-            alertDialog.dismiss()
+            }
+        val timePickerDialog = TimePickerDialog(
+            this,
+            myTimeListener,
+            hour,
+            minute,
+            true
+        ).apply {
+            setTitle("Select Time")
+            window!!.setBackgroundDrawableResource(R.drawable.dialog_round_background)
         }
 
-        // 다이얼로그 배경 설정
-        alertDialog.window?.setBackgroundDrawableResource(android.R.color.white)
-        alertDialog.show()
+        timePickerDialog.show()
     }
 
 

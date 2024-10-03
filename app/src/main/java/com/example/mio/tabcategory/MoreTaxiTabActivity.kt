@@ -8,6 +8,7 @@ import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,11 +35,9 @@ import kotlinx.coroutines.withContext
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 import kotlin.collections.ArrayList
 
 
@@ -77,7 +76,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         if (date == "DATE") {
             date = intent.getStringExtra("date").toString()
 
-            mttBinding.moreDate.text = "${date}월"
+            mttBinding.moreDate.text = getString(R.string.setDateTextMonth, date)
         }
 
 
@@ -189,13 +188,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 "최신 순" -> {
                     mttBinding.moreSearchTv.text = "최신 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    moreTaxiAllData.sortByDescending { it?.postCreateDate }
+                    moreTaxiAllData.sortByDescending { mSort -> mSort?.postCreateDate }
                     mtAdapter?.notifyDataSetChanged()
                 }
                 "마감 임박 순" -> {
                     mttBinding.moreSearchTv.text = "마감 임박 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                     // 날짜 및 시간 형식 지정
                     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
@@ -222,21 +220,21 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 "낮은 가격 순" -> {
                     mttBinding.moreSearchTv.text = "낮은 가격 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    moreTaxiAllData.sortBy { it?.postCost }
+                    moreTaxiAllData.sortBy { mSort -> mSort?.postCost }
                     mtAdapter?.notifyDataSetChanged()
                 }
             }
         }
 
-        myViewModel.checkFilter.observe(this) { it ->
+        myViewModel.checkFilter.observe(this) {
             //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke} $isReset"
             val temp = it.split(",")
-            Log.e("temp Filter Test", temp.toString())
+            val cGroup = mttBinding.moreAddFilterBtnSg
             tempFilterPostData.clear()
             when (temp[3]) {
                 "등교" -> {
                     chipList.add(createNewChip(
-                        text = "등교"
+                        text = "등교", cGroup
                     ))
                     /*val params = LayoutParams(
                         ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -268,7 +266,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 }
                 "하교" -> {
                     chipList.add(createNewChip(
-                        text = "하교"
+                        text = "하교", cGroup
                     ))
                 }
                 else -> {
@@ -279,12 +277,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             when (temp[4]) {
                 "남성" -> {
                     chipList.add(createNewChip(
-                        text = "남성"
+                        text = "남성", cGroup
                     ))
                 }
                 "여성" -> {
                     chipList.add(createNewChip(
-                        text = "여성"
+                        text = "여성", cGroup
                     ))
                 }
                 else -> {
@@ -295,12 +293,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             when (temp[5]) {
                 "흡연O" -> {
                     chipList.add(createNewChip(
-                        text = "흡연O"
+                        text = "흡연O", cGroup
                     ))
                 }
                 "흡연x" -> {
                     chipList.add(createNewChip(
-                        text = "흡연X"
+                        text = "흡연X", cGroup
                     ))
                 }
                 else -> {
@@ -320,12 +318,10 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 // temp 배열을 기준으로 필터링 조건 설정
                 for (i in temp.indices) {
                     val currentCondition = temp[i]
-                    Log.e("currentCondition", currentCondition.toString())
                     when (i) {
                         0 -> { // 날짜
                             if (currentCondition.isNotEmpty()) {
                                 noConditionDate = currentCondition
-                                Log.d("condition0", noConditionDate)
                             } else {
                                 Log.e("No condition0", "empty")
                             }
@@ -333,17 +329,11 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                         1 -> { // 시간
                             if (currentCondition.isNotEmpty()) {
                                 noConditionTime = currentCondition
-                                Log.d("condition1", noConditionTime)
-                            } else {
-                                Log.e("No condition1", "empty")
                             }
                         }
                         2 -> { // 인원수
                             if (currentCondition.isNotEmpty()) {
                                 noConditionPeople = currentCondition.toInt()
-                                Log.d("condition2", noConditionPeople.toString())
-                            } else {
-                                Log.e("No condition2", "empty")
                             }
                         }
                         3 -> { // 등하교
@@ -353,9 +343,6 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                 } else if (currentCondition == "하교") {
                                     noConditionSchool = false
                                 }
-                                Log.d("condition3", noConditionSchool.toString())
-                            } else {
-                                Log.e("No condition3", "empty")
                             }
                         }
                         4 -> { // 성별
@@ -365,9 +352,6 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                 } else if (currentCondition == "남성") {
                                     noConditionGender = false
                                 }
-                                Log.d("condition4", noConditionGender.toString())
-                            } else {
-                                Log.e("No condition4", "empty")
                             }
                         }
                         5 -> { // 흡연여부
@@ -377,9 +361,6 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                 } else if (temp[5] == "흡연x") {
                                     noConditionSmoke = false
                                 }
-                                Log.d("condition5", noConditionSmoke.toString())
-                            } else {
-                                Log.e("No condition5", "empty")
                             }
                         }
                         else -> {
@@ -388,8 +369,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                         }
                     }
                 }
-                Log.d("morecaarpoolfilter", "$noConditionDate $noConditionTime $noConditionPeople $noConditionSchool $noConditionGender $noConditionSmoke")
-                var tempData: List<PostData?>? = null
+
+                val tempData: List<PostData?>?
                 if (noConditionPeople > 0) {
                     // 인원수가 0보다 큰 경우, 모든 조건을 적용하여 필터링
                     tempData = moreTaxiAllData.filter { item ->
@@ -564,13 +545,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                     "최신 순" -> {
                                         mttBinding.moreSearchTv.text = "최신 순"
                                         mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
-                                        moreTaxiAllData.sortByDescending { it?.postCreateDate }
+                                        moreTaxiAllData.sortByDescending { mSort -> mSort?.postCreateDate }
                                         mtAdapter?.notifyDataSetChanged()
                                     }
                                     "마감 임박 순" -> {
                                         mttBinding.moreSearchTv.text = "마감 임박 순"
                                         mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
-                                        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 
                                         // 날짜 및 시간 형식 지정
                                         val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -598,7 +578,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                     "낮은 가격 순" -> {
                                         mttBinding.moreSearchTv.text = "낮은 가격 순"
                                         mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
-                                        moreTaxiAllData.sortBy { it?.postCost }
+                                        moreTaxiAllData.sortBy { mSort -> mSort?.postCost }
                                         mtAdapter?.notifyDataSetChanged()
                                     }
                                 }
@@ -675,15 +655,15 @@ class MoreTaxiTabActivity : AppCompatActivity() {
 
                             // 필터링된 게시글 처리
                             for (post in filteredContent) {
-                                val part = post.participantsCount ?: 0
-                                val location = post.location ?: "수락산역 3번 출구"
-                                val title = post.title ?: "null"
-                                val content = post.content ?: "null"
-                                val targetDate = post.targetDate ?: "null"
-                                val targetTime = post.targetTime ?: "null"
-                                val categoryName = post.category.categoryName ?: "null"
-                                val cost = post.cost ?: 0
-                                val verifyGoReturn = post.verifyGoReturn ?: false
+                                val part = post.participantsCount
+                                val location = post.location
+                                val title = post.title
+                                val content = post.content
+                                val targetDate = post.targetDate
+                                val targetTime = post.targetTime
+                                val categoryName = post.category.categoryName
+                                val cost = post.cost
+                                val verifyGoReturn = post.verifyGoReturn
 
                                 moreTaxiAllData.add(PostData(
                                     post.user.studentId,
@@ -765,8 +745,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         mttBinding.moreTaxiTabRv.layoutManager = manager
     }
 
-    private fun createNewChip(text: String): Chip {
-        val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, null, false) as Chip
+    private fun createNewChip(text: String, parent : ViewGroup): Chip {
+        val chip = layoutInflater.inflate(R.layout.notice_board_chip_layout, parent, false) as Chip
         chip.text = text
         //chip.isCloseIconVisible = false
         return chip

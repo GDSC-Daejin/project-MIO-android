@@ -14,6 +14,7 @@
     <string name="setDateText">%1$s.%2$s.%3$s (%4$s) %5$s:%6$s</string>
     <string name="setDateText2">%1$s %2$s</string>
     <string name="setDateText3">%1$s년/%2$s월/%3$s일</string>
+    <string name="setDateTextMonth">%1$s월</string>
 
     <string name="setInitDateText">yyyy/mm/dd</string>
     <string name="setInitTimeText">오전 00:00</string>

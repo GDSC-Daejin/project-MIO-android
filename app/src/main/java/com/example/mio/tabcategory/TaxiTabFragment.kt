@@ -4,14 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -86,19 +85,13 @@ class TaxiTabFragment : Fragment() {
     private var taxiParticipantsData = ArrayList<ArrayList<ParticipationData>?>()
     //게시글 선택 시 위치를 잠시 저장하는 변수
     private var dataPosition = 0
-    //게시글 위치
-    private var position = 0
+
     //게시글과 targetDate를 받아 viewmodel에저장
     private var sharedViewModel: SharedViewModel? = null
     private var calendarTempData = ArrayList<String>()
-    private var calendarTaxiAllData : ArrayList<PostData> = ArrayList()
     private var selectCalendarTaxiData : ArrayList<PostData> = ArrayList()
     //edit에서 받은 값
     private var testselectCalendarData = HashMap<String, ArrayList<PostData>>()
-
-    //뒤로 가기 받아오기
-    private lateinit var callback : OnBackPressedCallback
-    var backPressedTime : Long = 0
 
     //로딩창
     private lateinit var loadingDialog : LoadingProgressDialog
@@ -525,15 +518,15 @@ class TaxiTabFragment : Fragment() {
 
                         // 필터링된 게시글 처리
                         for (post in filteredContent) {
-                            val part = post.participantsCount ?: 0
-                            val location = post.location ?: "수락산역 3번 출구"
-                            val title = post.title ?: "null"
-                            val content = post.content ?: "null"
-                            val targetDate = post.targetDate ?: "null"
-                            val targetTime = post.targetTime ?: "null"
-                            val categoryName = post.category.categoryName ?: "null"
-                            val cost = post.cost ?: 0
-                            val verifyGoReturn = post.verifyGoReturn ?: false
+                            val part = post.participantsCount
+                            val location = post.location
+                            val title = post.title
+                            val content = post.content
+                            val targetDate = post.targetDate
+                            val targetTime = post.targetTime
+                            val categoryName = post.category.categoryName
+                            val cost = post.cost
+                            val verifyGoReturn = post.verifyGoReturn
 
                             taxiAllData.add(
                                 PostData(
@@ -605,7 +598,7 @@ class TaxiTabFragment : Fragment() {
                     }
                 } else {
                     Log.e("f", response.code().toString())
-                    loadingDialog?.dismiss()
+                    loadingDialog.dismiss()
                 }
             }
 
@@ -616,53 +609,9 @@ class TaxiTabFragment : Fragment() {
 
     }
 
-    private fun setMyAreaData() { //나중에 여기 위치 받아오면 데이터 변경하기 Todo
+    private fun setMyAreaData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
-        var myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity()).toString()
-
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-
-                if (expireDate != null && expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.d("Carpool myarea", expireDate.toString())
-
-                    // UI 스레드에서 Toast 실행
-                    requireActivity().runOnUiThread {
-                        Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    }
-
-                    // Log.d("MainActivitu Notification", expireDate.toString())
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        /////
+        val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity()).toString()
 
         if (myAreaData.isEmpty() || myAreaData == "") {
             CoroutineScope(Dispatchers.Main).launch {
@@ -678,8 +627,6 @@ class TaxiTabFragment : Fragment() {
                 override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                     if (response.isSuccessful) {
                         val responseData = response.body()
-                        Log.e("myAreaItemData", response.code().toString())
-                        Log.e("myAreaItemData", responseData?.content.toString())
                         if (responseData != null) {
                             for (i in responseData.content.filter { it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE" }.indices) {
                                 myAreaItemData.add(
@@ -708,14 +655,13 @@ class TaxiTabFragment : Fragment() {
                                     )
                                 )
                             }
-                            Log.e("myAreaItemDatataxi", myAreaItemData.toString())
 
                             noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
 
                             loadingDialog.dismiss()
                         }
 
-                        if (myAreaItemData?.isNotEmpty() == true) {
+                        if (myAreaItemData.isNotEmpty()) {
                             taxiTabBinding.areaRvLl.visibility = View.VISIBLE
                             taxiTabBinding.nonAreaRvTv.visibility = View.GONE
                             taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
@@ -726,9 +672,15 @@ class TaxiTabFragment : Fragment() {
                         }
 
                     } else {
-                        Log.e("taxi areaeaerera", response.code().toString())
-                        Log.e("taxi areaeaerera", response.errorBody()?.string()!!)
-                        Log.e("taxi areaeaerera", response.message().toString())
+                        if (myAreaItemData.isNotEmpty()) {
+                            taxiTabBinding.areaRvLl.visibility = View.VISIBLE
+                            taxiTabBinding.nonAreaRvTv.visibility = View.GONE
+                            taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                        } else {
+                            taxiTabBinding.areaRvLl.visibility = View.GONE
+                            taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
+                        }
                     }
                 }
 
@@ -862,10 +814,14 @@ class TaxiTabFragment : Fragment() {
     }
 
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         when (it.resultCode) {
             AppCompatActivity.RESULT_OK -> {
-                val post = it.data?.getSerializableExtra("postData") as PostData?
+                val post = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    it.data?.getParcelableExtra("postData")
+                } else {
+                    it.data?.getParcelableExtra("postData", PostData::class.java)
+                }
                 when(it.data?.getIntExtra("flag", -1)) {
                     //add
                     0 -> {
@@ -973,16 +929,10 @@ class TaxiTabFragment : Fragment() {
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
     }
 
-    override fun onStart() {
-        super.onStart()
-    }
+
     override fun onResume() {
         super.onResume()
         loadAdIfNeeded()
-        Log.e("taxi resume", "taxi resume")
-        /*viewModel.currentTaxiLiveData.value?.let { postDataList ->
-            currentNoticeBoardAdapter?.updateDataList(postDataList)
-        }*/
     }
 
     override fun onPause() {

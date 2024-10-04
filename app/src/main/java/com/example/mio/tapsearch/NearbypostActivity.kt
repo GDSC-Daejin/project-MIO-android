@@ -2,7 +2,7 @@ package com.example.mio.tapsearch
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -23,6 +23,10 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import kotlin.collections.ArrayList
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 class NearbypostActivity  : AppCompatActivity() { //검색에서 게시글 더보기 이동 시
     private lateinit var nbinding : ActivityNearbypostBinding
@@ -80,7 +84,6 @@ class NearbypostActivity  : AppCompatActivity() { //검색에서 게시글 더�
             bottomSheet.apply {
                 setCallback(object : AnotherBottomSheetFragment.OnSendFromBottomSheetDialog{
                     override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                         myViewModel.postCheckSearchFilter(value)
                     }
                 })
@@ -98,9 +101,9 @@ class NearbypostActivity  : AppCompatActivity() { //검색에서 게시글 더�
                     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
-                    val sortedTargets = nearPostAllData.sortedByDescending {
+                    val sortedTargets = nearPostAllData.sortedByDescending {nearData ->
                         // 시간과 날짜를 하나로 결합하여 내림차순으로 정렬
-                        LocalDate.parse(it.targetDate, dateFormatter).atTime(LocalTime.parse(it.targetTime, timeFormatter))
+                        LocalDate.parse(nearData.targetDate, dateFormatter).atTime(LocalTime.parse(nearData.targetTime, timeFormatter))
                     }
 
                     adapter.setData(sortedTargets)
@@ -133,7 +136,7 @@ class NearbypostActivity  : AppCompatActivity() { //검색에서 게시글 더�
                 "낮은 가격 순" -> {
                     nbinding.nearFilter.text = "낮은 가격 순"
                     nbinding.nearFilter.setTextColor(ContextCompat.getColor(this , R.color.mio_blue_4))
-                    nearPostAllData.sortBy { it.cost }
+                    nearPostAllData.sortBy { mSort -> mSort.cost }
                     adapter.setData(nearPostAllData)
                 }
                 "가까운 순" -> {
@@ -176,15 +179,12 @@ class NearbypostActivity  : AppCompatActivity() { //검색에서 게시글 더�
                         }
                     }
                 } else {
-                    println("faafa")
-                    Log.d("comment", response.errorBody()?.string()!!)
-                    Log.d("message", call.request().toString())
-                    println(response.code())
+                    Toast.makeText(this@NearbypostActivity, "게시글 정보를 가져오는데 실패하였습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
-                Log.d("error", t.toString())
+                Toast.makeText(this@NearbypostActivity, "게시글 정보를 가져오는데 실패하였습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -194,15 +194,10 @@ class NearbypostActivity  : AppCompatActivity() { //검색에서 게시글 더�
         val dLat = Math.toRadians(lat2 - lat1)
         val dLon = Math.toRadians(lon2 - lon1)
 
-        val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2)
-        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) *
+                sin(dLon / 2) * sin(dLon / 2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return earthRadiusKm * c
-    }
-
-    override fun onStart() {
-        super.onStart()
-        Log.d("nearbyPostActivity", "start")
     }
 }

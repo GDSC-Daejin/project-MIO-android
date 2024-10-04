@@ -13,9 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.adapter.RecentSearchAdapter
 import com.example.mio.adapter.SearchResultAdapter
-import com.example.mio.BuildConfig
 import com.example.mio.helper.SharedPrefManager
-import com.example.mio.helper.SharedPrefManager.convertLocationToJSON
 import com.example.mio.model.*
 import com.example.mio.RetrofitServerConnect
 import com.example.mio.databinding.ActivitySearchResultBinding
@@ -26,12 +24,6 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class SearchResultActivity : AppCompatActivity() { //검색창
-
-    companion object {
-        const val BASE_URL = "https://dapi.kakao.com/"
-        private const val API_KEY = BuildConfig.map_api_key
-    }
-
     private lateinit var binding: ActivitySearchResultBinding
     private lateinit var adapter: SearchResultAdapter
     private lateinit var recentSearchAdapter: RecentSearchAdapter
@@ -62,10 +54,7 @@ class SearchResultActivity : AppCompatActivity() { //검색창
             setOnItemClickListener(object : RecentSearchAdapter.OnItemClickListener {
                 override fun onItemClicked(location: LocationReadAllResponse) {
                     sharedViewModel.selectedLocation.value = location
-                    Log.e("searchresultintent", "click recent")
-                    Log.e("searchresultintent", location.location)
-                    val locationJson = convertLocationToJSON(location)
-                    Log.e("searchresultintent", locationJson)
+                    //val locationJson = convertLocationToJSON(location)
                     SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location)
                     moveToSearchFragment(location)
 
@@ -78,7 +67,6 @@ class SearchResultActivity : AppCompatActivity() { //검색창
                 }
                 override fun onItemRemove(location: LocationReadAllResponse) {
                     // 선택된 위치를 SharedPref에서 제거합니다.
-                    val locationJson = SharedPrefManager.convertLocationToJSON(location)
                     SharedPrefManager.removeRecentSearch(this@SearchResultActivity, location.location)
 
                     // 최근 검색어 목록을 다시 로드하여 UI를 업데이트 합니다.
@@ -165,8 +153,6 @@ class SearchResultActivity : AppCompatActivity() { //검색창
             override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
-                    //val responseDataFilter = ArrayList<LocationReadAllResponse>()
-                    Log.d("searchResultActivity filterhigh", responseData.toString())
                     if (responseData.isNullOrEmpty()) {
                         binding.textView4.visibility = View.VISIBLE
                         binding.textView5.visibility = View.VISIBLE
@@ -180,15 +166,17 @@ class SearchResultActivity : AppCompatActivity() { //검색창
                     }
                 }
                 else {
-                    println("faafa")
-                    Log.d("comment", response.errorBody()?.string()!!)
-                    Log.d("message", call.request().toString())
-                    println(response.code())
+                    binding.textView4.visibility = View.VISIBLE
+                    binding.textView5.visibility = View.VISIBLE
+                    binding.rvSearchList.visibility = View.GONE
                 }
             }
 
             override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
                 Log.d("error", t.toString())
+                binding.textView4.visibility = View.VISIBLE
+                binding.textView5.visibility = View.VISIBLE
+                binding.rvSearchList.visibility = View.GONE
             }
         })
     }
@@ -216,9 +204,6 @@ class SearchResultActivity : AppCompatActivity() { //검색창
             setOnItemClickListener(object : SearchResultAdapter.OnItemClickListener {
                 override fun onItemClicked(location: LocationReadAllResponse) {
                     moveToSearchFragment(location)
-                    Log.e("searchresultintent", "back searchfragment")
-                    Log.e("searchresultintent", location.toString())
-                    val locationJson = convertLocationToJSON(location)
                     SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location)
                     val resultIntent = Intent().apply {
                         putExtra("flag", 103) // 필요한 결과 값을 설정
@@ -256,11 +241,6 @@ class SearchResultActivity : AppCompatActivity() { //검색창
             // Handle exception
             Log.e("SearchResultActivity", "Error loading recent searches: ${e.localizedMessage}")
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        //Log.e("searchresultintent", "click start")
     }
 
 /*    private fun getAllPosts(): List<PostReadAllResponse> {

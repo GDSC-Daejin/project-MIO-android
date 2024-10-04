@@ -45,20 +45,13 @@ class NotificationViewModel : ViewModel() {
                     val responseData = response.body()
                     _notifications.value = responseData ?: emptyList()
 
-                    // Log the response data
-                    Log.d("fetchNotificationData", "Response Code: ${response.code()}")
-                    Log.d("fetchNotificationData", "Response Body: ${responseData?.toString()}")
-                    Log.d("fetchNotificationData", "${_notifications.value}")
                     fetchNotificationsPostData(context, _notifications.value)
                 } else {
                     // Log the error body
-                    Log.e("fetchIsBeforeDeadLine", "Response Error Code: ${response.code()}")
-                    Log.e("fetchNotificationData", "Response Error Body: ${response.errorBody()?.string()!!}")
                     _notifications.value = emptyList()
                 }
             } catch (e: Exception) {
                 // Log the exception
-                Log.e("fetchNotificationData", "Exception: ${e.message}")
                 _notifications.value = emptyList()
             }
         }

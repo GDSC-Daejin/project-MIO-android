@@ -1,6 +1,5 @@
 package com.example.mio.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -17,7 +16,6 @@ class CurrentDataViewModel : ViewModel() {
 
 
     fun setCurrentData(newData: List<PostData?>) {
-        Log.e("setCurrentData", newData.toString())
         _currentCarpoolLiveData.value = newData
     }
 
@@ -25,7 +23,6 @@ class CurrentDataViewModel : ViewModel() {
         _reviews.value = reviews.toList()
     }*/
     fun setTaxiCurrentData(newData: List<PostData>) {
-        Log.e("setTaxiCurrentData", newData.toString())
         _currentTaxiLiveData.value = newData
     }
 }

@@ -40,8 +40,17 @@ class CompleteActivity : AppCompatActivity() {
         userAccount = sharedPreferenceGoogleLogin.getAccount(this@CompleteActivity).toString()
 
         if (type == "PASSENGER") {
-            postData = intent.getSerializableExtra("postData") as PostData?
-            driverData = intent.getSerializableExtra("postDriver") as User
+            postData = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra("postData")
+            } else {
+                intent.getParcelableExtra("postData", PostData::class.java)
+            }
+            driverData = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra("postDriver")
+            } else {
+                intent.getParcelableExtra("postDriver", User::class.java)
+            }
+
             postCost = postData?.postCost
 
             var driverName = driverData?.name
@@ -54,7 +63,7 @@ class CompleteActivity : AppCompatActivity() {
                 "null ${driverData?.name}"
             }
 
-            cBinding.completePassengerCost.text = "${postCost.toString()}원"
+            cBinding.completePassengerCost.text = getString(R.string.setCost, "$postCost")//"${postCost.toString()}원"
 
             cBinding.completeDriverAccountNumber.paintFlags = Paint.UNDERLINE_TEXT_FLAG  //밑줄긋기
             cBinding.completeDriverAccountNumber.setOnClickListener {
@@ -69,7 +78,7 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.tossBankLl.setOnClickListener {
                 driverData?.accountNumber?.let { it1 -> createClipData(it1) }
                 if (postCost != null) {
-                    deepLink("viva.republica.toss", postCost!!)
+                    deepLink("viva.republica.toss")
                 }
 
             }
@@ -77,15 +86,14 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.kakaoPayLl.setOnClickListener {
                 driverData?.accountNumber?.let { it1 -> createClipData(it1) }
                 if (postCost != null) {
-                    deepLink("com.kakao.talk", postCost!!)
+                    deepLink("com.kakao.talk")
                 }
             }
 
             cBinding.accountTransferLl.setOnClickListener {
                 driverData?.accountNumber?.let { it1 -> createClipData(it1) }
                 if (postCost != null) {
-                    Log.e("userAccount", userAccount)
-                    deepLink(userAccount, postCost!!)
+                    deepLink(userAccount)
                 }
             }
 
@@ -95,8 +103,11 @@ class CompleteActivity : AppCompatActivity() {
             layoutParams.topMargin = newMarginTop
             cBinding.completeEntireLl.layoutParams = layoutParams
 
-            postData = intent.getSerializableExtra("postData") as PostData?
-
+            postData = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra("postData")
+            } else {
+                intent.getParcelableExtra("postData", PostData::class.java)
+            }
             cBinding.completeEntireLl.visibility = View.VISIBLE
             cBinding.completeEnd2MessageTv.text = "입금여부를 확인하고 후기를 작성하세요"
 
@@ -138,7 +149,7 @@ class CompleteActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun deepLink(packageName: String, cost : Int) {
+    private fun deepLink(packageName: String) {
         // 딥링크 URI를 정확히 작성해야 합니다.
         /*val uri = Uri.parse("miopay://deeplink?cost=$${cost}")
 

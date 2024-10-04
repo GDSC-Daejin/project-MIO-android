@@ -5,11 +5,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 
 import androidx.lifecycle.MutableLiveData
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mio.RetrofitServerConnect
-import com.example.mio.model.NotificationData
 import com.example.mio.model.PostData
 import com.example.mio.model.RequirementData
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +18,7 @@ import retrofit2.*
 
 class SharedViewModel : ViewModel() {
 
-    private val _isNotDeadLine = MutableStateFlow<Boolean>(false)
+    private val _isNotDeadLine = MutableStateFlow(false)
     val isNotDeadLine: StateFlow<Boolean> get() = _isNotDeadLine
 
     fun fetchIsBeforeDeadLine(context: Context, postId: Int) {
@@ -33,15 +31,7 @@ class SharedViewModel : ViewModel() {
                 if (response.isSuccessful) {
                     val responseData = response.body()
                     _isNotDeadLine.value = responseData?.postType == "BEFORE_DEADLINE" && responseData.isDeleteYN != "Y"
-
-                    // Log the response data
-                    Log.d("fetchIsBeforeDeadLine", "Response Code: ${response.code()}")
-                    Log.d("fetchIsBeforeDeadLine", "Response Body: ${responseData?.toString()}")
-                    Log.d("fetchIsBeforeDeadLine", "${_isNotDeadLine.value}")
                 } else {
-                    // Log the error body
-                    Log.e("fetchIsBeforeDeadLine", "Response Error Code: ${response.code()}")
-                    Log.e("fetchIsBeforeDeadLine", "Response Error Body: ${response.errorBody()?.string()!!}")
                     _isNotDeadLine.value = false
                 }
             } catch (e: Exception) {
@@ -130,7 +120,7 @@ class SharedViewModel : ViewModel() {
     private val liveData = MutableLiveData<ArrayList<String>>()
 
     //선택된 캘린더 데이터 받기
-    var calendarLiveData = MutableLiveData<HashMap<String, ArrayList<PostData>>>()
+    private var calendarLiveData = MutableLiveData<HashMap<String, ArrayList<PostData>>>()
     fun getLiveData(): LiveData<ArrayList<String>> {
         return liveData
     }

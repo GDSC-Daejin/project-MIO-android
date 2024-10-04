@@ -1,6 +1,5 @@
 package com.example.mio.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -50,7 +49,6 @@ class CommentsViewModel : ViewModel() {
     }
 
     fun addComment(comment: CommentData) {
-        Log.e("addComment", "$comment")
         val updatedList = _allComments.value.orEmpty().toMutableList()
         updatedList.add(comment)
         _allComments.value = updatedList
@@ -86,7 +84,6 @@ class CommentsViewModel : ViewModel() {
         }
 
         _allComments.value = allComments
-        Log.e("updateAllComments", _allComments.value.toString())
     }
 
     // Remove a comment by marking it as "deleted"
@@ -123,7 +120,6 @@ class CommentsViewModel : ViewModel() {
     fun updateComment(updatedComment: CommentData) {
         // Check if the comment is marked as deleted
         if (updatedComment.content == "삭제된 댓글입니다.") {
-            Log.e("updateComment", "Comment is marked as deleted. Update ignored.")
             return
         }
 

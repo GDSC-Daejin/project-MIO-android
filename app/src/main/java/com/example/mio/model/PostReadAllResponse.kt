@@ -1,6 +1,8 @@
 package com.example.mio.model
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
 class PostReadAllResponse(
     @SerializedName("totalPages")
@@ -79,6 +81,7 @@ data class Category(
     var categoryName : String,
 ): java.io.Serializable
 
+@Parcelize
 data class User(
     @SerializedName("id")
     var id : Int,
@@ -106,7 +109,7 @@ data class User(
     var grade : String?,
     @SerializedName("activityLocation")
     var activityLocation : String?
-) : java.io.Serializable
+) : Parcelable
 
 data class Participants(
     @SerializedName("id")

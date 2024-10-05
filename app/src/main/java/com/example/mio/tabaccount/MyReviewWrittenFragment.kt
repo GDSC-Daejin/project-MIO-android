@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -86,11 +87,13 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
                     }
                 } else {
                     Log.d("f", response.code().toString())
+                    updateUI2(emptyList())
                 }
             }
 
             override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
                 Log.d("error", t.toString())
+                updateUI2(emptyList())
             }
         })
     }

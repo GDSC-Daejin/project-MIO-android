@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -145,7 +146,9 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
                 } else {
                     requireActivity().runOnUiThread {
                         if (isAdded && !requireActivity().isFinishing) {
-                            Toast.makeText(requireActivity(), "사용자 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                            loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                            loadingDialog?.dismiss()
+                            updateUI2(emptyList())
                         }
                     }
                 }
@@ -154,7 +157,9 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
             override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
                 requireActivity().runOnUiThread {
                     if (isAdded && !requireActivity().isFinishing) {
-                        Toast.makeText(requireActivity(), "사용자 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                        loadingDialog?.dismiss()
+                        updateUI2(emptyList())
                     }
                 }
             }

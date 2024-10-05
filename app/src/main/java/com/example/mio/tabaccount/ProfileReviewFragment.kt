@@ -96,7 +96,8 @@ class ProfileReviewFragment : Fragment() {
                         Log.e("f", response.code().toString())
                         requireActivity().runOnUiThread {
                             if (isAdded && !requireActivity().isFinishing) {
-                                Toast.makeText(requireActivity(), "후기 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                                viewModel.setLoading(false)
+                                Toast.makeText(requireActivity(), "후기 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -105,7 +106,8 @@ class ProfileReviewFragment : Fragment() {
                 override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
                     requireActivity().runOnUiThread {
                         if (isAdded && !requireActivity().isFinishing) {
-                            Toast.makeText(requireActivity(), "후기 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                            viewModel.setLoading(false)
+                            Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }

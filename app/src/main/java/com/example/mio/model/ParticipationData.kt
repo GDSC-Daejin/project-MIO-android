@@ -1,8 +1,11 @@
 package com.example.mio.model
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
 //참여자 데이터
+@Parcelize
 data class ParticipationData(
     @SerializedName("participantId")
     var participantId : Int,
@@ -25,4 +28,4 @@ data class ParticipationData(
     @SerializedName("isDeleteYN")
     var isDeleteYN : String?,
 
-) : java.io.Serializable
+) : Parcelable

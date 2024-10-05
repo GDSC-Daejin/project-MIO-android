@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,7 +39,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         pBinding = ActivityParticipationReceiveBinding.inflate(layoutInflater)
         setContentView(pBinding.root)
-        postId = intent.getIntExtra("postId", 0) as Int
+        postId = intent.getIntExtra("postId", 0)
         targetDate = intent.getStringExtra("targetDate").toString()
 
         Log.d("ParticipationReceiveActivity PostId Test", postId.toString()) //ok완료
@@ -89,7 +90,6 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                 RetrofitServerConnect.create(this@ParticipationReceiveActivity).patchDeadLinePost(postId).enqueue(object : Callback<Content> {
                     override fun onResponse(call: Call<Content>, response: Response<Content>) {
                         if (response.isSuccessful) {
-                            Log.e("deadline", response.code().toString())
                             val responseData = response.body()
                             if (responseData != null) {
                                 //BEFORE_DEADLINE, DEADLINE, COMPLETED
@@ -111,11 +111,14 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                         } else {
                             Log.e("fff", response.code().toString())
                             Log.e("fff", response.errorBody()?.string()!!)
+                            Toast.makeText(this@ParticipationReceiveActivity, "게시글 상태 변경에 실패했습니다. 다시 시도해주세요. ${response.code()}", Toast.LENGTH_SHORT).show()
                         }
                     }
 
                     override fun onFailure(call: Call<Content>, t: Throwable) {
                         Log.e("ffffail", t.toString())
+                        loadingDialog.dismiss()
+                        Toast.makeText(this@ParticipationReceiveActivity, "게시글 상태 변경에 실패했습니다. 다시 시도해주세요. ${t.message}", Toast.LENGTH_SHORT).show()
                     }
                 })
             }
@@ -127,7 +130,6 @@ class ParticipationReceiveActivity : AppCompatActivity() {
             RetrofitServerConnect.create(this@ParticipationReceiveActivity).patchCompletePost(postId).enqueue(object : Callback<Content> {
                 override fun onResponse(call: Call<Content>, response: Response<Content>) {
                     if (response.isSuccessful) {
-                        Log.e("deadlineComplete", response.code().toString())
                         val responseData = response.body()
                         if (responseData != null) {
                             //BEFORE_DEADLINE, DEADLINE, COMPLETED
@@ -154,11 +156,15 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                     } else {
                         Log.e("fff", response.code().toString())
                         Log.e("fff", response.errorBody()?.string()!!)
+                        loadingDialog.dismiss()
+                        Toast.makeText(this@ParticipationReceiveActivity, "게시글 상태 변경에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<Content>, t: Throwable) {
                     Log.e("ffffail", t.toString())
+                    loadingDialog.dismiss()
+                    Toast.makeText(this@ParticipationReceiveActivity, "게시글 상태 변경에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
         }
@@ -169,7 +175,6 @@ class ParticipationReceiveActivity : AppCompatActivity() {
             override fun onResponse(call: Call<Content>, response: Response<Content>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
-                    Log.e("indexout check", response.body().toString())
                     if (responseData != null) {
                         when (responseData.postType) {
                             "BEFORE_DEADLINE" -> {
@@ -195,11 +200,15 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                 } else {
                     Log.e("fail receive", response.code().toString())
                     Log.e("fail receive", response.errorBody()?.string()!!)
+                    loadingDialog.dismiss()
+                    Toast.makeText(this@ParticipationReceiveActivity, "게시글 정보를 불러오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<Content>, t: Throwable) {
                 Log.e("Failure receive", t.toString())
+                loadingDialog.dismiss()
+                Toast.makeText(this@ParticipationReceiveActivity, "게시글 정보를 불러오는데 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -231,10 +240,6 @@ class ParticipationReceiveActivity : AppCompatActivity() {
     }
 
     private fun setParticipationData() {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-
         RetrofitServerConnect.create(this@ParticipationReceiveActivity).getParticipationData(postId).enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                 if (response.isSuccessful) {
@@ -253,7 +258,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                         }
                     } ?: handleEmptyData()
                 } else {
-                    handleError(response.errorBody()?.string())
+                    handleError(response.code().toString())
                 }
             }
 
@@ -318,7 +323,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
     }
 
     private fun handleError(error: String?) {
-        Log.e("ParticipationReceiveError", error.orEmpty())
         loadingDialog.dismiss()
+        Toast.makeText(this, "받아온 신청자 데이터가 없습니다. 다시 시도해주세요 $error", Toast.LENGTH_SHORT).show()
     }
 }

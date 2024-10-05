@@ -180,7 +180,7 @@ class MyReviewWriteableFragment : Fragment() {
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                 requireActivity().runOnUiThread {
                     if (isAdded && !requireActivity().isFinishing) {
-                        Toast.makeText(requireActivity(), "후가 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -320,7 +320,7 @@ class MyReviewWriteableFragment : Fragment() {
                         isLoading = false
                         requireActivity().runOnUiThread {
                             if (isAdded && !requireActivity().isFinishing) {
-                                Toast.makeText(requireActivity(), "후기 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }

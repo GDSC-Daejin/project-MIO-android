@@ -29,7 +29,7 @@ data class AddressData(
     @SerializedName("address")
     var address : Address?,
     @SerializedName("road_address")
-    var road_address : RoadAddress,
+    var road_address : RoadAddress?,
 ) : Parcelable
 
 @Parcelize
@@ -39,27 +39,6 @@ data class Address(
     var region_2depth_name : String, //지역 2 Depth, 구 단위
     var region_3depth_name : String, //지역 3 Depth, 동 단위
     var region_3depth_h_name : String, //지역 3 Depth, 행정동 명칭
-    var h_code : String,
-    var b_code : String,
-    var mountain_yn : String,
-    var main_address_no : String,
-    var sub_address_no : String,
     var x : String, //longitude
     var y : String, //latitude
 ) : Parcelable
-
-/*
-data class RoadAddress(
-    var address_name : String, //전체 도로명 주소
-    var region_1depth_name : String, //지역 1 Depth, 시도 단위
-    var region_2depth_name : String, //지역 2 Depth, 구 단위
-    var region_3depth_name : String, //지역 3 Depth, 동 단위
-    var road_name : String, //도로명
-    var underground_yn : String,
-    var main_building_no : String,
-    var sub_building_no : String,
-    var building_name : String,
-    var zone_no : String, //우편번호
-    var x : String, //longitude
-    var y : String, //latitude
-) : java.io.Serializable*/

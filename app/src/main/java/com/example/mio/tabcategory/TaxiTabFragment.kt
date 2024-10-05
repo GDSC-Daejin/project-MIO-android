@@ -587,7 +587,6 @@ class TaxiTabFragment : Fragment() {
 
                             // 어댑터에 전체 데이터를 적용
                             noticeBoardAdapter?.let { adapter ->
-                                Log.e("Second Call - carpoolAllData", "$taxiAllData")
                                 adapter.postItemData = taxiAllData
                                 adapter.notifyDataSetChanged()
                             }
@@ -599,11 +598,26 @@ class TaxiTabFragment : Fragment() {
                 } else {
                     Log.e("f", response.code().toString())
                     loadingDialog.dismiss()
+                    if (taxiAllData.isEmpty()) {
+                        taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
+                        taxiTabBinding.noticeBoardRV.visibility = View.GONE
+                    } else {
+                        taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
+                        taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
+                    }
                 }
             }
 
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                 Log.e("error", t.toString())
+                loadingDialog.dismiss()
+                if (taxiAllData.isEmpty()) {
+                    taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
+                    taxiTabBinding.noticeBoardRV.visibility = View.GONE
+                } else {
+                    taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
+                    taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
+                }
             }
         })
 
@@ -681,11 +695,22 @@ class TaxiTabFragment : Fragment() {
                             taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
                             taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
                         }
+                        loadingDialog.dismiss()
                     }
                 }
 
                 override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                     Log.d("error", t.toString())
+                    loadingDialog.dismiss()
+                    if (myAreaItemData.isNotEmpty()) {
+                        taxiTabBinding.areaRvLl.visibility = View.VISIBLE
+                        taxiTabBinding.nonAreaRvTv.visibility = View.GONE
+                        taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                    } else {
+                        taxiTabBinding.areaRvLl.visibility = View.GONE
+                        taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+                        taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
+                    }
                 }
             })
         }
@@ -802,6 +827,17 @@ class TaxiTabFragment : Fragment() {
 
             override fun onFailure(call: Call<List<Content>>, t: Throwable) {
                 Log.d("error", t.toString())
+                loadingDialog.dismiss()
+                if (currentTaxiAllData.isEmpty()) {
+                    taxiTabBinding.currentRv.visibility = View.GONE
+                    taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
+                    taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
+
+                } else {
+                    taxiTabBinding.currentRv.visibility = View.VISIBLE
+                    taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
+                    taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
+                }
             }
         })
     }

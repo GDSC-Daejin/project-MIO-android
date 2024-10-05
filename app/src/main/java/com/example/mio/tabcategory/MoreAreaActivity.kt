@@ -461,13 +461,13 @@ class MoreAreaActivity : AppCompatActivity() {
 
                 } else {
                     Log.d("f", response.code().toString())
-                    Toast.makeText(this@MoreAreaActivity, "지역 게시글을 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MoreAreaActivity, "지역 게시글을 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                 Log.d("error", t.toString())
-                Toast.makeText(this@MoreAreaActivity, "지역 게시글을 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@MoreAreaActivity, "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -635,14 +635,11 @@ class MoreAreaActivity : AppCompatActivity() {
                                 }
                                 mtAdapter?.notifyDataSetChanged()
                             }
-                        } else {
-                            Log.d("Error", "Response code: ${response.code()}")
                         }
                         isLoading = false
                     }
 
                     override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                        Log.d("Error", "Failure: ${t.message}")
                         isLoading = false
                     }
                 })

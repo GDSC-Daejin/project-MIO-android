@@ -146,9 +146,6 @@ class MyParticipationFragment : Fragment() { //두번쨰
         RetrofitServerConnect.create(requireActivity()).getMyParticipantsData().enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
                 if (response.isSuccessful) {
-                    //데이터 청소
-                    Log.d("myparticipationFragment", response.code().toString())
-                    Log.d("myparticipationFragment", response.body().toString())
                     val responseData = response.body()
                     //totalPages = responseData?.size?.toInt()?.div(5) ?: 0
                     myParticipationAllData.clear()
@@ -168,7 +165,6 @@ class MyParticipationFragment : Fragment() { //두번쨰
                             mpBinding.participationAccountSwipe.visibility = View.GONE
                             mpBinding.participationPostRv.visibility = View.GONE
                         }
-                        Log.d("mypartipationFragment", myParticipationAllData.toString())
                     } else {
                         //Log.d("Notification Fragment Data", "Received data: $myParticipationApprovalOrRejectAllData")
                         CoroutineScope(Dispatchers.IO).launch {
@@ -182,11 +178,33 @@ class MyParticipationFragment : Fragment() { //두번쨰
 
                 } else {
                     Log.e("f", response.code().toString())
+                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    loadingDialog?.dismiss()
+                    if (myParticipationAllData.size > 0) {
+                        mpBinding.accountParticipationNotDataLl.visibility = View.GONE
+                        mpBinding.participationAccountSwipe.visibility = View.VISIBLE
+                        mpBinding.participationPostRv.visibility = View.VISIBLE
+                    } else {
+                        mpBinding.accountParticipationNotDataLl.visibility = View.VISIBLE
+                        mpBinding.participationAccountSwipe.visibility = View.GONE
+                        mpBinding.participationPostRv.visibility = View.GONE
+                    }
                 }
             }
 
             override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
                 Log.e("error", t.toString())
+                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                loadingDialog?.dismiss()
+                if (myParticipationAllData.size > 0) {
+                    mpBinding.accountParticipationNotDataLl.visibility = View.GONE
+                    mpBinding.participationAccountSwipe.visibility = View.VISIBLE
+                    mpBinding.participationPostRv.visibility = View.VISIBLE
+                } else {
+                    mpBinding.accountParticipationNotDataLl.visibility = View.VISIBLE
+                    mpBinding.participationAccountSwipe.visibility = View.GONE
+                    mpBinding.participationPostRv.visibility = View.GONE
+                }
             }
         })
     }
@@ -209,19 +227,16 @@ class MyParticipationFragment : Fragment() { //두번쨰
             mpBinding.participationAccountSwipe.visibility = View.GONE
             mpBinding.participationPostRv.visibility = View.GONE
         }
-        Log.d("mypartipationFragment", myParticipationAllData.toString())
     }
 
     //게시글 승인 예약 인원정보
     private fun setPostUserData(postList: List<ParticipationData>?) {
-        Log.e("participationFragment PostId Test", "진입완료")
         if (postList?.isNotEmpty() == true) {
             for (i in postList.indices) {
                 RetrofitServerConnect.create(requireActivity()).getPostIdDetailSearch(postId = postList[i].postId).enqueue(object : Callback<Content> {
                     override fun onResponse(call: Call<Content>, response: Response<Content>) {
                         if (response.isSuccessful) {
                             val responseData = response.body()
-                            Log.e("indexout check", response.body().toString())
                             if (responseData != null) {
                                 if (responseData.isDeleteYN == "N") {
                                     responseData.let {
@@ -266,20 +281,18 @@ class MyParticipationFragment : Fragment() { //두번쨰
                                         }
                                         myParticipationAllData.clear()
                                         myParticipationAllData.addAll(sortedTargets)
-                                        //updateUI(myParticipationAllData)
-                                        Log.e("myParticipationAllData", myParticipationAllData.toString())
                                     }
                                     updateUI()
                                 }
                             } else {
-                                Log.e("MyParticipationFragment", response.code().toString())
-                                Log.e("MyParticipationFragment", response.errorBody()?.string()!!)
+                                updateUI()
                             }
                         }
                     }
 
                     override fun onFailure(call: Call<Content>, t: Throwable) {
                         Log.e("MyParticipationFail", t.message.toString())
+                        updateUI()
                     }
                 })
             }

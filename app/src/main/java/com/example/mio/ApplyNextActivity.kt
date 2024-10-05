@@ -311,20 +311,18 @@ class ApplyNextActivity : AppCompatActivity() {
                     response: Response<ParticipationData>
                 ) {
                     if (response.isSuccessful) {
-                        println("succcc")
                         //postData?.let { it1 -> setNotification("참여 신청이 완료되었습니다!", it1) }
                         //sendAlarmData()
                         Toast.makeText(this@ApplyNextActivity, "참여 신청이 완료되었습니다!", Toast.LENGTH_SHORT).show()
                     } else {
-                        println("faafa")
-                        Log.e("addpost", response.errorBody()?.string()!!)
-                        Log.e("message", call.request().toString())
-                        println(response.code())
+                        Toast.makeText(this@ApplyNextActivity, "참여 신청에 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<ParticipationData>, t: Throwable) {
                     Log.e("error", t.toString())
+                    Toast.makeText(this@ApplyNextActivity, "참여 신청에 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+
                 }
             })
 

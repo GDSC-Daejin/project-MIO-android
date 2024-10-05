@@ -32,8 +32,6 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
             val userId = partData.userId
             val user : User? = participantsUserData.find { it?.id == userId }
 
-            Log.e("participantsUserDataMap", user.toString())
-            Log.e("participantsUserDataMap", partData.toString())
             // UI 업데이트
             updateUI(binding, partData, user, position)
         }
@@ -41,10 +39,8 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         private fun updateUI(binding: ParticipationItemLayoutBinding, partData: ParticipationData, user: User?, position: Int) {
             // 선택된 아이템인지 확인하고 배경 색상 설정
             if (selectedItemPositions.contains(position)) {
-                Log.e("setItemSelected", "setItemSelected")
                 setItemSelected(binding)
             } else {
-                Log.e("setItemUnselected", "setItemUnselected")
                 setItemUnselected(binding)
             }
 
@@ -122,6 +118,7 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                     } else {
                         // 에러 처리 (필요시)
                         Log.e("fetchItemDetails", "Failed to approve participation")
+                        Toast.makeText(context, "승인 신청에 실패하였습니다. 다시 시도해주세요", Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -133,17 +130,6 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 itemClickListener.onRefuseClick(position, partData.participantId.toString())
                 notifyItemChanged(position)
             }
-
-            /*binding.participationCancel.setOnClickListener {
-                if (isTargetTimePassed(target)) {
-                    Log.e("participation", "예정된")
-                    Toast.makeText(context, "예정된 시간이 지나 취소하실 수 없습니다", Toast.LENGTH_SHORT).show()
-                } else {
-                    removeData(partData.participantId, position)
-                    itemClickListener.onRefuseClick(position, partData.participantId.toString())
-                    notifyItemChanged(position)
-                }
-            }*/
         }
     }
 

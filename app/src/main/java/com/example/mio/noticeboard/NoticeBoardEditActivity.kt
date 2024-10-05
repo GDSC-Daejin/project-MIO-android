@@ -851,7 +851,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     private fun fifthVF() {
         mBinding.completeBtn.setOnClickListener {
             if (type.equals("ADD")) {
-                Log.e("editactivity", "add")
                 if (isFirst) {
                     var school = false
 
@@ -867,18 +866,14 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                             call: Call<AddPostResponse>,
                             response: Response<AddPostResponse>
                         ) {
-                            if (response.isSuccessful) {
-                                Log.d("NoticeBoardEdit", "response succcc")
-                            } else {
-                                println("NoticeBoardEditActivityTempTest fafafafaf")
-                                Log.d("NoticeBoardEditActivityTempTest aa", response.errorBody()?.string()!!)
-                                Log.d("NoticeBoardEditActivityTempTestaf meeage", call.request().toString())
-                                println(response.code())
+                            if (!response.isSuccessful) {
+                                Toast.makeText(this@NoticeBoardEditActivity, "게시글 생성에 실패하였습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                             }
                         }
 
                         override fun onFailure(call: Call<AddPostResponse>, t: Throwable) {
                             Log.d("error", t.toString())
+                            Toast.makeText(this@NoticeBoardEditActivity, "연결에 실패하였습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                         }
 
                     })
@@ -919,15 +914,13 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                                 if (response.isSuccessful) {
                                     println("succcckkkk")
                                 } else {
-                                    println("faafa")
-                                    Log.d("edit", response.errorBody()?.string()!!)
-                                    Log.d("message", call.request().toString())
-                                    println(response.code())
+                                    Toast.makeText(this@NoticeBoardEditActivity, "게시글 수정에 실패하였습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                                 }
                             }
 
                             override fun onFailure(call: Call<AddPostResponse>, t: Throwable) {
                                 Log.d("error", t.toString())
+                                Toast.makeText(this@NoticeBoardEditActivity, "게시글 수정에 실패하였습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                             }
                         })
                     }
@@ -1146,17 +1139,10 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                         if (documents?.isNotEmpty()==true) {
                             addItemsAndMarkers(result)
                         } else {
-                            Log.e("Search Error", response.code().toString())
-                            Log.e("Search Error", response.body().toString())
-                            Log.e("Search Error", response.errorBody()?.string()!!)
                             Toast.makeText(this@NoticeBoardEditActivity, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        Log.e("Search Error", response.code().toString())
-                        Log.e("Search Error", response.message().toString())
-                        Log.e("Search Error", response.body().toString())
-                        Log.e("Search Error", response.errorBody()?.string()!!)
-                        Toast.makeText(this@NoticeBoardEditActivity, "검색 결과가 없습니다 ${response.code()}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@NoticeBoardEditActivity, "검색에 실패하였습니다 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                     /*if (result != null) {
 
@@ -1164,18 +1150,12 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                         Log.e("edit search", "Response body is null")
                     }*/
                 } else {
-                    Log.e("EDIT Search", response.code().toString())
-                    Log.e("EDIT Search", response.errorBody()?.string()!!)
-                    Log.e("EDIT Search", response.errorBody()?.string() ?: "Unknown error")
-                    Log.e("EDIT Search", call.request().toString())
-                    Log.e("EDIT Search", response.message().toString())
                     Toast.makeText(this@NoticeBoardEditActivity, "검색에 실패하였습니다 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
-                Log.w("LocalSearch", "통신 실패: ${t.message}")
-                Toast.makeText(this@NoticeBoardEditActivity, "검색에 실패하였습니다 : ${t.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@NoticeBoardEditActivity, "연결에 실패하였습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -1192,8 +1172,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             override fun onResponse(call: Call<ResultSearchAddress>, response: Response<ResultSearchAddress>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()?.documents
-                    Log.e("search Result", location2.toString())
-                    Log.e("search Result", response.body()?.documents.toString())
                     if (responseData?.isEmpty() == true) {
                         Toast.makeText(this@NoticeBoardEditActivity, "잘못된 지역입니다 다시 검색해주세요", Toast.LENGTH_SHORT).show()
                     }
@@ -1204,24 +1182,14 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                                     region3Depth = it.take(1).first().address?.region_3depth_name.toString()
                                 }
                             }
-                            Log.e("region3Depth", region3Depth)
-                            /*adapter.updateData(tempList, keyword)
-                            binding.textView4.visibility = View.GONE
-                            binding.textView5.visibility = View.GONE
-                            binding.rvSearchList.visibility = View.VISIBLE*/
                         }
                     }
-                } else {
-                    Log.e("search Result", response.code().toString())
-                    Log.e("search Result", response.errorBody()?.string()!!)
-                    Log.e("search Result", response.errorBody()?.string()!!)
-                    Log.e("search Result", call.request().toString())
-                    Log.e("search Result", response.message().toString())
                 }
             }
 
             override fun onFailure(call: Call<ResultSearchAddress>, t: Throwable) {
                 Log.w("LocalSearch", "통신 실패: ${t.message}")
+                Toast.makeText(this@NoticeBoardEditActivity, "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }

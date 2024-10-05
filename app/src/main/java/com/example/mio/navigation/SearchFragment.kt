@@ -206,37 +206,6 @@ class SearchFragment : Fragment() {
     }
 
     private fun loadSearchPost(location : String?) {
-        /*val interceptor = Interceptor { chain ->
-            val newRequest: Request
-            if (token != null && token != "") { // 토큰이 없지 않은 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("search", "searchFragment")
-                    val intent = Intent(context, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(context, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    requireActivity().startActivity(intent)
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-
         RetrofitServerConnect.create(requireActivity()).getLocationPostData(location!!).enqueue(object : Callback<List<LocationReadAllResponse>> {
             override fun onResponse(
                 call: Call<List<LocationReadAllResponse>>,
@@ -267,17 +236,18 @@ class SearchFragment : Fragment() {
                 } else {
                     requireActivity().runOnUiThread {
                         if (isAdded && !requireActivity().isFinishing) {
-                            Toast.makeText(requireContext(), "검색된 게시글이 없습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
+                            loadingDialog?.dismiss()
+                            Toast.makeText(requireContext(), "검색에 실패하였습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                         }
                     }
-
                 }
             }
 
             override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
                 requireActivity().runOnUiThread {
                     if (isAdded && !requireActivity().isFinishing) {
-                        Toast.makeText(requireContext(), "검색된 게시글이 없습니다. ${t.message}", Toast.LENGTH_SHORT).show()
+                        loadingDialog?.dismiss()
+                        Toast.makeText(requireContext(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -299,9 +269,6 @@ class SearchFragment : Fragment() {
                             val selectedData = responseData.firstOrNull { it.postId == postId }
                             if (selectedData != null) {
                                 displaySelectedPostOnMap(selectedData)
-                            } else {
-                                Log.e("requestActivity", "Selected data not found in response")
-                                Toast.makeText(requireActivity(), "Selected data not found in response", Toast.LENGTH_SHORT).show()
                             }
                             for (i in responseData.filter { it.postId != postId && it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE"}) {
                                 val style = kakaoMapValue?.labelManager?.addLabelStyles(LabelStyles.from(LabelStyle.from(R.drawable.map_poi_srn)))
@@ -317,14 +284,16 @@ class SearchFragment : Fragment() {
                         Log.d("comment", response.errorBody()?.string() ?: "Unknown error")
                         Log.d("message", call.request().toString())
                         Log.d("response code", response.code().toString())
-                        Toast.makeText(requireActivity(), "Selected data not found in response ${response.code()}", Toast.LENGTH_SHORT).show()
+                        loadingDialog?.dismiss()
+                        Toast.makeText(requireActivity(), "주위 게시글 검색에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
                     Log.d("error", t.toString())
                     Log.e("SearchFragment", "Error fetching nearby post data: ${t.localizedMessage}")
-                    Toast.makeText(requireActivity(), "Selected data onFailure ${t.message}", Toast.LENGTH_SHORT).show()
+                    loadingDialog?.dismiss()
+                    Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
         }

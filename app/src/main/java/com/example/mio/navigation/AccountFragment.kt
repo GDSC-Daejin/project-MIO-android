@@ -304,6 +304,8 @@ class AccountFragment : Fragment() {
                 Log.d("error","error $t")
                 requireActivity().runOnUiThread {
                     if (isAdded && !requireActivity().isFinishing) {
+                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                        loadingDialog?.dismiss()
                         Toast.makeText(requireActivity(), "계정 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
                     }
                 }

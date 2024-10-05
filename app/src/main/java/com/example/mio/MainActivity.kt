@@ -554,9 +554,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
                         initNotification(notificationIcon)
                     }
                 } else {
-                    Log.e("MainActivity set user", response.message().toString())
-                    Log.e("MainActivity set user", response.code().toString())
-                    Log.e("MainActivity set user", response.errorBody()?.string()!!)
                     Toast.makeText(this@MainActivity, "유저 정보를 가져오지 못했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -594,7 +591,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
             }
 
             override fun onFailure(call: Call<List<AddAlarmResponseData>>, t: Throwable) {
-                Log.d("MainActivitu Notification", t.message.toString())
                 menuItem?.setIcon(R.drawable.top_menu_notification)
             }
         })

@@ -6,7 +6,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -114,7 +113,6 @@ class LoginActivity : AppCompatActivity() {
                             .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
                         builder.build()
 
-                        loadingDialog?.dismiss()
                         if (loadingDialog != null && loadingDialog!!.isShowing) {
                             loadingDialog?.dismiss()
                             loadingDialog = null // 다이얼로그 인스턴스 참조 해제
@@ -192,7 +190,6 @@ class LoginActivity : AppCompatActivity() {
             val userInfoToken = TokenRequest(idToken.toString())
             signInCheck(userInfoToken)
         } catch (e: ApiException) {
-            Log.e("catch failed", "signinresultfalied code = " + e.statusCode)
             loadingDialog?.dismiss()
             Toast.makeText(this, "로그인에 오류가 발생했습니다. ${e.statusCode}", Toast.LENGTH_SHORT).show()
         }
@@ -203,24 +200,9 @@ class LoginActivity : AppCompatActivity() {
         resultLauncher.launch(signIntent)
     }
 
-    override fun onStart() {
-        super.onStart()
-        Log.d("LoginActivity", "start")
-    }
-
-    override fun onPause() {
-        super.onPause()
-        Log.d("LoginActivity", "pause")
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.d("LoginActivity", "onresume")
-    }
 
     override fun onStop() {
         super.onStop()
-        Log.d("LoginActivity", "stop")
         if (loadingDialog != null && loadingDialog!!.isShowing) {
             loadingDialog?.dismiss()
             loadingDialog = null // 다이얼로그 인스턴스 참조 해제

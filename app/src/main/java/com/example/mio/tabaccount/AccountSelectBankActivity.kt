@@ -136,7 +136,6 @@ class AccountSelectBankActivity : AppCompatActivity() {
         binding.accountSelectBankBtn.setOnClickListener {
             if (userAccountNumber == null) {
                 Toast.makeText(this@AccountSelectBankActivity, "계좌번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
-                println("useran " + (userAccountNumber ?: "") + userBank)
             } else {
                 val intent = Intent(this@AccountSelectBankActivity, AccountSettingActivity::class.java).apply {
                     putExtra("flag", 2)

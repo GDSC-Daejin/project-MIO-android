@@ -407,12 +407,16 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                             if (response.isSuccessful) {
                                                 Log.d("noticeboardread", response.code().toString())
                                             } else {
-                                                Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패했습니다", Toast.LENGTH_SHORT).show()
+                                                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                                                loadingDialog?.dismiss()
+                                                Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패했습니다 ${response.code()}", Toast.LENGTH_SHORT).show()
                                             }
                                         }
 
                                         override fun onFailure(call: Call<Void>, t: Throwable) {
-                                            Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패했습니다 ${t.message}", Toast.LENGTH_SHORT).show()
+                                            loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                                            loadingDialog?.dismiss()
+                                            Toast.makeText(this@NoticeBoardReadActivity, "연결에 실패했습니다 ${t.message}", Toast.LENGTH_SHORT).show()
                                         }
                                     })
                                 }
@@ -470,18 +474,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                             commentsViewModel.addChildComment(temp, parentPosition)
                                             commentsViewModel.addComment(temp)
                                         }
-                                        println("대댓글달기성공")
-                                        //한 번 달고 끝내야하니 false전달
                                         sharedViewModel!!.postReply(reply = false)
                                         //sendAlarmData ("댓글 ", commentEditText, temp)
                                         commentEditText = ""
                                     } else {
                                         commentsViewModel.setLoading(false)
                                         commentsViewModel.setError(response.errorBody()?.string()!!)
-                                        println("faafa")
-                                        Log.d("comment", response.errorBody()?.string()!!)
-                                        Log.d("message", call.request().toString())
-                                        println(response.code())
                                     }
                                 }
 
@@ -622,10 +620,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         } else {
                                             commentsViewModel.setLoading(false)
                                             commentsViewModel.setError(response.errorBody()?.string()!!)
-                                            println("faafa")
-                                            Log.d("comment", response.errorBody()?.string()!!)
-                                            Log.d("message", call.request().toString())
-                                            println(response.code())
                                         }
                                     }
 
@@ -914,13 +908,17 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         initMyBookmarkData()
                     } else {
+                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                        loadingDialog?.dismiss()
                         Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패하였습니다 ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<Void>, t: Throwable) {
                     Log.d("error", t.toString())
-                    Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패하였습니다 ${t.message}", Toast.LENGTH_SHORT).show()
+                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    loadingDialog?.dismiss()
+                    Toast.makeText(this@NoticeBoardReadActivity, "연결에 실패하였습니다 ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
         }
@@ -1203,13 +1201,16 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         }
                     }
                 } else {
-
-                    Toast.makeText(this@NoticeBoardReadActivity, "게시글 정보를 가져오는데 실패하였습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    loadingDialog?.dismiss()
+                    Toast.makeText(this@NoticeBoardReadActivity, "게시글 정보를 가져오는데 실패하였습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<Content>, t: Throwable) {
-                Toast.makeText(this@NoticeBoardReadActivity, "게시글 정보를 가져오는데 실패하였습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                loadingDialog?.dismiss()
+                Toast.makeText(this@NoticeBoardReadActivity, "연결에 실패하였습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -1235,12 +1236,16 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         }
                     }
                 } else {
-                    Toast.makeText(this@NoticeBoardReadActivity, "북마크 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    loadingDialog?.dismiss()
+                    Toast.makeText(this@NoticeBoardReadActivity, "북마크 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<BookMarkResponseData>>, t: Throwable) {
-                Toast.makeText(this@NoticeBoardReadActivity, "북마크 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                loadingDialog?.dismiss()
+                Toast.makeText(this@NoticeBoardReadActivity, "북마크 정보를 가져오는데 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -1262,13 +1267,17 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         participantApplyBtnSet(isParticipation!!, isDeadLineCheck2)
                     }
                 } else {
-                    Toast.makeText(this@NoticeBoardReadActivity, "참여 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    loadingDialog?.dismiss()
+                    //Toast.makeText(this@NoticeBoardReadActivity, "참여 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
                 Log.d("error", t.toString())
-                Toast.makeText(this@NoticeBoardReadActivity, "참여 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                loadingDialog?.dismiss()
+                //Toast.makeText(this@NoticeBoardReadActivity, "참여 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -1445,13 +1454,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         }
                                         alertDialog1.show()
                                     } else {
-                                        Toast.makeText(this@NoticeBoardReadActivity, "참여 취소에 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(this@NoticeBoardReadActivity, "참여 취소에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
 
                             override fun onFailure(call: Call<Void>, t: Throwable) {
-                                Toast.makeText(this@NoticeBoardReadActivity, "참여 취소에 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@NoticeBoardReadActivity, "참여 취소에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                             }
                         })
                         alertDialog.dismiss()
@@ -1653,15 +1662,17 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
 
                 } else {
-                    println("faafa")
-                    Log.d("comment", response.errorBody()?.string()!!)
-                    Log.d("message", call.request().toString())
-                    println(response.code())
+                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    loadingDialog?.dismiss()
+                    Toast.makeText(this@NoticeBoardReadActivity, "연결에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<CheckParticipateData>, t: Throwable) {
                 Log.d("error", t.toString())
+                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                loadingDialog?.dismiss()
+                Toast.makeText(this@NoticeBoardReadActivity, "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }

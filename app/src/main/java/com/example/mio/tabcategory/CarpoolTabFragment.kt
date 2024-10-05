@@ -668,7 +668,6 @@ class CarpoolTabFragment : Fragment() {
 
                             // 어댑터에 전체 데이터를 적용
                             noticeBoardAdapter?.let { adapter ->
-                                Log.e("Second Call - carpoolAllData", "$carpoolAllData")
                                 adapter.postItemData = carpoolAllData
                                 adapter.notifyDataSetChanged()
                             }
@@ -678,14 +677,26 @@ class CarpoolTabFragment : Fragment() {
                         loadingDialog?.dismiss()
                     }
                 } else {
-                    Log.e("Response Error", response.code().toString())
                     loadingDialog?.dismiss()
+                    if (carpoolAllData.isEmpty()) {
+                        taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
+                        taxiTabBinding.noticeBoardRV.visibility = View.GONE
+                    } else {
+                        taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
+                        taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
+                    }
                 }
             }
 
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                Log.e("Request Failure", t.toString())
                 loadingDialog?.dismiss()
+                if (carpoolAllData.isEmpty()) {
+                    taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
+                    taxiTabBinding.noticeBoardRV.visibility = View.GONE
+                } else {
+                    taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
+                    taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
+                }
             }
         })
     }
@@ -756,19 +767,39 @@ class CarpoolTabFragment : Fragment() {
                         }
 
                     } else {
-                        requireActivity().runOnUiThread {
+                        /*requireActivity().runOnUiThread {
                             if (isAdded && !requireActivity().isFinishing) {
-                                Toast.makeText(requireActivity(), "지역 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                                loadingDialog?.dismiss()
+                                Toast.makeText(requireActivity(), "지역 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                             }
+                        }*/
+                        if (myAreaItemData.isNotEmpty()) {
+                            taxiTabBinding.areaRvLl.visibility = View.VISIBLE
+                            taxiTabBinding.nonAreaRvTv.visibility = View.GONE
+                            taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                        } else {
+                            taxiTabBinding.areaRvLl.visibility = View.GONE
+                            taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+                            taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
                         }
                     }
                 }
 
                 override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    requireActivity().runOnUiThread {
+                   /* requireActivity().runOnUiThread {
                         if (isAdded && !requireActivity().isFinishing) {
-                            Toast.makeText(requireActivity(), "지역 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                            loadingDialog?.dismiss()
+                            Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                         }
+                    }*/
+                    if (myAreaItemData.isNotEmpty()) {
+                        taxiTabBinding.areaRvLl.visibility = View.VISIBLE
+                        taxiTabBinding.nonAreaRvTv.visibility = View.GONE
+                        taxiTabBinding.nonAreaRvTv2.visibility = View.GONE
+                    } else {
+                        taxiTabBinding.areaRvLl.visibility = View.GONE
+                        taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
+                        taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
                     }
                 }
             })

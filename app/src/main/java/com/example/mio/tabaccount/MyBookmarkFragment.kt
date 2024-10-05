@@ -147,12 +147,16 @@ class MyBookmarkFragment : Fragment() {
                         loadingDialog?.dismiss()
                     }
                 } else {
-                    Toast.makeText(requireActivity(), "북마크 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    loadingDialog?.dismiss()
+                    Toast.makeText(requireActivity(), "북마크 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<BookMarkResponseData>>, t: Throwable) {
-                Toast.makeText(requireActivity(), "북마크 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                loadingDialog?.dismiss()
+                Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -194,14 +198,12 @@ class MyBookmarkFragment : Fragment() {
                                 }
                             }
                         } else {
-                            Log.e("fail notififrag", response.code().toString())
-                            Log.e("fail notififrag", response.errorBody()?.string()!!)
+                            loadingDialog?.dismiss()
                             shouldBreak = true
                         }
                     }
 
                     override fun onFailure(call: Call<Content>, t: Throwable) {
-                        Log.e("Failure notification", t.toString())
                         shouldBreak = true
                     }
                 })

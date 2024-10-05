@@ -122,13 +122,14 @@ class ProfileActivity : AppCompatActivity() {
                     }
 
                 } else {
-                    Toast.makeText(this@ProfileActivity, "사용자 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+
+                    Toast.makeText(this@ProfileActivity, "사용자 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<User>, t: Throwable) {
                 Log.d("error", t.toString())
-                Toast.makeText(this@ProfileActivity, "사용자 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@ProfileActivity, "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
 

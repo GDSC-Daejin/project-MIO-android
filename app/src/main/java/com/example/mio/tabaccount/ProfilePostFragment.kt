@@ -309,7 +309,7 @@ class ProfilePostFragment : Fragment() {
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                 requireActivity().runOnUiThread {
                     if (isAdded && !requireActivity().isFinishing) {
-                        Toast.makeText(requireActivity(), "사용자 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
@@ -364,7 +364,7 @@ class ProfilePostFragment : Fragment() {
                             } else {
                                 requireActivity().runOnUiThread {
                                     if (isAdded && !requireActivity().isFinishing) {
-                                        Toast.makeText(requireActivity(), "게시글 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(requireActivity(), "게시글 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             }
@@ -374,7 +374,7 @@ class ProfilePostFragment : Fragment() {
                         override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                             requireActivity().runOnUiThread {
                                 if (isAdded && !requireActivity().isFinishing) {
-                                    Toast.makeText(requireActivity(), "게시글 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                                 }
                             }
                             isLoading = false

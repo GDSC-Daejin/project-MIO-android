@@ -8,7 +8,9 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -20,6 +22,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.mio.adapter.AccountTabAdapter
@@ -102,9 +105,9 @@ class AccountFragment : Fragment() {
             startActivity(intent)
         }
 
-        aBinding.accountBank.setOnClickListener {
+        /*aBinding.accountBank.setOnClickListener {
             createClipData(myAccountData?.accountNumber.toString())
-        }
+        }*/
 
         aBinding.accountViewpager.adapter = AccountTabAdapter(requireActivity())
 
@@ -114,6 +117,28 @@ class AccountFragment : Fragment() {
 
 
         return aBinding.root
+    }
+
+    private fun initPersonalInformationConsent() {
+        AlertDialog.Builder(requireContext()).apply {
+            setTitle("배터리 최적화 제외 요청")
+            setMessage("정상적인 알림을 수신하기 위해 배터리 사용량 최적화 목록에서 제외해야 합니다. 제외하시겠습니까?")
+            setPositiveButton("권한 허용") { _, _ ->
+                /*val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                intent.data = Uri.parse("package:" + applicationContext.packageName)
+                saveSharedPreferenceGoogleLogin.setSharedAlarm(this@MainActivity, true)
+                sseStartCheck()
+                startActivity(intent)*/
+            }
+            setNegativeButton("취소") { dialog, _ ->
+                /*// 배터리 최적화 제외 권한이 거부되었습니다.
+                Toast.makeText(this@MainActivity, "배터리 최적화 제외가 거부되었습니다", Toast.LENGTH_SHORT).show()
+                saveSharedPreferenceGoogleLogin.setSharedAlarm(this@MainActivity, false)
+                dialog.dismiss()*/
+            }
+            create()
+            show()
+        }
     }
 
     private fun initSetAccountData() {
@@ -266,7 +291,7 @@ class AccountFragment : Fragment() {
                     }
 
                     if (accountNumber != null) {
-                        aBinding.accountBank.text = accountNumber
+                        aBinding.accountBank.text = "********"//accountNumber
                         aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
                     } else {
                         aBinding.accountBank.text = ""

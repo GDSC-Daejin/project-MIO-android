@@ -7,11 +7,9 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
 import android.util.Log
 import android.view.*
 import android.widget.Button
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -29,7 +27,6 @@ import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentCarpoolTabBinding
 import com.example.mio.viewmodel.CurrentDataViewModel
 import com.example.mio.viewmodel.SharedViewModel
-import com.google.android.gms.ads.AdRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -97,8 +94,6 @@ class CarpoolTabFragment : Fragment() {
 
     //처음 시작 시 계정 수정요청용
     private var isFirstAccountEdit : String? = null
-
-    private var adRequest : AdRequest? = null
 
     private var isFirst = true
 
@@ -1005,11 +1000,6 @@ class CarpoolTabFragment : Fragment() {
         }
     }
 
-    private fun initAd() {
-        adRequest = AdRequest.Builder().build()
-        taxiTabBinding.carpoolAd.loadAd(adRequest!!)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
 
@@ -1018,30 +1008,7 @@ class CarpoolTabFragment : Fragment() {
             loadingDialog!!.dismiss()
         }
     }
-    override fun onResume() {
-        super.onResume()
-        loadAdIfNeeded()
-    }
 
-    override fun onPause() {
-        super.onPause()
-        stopAdLoading()
-    }
-
-    private fun loadAdIfNeeded() {
-        if (isScreenOn()) {
-            initAd()
-        }
-    }
-
-    private fun stopAdLoading() {
-        adRequest = null
-    }
-
-    private fun isScreenOn(): Boolean {
-        val powerManager = requireContext().getSystemService(Context.POWER_SERVICE) as PowerManager
-        return powerManager.isInteractive
-    }
     companion object {
         /**
          * Use this factory method to create a new instance of

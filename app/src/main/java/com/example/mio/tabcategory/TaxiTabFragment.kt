@@ -1,12 +1,10 @@
 package com.example.mio.tabcategory
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -31,7 +29,6 @@ import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentTaxiTabBinding
 import com.example.mio.viewmodel.CurrentDataViewModel
 import com.example.mio.viewmodel.SharedViewModel
-import com.google.android.gms.ads.AdRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -95,7 +92,6 @@ class TaxiTabFragment : Fragment() {
 
     //로딩창
     private lateinit var loadingDialog : LoadingProgressDialog
-    private var adRequest : AdRequest? = null
 
     private var isFirst = true
 
@@ -723,7 +719,6 @@ class TaxiTabFragment : Fragment() {
             override fun onResponse(call: Call<List<Content>>, response: Response<List<Content>>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
-                    Log.d("taxi", response.code().toString())
                     //데이터 청소
                     currentTaxiAllData.clear()
 
@@ -780,11 +775,6 @@ class TaxiTabFragment : Fragment() {
                     loadingDialog.dismiss()
 
                 } else {
-                    println("faafa")
-                    Log.d("add", response.errorBody()?.string()!!)
-                    Log.d("message", call.request().toString())
-                    Log.d("f", response.code().toString())
-
                     if (response.code().toString() == "500") {
                         if (response.errorBody()?.string() != null) {
                             taxiTabBinding.currentRv.visibility = View.GONE
@@ -826,7 +816,6 @@ class TaxiTabFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<List<Content>>, t: Throwable) {
-                Log.d("error", t.toString())
                 loadingDialog.dismiss()
                 if (currentTaxiAllData.isEmpty()) {
                     taxiTabBinding.currentRv.visibility = View.GONE
@@ -897,33 +886,12 @@ class TaxiTabFragment : Fragment() {
         }
     }
 
-    /*override fun onAttach(context: Context) {
-        super.onAttach(context)
-        callback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (System.currentTimeMillis() - backPressedTime < 2500) {
-                    activity?.finish()
-                    return
-                }
-                Toast.makeText(activity, "한 번 더 누르면 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()
-                backPressedTime = System.currentTimeMillis()
-            }
-        }
-        activity?.onBackPressedDispatcher!!.addCallback(this, callback)
-        //mainActivity = context as MainActivity
-    }*/
-    private fun initAd() {
-        adRequest = AdRequest.Builder().build()
-        taxiTabBinding.taxiAd.loadAd(adRequest!!)
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[CurrentDataViewModel::class.java]
         setCurrentTaxiData()
 
         viewModel.currentTaxiLiveData.observe(viewLifecycleOwner) { postDataList ->
-            Log.e("viewmodelstarttax", postDataList.toString())
             currentTaxiAllData.sortByDescending {item -> item.postCreateDate}
             currentNoticeBoardAdapter?.updateDataList(postDataList.toList())
         }
@@ -963,32 +931,6 @@ class TaxiTabFragment : Fragment() {
             testselectCalendarData = textValue
         }
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
-    }
-
-
-    override fun onResume() {
-        super.onResume()
-        loadAdIfNeeded()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        stopAdLoading()
-    }
-
-    private fun loadAdIfNeeded() {
-        if (isScreenOn()) {
-            initAd()
-        }
-    }
-
-    private fun stopAdLoading() {
-        adRequest = null
-    }
-
-    private fun isScreenOn(): Boolean {
-        val powerManager = requireContext().getSystemService(Context.POWER_SERVICE) as PowerManager
-        return powerManager.isInteractive
     }
 
     companion object {

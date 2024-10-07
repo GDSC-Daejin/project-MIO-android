@@ -1,11 +1,9 @@
 package com.example.mio.tabcategory
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.PowerManager
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.*
 import com.example.mio.adapter.MoreTaxiTabAdapter
 import com.example.mio.bottomsheetfragment.AnotherBottomSheetFragment
-import com.example.mio.bottomsheetfragment.BottomAdFragment
 import com.example.mio.bottomsheetfragment.BottomSheetFragment
 import com.example.mio.model.PostData
 import com.example.mio.model.PostReadAllResponse
@@ -723,11 +720,21 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                         }
                     } else {
                         Log.e("setSelectData", "Error code: ${response.code()}")
+                        if (moreTaxiAllData.isEmpty()) {
+                            mttBinding.moreNonfilterTv.apply {
+                                text = "카풀 게시글이 존재하지 않습니다"
+                                visibility = View.VISIBLE
+                            }
+                            mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
+                        } else {
+                            mttBinding.moreNonfilterTv.visibility = View.GONE
+                            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+                        }
                     }
                 }
 
                 override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.e("setSelectData", "Failure: ${t.message}")
+                    Toast.makeText(this@MoreTaxiTabActivity, "연결에 실패하였습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
         }
@@ -752,53 +759,4 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         return chip
     }
 
-    private fun showBottomSheetAd(context: Context, isScreenOn : Boolean) {
-        val sharedPreference = SaveSharedPreferenceGoogleLogin()
-        val lastBottomSheetTime = sharedPreference.getLastBottomSheetTime(context)
-        val currentTime = System.currentTimeMillis()
-
-        // 마지막으로 바텀시트가 띄워진 시간부터 24시간이 지났는지 확인
-        if (currentTime - lastBottomSheetTime >= 24 * 60 * 60 * 1000 && isScreenOn) {
-            // 24시간이 지났으므로 바텀시트를 띄웁니다.
-            // 여기에 바텀시트를 띄우는 코드를 추가합니다.
-            val bottomSheet = BottomAdFragment()
-            //bottomSheet.setStyle(DialogFragment.STYLE_NORMAL, R.style.RoundCornerBottomSheetDialogTheme)
-            bottomSheet.show(this.supportFragmentManager, bottomSheet.tag)
-            bottomSheet.apply {
-                setCallback(object : BottomAdFragment.OnSendFromBottomSheetDialog{
-                    override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
-                        Toast.makeText(this@MoreTaxiTabActivity, "24시간 동안 끄기로 설정되었습니다", Toast.LENGTH_SHORT).show()
-                    }
-                })
-            }
-            // 바텀시트가 띄워진 시간을 저장합니다.
-            sharedPreference.setLastBottomSheetTime(context, currentTime)
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        loadAdIfNeeded()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        stopAdLoading()
-    }
-
-    private fun loadAdIfNeeded() {
-        if (isScreenOn()) {
-            showBottomSheetAd(this@MoreTaxiTabActivity, true)
-        }
-    }
-
-    private fun stopAdLoading() {
-        showBottomSheetAd(this@MoreTaxiTabActivity, false)
-    }
-
-    private fun isScreenOn(): Boolean {
-        val powerManager = this.getSystemService(Context.POWER_SERVICE) as PowerManager
-        return powerManager.isInteractive
-    }
 }

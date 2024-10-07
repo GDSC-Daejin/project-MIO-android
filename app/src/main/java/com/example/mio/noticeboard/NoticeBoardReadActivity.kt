@@ -119,8 +119,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     //어디서 이동되었는지
     private var tabType : String? = ""
 
-    private var adRequest : AdRequest? = null
-
     private lateinit var commentsViewModel : CommentsViewModel
 
     //private var sss = false
@@ -1252,7 +1250,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
     private fun initParticipationCheck(isDeadLineCheck2: Boolean) {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(this)
 
         RetrofitServerConnect.create(this@NoticeBoardReadActivity).getParticipationData(postId = temp?.postID!!).enqueue(object : Callback<List<ParticipationData>> {
             override fun onResponse(call: Call<List<ParticipationData>>, response: Response<List<ParticipationData>>) {
@@ -2264,7 +2262,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         refreshNoticeBoardReadData()
         initMyBookmarkData()
         setCommentData()
-        initAd()
     }
 
 
@@ -2332,39 +2329,8 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         return chip
     }
 
-    private fun initAd() {
-        adRequest = AdRequest.Builder().build()
-        nbrBinding.readAd.loadAd(adRequest!!)
-    }
-
     override fun onStart() {
         super.onStart()
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)!!.toString()
-    }
-
-
-    override fun onPause() {
-        super.onPause()
-        stopAdLoading()
-    }
-
-    private fun loadAdIfNeeded() {
-        if (isScreenOn()) {
-            initAd()
-        }
-    }
-
-    private fun stopAdLoading() {
-        adRequest = null
-    }
-
-    private fun isScreenOn(): Boolean {
-        val powerManager = this.getSystemService(Context.POWER_SERVICE) as PowerManager
-        return powerManager.isInteractive
-    }
-
-    override fun onResume() {
-        super.onResume()
-        loadAdIfNeeded()
     }
 }

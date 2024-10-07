@@ -1,3 +1,4 @@
+/*
 package com.example.mio.bottomsheetfragment
 
 import android.app.Dialog
@@ -41,10 +42,11 @@ class BottomAdFragment : BottomSheetDialogFragment() {
     ): View {
         binding = FragmentBottomAdBinding.inflate(inflater, container, false)
 
-        //initAd()
 
 
-       /* if (interstitialAd != null) {
+
+       */
+/* if (interstitialAd != null) {
             interstitialAd?.show(requireActivity())
             interstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
                 override fun onAdClicked() {
@@ -75,7 +77,8 @@ class BottomAdFragment : BottomSheetDialogFragment() {
                     Log.d("onadshow", "ad show")
                 }
             }
-        }*/
+        }*//*
+
 
 
         binding.bottomSheetButton.setOnClickListener {
@@ -127,7 +130,8 @@ class BottomAdFragment : BottomSheetDialogFragment() {
     }
 
     private fun populateNativeAd(adView: NativeAdView, ad: NativeAd) {
-        /*nativeAdView = binding.nativeAdView
+        */
+/*nativeAdView = binding.nativeAdView
 
         binding.adHeadline.text = ad.headline
         binding.adBody.text = ad.body
@@ -141,7 +145,8 @@ class BottomAdFragment : BottomSheetDialogFragment() {
 
         binding.nativeAdView.mediaView?.mediaContent = ad.mediaContent
 
-        binding.nativeAdView.setNativeAd(ad)*/
+        binding.nativeAdView.setNativeAd(ad)*//*
+
         val headline = adView.findViewById<TextView>(R.id.adHeadline)
         headline.text = ad.headline
         adView.headlineView = headline
@@ -176,14 +181,16 @@ class BottomAdFragment : BottomSheetDialogFragment() {
     }
 
     companion object {
-        /**
+        */
+/**
          * Use this factory method to create a new instance of
          * this fragment using the provided parameters.
          *
          * @param param1 Parameter 1.
          * @param param2 Parameter 2.
          * @return A new instance of fragment BottomAdFragment.
-         */
+         *//*
+
         // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
@@ -194,4 +201,4 @@ class BottomAdFragment : BottomSheetDialogFragment() {
                 }
             }
     }
-}
+}*/

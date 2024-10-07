@@ -20,7 +20,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:scaleType="fitCenter"
-            android:src="@drawable/kakao_bank_icon" />
+            android:src="@drawable/toss" />
 
         <TextView
             android:id="@+id/bank_item_tv"

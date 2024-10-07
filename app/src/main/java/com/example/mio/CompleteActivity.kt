@@ -74,12 +74,12 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.completeEnd2MessageTv.text = "아래 계좌에 본인 학번으로 입금해주세요!"
             cBinding.completeDivideView.visibility = View.VISIBLE
             cBinding.completeDivideView2.visibility = View.VISIBLE
+
             cBinding.tossBankLl.setOnClickListener {
                 driverData?.accountNumber?.let { it1 -> createClipData(it1) }
                 if (postCost != null) {
                     deepLink("viva.republica.toss")
                 }
-
             }
 
             cBinding.kakaoPayLl.setOnClickListener {
@@ -186,6 +186,12 @@ class CompleteActivity : AppCompatActivity() {
                 "com.shinhan.sbanking" -> {
                     // 카톡 앱이 설치되어 있지 않은 경우 처리할 내용을 여기에 추가합니다.
                     Toast.makeText(this, "신한은행 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+                "com.wooribank.smart.npib" -> {
+                    Toast.makeText(this, "우리은행 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+                "nh.smart.banking" -> {
+                    Toast.makeText(this, "농협은행 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
         }

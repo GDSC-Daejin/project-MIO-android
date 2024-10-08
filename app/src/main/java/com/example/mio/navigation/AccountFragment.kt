@@ -13,6 +13,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
+import android.text.method.LinkMovementMethod
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -20,6 +21,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -86,7 +88,7 @@ class AccountFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         aBinding = FragmentAccountBinding.inflate(inflater, container, false)
-
+        initPersonalInformationConsent()
         initSetAccountData()
 
         aBinding.accountSettingIv.setOnClickListener {
@@ -120,25 +122,33 @@ class AccountFragment : Fragment() {
     }
 
     private fun initPersonalInformationConsent() {
-        AlertDialog.Builder(requireContext()).apply {
-            setTitle("배터리 최적화 제외 요청")
-            setMessage("정상적인 알림을 수신하기 위해 배터리 사용량 최적화 목록에서 제외해야 합니다. 제외하시겠습니까?")
-            setPositiveButton("권한 허용") { _, _ ->
-                /*val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                intent.data = Uri.parse("package:" + applicationContext.packageName)
-                saveSharedPreferenceGoogleLogin.setSharedAlarm(this@MainActivity, true)
-                sseStartCheck()
-                startActivity(intent)*/
+        val layoutInflater = LayoutInflater.from(context)
+        val dialogView = layoutInflater.inflate(R.layout.privacy_policy_dialog_layout, null)
+        val alertDialog = android.app.AlertDialog.Builder(context, R.style.CustomAlertDialog)
+            .setView(dialogView)
+            .create()
+        val dialogContent = dialogView.findViewById<TextView>(R.id.message_text)
+        val dialogLeftBtn = dialogView.findViewById<View>(R.id.dialog_left_btn)
+        val dialogRightBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
+
+        dialogContent.setOnClickListener {
+            val url = "https://sites.google.com/daejin.ac.kr/mio/%ED%99%88"
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse(url)
             }
-            setNegativeButton("취소") { dialog, _ ->
-                /*// 배터리 최적화 제외 권한이 거부되었습니다.
-                Toast.makeText(this@MainActivity, "배터리 최적화 제외가 거부되었습니다", Toast.LENGTH_SHORT).show()
-                saveSharedPreferenceGoogleLogin.setSharedAlarm(this@MainActivity, false)
-                dialog.dismiss()*/
-            }
-            create()
-            show()
+            startActivity(intent)
         }
+
+        dialogLeftBtn.setOnClickListener {
+            Toast.makeText(requireContext(), "서비스 이용이 제한될 수 있습니다.", Toast.LENGTH_SHORT).show()
+            alertDialog.dismiss()
+        }
+
+        dialogRightBtn.setOnClickListener {
+            //todo 서비스 이용확인 api?
+            alertDialog.dismiss()
+        }
+        alertDialog.show()
     }
 
     private fun initSetAccountData() {

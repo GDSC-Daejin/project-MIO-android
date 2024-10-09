@@ -128,7 +128,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
     ) { isGranted: Boolean ->
         if (isGranted) {
             // 알림 권한이 허용되었습니다.
-            Log.e("alarm permission", "$isGranted")
             requestIgnoreBatteryOptimization()
         } else {
             // 알림 권한이 거부되었습니다.

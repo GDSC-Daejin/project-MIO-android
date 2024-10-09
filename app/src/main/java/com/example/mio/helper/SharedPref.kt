@@ -13,45 +13,6 @@ class SharedPref(context: Context) {
         storeSharedPref = context.getSharedPreferences("store_data", Context.MODE_PRIVATE)
     }
 
-    //만약 너무 커져서 용량이 부족해지거나 어떤 문제가 생기면 파일시스템의 내부저장소 저장을 이용하기기
-   /*fun setNotify(context: Context, key: String, values: ArrayList<AddAlarmResponseData>) {
-        //val prefs: SharedPreferences = storeSharedPref
-        val editor = storeSharedPref.edit()
-        val data : JSONArray = JSONArray()
-
-        for (i in 0 until values.size) {
-            data.put(values[i].post)
-            data.put(values[i].id)
-            data.put(values[i].content)
-            data.put(values[i].userEntity)
-            data.put(values[i].createDate)
-        }
-        if (values.isNotEmpty()) {
-            editor.putString(key, data.toString())
-        } else {
-            editor.putString(key, null)
-        }
-        editor.apply()
-    }
-
-    fun getNotify(context: Context, key: String) : MutableList<String> {
-        //val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-        val json = storeSharedPref.getString(key, null)
-        val historyArr : ArrayList<String> = ArrayList()
-        if (json != null) {
-            try {
-                val data : JSONArray = JSONArray(json)
-                for (i in 0 until data.length()) {
-                    val s = data.optString(i)
-                    historyArr.add(s)
-                }
-            } catch (e : JSONException) {
-                e.printStackTrace()
-            }
-        }
-        return historyArr
-    }*/
-
     fun getSearchData() : String {
         return mySharedPref.getString("search", "").toString()
     }

@@ -75,6 +75,9 @@ class AccountFragment : Fragment() {
     //로딩창
     private var loadingDialog : LoadingProgressDialog? = null
 
+    //체크용
+    private var isPolicyAllow : Boolean? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -88,15 +91,20 @@ class AccountFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         aBinding = FragmentAccountBinding.inflate(inflater, container, false)
-        initPersonalInformationConsent()
+        saveSettingData()
         initSetAccountData()
 
         aBinding.accountSettingIv.setOnClickListener {
-            val intent = Intent(activity, AccountSettingActivity::class.java).apply {
-                putExtra("type", "ACCOUNT")
-                putExtra("accountData", email) //20201530 숫자만
+            if (isPolicyAllow == true) {
+                val intent = Intent(activity, AccountSettingActivity::class.java).apply {
+                    putExtra("type", "ACCOUNT")
+                    putExtra("accountData", email) //20201530 숫자만
+                }
+                requestActivity.launch(intent)
+            } else {
+                Toast.makeText(requireContext(), "개인정보처리방침에 동의해주세요.", Toast.LENGTH_SHORT).show()
+                saveSettingData()
             }
-            requestActivity.launch(intent)
         }
 
         aBinding.accountReviewBtn.setOnClickListener {
@@ -107,21 +115,28 @@ class AccountFragment : Fragment() {
             startActivity(intent)
         }
 
-        /*aBinding.accountBank.setOnClickListener {
-            createClipData(myAccountData?.accountNumber.toString())
-        }*/
-
         aBinding.accountViewpager.adapter = AccountTabAdapter(requireActivity())
 
         TabLayoutMediator(aBinding.accountCategoryTabLayout, aBinding.accountViewpager) { tab, pos ->
             tab.text = tabTextList[pos]
         }.attach()
 
-
         return aBinding.root
     }
 
+    private fun saveSettingData() { //처음 앱 사용 시 저장한 isPolicyAllow 없어서 null이니 true로 저장 후 dialog를 실행토록함
+        //다음에는 true가 저장되어있었으니 false로 저장내용을 바꾸고 다시 저장하여 dialog가 나오지 않도록 함
+        val sharedPref = requireActivity().getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
+        isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
+
+        if (isPolicyAllow != true) {
+            initPersonalInformationConsent()
+        }
+    }
+
     private fun initPersonalInformationConsent() {
+        val sharedPref = requireActivity().getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
+        //isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
         val layoutInflater = LayoutInflater.from(context)
         val dialogView = layoutInflater.inflate(R.layout.privacy_policy_dialog_layout, null)
         val alertDialog = android.app.AlertDialog.Builder(context, R.style.CustomAlertDialog)
@@ -141,11 +156,22 @@ class AccountFragment : Fragment() {
 
         dialogLeftBtn.setOnClickListener {
             Toast.makeText(requireContext(), "서비스 이용이 제한될 수 있습니다.", Toast.LENGTH_SHORT).show()
+            with(sharedPref.edit()) {
+                putBoolean("isPolicyAllow", false)
+                apply() // 비동기적으로 데이터를 저장
+            }
+            isPolicyAllow = false
             alertDialog.dismiss()
         }
 
         dialogRightBtn.setOnClickListener {
             //todo 서비스 이용확인 api?
+
+            with(sharedPref.edit()) {
+                putBoolean("isPolicyAllow", true)
+                apply() // 비동기적으로 데이터를 저장
+            }
+            isPolicyAllow = true
             alertDialog.dismiss()
         }
         alertDialog.show()

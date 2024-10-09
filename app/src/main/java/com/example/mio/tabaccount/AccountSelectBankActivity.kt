@@ -192,6 +192,7 @@ class AccountSelectBankActivity : AppCompatActivity() {
         bankData.add(BankItemData(R.drawable.bank_shinhan, "신한은행"))
         bankData.add(BankItemData(R.drawable.bank_ibk, "기업은행"))
         bankData.add(BankItemData(R.drawable.bank_woori, "우리은행"))
+        bankData.add(BankItemData(R.drawable.bank_nh, "농협은행"))
     }
 
     private fun initRecyclerView() {

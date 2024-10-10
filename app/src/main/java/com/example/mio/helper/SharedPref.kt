@@ -13,9 +13,9 @@ class SharedPref(context: Context) {
         storeSharedPref = context.getSharedPreferences("store_data", Context.MODE_PRIVATE)
     }
 
-    fun getSearchData() : String {
+    /*fun getSearchData() : String {
         return mySharedPref.getString("search", "").toString()
-    }
+    }*/
 ////////////////////////
     /*fun setNightModeState(state: Boolean?) {
         val editor = mySharedPref.edit()

@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.R
-import com.example.mio.helper.SharedPref
 import com.example.mio.model.*
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.NotificationItemBinding
@@ -27,7 +26,7 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
     //private var notificationItemData: List<AddAlarmResponseData> = ArrayList()
     //private var notificationItemData = kotlin.collections.ArrayList<AddAlarmResponseData>()
     private lateinit var context : Context
-    private var sharedPref : SharedPref? = null
+    //private var sharedPref : SharedPref? = null
 
     private var identification = ""
     //var notificationContentItemData = ArrayList<PostData?>()
@@ -98,7 +97,7 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NotificationViewHolder {
         context = parent.context
-        sharedPref = SharedPref(context)
+        //sharedPref = SharedPref(context)
         binding = NotificationItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return NotificationViewHolder(binding)
     }

@@ -12,8 +12,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
 import com.example.mio.adapter.MyAccountPostAdapter
@@ -46,8 +46,6 @@ class MyBookmarkFragment : Fragment() {
     private var myAdapter : MyAccountPostAdapter? = null //간단한건 그냥 같이 사용 adpater
     private var myBookmarkAllData = ArrayList<PostData?>()
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
-    //로딩 즉 item의 끝이며 스크롤의 끝인지
-    private var isLoading = false
 
     //로딩창
     private var loadingDialog : LoadingProgressDialog? = null
@@ -62,9 +60,8 @@ class MyBookmarkFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentMyBookmarkBinding.inflate(inflater, container, false)
-        Log.d("success getBookmark", "inininininininini")
         initMyRecyclerView()
         //initScrollListener()
         initSwipeRefresh()
@@ -117,64 +114,22 @@ class MyBookmarkFragment : Fragment() {
     }
 
     private fun setMyBookmarkData() {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-
-
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("bookmark", "bookmark")
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-
-        //println(userId)
         val thisData : ArrayList<BookMarkResponseData> = ArrayList()
         RetrofitServerConnect.create(requireActivity()).getBookmark().enqueue(object : Callback<List<BookMarkResponseData>> {
             override fun onResponse(call: Call<List<BookMarkResponseData>>, response: Response<List<BookMarkResponseData>>) {
                 if (response.isSuccessful) {
-                    Log.e("success getBookmark", response.code().toString())
                     val responseData = response.body()
-                    Log.d("success getBookmark", responseData.toString())
                     //데이터 청소
                     if (responseData?.isNotEmpty() == true) {
                         responseData.let {
-                            thisData?.clear()
-                            thisData?.addAll(it)
+                            thisData.clear()
+                            thisData.addAll(it)
                         }
-                        Log.d("Notification Fragment Data", "Received data: $thisData")
                         //updateUI()
                         CoroutineScope(Dispatchers.IO).launch {
                             initBookMarkPostData(thisData)
                         }
                     } else {
-                        Log.e("updateui", "in ui")
                         if (loadingDialog != null && loadingDialog!!.isShowing) {
                             loadingDialog?.dismiss()
                             loadingDialog = null // 다이얼로그 인스턴스 참조 해제
@@ -192,55 +147,21 @@ class MyBookmarkFragment : Fragment() {
                         loadingDialog?.dismiss()
                     }
                 } else {
-                    Log.e("f", response.code().toString())
-                    Log.e("f", response.errorBody()?.string()!!)
+                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    loadingDialog?.dismiss()
+                    Toast.makeText(requireActivity(), "북마크 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<BookMarkResponseData>>, t: Throwable) {
-                Log.d("error", t.toString())
+                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                loadingDialog?.dismiss()
+                Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
     private fun initBookMarkPostData(bookMarkList : List<BookMarkResponseData>?) {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(activity).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(activity).toString()
-
-
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("bookmark", "bookmark")
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        /////
         var shouldBreak = false
         if (bookMarkList?.isNotEmpty() == true) {
             for (i in bookMarkList) {
@@ -249,7 +170,6 @@ class MyBookmarkFragment : Fragment() {
                     override fun onResponse(call: Call<Content>, response: Response<Content>) {
                         if (response.isSuccessful) {
                             val responseData = response.body()
-                            Log.e("indexout check", response.body().toString())
                             if (responseData != null) {
                                 if (responseData.isDeleteYN == "N") {
                                     responseData.let {
@@ -278,14 +198,12 @@ class MyBookmarkFragment : Fragment() {
                                 }
                             }
                         } else {
-                            Log.e("fail notififrag", response.code().toString())
-                            Log.e("fail notififrag", response.errorBody()?.string()!!)
+                            loadingDialog?.dismiss()
                             shouldBreak = true
                         }
                     }
 
                     override fun onFailure(call: Call<Content>, t: Throwable) {
-                        Log.e("Failure notification", t.toString())
                         shouldBreak = true
                     }
                 })
@@ -297,7 +215,6 @@ class MyBookmarkFragment : Fragment() {
     }
 
     private fun updateUI() {
-        Log.e("updateui", "in ui")
         loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
         if (loadingDialog != null && loadingDialog!!.isShowing) {
             loadingDialog?.dismiss()
@@ -435,36 +352,7 @@ class MyBookmarkFragment : Fragment() {
         }, 2000)
     }*/
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
-        when (it.resultCode) {
-            AppCompatActivity.RESULT_OK -> {
-                //val post = it.data?.getSerializableExtra("postData") as PostData
-                when(it.data?.getIntExtra("flag", -1)) {
-                    //add
-                    0 -> {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            /*taxiAllData.add(post)
-                            calendarTaxiAllData.add(post) //데이터 전부 들어감
-
-                            //들어간 데이터를 key로 분류하여 저장하도록함
-                            selectCalendarData[post.postTargetDate] = arrayListOf()
-                            selectCalendarData[post.postTargetDate]!!.add(post)
-
-                            println(selectCalendarData)*/
-                            //setData()
-                        }
-                        //livemodel을 통해 저장
-                        //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
-                        //noticeBoardAdapter!!.notifyDataSetChanged()
-                    }
-                    //edit
-                    1 -> {
-                    }
-
-                }
-            }
-        }
-    }
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
 
     companion object {
         /**

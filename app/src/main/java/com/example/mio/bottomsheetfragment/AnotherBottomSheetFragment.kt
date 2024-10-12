@@ -6,11 +6,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.Toast
 import com.example.mio.R
 import com.example.mio.databinding.FragmentAnotherBottomSheetBinding
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -49,7 +46,6 @@ class AnotherBottomSheetFragment : BottomSheetDialogFragment() {
         abBinding = FragmentAnotherBottomSheetBinding.inflate(inflater, container, false)
 
         abBinding.filterNewest.setOnClickListener {
-            Toast.makeText(requireActivity(), "최신 순", Toast.LENGTH_SHORT).show()
             if (listener == null) return@setOnClickListener
             listener?.sendValue("최신 순")
             dismiss()
@@ -63,14 +59,12 @@ class AnotherBottomSheetFragment : BottomSheetDialogFragment() {
         }*/
 
         abBinding.filterLowestPrice.setOnClickListener {
-            Toast.makeText(requireActivity(), "낮은 가격 순", Toast.LENGTH_SHORT).show()
             if (listener == null) return@setOnClickListener
             listener?.sendValue("낮은 가격 순")
             dismiss()
         }
 
         abBinding.filterNearingEnd.setOnClickListener {
-            Toast.makeText(requireActivity(), "마감 임박 순", Toast.LENGTH_SHORT).show()
             if (listener == null) return@setOnClickListener
             listener?.sendValue("마감 임박 순")
             dismiss()
@@ -86,31 +80,8 @@ class AnotherBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
 
-    private fun setupFullHeight(bottomSheet: View) {
-        val layoutParams = bottomSheet.layoutParams
-        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT
-        bottomSheet.layoutParams = layoutParams
-    }
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        /*val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme).apply {
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.isDraggable = false
-        }*/
-        val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
-        dialog.setOnShowListener {
-
-            val bottomSheetDialog = it as BottomSheetDialog
-            val parentLayout =
-                bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            parentLayout?.let { it ->
-                val behaviour = BottomSheetBehavior.from(it)
-                //setupFullHeight(it)
-                //behaviour.state = BottomSheetBehavior.STATE_COLLAPSED
-            }
-        }
-
-        return dialog
+        return BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
     }
 
     interface OnSendFromBottomSheetDialog {

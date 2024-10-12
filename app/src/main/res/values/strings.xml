@@ -3,13 +3,44 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="setText">%1$s %2$s</string>
     <string name="setCost">%1$s원</string>
+    <!--notification-->
     <string name="setNotificationTitleText">%1$s님이 %2$s을/를 신청했어요 </string>
     <string name="setEndNotificationText">%1$s님과의 %2$s은/는 어떠셨나요?</string>
     <string name="setReservationNotificationText">%1$s님과의 %2$s이/가 예약되었어요</string>
     <string name="setCancelNotificationText">%1$s님과의 %2$s 예약이 취소되었어요</string>
     <string name="setCommentNotificationText">%1$s님이 게시글에 댓글을 달았어요</string>
 
+    <!--date format-->
+    <string name="setDateText">%1$s.%2$s.%3$s (%4$s) %5$s:%6$s</string>
+    <string name="setDateText2">%1$s %2$s</string>
+    <string name="setDateText3">%1$s년/%2$s월/%3$s일</string>
+    <string name="setDateTextMonth">%1$s월</string>
+
+    <string name="setInitDateText">yyyy/mm/dd</string>
+    <string name="setInitTimeText">오전 00:00</string>
+
+    <string name="setTimeTextSeconds">%1$s초전</string>
+    <string name="setTimeTextMinutes">%1$s분전</string>
+    <string name="setTimeTextHours">%1$s시간전</string>
+    <string name="setTimeTextDays">%1$s일전</string>
+
     <string name="setSendFilterTimeText">%1$s:%2$s:00</string>
+
+    <!--user filter-->
+    <string name="setUserFilterText">%1$s | %2$s %3$s</string>
+
+    <!--bottomsheet comment-->
+    <string name="setBottomSheetComment">%1$s님에게</string>
+
+    <!--account-->
+    <string name="setUserGrade">%1$s님의 현재 등급은 B 입니다</string>
+    <string name="setUserGrade2">%1$s님의 현재 등급은 %2$s 입니다</string>
+    <string name="setUserDescribe">%1$s님의 프로필</string>
+    <string name="privacy_policy_message">정상적인 서비스 이용을 위해 계좌정보와 은행이름에 대한 정보를 안전하게 서버에 저장하여야합니다. 동의하시겠습니까? <a href="https://sites.google.com/daejin.ac.kr/mio/%ED%99%88">개인 정보 처리 방침</a></string>
+
+    <!--search count-->
+    <string name="setSearchPostCount">+%1$s</string>
+
     <!-- Preference Titles -->
     <string name="messages_header">Messages</string>
     <string name="sync_header">Sync</string>

@@ -5,8 +5,8 @@ import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 
 
-public class SaveSharedPreferenceGoogleLogin {
-    private val PREF_USER_EMAIL = "email"
+class SaveSharedPreferenceGoogleLogin {
+    private val prefUserEmail = "email"
     private val acctoken = "token"
     private val expireDate = "expireDate"
     private val privateUserId = "userId"
@@ -23,10 +23,10 @@ public class SaveSharedPreferenceGoogleLogin {
     private val isSmoke = "smoke"
 
     // SharedPreferences 키
-    private val PREF_LAST_BOTTOM_SHEET_TIME = "last_bottom_sheet_time"
+    private val prefLastBottomSheetTime = "last_bottom_sheet_time"
 
     //alarm key
-    private val ALARM_SETTING = "alarm_setting"
+    private val alarmSetting = "alarm_setting"
 
     fun getAccount(ctx: Context?): String? {
         return getSharedPreferences(ctx).getString(privateUserAccountName, "")
@@ -41,12 +41,12 @@ public class SaveSharedPreferenceGoogleLogin {
 
     //알람 받을 건지 아닌지 get
     fun getSharedAlarm(ctx: Context?): Boolean {
-        return getSharedPreferences(ctx).getBoolean(ALARM_SETTING, true)
+        return getSharedPreferences(ctx).getBoolean(alarmSetting, true)
     }
     //알람 set
     fun setSharedAlarm(ctx: Context?, check: Boolean) {
         val editor = getSharedPreferences(ctx).edit()
-        editor.putBoolean(ALARM_SETTING, check)
+        editor.putBoolean(alarmSetting, check)
         editor.apply()
     }
 
@@ -106,19 +106,19 @@ public class SaveSharedPreferenceGoogleLogin {
     }
 
 
-    fun getSharedPreferences(ctx: Context?): SharedPreferences {
+    private fun getSharedPreferences(ctx: Context?): SharedPreferences {
         return PreferenceManager.getDefaultSharedPreferences(ctx!!)
     }
 
     // 계정 정보 저장
     fun setUserEMAIL(ctx: Context?, userName: String?) {
         val editor = getSharedPreferences(ctx).edit()
-        editor.putString(PREF_USER_EMAIL, userName)
+        editor.putString(prefUserEmail, userName)
         editor.apply()
     }
     // 저장된 정보 가져오기
     fun getUserEMAIL(ctx: Context?): String? {
-        return getSharedPreferences(ctx).getString(PREF_USER_EMAIL, "")
+        return getSharedPreferences(ctx).getString(prefUserEmail, "")
     }
 
 
@@ -154,7 +154,7 @@ public class SaveSharedPreferenceGoogleLogin {
         editor.putInt(privateUserId, userId!!)
         editor.apply()
     }
-    fun getUserId(ctx: Context?): Int? {
+    fun getUserId(ctx: Context?): Int {
         return getSharedPreferences(ctx).getInt(privateUserId, 0)
     }
 
@@ -163,7 +163,7 @@ public class SaveSharedPreferenceGoogleLogin {
         editor.putInt(privateProfileUserId, userId!!)
         editor.apply()
     }
-    fun getProfileUserId(ctx: Context?): Int? {
+    fun getProfileUserId(ctx: Context?): Int {
         return getSharedPreferences(ctx).getInt(privateProfileUserId, 0)
     }
 
@@ -176,12 +176,12 @@ public class SaveSharedPreferenceGoogleLogin {
 
     fun setLastBottomSheetTime(ctx: Context?, time: Long?) {
         val editor = getSharedPreferences(ctx).edit()
-        editor.putLong(PREF_LAST_BOTTOM_SHEET_TIME, time!!)
+        editor.putLong(prefLastBottomSheetTime, time!!)
         editor.apply()
     }
 
     fun getLastBottomSheetTime(ctx: Context?): Long {
-        return getSharedPreferences(ctx).getLong(PREF_LAST_BOTTOM_SHEET_TIME, 0L)
+        return getSharedPreferences(ctx).getLong(prefLastBottomSheetTime, 0L)
     }
 
 

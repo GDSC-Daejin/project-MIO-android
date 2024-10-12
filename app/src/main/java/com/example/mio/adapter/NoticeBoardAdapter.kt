@@ -23,10 +23,10 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
         //var accountId = binding.accountId
         //var accountProfile = binding.accountImage
         var postTitle = binding.postTitle
-        var postDate = binding.postDate
+        private var postDate = binding.postDate
         var postLocation = binding.postLocation
         var postParticipation = binding.postParticipation
-        var postParticipantTotal = binding.postParticipationTotal
+        private var postParticipantTotal = binding.postParticipationTotal
         var postCost = binding.postCost
 
         fun bind(accountData: PostData, position : Int) {
@@ -85,9 +85,9 @@ class NoticeBoardAdapter : RecyclerView.Adapter<NoticeBoardAdapter.NoticeBoardVi
 
     //약한 참조로 참조하는 객체가 사용되지 않을 경우 가비지 콜렉션에 의해 자동해제
     //private var itemClickListener: WeakReference<ItemClickListener>? = null
-    private lateinit var itemClickListener: NoticeBoardAdapter.ItemClickListener
+    private lateinit var itemClickListener: ItemClickListener
 
-    fun setItemClickListener(itemClickListener: NoticeBoardAdapter.ItemClickListener) {
+    fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
 

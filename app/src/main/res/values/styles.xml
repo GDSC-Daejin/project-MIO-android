@@ -40,6 +40,11 @@
         <item name="android:colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="TimePickerSpinner" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:timePickerMode">spinner</item>
+        <item name="android:background">@drawable/dialog_round_background</item>
+    </style>
+
     <style name="searchViewStyle" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:background">?attr/modeselect</item>
     </style>
@@ -115,6 +120,7 @@
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowMinWidthMajor">100%</item>
         <item name="android:windowMinWidthMinor">100%</item>
+
 
         <!-- Dim 처리 -->
         <item name="android:backgroundDimEnabled">true</item>

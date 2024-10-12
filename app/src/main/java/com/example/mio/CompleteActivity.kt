@@ -8,7 +8,6 @@ import android.graphics.Paint
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -40,8 +39,17 @@ class CompleteActivity : AppCompatActivity() {
         userAccount = sharedPreferenceGoogleLogin.getAccount(this@CompleteActivity).toString()
 
         if (type == "PASSENGER") {
-            postData = intent.getSerializableExtra("postData") as PostData?
-            driverData = intent.getSerializableExtra("postDriver") as User
+            postData = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra("postData")
+            } else {
+                intent.getParcelableExtra("postData", PostData::class.java)
+            }
+            driverData = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra("postDriver")
+            } else {
+                intent.getParcelableExtra("postDriver", User::class.java)
+            }
+
             postCost = postData?.postCost
 
             var driverName = driverData?.name
@@ -54,7 +62,7 @@ class CompleteActivity : AppCompatActivity() {
                 "null ${driverData?.name}"
             }
 
-            cBinding.completePassengerCost.text = "${postCost.toString()}원"
+            cBinding.completePassengerCost.text = getString(R.string.setCost, "$postCost")//"${postCost.toString()}원"
 
             cBinding.completeDriverAccountNumber.paintFlags = Paint.UNDERLINE_TEXT_FLAG  //밑줄긋기
             cBinding.completeDriverAccountNumber.setOnClickListener {
@@ -66,26 +74,25 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.completeEnd2MessageTv.text = "아래 계좌에 본인 학번으로 입금해주세요!"
             cBinding.completeDivideView.visibility = View.VISIBLE
             cBinding.completeDivideView2.visibility = View.VISIBLE
+
             cBinding.tossBankLl.setOnClickListener {
                 driverData?.accountNumber?.let { it1 -> createClipData(it1) }
                 if (postCost != null) {
-                    deepLink("viva.republica.toss", postCost!!)
+                    deepLink("viva.republica.toss")
                 }
-
             }
 
             cBinding.kakaoPayLl.setOnClickListener {
                 driverData?.accountNumber?.let { it1 -> createClipData(it1) }
                 if (postCost != null) {
-                    deepLink("com.kakao.talk", postCost!!)
+                    deepLink("com.kakao.talk")
                 }
             }
 
             cBinding.accountTransferLl.setOnClickListener {
                 driverData?.accountNumber?.let { it1 -> createClipData(it1) }
                 if (postCost != null) {
-                    Log.e("userAccount", userAccount)
-                    deepLink(userAccount, postCost!!)
+                    deepLink(userAccount)
                 }
             }
 
@@ -95,8 +102,11 @@ class CompleteActivity : AppCompatActivity() {
             layoutParams.topMargin = newMarginTop
             cBinding.completeEntireLl.layoutParams = layoutParams
 
-            postData = intent.getSerializableExtra("postData") as PostData?
-
+            postData = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra("postData")
+            } else {
+                intent.getParcelableExtra("postData", PostData::class.java)
+            }
             cBinding.completeEntireLl.visibility = View.VISIBLE
             cBinding.completeEnd2MessageTv.text = "입금여부를 확인하고 후기를 작성하세요"
 
@@ -138,7 +148,7 @@ class CompleteActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    private fun deepLink(packageName: String, cost : Int) {
+    private fun deepLink(packageName: String) {
         // 딥링크 URI를 정확히 작성해야 합니다.
         /*val uri = Uri.parse("miopay://deeplink?cost=$${cost}")
 
@@ -176,6 +186,12 @@ class CompleteActivity : AppCompatActivity() {
                 "com.shinhan.sbanking" -> {
                     // 카톡 앱이 설치되어 있지 않은 경우 처리할 내용을 여기에 추가합니다.
                     Toast.makeText(this, "신한은행 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+                "com.wooribank.smart.npib" -> {
+                    Toast.makeText(this, "우리은행 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
+                }
+                "nh.smart.banking" -> {
+                    Toast.makeText(this, "농협은행 앱이 설치되어 있지 않습니다.", Toast.LENGTH_SHORT).show()
                 }
             }
         }

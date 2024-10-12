@@ -5,8 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.util.Log
-import androidx.core.app.NotificationCompat
-import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.launchdarkly.eventsource.ConnectStrategy
 import com.launchdarkly.eventsource.EventSource

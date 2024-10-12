@@ -25,7 +25,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.airbnb.lottie.model.Marker
 import com.example.mio.*
 import com.example.mio.adapter.PlaceAdapter
 import com.example.mio.model.*
@@ -41,15 +40,12 @@ import com.kakao.vectormap.label.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import net.daum.mf.map.api.MapPoint
 import okhttp3.*
-import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.IOException
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -70,12 +66,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     //edit용 임시저장 데이터
     private var eTemp : PostData? = null
 
-    private var pos = 0
-    //받은 계정 정보
-    private var userEmail = ""
-    private var isCheckData = false
-    private var categorySelect = ""
-
     private val listItems = arrayListOf<PlaceData>()
     private val placeAdapter = PlaceAdapter(listItems)
     //최근검색어
@@ -86,8 +76,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     //private var mapView: MapView? = null
     //var mapViewContainer: RelativeLayout? = null
     //private var map: MapPOIItem? = null
-    private val PREFS_NAME = "recent_search"
-    private val KEY_RECENT_SEARCH = "search_items"
+    private val prefsName = "recent_search"
+    private val keyRecentSearch = "search_items"
 
     private var map : com.kakao.vectormap.MapView? = null
     private var kakaoMapValue : KakaoMap? = null
@@ -110,7 +100,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     //선택한 날짜
     private var selectTargetDate : String? = ""
     private var selectFormattedDate = ""
-    private var isCategory = false //true : 카풀, false : 택시
     private var selectCategory = ""
     private var selectCategoryId = -1
 
@@ -119,8 +108,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     //선택한 시간
     private var selectTime :String?= ""
     private var selectFormattedTime = ""
-    private var hour1 = 0
-    private var minute1 = 0
 
     //선택한 탑승인원
     private var participateNumberOfPeople = 0
@@ -138,8 +125,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     private var detailContent = ""
 
     private var isFirst = false
-    private var isSecond = false
-    private var isThird = false
 
 
     //모든 값 체크
@@ -172,7 +157,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     )
     private lateinit var myViewModel : SharedViewModel
     val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-    private var markers: MutableList<Marker> = mutableListOf()
     //뒤로가기
     // private lateinit var loadingDialog : LoadingProgressDialog
     private var backPressedTime = 0L
@@ -209,14 +193,25 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             fourthVF()
             fifthVF()
         } else if (type.equals("EDIT")){ //edit
-            eTemp = intent.getSerializableExtra("editPostData") as PostData?
-            bottomBtnEvent()
-            //vf 생성
-            firstVF()
-            secondVF()
-            thirdVF()
-            fourthVF()
-            fifthVF()
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                eTemp = intent.getParcelableExtra("editPostData")
+                bottomBtnEvent()
+                //vf 생성
+                firstVF()
+                secondVF()
+                thirdVF()
+                fourthVF()
+                fifthVF()
+            } else {
+                eTemp = intent.getParcelableExtra("editPostData", PostData::class.java)
+                bottomBtnEvent()
+                //vf 생성
+                firstVF()
+                secondVF()
+                thirdVF()
+                fourthVF()
+                fifthVF()
+            }
         }
 
 
@@ -472,7 +467,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
                 selectTargetDate = "${year}년/${month + 1}월/${day}일"
                 selectFormattedDate = LocalDate.parse(selectTargetDate, DateTimeFormatter.ofPattern("yyyy년/M월/d일")).format(DateTimeFormatter.ISO_DATE)
-                mBinding.editSelectDateTv.text = "${year}년/${month + 1}월/${day}일"
+                mBinding.editSelectDateTv.text = getString(R.string.setDateText3, "$year", "${month+1}", "$day")
                 mBinding.editSelectDateTv.setTextColor(ContextCompat.getColor(this, R.color.mio_gray_11))
                 isAllCheck.isFirstVF.isCalendar = true
                 myViewModel.postCheckValue(isAllCheck)
@@ -585,9 +580,9 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     }
 
     private fun secondVF() {
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
         val gson = Gson()
-        val json = prefs.getString(KEY_RECENT_SEARCH, null)
+        val json = prefs.getString(keyRecentSearch, null)
         if (json != null) {
             val type = object : TypeToken<ArrayList<PlaceData>>() {}.type
             val items: ArrayList<PlaceData> = gson.fromJson(json, type)
@@ -600,9 +595,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 mBinding.editViewflipper.showNext()
                 changeStatusbar()
                 countPage += 1
-                val mapPoint = MapPoint.mapPointWithGeoCoord(
-                    listItems[position].y, listItems[position].x
-                )
                 latitude = listItems[position].y
                 longitude = listItems[position].x
 
@@ -630,9 +622,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 mBinding.editViewflipper.showNext()
                 changeStatusbar()
                 countPage += 1
-                val mapPoint = MapPoint.mapPointWithGeoCoord(
-                    recentSearchItems[position].y, recentSearchItems[position].x
-                )
                 latitude = recentSearchItems[position].y
                 longitude = recentSearchItems[position].x
 
@@ -727,7 +716,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 //숫자만 입력가능하게
                 try {
                     selectCost = editable.toString().trim()
-                    val cost = selectCost.toInt()
                 } catch (e : java.lang.NumberFormatException) {
                     Toast.makeText(this@NoticeBoardEditActivity, "숫자로만 입력해 주세요", Toast.LENGTH_SHORT).show()
                 }
@@ -862,91 +850,33 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
     private fun fifthVF() {
         mBinding.completeBtn.setOnClickListener {
-            //저장된 값
-            val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-            val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-            //통신
-            /*val SERVER_URL = BuildConfig.server_URL
-            val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                //.client(clientBuilder)
-
-            //Authorization jwt토큰 로그인
-            val interceptor = Interceptor { chain ->
-
-                var newRequest: Request
-                if (token != null && token != "") { // 토큰이 없는 경우
-                    // Authorization 헤더에 토큰 추가
-                    newRequest = chain.request().newBuilder()
-                        .addHeader("Authorization", "Bearer $token")
-                        .addHeader("Content-Type", "application/json; charset=utf-8")
-                        .build()
-
-                    val expireDate: Long = getExpireDate.toLong()
-                    if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                        //refresh 들어갈 곳
-                        *//*newRequest =
-                            chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                        val intent = Intent(this@NoticeBoardEditActivity, LoginActivity::class.java)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                        Toast.makeText(this@NoticeBoardEditActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                        startActivity(intent)
-                        finish()
-                        return@Interceptor chain.proceed(newRequest)
-                    }
-
-                } else newRequest = chain.request()
-                chain.proceed(newRequest)
-            }
-            val builder = OkHttpClient.Builder()
-            builder.interceptors().add(interceptor)
-            val client: OkHttpClient = builder.build()
-            retrofit.client(client)
-            val retrofit2: Retrofit = retrofit.build()
-            val api = retrofit2.create(MioInterface::class.java)*/
-
             if (type.equals("ADD")) {
-                Log.e("editactivity", "add")
                 if (isFirst) {
                     var school = false
-                    var smoke = false
-                    var gender = false
+
                     if (isAllCheck.isThirdVF.isGSchool) {
                         school = true
                     }
-                    if (isAllCheck.isThirdVF.isSmoke) {
-                        smoke = true
-                    }
-                    if (isAllCheck.isThirdVF.isMGender) {
-                        gender = true
-                    }
+
                     /*val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(this@NoticeBoardEditActivity).toString()*/
                     temp = AddPostData(editTitle, detailContent, selectFormattedDate, selectFormattedTime, school, participateNumberOfPeople, 0, false, latitude, longitude, location, selectCost.toInt(), region3Depth)
-                    Log.d("edit add Temp ", temp.toString())
-                    CoroutineScope(Dispatchers.IO).launch {
-                        /*"application/json; charset=UTF-8",*/
-                        RetrofitServerConnect.create(this@NoticeBoardEditActivity).addPostData(temp!!, selectCategoryId).enqueue(object : Callback<AddPostResponse> {
-                            override fun onResponse(
-                                call: Call<AddPostResponse>,
-                                response: Response<AddPostResponse>
-                            ) {
-                                if (response.isSuccessful) {
-                                    Log.d("NoticeBoardEdit", "response succcc")
-                                } else {
-                                    println("NoticeBoardEditActivityTempTest fafafafaf")
-                                    Log.d("NoticeBoardEditActivityTempTest aa", response.errorBody()?.string()!!)
-                                    Log.d("NoticeBoardEditActivityTempTestaf meeage", call.request().toString())
-                                    println(response.code())
-                                }
-                            }
 
-                            override fun onFailure(call: Call<AddPostResponse>, t: Throwable) {
-                                Log.d("error", t.toString())
+                    RetrofitServerConnect.create(this@NoticeBoardEditActivity).addPostData(temp!!, selectCategoryId).enqueue(object : Callback<AddPostResponse> {
+                        override fun onResponse(
+                            call: Call<AddPostResponse>,
+                            response: Response<AddPostResponse>
+                        ) {
+                            if (!response.isSuccessful) {
+                                Toast.makeText(this@NoticeBoardEditActivity, "게시글 생성에 실패하였습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                             }
+                        }
 
-                        })
-                    }
+                        override fun onFailure(call: Call<AddPostResponse>, t: Throwable) {
+                            Log.d("error", t.toString())
+                            Toast.makeText(this@NoticeBoardEditActivity, "연결에 실패하였습니다. ${t.message}", Toast.LENGTH_SHORT).show()
+                        }
+
+                    })
                     if (selectCategoryId == 1) {
                         val intent = Intent(this, NoticeBoardReadActivity::class.java).apply {
                             putExtra("postData", temp)
@@ -971,21 +901,9 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
                 Log.e("editactivity", "edit")
                 if (isFirst) {
-                    var school = false
-                    var smoke = false
-                    var gender = false
-                    if (isAllCheck.isThirdVF.isGSchool) {
-                        school = true
-                    }
-                    if (isAllCheck.isThirdVF.isSmoke) {
-                        smoke = true
-                    }
-                    if (isAllCheck.isThirdVF.isMGender) {
-                        gender = true
-                    }
                     /*val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(this@NoticeBoardEditActivity).toString()*/
                     val temp2 = EditPostData(editTitle, detailContent, selectCategoryId, selectFormattedDate, selectFormattedTime, participateNumberOfPeople, latitude, longitude, location, selectCost.toInt(), region3Depth)
-                    Log.e("edit temp", temp2.toString())
+
                     CoroutineScope(Dispatchers.IO).launch {
                         val postId = eTemp?.postID ?: return@launch // postID가 null이면 실행 종료
                         RetrofitServerConnect.create(this@NoticeBoardEditActivity).editPostData(postId, temp2).enqueue(object : Callback<AddPostResponse> {
@@ -996,15 +914,13 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                                 if (response.isSuccessful) {
                                     println("succcckkkk")
                                 } else {
-                                    println("faafa")
-                                    Log.d("edit", response.errorBody()?.string()!!)
-                                    Log.d("message", call.request().toString())
-                                    println(response.code())
+                                    Toast.makeText(this@NoticeBoardEditActivity, "게시글 수정에 실패하였습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                                 }
                             }
 
                             override fun onFailure(call: Call<AddPostResponse>, t: Throwable) {
                                 Log.d("error", t.toString())
+                                Toast.makeText(this@NoticeBoardEditActivity, "게시글 수정에 실패하였습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                             }
                         })
                     }
@@ -1110,66 +1026,67 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         val hour = myCalender[Calendar.HOUR_OF_DAY]
         val minute = myCalender[Calendar.MINUTE]
         val myTimeListener =
-            TimePickerDialog.OnTimeSetListener { view, hourOfDay, minute ->
+            TimePickerDialog.OnTimeSetListener { view, hourOfDay, pickerMinute ->
                 if (view.isShown) {
-                    myCalender[Calendar.HOUR_OF_DAY] = hourOfDay
-                    myCalender[Calendar.MINUTE] = minute
-                    val tempS = hourOfDay.toString() + "시 " + minute + "분"
+
+                    val tempS = "${hourOfDay}시 ${pickerMinute}분"
                     selectFormattedTime = LocalTime.parse(tempS, DateTimeFormatter.ofPattern("H시 m분")).format(DateTimeFormatter.ofPattern("HH:mm"))
 
+                    // 오전/오후 표시 처리
                     selectTime = if (hourOfDay >= 12) {
                         val pm = if (hourOfDay == 12) hourOfDay else hourOfDay - 12
-                        "오후 " + pm + "시 " + minute + "분"
+                        "오후 $pm 시 $pickerMinute 분"
                     } else {
-                        "오전 " + hourOfDay + "시 " + minute + "분"
+                        "오전 $hourOfDay 시 $pickerMinute 분"
                     }
-                    //selectTime = "${hourOfDay} 시 ${minute} 분"
 
+                    // 선택된 시간 UI 업데이트
                     mBinding.editSelectTime.text = selectTime
-                    mBinding.editSelectTime.setTextColor(ContextCompat.getColor(this ,R.color.mio_gray_11))
+                    mBinding.editSelectTime.setTextColor(ContextCompat.getColor(this, R.color.mio_gray_11))
                     isAllCheck.isFirstVF.isTime = true
-                }
-                if (selectTime != null) {
-                    mBinding.editTime.setImageResource(R.drawable.filter_time_update_icon)
+
+                    // 아이콘 변경
+                    if (selectTime != null) {
+                        mBinding.editTime.setImageResource(R.drawable.filter_time_update_icon)
+                    }
                 }
             }
         val timePickerDialog = TimePickerDialog(
             this,
-            //여기서 테마 설정해서 커스텀하기
-            android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
             myTimeListener,
             hour,
             minute,
             true
-        )
-        timePickerDialog.setTitle("시간 선택 :")
-        timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        ).apply {
+            setTitle("Select Time")
+            window!!.setBackgroundDrawableResource(R.drawable.dialog_round_background)
+        }
+
         timePickerDialog.show()
     }
 
-//    interface VariableChangeListener {
-//        fun onVariableChanged(isFirstVF: FirstVF, isThirdVF: ThirdVF)
-//    }
-//    fun setVariableChangeListener(variableChangeListener: VariableChangeListener) {
-//        this.variableChangeListener = variableChangeListener
-//    }
-
-    /*private fun signalChanged() {
-        variableChangeListener?.onVariableChanged(isF)
-    }*/
 
     private fun returnStatusbar() {
         mBinding.toolbar.visibility = View.VISIBLE
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            window.statusBarColor = Color.parseColor("white")
-        }
+        // 기존의 FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS를 추가합니다.
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+
+        // 상태 바 색상을 설정합니다.
+        window.statusBarColor = Color.parseColor("white")
+
+        // Android 11 (API 30) 이상에서는 setDecorFitsSystemWindows(true)를 설정합니다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.setDecorFitsSystemWindows(true)
         } else {
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+            // API 21 이상에서는 상태 바의 배경을 설정하고 레이아웃을 조정합니다.
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
+
+            // 아래의 두 줄로 상태 바를 투명하게 만들고, 레이아웃을 조정합니다.
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         }
+
+        // 레이아웃의 하단 마진을 조정합니다.
         val layoutParams = mBinding.editBottomLl.layoutParams as ViewGroup.MarginLayoutParams
         layoutParams.bottomMargin = 0
         mBinding.editBottomLl.layoutParams = layoutParams
@@ -1177,18 +1094,24 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
     private fun changeStatusbar() {
         mBinding.toolbar.visibility = View.GONE
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-            window.statusBarColor = Color.argb(1, 0, 0, 0) /*Color.TRANSPARENT*/
-        }
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+
+        // 상태 바 색상을 설정합니다 (반투명)
+        window.statusBarColor = Color.TRANSPARENT // 또는 Color.argb(1, 0, 0, 0)로 반투명하게 설정
+
+        // Android 11 (API 30) 이상에서는 setDecorFitsSystemWindows를 false로 설정
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             window.setDecorFitsSystemWindows(false)
         } else {
-            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR)
+            // API 21 이하에서는 시스템 UI 플래그를 설정
+            window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR)
         }
+
+        // 하단 레이아웃 마진을 조정
         val layoutParams = mBinding.editBottomLl.layoutParams as ViewGroup.MarginLayoutParams
-        layoutParams.bottomMargin = 180
+        layoutParams.bottomMargin = 180 // 원하는 마진 값으로 설정
         mBinding.editBottomLl.layoutParams = layoutParams
     }
 
@@ -1206,32 +1129,20 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             .build()
         val api = retrofit.create(KakaoAPI::class.java)
         val call = api.getSearchKeyword(API_KEY, keyword)
-        Log.e("edit search", keyword.toString())
 
         call.enqueue(object: Callback<ResultSearchKeyword> {
             override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
                 if (response.isSuccessful) {
                     val result = response.body()
-                    Log.e("edit search", result.toString())
                     if (response.code() == 200) {
                         val documents = result?.documents
                         if (documents?.isNotEmpty()==true) {
-                            Log.e("edit search", response.message().toString())
-                            Log.e("edit search", response.code().toString())
-                            Log.e("edit search", documents.toString())
                             addItemsAndMarkers(result)
                         } else {
-                            Log.e("Search Error", response.code().toString())
-                            Log.e("Search Error", response.body().toString())
-                            Log.e("Search Error", response.errorBody()?.string()!!)
-
-
+                            Toast.makeText(this@NoticeBoardEditActivity, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
                         }
                     } else {
-                        Log.e("Search Error", response.code().toString())
-                        Log.e("Search Error", response.message().toString())
-                        Log.e("Search Error", response.body().toString())
-                        Log.e("Search Error", response.errorBody()?.string()!!)
+                        Toast.makeText(this@NoticeBoardEditActivity, "검색에 실패하였습니다 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                     /*if (result != null) {
 
@@ -1239,23 +1150,18 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                         Log.e("edit search", "Response body is null")
                     }*/
                 } else {
-                    Log.e("EDIT Search", response.code().toString())
-                    Log.e("EDIT Search", response.errorBody()?.string()!!)
-                    Log.e("EDIT Search", response.errorBody()?.string() ?: "Unknown error")
-                    Log.e("EDIT Search", call.request().toString())
-                    Log.e("EDIT Search", response.message().toString())
+                    Toast.makeText(this@NoticeBoardEditActivity, "검색에 실패하였습니다 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
-                Log.w("LocalSearch", "통신 실패: ${t.message}")
+                Toast.makeText(this@NoticeBoardEditActivity, "연결에 실패하였습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
 
     private fun getAddress(location2 : String?) {
-        val location = location2?.split("/")?.first()
         val retrofit = Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
@@ -1266,8 +1172,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             override fun onResponse(call: Call<ResultSearchAddress>, response: Response<ResultSearchAddress>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()?.documents
-                    Log.e("search Result", location2.toString())
-                    Log.e("search Result", response.body()?.documents.toString())
                     if (responseData?.isEmpty() == true) {
                         Toast.makeText(this@NoticeBoardEditActivity, "잘못된 지역입니다 다시 검색해주세요", Toast.LENGTH_SHORT).show()
                     }
@@ -1278,45 +1182,35 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                                     region3Depth = it.take(1).first().address?.region_3depth_name.toString()
                                 }
                             }
-                            Log.e("region3Depth", region3Depth)
-                            /*adapter.updateData(tempList, keyword)
-                            binding.textView4.visibility = View.GONE
-                            binding.textView5.visibility = View.GONE
-                            binding.rvSearchList.visibility = View.VISIBLE*/
                         }
                     }
-                } else {
-                    Log.e("search Result", response.code().toString())
-                    Log.e("search Result", response.errorBody()?.string()!!)
-                    Log.e("search Result", response.errorBody()?.string()!!)
-                    Log.e("search Result", call.request().toString())
-                    Log.e("search Result", response.message().toString())
                 }
             }
 
             override fun onFailure(call: Call<ResultSearchAddress>, t: Throwable) {
                 Log.w("LocalSearch", "통신 실패: ${t.message}")
+                Toast.makeText(this@NoticeBoardEditActivity, "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
     private fun addToRecentSearch(placeData: PlaceData) {
-        val MAX_RECENT_SEARCH = 10
+        val maxRecentSearch = 10
 
         val existingIndex = recentSearchItems.indexOfFirst { it.name == placeData.name && it.x == placeData.x && it.y == placeData.y }
         if (existingIndex != -1) {
             recentSearchItems.removeAt(existingIndex)
-        } else if (recentSearchItems.size >= MAX_RECENT_SEARCH) {
+        } else if (recentSearchItems.size >= maxRecentSearch) {
             recentSearchItems.removeLast()
         }
         recentSearchItems.add(0, placeData)
         recentSearchAdapter.notifyDataSetChanged()
 
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
         val editor = prefs.edit()
         val gson = Gson()
         val json = gson.toJson(recentSearchItems)
-        editor.putString(KEY_RECENT_SEARCH, json)
+        editor.putString(keyRecentSearch, json)
         editor.apply()
     }
 
@@ -1407,57 +1301,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
 
     }*/
 
-    private fun getAddressFromCoordinates(latitude: Double, longitude: Double, apiKey: String, callback: (String?) -> Unit) {
-        val url = "https://dapi.kakao.com/v2/local/geo/coord2address.json?x=$longitude&y=$latitude"
-        val httpClient = OkHttpClient()
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization", apiKey)
-            .build()
 
-        httpClient.newCall(request).enqueue(object : okhttp3.Callback {
-            override fun onFailure(call: okhttp3.Call, e: IOException) {
-                callback(null)
-            }
-
-            override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
-                val responseBody = response.body?.string()
-                val address = parseAddressFromResponse(responseBody)
-                Log.d("getAddressFromCoordinates", address.toString())
-                callback(address)
-            }
-        })
-    }
-    private fun parseAddressFromResponse(responseBody: String?): String? {
-        if (responseBody.isNullOrBlank()) return null
-
-        val json = JSONObject(responseBody)
-        val documents = json.getJSONArray("documents")
-
-        if (documents.length() > 0) {
-            val firstDocument = documents.getJSONObject(0)
-            //Log.d("Document", documents.toString())
-            val address = firstDocument.getJSONObject("address")
-            val addressName = address.getString("address_name")
-            // road_address 필드가 있는지 확인하고 처리합니다.
-            val roadAddress = if (!firstDocument.isNull("road_address")) {
-                firstDocument.getJSONObject("road_address")
-            } else {
-                JSONObject() // "road_address" 필드가 없을 경우 빈 JSONObject 생성
-            }
-            // roadAddress가 null이 아니라면 해당 필드를 가져옵니다.
-            val buildName = if (!roadAddress.isNull("building_name")) {
-                roadAddress?.getString("building_name")
-            } else {
-                null
-            }
-
-
-            return "$addressName $buildName"
-        }
-
-        return null
-    }
 
     // 맵뷰 이벤트 리스너
     /*private val mapViewEventListener: MapViewEventListener = object : MapViewEventListenerAdapter() {
@@ -1542,7 +1386,6 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
             }
 
             override fun onMapReady(kakaoMap: KakaoMap) {
-                Log.e("noticeboardedit", "onMapReady")
                 kakaoMapValue = kakaoMap
                 labelLayerObject = kakaoMap.labelManager!!.layer
                 val trackingManager = kakaoMap.trackingManager
@@ -1568,16 +1411,15 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
 
                     val geocoder = Geocoder(this@NoticeBoardEditActivity, Locale.KOREA)
                     var address: Address? = null
-                    var roadAddress : String? = null
+                    var roadAddress : String?
 
 
                     isAllCheck.isSecondVF.isPlaceName = true
                     isAllCheck.isSecondVF.isPlaceRode = true
                     myViewModel.postCheckValue(isAllCheck)
 
-                    if (Build.VERSION.SDK_INT < 33) { // SDK 버전이 33보다 큰 경우에만 아래 함수를 씁니다.
+                    if (Build.VERSION.SDK_INT < 33) { // SDK 버전이 33보다 낮은 경우에만 아래 함수를 씁니다.
                         val addresses = geocoder.getFromLocation(latitude!!, longitude!!, 1)?.first()
-                        Log.e("notice Test Log", "ongeocode <33")
                         address?.let {
                             if (addresses != null) {
                                 val adminArea = addresses.adminArea ?: ""
@@ -1597,28 +1439,13 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                     } else {
                         val geocodeListener = @RequiresApi(33) object : Geocoder.GeocodeListener {
                             override fun onGeocode(addresses: MutableList<Address>) {
-                                Log.e("notice Test Log", "ongeocode")
                                 // 주소 리스트를 가지고 할 것을 적어주면 됩니다.
                                 address = addresses.firstOrNull()
                                 address?.let {
-                                    val adminArea = it.adminArea ?: ""
-                                    val subAdminArea = it.subAdminArea ?: ""
-                                    val locality = it.locality ?: ""
-                                    val subLocality = it.subLocality ?: ""
-                                    val thoroughfare = it.thoroughfare ?: ""
-                                    val featureName = it.featureName ?: ""
-
-                                    val detailedAddress =
-                                        "$adminArea $subAdminArea $locality $subLocality $thoroughfare $featureName".trim()
-
-
                                     if (addresses.isNotEmpty()) {
                                         address = addresses[0]
                                         val roadAddressCheck = address?.getAddressLine(0) ?: ""
 
-                                        //대한민국 경기도 포천시 선단동 834-2
-                                        Log.d("Address", "도로명 주소: $roadAddressCheck")
-                                        Log.d("detail", "$detailedAddress")
                                         mBinding.placeRoad.text = roadAddressCheck
                                         location = roadAddressCheck + "/" + poi.name
                                         getAddress(location)
@@ -1653,8 +1480,7 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                                             }
                                         }*/
                                     } else {
-                                        Log.e("Address", "주소를 가져올 수 없습니다.")
-                                        //Toast.makeText(this, "주소를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(this@NoticeBoardEditActivity, "주소를 가져올 수 없습니다.", Toast.LENGTH_SHORT).show()
                                     }
 
 
@@ -1676,7 +1502,6 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                         labelLayerObject?.removeAll()
 
                         labelLatLng = LatLng.from(latLng.latitude, latLng.longitude)
-                        Log.e("labelLatLng1", "$labelLatLng")
 
                         // 레이어 가져오기
                         //val labelLayer = kakaoMap.labelManager?.layer
@@ -1701,25 +1526,22 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                         if (label != null) {
                             trackingManager?.startTracking(label)
                             val handler = Handler(Looper.getMainLooper())
-                            handler.postDelayed(java.lang.Runnable {
+                            handler.postDelayed( {
                                 trackingManager?.stopTracking()
                             },1000)
                         } else {
-                            Log.e("kakaoMapValue", "Label is null, tracking cannot be started.")
+                            //Log.e("kakaoMapValue", "Label is null, tracking cannot be started.")
+                            Toast.makeText(this@NoticeBoardEditActivity, "라벨이 없습니다", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
 
                 //KakaoMap kakaoMap, LabelLayer layer, Label label
-                kakaoMapValue!!.setOnLabelClickListener { kakaoMap, layer, label ->
-                    Log.e("kakao map value", "label?")
+                kakaoMapValue!!.setOnLabelClickListener { _, _, label ->
                     if (label != null) { //return 값이 true 이면, 이벤트가 OnLabelClickListener 에서 끝난다.
-
-                        Log.e("kakao map value", "label")
                         trackingManager?.startTracking(label)
                         return@setOnLabelClickListener true
                     } else { //return 값이 false 이면, 이벤트가 OnPoiClickListener, OnMapClickListener 까지 전달된다.
-                        Log.e("kakao map value", "label x")
                         return@setOnLabelClickListener false
                     }
                 }
@@ -1749,63 +1571,21 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
         }
     }
 
-    override fun onStart() {
-        super.onStart()
-        Log.e("NoticeBoardEdit TEst Log", "start")
-    }
 
     override fun onResume() {
         super.onResume()
-        Log.e("NoticeBoardEdit TEst Log", "reumse")
         startMapLifeCycle()
         map?.resume()
     }
 
     override fun onPause() {
         super.onPause()
-        Log.e("NoticeBoardEdit TEst Log", "pause")
         map?.pause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.e("NoticeBoardEdit TEst Log", "destory")
         map?.finish()
         map = null
     }
-
-    /*override fun onResume() {
-        super.onResume()
-        Log.e("NoticeBoardEdit", "resume")
-        if (mapView == null) {
-            initMapView()
-        } else {
-            mapView = null
-
-            mBinding.mapView.removeAllViews()
-            mBinding.mapView.removeView(mapView)
-        }
-    }*/
-
-    /*override fun onStop() {
-        super.onStop()
-        Log.e("NoticeBoardEdit", "stop")
-        if (mapView != null) {
-            mapView = null
-            mBinding.mapView.removeAllViewsInLayout()
-            mBinding.mapView.removeAllViews()
-        }
-    }
-
-    override fun finish() {
-        // 종료할 때 맵뷰 제거 (맵뷰 2개 이상 동시에 불가)
-        if (mapView != null) {
-            mapView = null
-
-            mBinding.mapView.removeAllViews()
-            mBinding.mapView.removeView(mapView)
-        }
-        Log.e("NoticeBoardEdit", "finish")
-        super.finish()
-    }*/
 }

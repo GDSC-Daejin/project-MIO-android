@@ -8,7 +8,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.model.CommentData
-import com.example.mio.viewmodel.CommentsViewModel
 import com.example.mio.R
 import com.example.mio.databinding.CommentItemLayoutBinding
 import com.example.mio.databinding.ReplyCommentsItemLayoutBinding
@@ -16,7 +15,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class NoticeBoardReadAdapter(private val commentsViewModel: CommentsViewModel) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class NoticeBoardReadAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val parentComments = mutableListOf<CommentData>()
     private val childCommentsMap = mutableMapOf<Int, List<CommentData>>()
@@ -96,10 +95,10 @@ class NoticeBoardReadAdapter(private val commentsViewModel: CommentsViewModel) :
                 //commentUserId.text = comment.user.studentId
                 if (comment.user.studentId == getWriter) { //게시글 작성자와 댓글 쓴 사람 아이디가 같으면
                     commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_blue_4))
-                    commentUserId.text = comment.user.studentId.toString()
+                    commentUserId.text = comment.user.studentId
                 } else {
                     commentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_7))
-                    commentUserId.text = comment.user.studentId.toString()
+                    commentUserId.text = comment.user.studentId
                 }
 
                 if (comment.content == "삭제된 댓글입니다.") {
@@ -134,10 +133,10 @@ class NoticeBoardReadAdapter(private val commentsViewModel: CommentsViewModel) :
 
                 if (comment.user.studentId == getWriter) { //게시글 작성자와 댓글 쓴 사람 아이디가 같으면
                     reCommentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_blue_4))
-                    reCommentUserId.text = comment.user.studentId.toString()
+                    reCommentUserId.text = comment.user.studentId
                 } else {
                     reCommentUserId.setTextColor(ContextCompat.getColor(context ,R.color.mio_gray_7))
-                    reCommentUserId.text = comment.user.studentId.toString()
+                    reCommentUserId.text = comment.user.studentId
                 }
 
                 if (comment.content == "삭제된 댓글입니다.") {

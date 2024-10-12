@@ -71,6 +71,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/mio_gray_1"
+        android:contentDescription="tabMenu"
         app:layout_constraintBottom_toTopOf="@+id/account_review_viewpager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

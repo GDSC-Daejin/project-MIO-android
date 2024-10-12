@@ -4,12 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.widget.Toast
-import androidx.core.content.ContextCompat.startActivity
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -34,17 +31,16 @@ object RetrofitServerConnect {
             chain.proceed(newRequest)
         }
 
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
+        val serverUrl = BuildConfig.server_URL
+        val retrofit = Retrofit.Builder().baseUrl(serverUrl)
             .addConverterFactory(GsonConverterFactory.create())
         val builder = OkHttpClient.Builder()
         builder.interceptors().add(interceptor)
         val client: OkHttpClient = builder.build()
         retrofit.client(client)
         val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)
 
-        return api
+        return retrofit2.create(MioInterface::class.java)
     }
 
 

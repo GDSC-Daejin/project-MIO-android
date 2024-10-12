@@ -106,6 +106,20 @@ class AccountSelectBankActivity : AppCompatActivity() {
                         currentPage += 1
                         sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.ibk.android.ionebank")
                     }
+
+                    "우리은행" -> {
+                        userBank = " 우리은행"
+                        binding.accountVf.showNext()
+                        currentPage += 1
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.wooribank.smart.npib")
+                    }
+
+                    "농협은행" -> {
+                        userBank = " 농협은행"
+                        binding.accountVf.showNext()
+                        currentPage += 1
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "nh.smart.banking")
+                    }
                 }
             }
         })
@@ -136,7 +150,6 @@ class AccountSelectBankActivity : AppCompatActivity() {
         binding.accountSelectBankBtn.setOnClickListener {
             if (userAccountNumber == null) {
                 Toast.makeText(this@AccountSelectBankActivity, "계좌번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
-                println("useran " + (userAccountNumber ?: "") + userBank)
             } else {
                 val intent = Intent(this@AccountSelectBankActivity, AccountSettingActivity::class.java).apply {
                     putExtra("flag", 2)
@@ -172,12 +185,14 @@ class AccountSelectBankActivity : AppCompatActivity() {
     }
 
     private fun setData() {
-        bankData.add(BankItemData(R.drawable.kakao_bank_icon, "카카오뱅크"))
-        bankData.add(BankItemData(R.drawable.toss_icon, "토스뱅크"))
-        bankData.add(BankItemData(R.drawable.kb_icon, "국민은행"))
-        bankData.add(BankItemData(R.drawable.hana_icon, "하나은행"))
-        bankData.add(BankItemData(R.drawable.shinhan_icon, "신한은행"))
-        bankData.add(BankItemData(R.drawable.ibk_icon, "기업은행"))
+        bankData.add(BankItemData(R.drawable.bank_kakao, "카카오뱅크"))
+        bankData.add(BankItemData(R.drawable.toss, "토스뱅크"))
+        bankData.add(BankItemData(R.drawable.bank_kb, "국민은행"))
+        bankData.add(BankItemData(R.drawable.bank_hana, "하나은행"))
+        bankData.add(BankItemData(R.drawable.bank_shinhan, "신한은행"))
+        bankData.add(BankItemData(R.drawable.bank_ibk, "기업은행"))
+        bankData.add(BankItemData(R.drawable.bank_woori, "우리은행"))
+        bankData.add(BankItemData(R.drawable.bank_nh, "농협은행"))
     }
 
     private fun initRecyclerView() {

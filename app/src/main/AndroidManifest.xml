@@ -26,6 +26,8 @@
         <package android:name="com.shinhan.sbanking" /> <!-- 신한페이판 -->
         <package android:name="com.ibk.android.ionebank" /> <!-- ibk기업은행 -->
         <package android:name="com.kakaobank.channel" />
+        <package android:name="com.wooribank.smart.npib" /> <!--우리은행-->
+        <package android:name="nh.smart.banking" /> <!--농협은행-->
     </queries>
 
     <application

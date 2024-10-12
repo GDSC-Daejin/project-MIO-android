@@ -49,7 +49,7 @@ class MyReviewWriteableAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>()
             //val listener = itemClickListener?.get()
         }
     }
-    inner class LoadingViewHolder(var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
+    inner class LoadingViewHolder(private var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
         val processBar : ProgressBar = loadingBinding.loadingPb
     }
 
@@ -103,9 +103,9 @@ class MyReviewWriteableAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>()
 
     //약한 참조로 참조하는 객체가 사용되지 않을 경우 가비지 콜렉션에 의해 자동해제
     //private var itemClickListener: WeakReference<ItemClickListener>? = null
-    private lateinit var itemClickListener: MyReviewWriteableAdapter.ItemClickListener
+    private lateinit var itemClickListener:ItemClickListener
 
-    fun setItemClickListener(itemClickListener: MyReviewWriteableAdapter.ItemClickListener) {
+    fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
 

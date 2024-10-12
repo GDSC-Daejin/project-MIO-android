@@ -1,7 +1,10 @@
 package com.example.mio.model
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class LocationReadAllResponse(
     @SerializedName("postId")
     var postId: Int,
@@ -47,15 +50,17 @@ data class LocationReadAllResponse(
     var postType : String? //BEFORE_DEADLINE, DEADLINE, COMPLETED
 
 
-) : java.io.Serializable
+) :Parcelable
 
+@Parcelize
 data class LocationCategory(
     @SerializedName("categoryId")
     var categoryId : Int,
     @SerializedName("categoryName")
     var categoryName : String,
-): java.io.Serializable
+): Parcelable
 
+/*
 data class LocationUser(
     @SerializedName("id")
     var id : Int,
@@ -82,31 +87,33 @@ data class LocationUser(
     @SerializedName("grade")
     var grade : String,
 )
+*/
 
+@Parcelize
 data class LocationParticipants(
     @SerializedName("id")
-    var id : Int,
+    var id : Int?,
     @SerializedName("email")
-    var email : String,
+    var email : String?,
     @SerializedName("studentId")
-    var studentId : String,
+    var studentId : String?,
     @SerializedName("profileImageUrl")
-    var profileImageUrl : String,
+    var profileImageUrl : String?,
     @SerializedName("name")
-    var name : String,
+    var name : String?,
     @SerializedName("accountNumber")
-    var accountNumber : String,
+    var accountNumber : String?,
     @SerializedName("gender")
-    var gender : Boolean,
+    var gender : Boolean?,
     @SerializedName("verifySmoker")
-    var verifySmoker : Boolean,
+    var verifySmoker : Boolean?,
     @SerializedName("roleType")
-    var roleType : String,
+    var roleType : String?,
     @SerializedName("status")
-    var status : String,
+    var status : String?,
     @SerializedName("mannerCount")
-    var mannerCount : Int,
+    var mannerCount : Int?,
     @SerializedName("grade")
-    var grade : String,
-): java.io.Serializable
+    var grade : String?,
+) : Parcelable
 

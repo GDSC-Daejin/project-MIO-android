@@ -1,5 +1,9 @@
 package com.example.mio.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class PostData(
     val accountID : String,
     val postID : Int, //position
@@ -18,7 +22,7 @@ data class PostData(
     val postlatitude : Double,
     val postlongitude : Double
 
-    ) : java.io.Serializable {
+    ) : Parcelable {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

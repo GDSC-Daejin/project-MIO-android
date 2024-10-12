@@ -6,9 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContentProviderCompat.requireContext
 import com.example.mio.databinding.FragmentAccountSettingBottomSheetBinding
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -26,7 +24,7 @@ class AccountSettingBottomSheetFragment(check : Boolean) : BottomSheetDialogFrag
     private var param2: String? = null
 
     private lateinit var asBinding : FragmentAccountSettingBottomSheetBinding
-    private var listener : AccountSettingBottomSheetFragment.OnSendFromBottomSheetDialog? = null
+    private var listener : OnSendFromBottomSheetDialog? = null
     private var isType = check //true면 성별 체크용, false면 흡연 여부용
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,20 +85,8 @@ class AccountSettingBottomSheetFragment(check : Boolean) : BottomSheetDialogFrag
             behavior.state = BottomSheetBehavior.STATE_EXPANDED
             behavior.isDraggable = false
         }*/
-        val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
-        dialog.setOnShowListener {
 
-            val bottomSheetDialog = it as BottomSheetDialog
-            val parentLayout =
-                bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            parentLayout?.let { it ->
-                val behaviour = BottomSheetBehavior.from(it)
-                //setupFullHeight(it)
-                //behaviour.state = BottomSheetBehavior.STATE_COLLAPSED
-            }
-        }
-
-        return dialog
+        return BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
     }
 
     interface OnSendFromBottomSheetDialog {

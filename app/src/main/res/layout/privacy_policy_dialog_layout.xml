@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="20dp"
+    android:layout_marginEnd="20dp">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:background="@drawable/dialog_round_background"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/message_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/privacy_policy_message"
+            android:textSize="18sp"
+            android:paddingBottom="16dp"
+            android:maxLines="5"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:linksClickable="true"
+            android:autoLink="web"
+            android:gravity="center"
+            android:layout_marginTop="20dp"
+            android:fontFamily="@font/pretendard_medium"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal">
+
+
+            <Button
+                android:id="@+id/dialog_left_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendard_medium"
+                android:background="@drawable/round_btn_layout"
+                android:backgroundTint="@color/mio_gray_1"
+                android:text="아니오"
+                android:textColor="@color/mio_gray_10" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                />
+
+            <Button
+                android:id="@+id/dialog_right_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/round_btn_layout"
+                android:backgroundTint="@color/mio_gray_1"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="예"
+                android:textColor="@color/mio_blue_5" />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+    <!--<Button
+        android:id="@+id/accept_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="권한 허용"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/message_text"
+        android:layout_marginTop="16dp"/>
+
+    <Button
+        android:id="@+id/cancel_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="취소"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/accept_button"
+        android:layout_marginTop="8dp"/>-->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

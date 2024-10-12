@@ -3,6 +3,7 @@ package com.example.mio
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
@@ -29,7 +30,7 @@ import retrofit2.Response
 class ApplyNextActivity : AppCompatActivity() {
     private lateinit var anaBinding : ActivityApplyNextBinding
     private lateinit var myViewModel : SharedViewModel
-    private var isPosEnd = false
+
     //read에서 받아온 postId 저장
     private var postId = 0
     private var postData : PostData? = null
@@ -59,7 +60,12 @@ class ApplyNextActivity : AppCompatActivity() {
 
         //val s = savedInstanceState.pu
         postId = intent.getIntExtra("postId", 0)
-        postData = intent.getSerializableExtra("postData") as PostData?
+        postData = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra("postData")
+        } else {
+            intent.getParcelableExtra("postData", PostData::class.java)
+        }
+
 
         //뒤로가기
         anaBinding.applyBackArrow.setOnClickListener {
@@ -305,20 +311,18 @@ class ApplyNextActivity : AppCompatActivity() {
                     response: Response<ParticipationData>
                 ) {
                     if (response.isSuccessful) {
-                        println("succcc")
                         //postData?.let { it1 -> setNotification("참여 신청이 완료되었습니다!", it1) }
                         //sendAlarmData()
                         Toast.makeText(this@ApplyNextActivity, "참여 신청이 완료되었습니다!", Toast.LENGTH_SHORT).show()
                     } else {
-                        println("faafa")
-                        Log.e("addpost", response.errorBody()?.string()!!)
-                        Log.e("message", call.request().toString())
-                        println(response.code())
+                        Toast.makeText(this@ApplyNextActivity, "참여 신청에 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<ParticipationData>, t: Throwable) {
                     Log.e("error", t.toString())
+                    Toast.makeText(this@ApplyNextActivity, "참여 신청에 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+
                 }
             })
 
@@ -367,79 +371,8 @@ class ApplyNextActivity : AppCompatActivity() {
                 Log.e("applyNext" , currentPage.toString())
                 myViewModel.postCheckPage(currentPage)
             }
-        } else {
-
         }
         anaBinding.applyNext.isEnabled = shouldEnableButton
     }
 
-    private fun sendAlarmData() {
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(this).toString()
-        val identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(this)?.toString()?.split("@")?.map { it }?.first()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(this).toString()
-        /*val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        //.client(clientBuilder)
-
-        //Authorization jwt토큰 로그인
-        val interceptor = Interceptor { chain ->
-
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    val intent = Intent(this@ApplyNextActivity, LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(this@ApplyNextActivity, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-        ///////////////////////////////
-
-        //userId 가 알람 받는 사람
-        val temp = AddAlarmData("신청${identification}${applyEditContent}", postId, postData!!.user.id)
-
-        //entity가 알람 받는 사람, user가 알람 전송한 사람
-        CoroutineScope(Dispatchers.IO).launch {
-            RetrofitServerConnect.create(this@ApplyNextActivity).addAlarm(temp).enqueue(object : Callback<AddAlarmResponseData?> {
-                override fun onResponse(
-                    call: Call<AddAlarmResponseData?>,
-                    response: Response<AddAlarmResponseData?>
-                ) {
-                    if (response.isSuccessful) {
-                        println("succcc send alarm")
-                    } else {
-                        println("faafa alarm")
-                        Log.d("alarm", response.errorBody()?.string()!!)
-                        Log.d("message", call.request().toString())
-                        println(response.code())
-                    }
-                }
-
-                override fun onFailure(call: Call<AddAlarmResponseData?>, t: Throwable) {
-                    Log.d("error", t.toString())
-                }
-
-            })
-        }
-    }
 }

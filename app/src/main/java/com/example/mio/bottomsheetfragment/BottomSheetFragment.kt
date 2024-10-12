@@ -3,7 +3,6 @@ package com.example.mio.bottomsheetfragment
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.app.TimePickerDialog
-import android.app.TimePickerDialog.OnTimeSetListener
 import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
@@ -42,7 +41,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     //선택한 날짜
     private var selectTargetDate = ""
     //선택한 시간
-    private var selectTime = ""
+    private var selectTime : String? = null
+
     private var sendSelectTime = ""
     //필터로 선택한 데이터들을 외부로 전송하기 위한 리스너
     private var listener: OnSendFromBottomSheetDialog? = null
@@ -72,7 +72,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         bsBinding = FragmentBottomSheetBinding.inflate(inflater, container, false)
 
         //initSetting()
@@ -87,7 +87,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 selectTargetDate = dateFormat.format(selectedDate.time)  // 2024-01-01 형식
 
-                bsBinding.selectDateTv.text = "${year}년/${month+1}월/${day}일"
+                bsBinding.selectDateTv.text = requireActivity().getString(R.string.setDateText3, "$year", "${month+1}", "$day")//"${year}년/${month+1}월/${day}일"
                 bsBinding.selectDateTv.setTextColor(Color.BLACK)
                 bsBinding.filterCalendar.setImageResource(R.drawable.filter_calendar_update_icon)
             }
@@ -98,27 +98,6 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.filterTime.setOnClickListener {
             showHourPicker()
-        /*val time = TimePickerDialog.OnTimeSetListener { _, i, i2 ->
-                selectTime = "${i} 시 ${i2} 분?"
-
-                bsBinding.selectTime.text = selectTime
-                bsBinding.selectDateTv.setTextColor(Color.BLACK)
-            }
-
-            val timePickerDialog = TimePickerDialog(
-                activity,
-                android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
-                time,
-                hour,
-                minute,
-                true
-            )
-
-            TimePickerDialog(requireActivity(), time, 15, 24, false)
-            timePickerDialog.setTitle("Choose hour:")
-            timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-            timePickerDialog.show()*/
-
         }
 
         bsBinding.filterChecklistIv.setOnClickListener {
@@ -292,12 +271,12 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             participateNumberOfPeople = 1
             bsBinding.filterParticipateTv.text = "1"
 
-            bsBinding.selectDateTv.text = "yyyy/mm/dd"
+            bsBinding.selectDateTv.text = requireActivity().getString(R.string.setInitDateText)
             bsBinding.selectDateTv.setTextColor(ContextCompat.getColor(requireActivity() ,
                 R.color.mio_gray_7
             ))
 
-            bsBinding.selectTime.text = "오전 00:00"
+            bsBinding.selectTime.text = requireActivity().getString(R.string.setInitTimeText)
             bsBinding.selectTime.setTextColor(ContextCompat.getColor(requireActivity() ,
                 R.color.mio_gray_7
             ))
@@ -318,21 +297,21 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         return bsBinding.root
     }
 
-    private fun showHourPicker() {
+   private fun showHourPicker() {
         val myCalender = Calendar.getInstance()
         val hour = myCalender[Calendar.HOUR_OF_DAY]
         val minute = myCalender[Calendar.MINUTE]
         val myTimeListener =
-            OnTimeSetListener { view, hourOfDay, minute ->
+            TimePickerDialog.OnTimeSetListener { view, hourOfDay, pickerMinute ->
                 if (view.isShown) {
                     myCalender[Calendar.HOUR_OF_DAY] = hourOfDay
-                    myCalender[Calendar.MINUTE] = minute
-                    sendSelectTime = String.format("%02d:%02d:00", hourOfDay, minute)
+                    myCalender[Calendar.MINUTE] = pickerMinute
+                    sendSelectTime = String.format("%02d:%02d:00", hourOfDay, pickerMinute)
                     selectTime = if (hourOfDay > 12) {
-                        val pm = hourOfDay - 12;
-                        "오후 " + pm + "시 " + minute + "분 선택"
+                        val pm = hourOfDay - 12
+                        "오후 " + pm + "시 " + pickerMinute + "분 선택"
                     } else {
-                        "오전 " + hour + "시 " + minute + "분 선택"
+                        "오전 " + hourOfDay + "시 " + pickerMinute + "분 선택"
                     }
                     //selectTime = "${hourOfDay} 시 ${minute} 분"
 
@@ -341,19 +320,39 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                     bsBinding.filterTime.setImageResource(R.drawable.filter_time_update_icon)
                 }
             }
+
         val timePickerDialog = TimePickerDialog(
             activity,
-            //여기서 테마 설정해서 커스텀하기
-            android.R.style.Theme_Holo_Light_Dialog_NoActionBar,
             myTimeListener,
             hour,
             minute,
             true
-        )
-        timePickerDialog.setTitle("시간 선택 :")
-        timePickerDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+        ).apply {
+            setTitle("Select Time")
+            window!!.setBackgroundDrawableResource(R.drawable.dialog_round_background)
+        }
+
         timePickerDialog.show()
     }
+   /*private fun showHourPicker() {
+       // 현재 시간을 기준으로 TimePickerDialog 호출
+       val calendar = Calendar.getInstance()
+       val hour = calendar.get(Calendar.HOUR_OF_DAY)
+       val minute = calendar.get(Calendar.MINUTE)
+
+       // TimePickerDialog를 Spinner 모드로 호출
+       TimePickerDialog(
+           context,
+           R.style.TimePickerSpinner, // Spinner 스타일 지정
+           this, // TimeSetListener 설정
+           hour,
+           minute,
+           false // 12시간제 사용 여부
+       ).apply {
+           setTitle("Select Time")
+           show()
+       }
+    }*/
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         /*val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme).apply {
@@ -366,18 +365,14 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             val bottomSheetDialog = it as BottomSheetDialog
             val parentLayout =
                 bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            parentLayout?.let { it ->
-                val behaviour = BottomSheetBehavior.from(it)
-                setupFullHeight(it)
+            parentLayout?.let {pl ->
+                val behaviour = BottomSheetBehavior.from(pl)
+                setupFullHeight(pl)
                 behaviour.state = BottomSheetBehavior.STATE_EXPANDED
             }
         }
 
         return dialog
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
     }
 
     private fun setupFullHeight(bottomSheet: View) {
@@ -394,7 +389,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         this.listener = listener
     }
 
-    private fun initSetting() {
+    /*private fun initSetting() {
         if (saveSharedPreferenceGoogleLogin.getSharedSchool(context) != null) {
             isCheckSchool = saveSharedPreferenceGoogleLogin.getSharedSchool(context)!!
 
@@ -455,7 +450,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 }
             }
         }
-    }
+    }*/
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
         // 여기서 초기화 로직을 수행
@@ -507,12 +502,12 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         participateNumberOfPeople = 1
         bsBinding.filterParticipateTv.text = "1"
 
-        bsBinding.selectDateTv.text = "yyyy/mm/dd"
+        bsBinding.selectDateTv.text = requireActivity().getString(R.string.setInitDateText)
         bsBinding.selectDateTv.setTextColor(ContextCompat.getColor(requireActivity() ,
             R.color.mio_gray_7
         ))
 
-        bsBinding.selectTime.text = "오전 00:00"
+        bsBinding.selectTime.text =  requireActivity().getString(R.string.setInitTimeText)
         bsBinding.selectTime.setTextColor(ContextCompat.getColor(requireActivity() ,
             R.color.mio_gray_7
         ))

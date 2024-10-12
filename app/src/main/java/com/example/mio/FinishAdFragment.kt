@@ -1,16 +1,12 @@
 package com.example.mio
 
-import android.app.Dialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
@@ -51,7 +47,6 @@ class FinishAdFragment(context: Context, finishAdInterface: FinishAdInterface) :
 
         // 취소 버튼 클릭
         binding.dialogLeftBtn.setOnClickListener {
-            Log.e("FragmentFinishAdBinding", "leftBtn")
             dismiss()
         }
 
@@ -71,11 +66,9 @@ class FinishAdFragment(context: Context, finishAdInterface: FinishAdInterface) :
                 loadedAd = ad // 광고가 로드되면 이를 저장
                 val adView = binding.nativeAdView
                 populateNativeAd(adView, ad)
-                Log.e("ad test", ad.responseInfo.toString())
             }
             .withAdListener(object : AdListener() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    Log.e("ad test", "Failed to load ad: ${adError.message}")
                     // 광고 로드 실패 시 기본 동작 수행 (예: 기본 UI 표시)
                     binding.nativeAdView.visibility = View.VISIBLE
                     //binding.defaultAdView.visibility = View.VISIBLE
@@ -114,8 +107,6 @@ class FinishAdFragment(context: Context, finishAdInterface: FinishAdInterface) :
         // 광고를 뷰에 설정
         adView.setNativeAd(ad)
 
-        // 광고가 정상적으로 표시되었음을 로그로 출력
-        Log.d("populateNativeAd", "Native ad populated successfully")
         binding.adBtnLl.visibility = View.VISIBLE
     }
 

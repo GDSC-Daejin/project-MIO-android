@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         saveSettingData()
     }
 
-    private fun SseStartCheck() {
+    private fun sseStartCheck() {
         //foreground실행행
         serviceIntent =
             Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
@@ -128,7 +128,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
     ) { isGranted: Boolean ->
         if (isGranted) {
             // 알림 권한이 허용되었습니다.
-            Log.e("alarm permission", "$isGranted")
             requestIgnoreBatteryOptimization()
         } else {
             // 알림 권한이 거부되었습니다.
@@ -156,12 +155,9 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
 
     // 배터리 최적화 제외 요청
     private fun requestIgnoreBatteryOptimization() {//절전사용금지앱
-        Log.e("Battery", "isCreate")
         val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
         val isWhiteListing: Boolean = pm.isIgnoringBatteryOptimizations(applicationContext.packageName)
-        Log.e("isWhiteListing", "$isWhiteListing")
         if (!isWhiteListing) {
-            Log.e("isWhiteListing", "false")
             AlertDialog.Builder(this).apply {
                 setTitle("배터리 최적화 제외 요청")
                 setMessage("정상적인 알림을 수신하기 위해 배터리 사용량 최적화 목록에서 제외해야 합니다. 제외하시겠습니까?")
@@ -169,7 +165,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
                     val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
                     intent.data = Uri.parse("package:" + applicationContext.packageName)
                     saveSharedPreferenceGoogleLogin.setSharedAlarm(this@MainActivity, true)
-                    SseStartCheck()
+                    sseStartCheck()
                     startActivity(intent)
                 }
                 setNegativeButton("취소") { dialog, _ ->
@@ -557,14 +553,13 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
                         initNotification(notificationIcon)
                     }
                 } else {
-                    Log.e("MainActivity set user", response.message().toString())
-                    Log.e("MainActivity set user", response.code().toString())
-                    Log.e("MainActivity set user", response.errorBody()?.string()!!)
+                    Toast.makeText(this@MainActivity, "유저 정보를 가져오지 못했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<User>, t: Throwable) {
                 Log.e("MainActivity set user", t.message.toString())
+                Toast.makeText(this@MainActivity, "유저 정보를 가져오지 못했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -595,7 +590,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
             }
 
             override fun onFailure(call: Call<List<AddAlarmResponseData>>, t: Throwable) {
-                Log.d("MainActivitu Notification", t.message.toString())
                 menuItem?.setIcon(R.drawable.top_menu_notification)
             }
         })

@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import com.example.mio.R
 import com.example.mio.ReadSettingBottomSheetFragment
 import com.example.mio.databinding.FragmentReadSettingBottomSheet2Binding
-import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -63,24 +62,7 @@ class ReadSettingBottomSheet2Fragment : BottomSheetDialogFragment() { //유저�
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        /*val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme).apply {
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.isDraggable = false
-        }*/
-        val dialog = BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
-        dialog.setOnShowListener {
-
-            val bottomSheetDialog = it as BottomSheetDialog
-            val parentLayout =
-                bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
-            parentLayout?.let { it ->
-                val behaviour = BottomSheetBehavior.from(it)
-                //setupFullHeight(it)
-                //behaviour.state = BottomSheetBehavior.STATE_COLLAPSED
-            }
-        }
-
-        return dialog
+        return BottomSheetDialog(requireContext(), R.style.BottomSheetDialogTheme)
     }
 
     interface OnSendFromBottomSheetDialog {

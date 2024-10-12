@@ -1,7 +1,6 @@
 package com.example.mio.adapter
 
 import android.graphics.Color
-import android.location.Geocoder
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
@@ -38,8 +37,6 @@ class SearchResultAdapter(private var items: List<LocationReadAllResponse>) : Re
     }
 
     inner class ViewHolder(val binding: ListLayoutBinding) : RecyclerView.ViewHolder(binding.root) {
-        private val geocoder = Geocoder(binding.root.context)
-
         init {
             itemView.setOnClickListener {
                 val position = adapterPosition

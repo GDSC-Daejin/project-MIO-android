@@ -2,7 +2,6 @@ package com.example.mio.adapter
 
 import android.content.Context
 import android.graphics.drawable.Drawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,8 +35,6 @@ class AccountSelectBankAdapter  : RecyclerView.Adapter<AccountSelectBankAdapter.
                         target: com.bumptech.glide.request.target.Target<Drawable>?,
                         isFirstResource: Boolean
                     ): Boolean {
-                        Log.d("Glide", "Image load failed: ${e?.message}")
-                        println(e?.message.toString())
                         return false
                     }
 
@@ -48,7 +45,6 @@ class AccountSelectBankAdapter  : RecyclerView.Adapter<AccountSelectBankAdapter.
                         dataSource: DataSource?,
                         isFirstResource: Boolean
                     ): Boolean {
-                        Log.d("Glide", "Image load Ready: {$isFirstResource}")
                         return false
                     }
                 })

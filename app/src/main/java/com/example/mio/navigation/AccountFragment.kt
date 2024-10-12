@@ -1,13 +1,12 @@
 package com.example.mio.navigation
 
 import android.animation.ObjectAnimator
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -18,6 +17,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -70,6 +70,9 @@ class AccountFragment : Fragment() {
     //로딩창
     private var loadingDialog : LoadingProgressDialog? = null
 
+    //체크용
+    private var isPolicyAllow : Boolean? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -83,15 +86,20 @@ class AccountFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         aBinding = FragmentAccountBinding.inflate(inflater, container, false)
-
+        saveSettingData()
         initSetAccountData()
 
         aBinding.accountSettingIv.setOnClickListener {
-            val intent = Intent(activity, AccountSettingActivity::class.java).apply {
-                putExtra("type", "ACCOUNT")
-                putExtra("accountData", email) //20201530 숫자만
+            if (isPolicyAllow == true) {
+                val intent = Intent(activity, AccountSettingActivity::class.java).apply {
+                    putExtra("type", "ACCOUNT")
+                    putExtra("accountData", email) //20201530 숫자만
+                }
+                requestActivity.launch(intent)
+            } else {
+                Toast.makeText(requireContext(), "개인정보처리방침에 동의해주세요.", Toast.LENGTH_SHORT).show()
+                saveSettingData()
             }
-            requestActivity.launch(intent)
         }
 
         aBinding.accountReviewBtn.setOnClickListener {
@@ -102,18 +110,66 @@ class AccountFragment : Fragment() {
             startActivity(intent)
         }
 
-        aBinding.accountBank.setOnClickListener {
-            createClipData(myAccountData?.accountNumber.toString())
-        }
-
         aBinding.accountViewpager.adapter = AccountTabAdapter(requireActivity())
 
         TabLayoutMediator(aBinding.accountCategoryTabLayout, aBinding.accountViewpager) { tab, pos ->
             tab.text = tabTextList[pos]
         }.attach()
 
-
         return aBinding.root
+    }
+
+    private fun saveSettingData() { //처음 앱 사용 시 저장한 isPolicyAllow 없어서 null이니 true로 저장 후 dialog를 실행토록함
+        //다음에는 true가 저장되어있었으니 false로 저장내용을 바꾸고 다시 저장하여 dialog가 나오지 않도록 함
+        val sharedPref = requireActivity().getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
+        isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
+
+        if (isPolicyAllow != true) {
+            initPersonalInformationConsent()
+        }
+    }
+
+    private fun initPersonalInformationConsent() {
+        val sharedPref = requireActivity().getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
+        //isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
+        val layoutInflater = LayoutInflater.from(context)
+        val dialogView = layoutInflater.inflate(R.layout.privacy_policy_dialog_layout, null)
+        val alertDialog = android.app.AlertDialog.Builder(context, R.style.CustomAlertDialog)
+            .setView(dialogView)
+            .create()
+        val dialogContent = dialogView.findViewById<TextView>(R.id.message_text)
+        val dialogLeftBtn = dialogView.findViewById<View>(R.id.dialog_left_btn)
+        val dialogRightBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
+
+        dialogContent.setOnClickListener {
+            val url = "https://sites.google.com/daejin.ac.kr/mio/%ED%99%88"
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse(url)
+            }
+            startActivity(intent)
+        }
+
+        dialogLeftBtn.setOnClickListener {
+            Toast.makeText(requireContext(), "서비스 이용이 제한될 수 있습니다.", Toast.LENGTH_SHORT).show()
+            with(sharedPref.edit()) {
+                putBoolean("isPolicyAllow", false)
+                apply() // 비동기적으로 데이터를 저장
+            }
+            isPolicyAllow = false
+            alertDialog.dismiss()
+        }
+
+        dialogRightBtn.setOnClickListener {
+            //todo 서비스 이용확인 api?
+
+            with(sharedPref.edit()) {
+                putBoolean("isPolicyAllow", true)
+                apply() // 비동기적으로 데이터를 저장
+            }
+            isPolicyAllow = true
+            alertDialog.dismiss()
+        }
+        alertDialog.show()
     }
 
     private fun initSetAccountData() {
@@ -182,18 +238,11 @@ class AccountFragment : Fragment() {
                         null
                     }
 
-
-                    //나중에 response.body()!!.mannerCount 다시 체크하기  TODO
-                    println("ss")
                     saveSharedPreferenceGoogleLogin.setUserId(requireActivity(), response.body()!!.id)
-                    println(response.body()!!.id)
-                    println(saveSharedPreferenceGoogleLogin.getUserId(requireActivity()))
                     myAccountData = response.body()
 
                     if (grade != null) {
-                        println("mn")
-
-                        aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 $grade 입니다"
+                        aBinding.accountGradeTv.text = requireActivity().getString(R.string.setUserGrade2, myAccountData!!.studentId, grade)//"${myAccountData!!.studentId}님의 현재 등급은 $grade 입니다"
 
                         val word = grade!!
                         val start: Int = aBinding.accountGradeTv.text.indexOf(word)
@@ -213,8 +262,7 @@ class AccountFragment : Fragment() {
                             animator.start()
                         }
                     } else {
-                        println("mmc")
-                        aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 B 입니다"
+                        aBinding.accountGradeTv.text = requireActivity().getString(R.string.setUserGrade, myAccountData!!.studentId)//"${myAccountData!!.studentId}님의 현재 등급은 B 입니다"
 
                         val word = "B"
                         val start: Int = aBinding.accountGradeTv.text.indexOf(word)
@@ -274,7 +322,7 @@ class AccountFragment : Fragment() {
                     }
 
                     if (accountNumber != null) {
-                        aBinding.accountBank.text = accountNumber
+                        aBinding.accountBank.text = "********"//accountNumber
                         aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
                     } else {
                         aBinding.accountBank.text = ""
@@ -286,33 +334,43 @@ class AccountFragment : Fragment() {
                         loadingDialog = null // 다이얼로그 인스턴스 참조 해제
                     }
                 } else {
-                    println("ff")
                     aBinding.accountGender.text = "기본 세팅"
                     aBinding.accountSmokingStatus.text = "기본 세팅"
                     aBinding.accountBank.text = "기본 세팅"
                     aBinding.accountAddress.text = "기본 세팅"
 
-                    aBinding.accountGradeTv.text = "${myAccountData!!.studentId}님의 현재 등급은 F 입니다"
+                    aBinding.accountGradeTv.text = requireActivity().getString(R.string.setUserGrade,
+                        myAccountData!!.studentId
+                    )//"${myAccountData!!.studentId}님의 현재 등급은 B 입니다"
                     loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                     if (loadingDialog != null && loadingDialog!!.isShowing) {
                         loadingDialog?.dismiss()
                         loadingDialog = null // 다이얼로그 인스턴스 참조 해제
                     }
 
-                    Log.d("add", response.errorBody()?.string()!!)
-                    Log.d("message", call.request().toString())
-                    Log.d("f", response.code().toString())
+                    requireActivity().runOnUiThread {
+                        if (isAdded && !requireActivity().isFinishing) {
+                            Toast.makeText(requireActivity(), "계정 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             }
 
             override fun onFailure(call: Call<User>, t: Throwable) {
                 Log.d("error","error $t")
+                requireActivity().runOnUiThread {
+                    if (isAdded && !requireActivity().isFinishing) {
+                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                        loadingDialog?.dismiss()
+                        Toast.makeText(requireActivity(), "계정 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         })
 
     }
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         when (it.resultCode) {
             AppCompatActivity.RESULT_OK -> {
                 when (it.data?.getIntExtra("flag", -1)) {
@@ -329,7 +387,7 @@ class AccountFragment : Fragment() {
     }
 
     //클립보드에 복사하기
-    private fun createClipData(message : String) {
+    /*private fun createClipData(message : String) {
         val clipManager = requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
         val clipData = ClipData.newPlainText("message", message)
@@ -338,7 +396,7 @@ class AccountFragment : Fragment() {
 
         Toast.makeText(context, "복사되었습니다.", Toast.LENGTH_SHORT).show()
     }
-
+*/
     companion object {
         /**
          * Use this factory method to create a new instance of

@@ -12,8 +12,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.*
@@ -143,77 +143,87 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
 
         //println(userId)
 
-        CoroutineScope(Dispatchers.IO).launch {
-            RetrofitServerConnect.create(requireActivity()).getMyPostData(userId.toInt(),"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
-                override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
-                    if (response.isSuccessful) {
-                        totalPages = response.body()!!.totalPages
-                        //데이터 청소
-                        myAccountPostAllData.clear()
+        RetrofitServerConnect.create(requireActivity()).getMyPostData(userId.toInt(),"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+            override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
+                if (response.isSuccessful) {
+                    totalPages = response.body()!!.totalPages
+                    //데이터 청소
+                    myAccountPostAllData.clear()
 
-                        //데드라인 체크안함
-                        for (i in response.body()!!.content.filter { it.isDeleteYN == "N" }.indices) {
-                            val part = response.body()!!.content[i].participantsCount ?: 0
-                            val location = response.body()!!.content[i].location ?: "수락산역 3번 출구"
-                            val title = response.body()!!.content[i].title ?: "null"
-                            val content = response.body()!!.content[i].content ?: "null"
-                            val targetDate = response.body()!!.content[i].targetDate ?: "null"
-                            val targetTime = response.body()!!.content[i].targetTime ?: "null"
-                            val categoryName = response.body()!!.content[i].category.categoryName ?: "null"
-                            val cost = response.body()!!.content[i].cost ?: 0
-                            val verifyGoReturn = response.body()!!.content[i].verifyGoReturn ?: false
+                    //데드라인 체크안함
+                    for (i in response.body()!!.content.filter { it.isDeleteYN == "N" }.indices) {
+                        val part = response.body()!!.content[i].participantsCount
+                        val location = response.body()!!.content[i].location
+                        val title = response.body()!!.content[i].title
+                        val content = response.body()!!.content[i].content
+                        val targetDate = response.body()!!.content[i].targetDate
+                        val targetTime = response.body()!!.content[i].targetTime
+                        val categoryName = response.body()!!.content[i].category.categoryName
+                        val cost = response.body()!!.content[i].cost
+                        val verifyGoReturn = response.body()!!.content[i].verifyGoReturn
 
-                            //println(response!!.body()!!.content[i].user.studentId)
-                            myAccountPostAllData.add(
-                                PostData(
-                                    response.body()!!.content[i].user.studentId,
-                                    response.body()!!.content[i].postId,
-                                    title,
-                                    content,
-                                    response.body()!!.content[i].createDate,
-                                    targetDate,
-                                    targetTime,
-                                    categoryName,
-                                    location,
-                                    //participantscount가 현재 참여하는 인원들
-                                    part,
-                                    //numberOfPassengers은 총 탑승자 수
-                                    response.body()!!.content[i].numberOfPassengers,
-                                    cost,
-                                    verifyGoReturn,
-                                    response.body()!!.content[i].user,
-                                    response.body()!!.content[i].latitude,
-                                    response.body()!!.content[i].longitude
-                                ))
+                        //println(response!!.body()!!.content[i].user.studentId)
+                        myAccountPostAllData.add(
+                            PostData(
+                                response.body()!!.content[i].user.studentId,
+                                response.body()!!.content[i].postId,
+                                title,
+                                content,
+                                response.body()!!.content[i].createDate,
+                                targetDate,
+                                targetTime,
+                                categoryName,
+                                location,
+                                //participantscount가 현재 참여하는 인원들
+                                part,
+                                //numberOfPassengers은 총 탑승자 수
+                                response.body()!!.content[i].numberOfPassengers,
+                                cost,
+                                verifyGoReturn,
+                                response.body()!!.content[i].user,
+                                response.body()!!.content[i].latitude,
+                                response.body()!!.content[i].longitude
+                            ))
 
-                            // 새로 고침 완료 및 터치 가능하게 설정
-                            pBinding.accountSwipe.isRefreshing = false
-                            requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                        // 새로 고침 완료 및 터치 가능하게 설정
+                        pBinding.accountSwipe.isRefreshing = false
+                        requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
 
-                            myAdapter!!.notifyDataSetChanged()
-                        }
-                        if (myAccountPostAllData.size > 0) {
-                            pBinding.accountPostNotDataLl.visibility = View.GONE
-                            pBinding.accountSwipe.visibility = View.VISIBLE
-                            pBinding.myAccountPostRv.visibility = View.VISIBLE
-                        } else {
-                            pBinding.accountPostNotDataLl.visibility = View.VISIBLE
-                            pBinding.accountSwipe.visibility = View.GONE
-                            pBinding.myAccountPostRv.visibility = View.GONE
-                        }
-                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                        loadingDialog?.dismiss()
-
+                        myAdapter!!.notifyDataSetChanged()
+                    }
+                    if (myAccountPostAllData.size > 0) {
+                        pBinding.accountPostNotDataLl.visibility = View.GONE
+                        pBinding.accountSwipe.visibility = View.VISIBLE
+                        pBinding.myAccountPostRv.visibility = View.VISIBLE
                     } else {
-                        Log.d("f", response.code().toString())
+                        pBinding.accountPostNotDataLl.visibility = View.VISIBLE
+                        pBinding.accountSwipe.visibility = View.GONE
+                        pBinding.myAccountPostRv.visibility = View.GONE
+                    }
+                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                    loadingDialog?.dismiss()
+
+                } else {
+                    requireActivity().runOnUiThread {
+                        if (isAdded && !requireActivity().isFinishing) {
+                            loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                            loadingDialog?.dismiss()
+                            Toast.makeText(requireActivity(), "게시글 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
+            }
 
-                override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.d("error", t.toString())
+            override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
+                requireActivity().runOnUiThread {
+                    if (isAdded && !requireActivity().isFinishing) {
+                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                        loadingDialog?.dismiss()
+                        Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            })
-        }
+            }
+        })
     }
 
     private fun initMyRecyclerView() {
@@ -342,14 +352,26 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                                 myAdapter?.notifyDataSetChanged()
                             }
                         } else {
-                            Log.d("Error", "Response code: ${response.code()}")
+                            requireActivity().runOnUiThread {
+                                if (isAdded && !requireActivity().isFinishing) {
+                                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                                    loadingDialog?.dismiss()
+                                    Toast.makeText(requireActivity(), "게시글 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         }
                         isLoading = false
                     }
 
                     override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                        Log.d("Error", "Failure: ${t.message}")
                         isLoading = false
+                        requireActivity().runOnUiThread {
+                            if (isAdded && !requireActivity().isFinishing) {
+                                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+                                loadingDialog?.dismiss()
+                                Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 })
 
@@ -546,22 +568,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
     }*/
 
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
-        when (it.resultCode) {
-            AppCompatActivity.RESULT_OK -> {
-                //val post = it.data?.getSerializableExtra("postData") as PostData
-                when(it.data?.getIntExtra("flag", -1)) {
-                    //add
-                    0 -> {
-                    }
-                    //edit
-                    1 -> {
-                    }
-
-                }
-            }
-        }
-    }
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {}
 
     companion object {
         /**

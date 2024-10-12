@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -78,17 +79,13 @@ class MyReviewWriteableFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity()).toString()
-        Log.e("initWriteable", identification)
+
 
         wAdapter?.setItemClickListener(object : MyReviewWriteableAdapter.ItemClickListener{
             override fun onClick(view: View, position: Int, itemId: Int) {
                 if (!wBinding.writeableSwipe.isRefreshing) { // 새로고침 중일 때는 클릭을 막음
                     val temp = reviewWriteableReadAllData[position]
                     //내가 손님일때
-                    Log.e("wWriteable", reviewPassengersData.toString())
-                    Log.e("wWriteable", identification.toString())
-                    Log.e("wWriteable", reviewWriteableReadAllData.toString())
-                    Log.e("wWriteable", temp.toString())
                     if (identification != temp?.user?.email) {
                         val intent = Intent(activity, PassengersReviewActivity::class.java).apply {
                             putExtra("type", "PASSENGER")
@@ -122,15 +119,15 @@ class MyReviewWriteableFragment : Fragment() {
                     //데드라인 체크안함
                     if (responseData != null) {
                         for (i in responseData.content.filter { it.isDeleteYN == "N" }.indices) {
-                            val part = response.body()!!.content[i].participantsCount ?: 0
-                            val location = response.body()!!.content[i].location ?: "수락산역 3번 출구"
-                            val title = response.body()!!.content[i].title ?: "null"
-                            val content = response.body()!!.content[i].content ?: "null"
-                            val targetDate = response.body()!!.content[i].targetDate ?: "null"
-                            val targetTime = response.body()!!.content[i].targetTime ?: "null"
-                            val categoryName = response.body()!!.content[i].category.categoryName ?: "null"
-                            val cost = response.body()!!.content[i].cost ?: 0
-                            val verifyGoReturn = response.body()!!.content[i].verifyGoReturn ?: false
+                            val part = response.body()!!.content[i].participantsCount
+                            val location = response.body()!!.content[i].location
+                            val title = response.body()!!.content[i].title
+                            val content = response.body()!!.content[i].content
+                            val targetDate = response.body()!!.content[i].targetDate
+                            val targetTime = response.body()!!.content[i].targetTime
+                            val categoryName = response.body()!!.content[i].category.categoryName
+                            val cost = response.body()!!.content[i].cost
+                            val verifyGoReturn = response.body()!!.content[i].verifyGoReturn
 
                             //println(response!!.body()!!.content[i].user.studentId)
                             reviewWriteableReadAllData.add(
@@ -172,11 +169,20 @@ class MyReviewWriteableFragment : Fragment() {
 
                 } else {
                     Log.d("f", response.code().toString())
+                    requireActivity().runOnUiThread {
+                        if (isAdded && !requireActivity().isFinishing) {
+                            Toast.makeText(requireActivity(), "후기 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             }
 
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                Log.d("error", t.toString())
+                requireActivity().runOnUiThread {
+                    if (isAdded && !requireActivity().isFinishing) {
+                        Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             }
         })
     }
@@ -191,7 +197,7 @@ class MyReviewWriteableFragment : Fragment() {
         wBinding.writeablReviewPostRv.layoutManager = manager
     }
 
-    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { it ->
+    private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         when (it.resultCode) {
             AppCompatActivity.RESULT_OK -> {
                 when(it.data?.getIntExtra("flag", -1)) {
@@ -301,17 +307,24 @@ class MyReviewWriteableFragment : Fragment() {
                             }
                             reviewWriteableReadAllData.sortByDescending { it?.postCreateDate }
                         } else {
-                            Log.d("Error", "Response code: ${response.code()}")
+                            requireActivity().runOnUiThread {
+                                if (isAdded && !requireActivity().isFinishing) {
+                                    Toast.makeText(requireActivity(), "후기 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                                }
+                            }
                         }
                         isLoading = false
                     }
 
                     override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                        Log.d("Error", "Failure: ${t.message}")
                         isLoading = false
+                        requireActivity().runOnUiThread {
+                            if (isAdded && !requireActivity().isFinishing) {
+                                Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     }
                 })
-
             }
         }, 2000)
     }

@@ -180,18 +180,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/refresh_swipe_layout" />
 
-            <com.google.android.gms.ads.AdView
-                android:id="@+id/taxi_ad"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@color/white"
-                android:layout_gravity="center"
-                android:layout_marginBottom="20dp"
-                app:adSize="BANNER"
-                app:adUnitId="@string/test_banner_ad"
-                />
-
 
             <ImageView
                 android:id="@+id/carpool_banner_iv"

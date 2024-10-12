@@ -5,12 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.helper.SharedPref
 import com.example.mio.model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
 import com.example.mio.databinding.RvLoadingBinding
+import com.example.mio.diffutil.ReviewWriteableDiffUtilCallback
+import com.example.mio.model.MyAccountReviewData
 
 
 class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
@@ -27,9 +30,8 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
 
     private lateinit var binding : PostItemBinding
     //var searchWordData = ArrayList<SearchWordData>()
-    var moreTaxiData: List<PostData?> = ArrayList()
-    private val mMoreTaxiData: List<PostData> = ArrayList()
-    var sharedPref : SharedPref? = null
+    private var moreTaxiData = ArrayList<PostData?>()
+    private var sharedPref : SharedPref? = null
     private lateinit var context : Context
 
     init {
@@ -39,10 +41,10 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
     inner class MoreTaxiViewHolder(private val binding : PostItemBinding ) : RecyclerView.ViewHolder(binding.root) {
         private var position : Int? = null
         var postTitle = binding.postTitle
-        var postDate = binding.postDate
+        private var postDate = binding.postDate
         var postLocation = binding.postLocation
         var postParticipation = binding.postParticipation
-        var postParticipantTotal = binding.postParticipationTotal
+        private var postParticipantTotal = binding.postParticipationTotal
         var postCost = binding.postCost
 
         fun bind(moreData: PostData, position : Int) {
@@ -66,7 +68,7 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
             }
         }
     }
-    inner class LoadingViewHolder(var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
+    inner class LoadingViewHolder(private var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
         val processBar : ProgressBar = loadingBinding.loadingPb
     }
 
@@ -129,19 +131,14 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
     }
 
     // Adapter의 데이터 리스트를 업데이트하는 메서드
-    /*fun updateDataList(newItems: List<MyAccountReviewData?>) {
-        // Create a new DiffUtil.Callback instance
-        val diffCallback = CarpoolDiffUtilCallback(moreTaxiData, newItems)
+    fun updateDataList(newItems: List<PostData?>) {
+        val diffCallback = ReviewWriteableDiffUtilCallback(moreTaxiData, newItems)
 
         // Calculate the diff
         val diffResult = DiffUtil.calculateDiff(diffCallback)
-
-        val newDataList: MutableList<PostData?> = newItems.toMutableList()
-
-        // Replace the old list with the new list
-        moreTaxiData = newDataList
-
+        moreTaxiData.clear()
+        moreTaxiData.addAll(newItems.toList())
         // Dispatch the updates to the adapter
         diffResult.dispatchUpdatesTo(this)
-    }*/
+    }
 }

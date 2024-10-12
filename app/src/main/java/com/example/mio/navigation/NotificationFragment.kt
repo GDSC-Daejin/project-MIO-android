@@ -7,7 +7,6 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -109,18 +108,15 @@ class NotificationFragment : Fragment() {
         nAdapter.setItemClickListener(object : NotificationAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int?, status : NotificationAdapter.NotificationStatus) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    Log.e("notifi", "$itemId") //알람 id
                     val temp = itemId?.let { id -> //전체 알람에서 알람id를 담은 postid를 찾음
                         viewModel.notifications.value?.find { it.id == id }?.postId
                     }
-                    Log.e("notifi", "$temp")
 
                     val contentPost = temp?.let { postId -> //위 postid를 토대로 post데이터에 있는지 없는지 찾음
                         viewModel.notificationsPostData.value.find { it.postID == postId }
                     }
 
                     if (contentPost == null) {
-                        Log.e("notification", "notification")
                         withContext(context = Dispatchers.Main) {
                             Toast.makeText(requireContext(), "게시글이 삭제되었거나 종료되었습니다", Toast.LENGTH_SHORT).show()
                         }
@@ -136,19 +132,13 @@ class NotificationFragment : Fragment() {
                             NotificationAdapter.NotificationStatus.Passenger
                         }
                         else -> {
-                            Log.e("statusSet", "Neither status set")
                             NotificationAdapter.NotificationStatus.Neither
                         }
                     }
 
-                    Log.e("statusSet", statusSet.toString())
-                    Log.e("statusSet", temp.toString())
-                    Log.e("statusSet", contentPost.toString())
-
                     val temp2 = temp.let { postId ->
                         viewModel.notificationsParticipationData.value.find { it.first == postId }?.second
                     }
-                    Log.e("statusSet temp2", temp2.toString())
                     var intent : Intent? = null
                     dataPosition = position
 
@@ -214,11 +204,9 @@ class NotificationFragment : Fragment() {
                         override fun onResponse(call: Call<Void>, response: Response<Void>) {
                             viewModel.setLoading(false) // 로딩 상태 해제
                             if (response.isSuccessful) {
-                                Log.d("check deleteAlarm", response.code().toString())
                                 viewModel.deleteNotification(itemId)
                                 alertDialog.dismiss()
                             } else {
-                                Log.e("comment", response.errorBody()?.string() ?: "Unknown error")
                                 viewModel.setError("Failed to delete notification: ${response.code()}")
                             }
                         }
@@ -265,9 +253,7 @@ class NotificationFragment : Fragment() {
         RetrofitServerConnect.create(requireActivity()).getMyAlarm().enqueue(object : Callback<List<AddAlarmResponseData>> {
             override fun onResponse(call: Call<List<AddAlarmResponseData>>, response: Response<List<AddAlarmResponseData>>) {
                 if (response.isSuccessful) {
-                    println("scssucsucsucs")
                     val responseData = response.body()
-                    Log.d("taxi", response.code().toString())
                     //notificationAllData.clear()
                     viewModel.setLoading(false)
                     if (response.isSuccessful) {
@@ -280,15 +266,12 @@ class NotificationFragment : Fragment() {
                         viewModel.setError("Failed to load notifications")
                     }
                 } else {
-                    println("faafa")
                     viewModel.setError("Failed to load notifications")
-                    Log.d("comment", response.errorBody()?.string()!!)
-                    println(response.code())
+
                 }
             }
 
             override fun onFailure(call: Call<List<AddAlarmResponseData>>, t: Throwable) {
-                Log.d("error", t.toString())
                 viewModel.setLoading(false)
                 viewModel.setError("Error: ${t.message}")
             }
@@ -303,11 +286,9 @@ class NotificationFragment : Fragment() {
         if (notifications.isEmpty()) {
             nfBinding.notNotificationLl.visibility = View.VISIBLE
             nfBinding.notificationSwipe.visibility = View.GONE
-            Log.e("notifi", "isempty2")
         } else {
             nfBinding.notNotificationLl.visibility = View.GONE
             nfBinding.notificationSwipe.visibility = View.VISIBLE
-            Log.e("notifi", "isnotempty2")
         }
 
         val dataSize = notifications.size.toString().ifEmpty { "0" }
@@ -330,13 +311,7 @@ class NotificationFragment : Fragment() {
         viewModel.notifications.observe(viewLifecycleOwner) { notifications ->
             nAdapter.updateNotifications(notifications.sortedByDescending { it.createDate }.toList())
             updateUI2(notifications)
-            Log.e("observeNoti1", notifications.toString())
-            Log.e("sortedByDescending", "${notifications.sortedByDescending { it.createDate }.toList()}")
         }
-
-        /*reviewViewModel.reviews.observe(viewLifecycleOwner) {
-
-        }*/
 
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
             if (isLoading) {
@@ -377,7 +352,7 @@ class NotificationFragment : Fragment() {
 
         viewModel.error.observe(viewLifecycleOwner) { errorMessage ->
             if (errorMessage != null) {
-                Log.e("error observe", errorMessage)
+                Toast.makeText(requireActivity(), errorMessage, Toast.LENGTH_SHORT).show()//Log.e("error observe", errorMessage)
             }
         }
 

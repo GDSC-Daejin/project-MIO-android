@@ -39,10 +39,10 @@ class MyAccountParticipationAdapter : RecyclerView.Adapter<RecyclerView.ViewHold
         //var accountId = binding.accountId
         //var accountProfile = binding.accountImage
         var postTitle = binding.postTitle
-        var postDate = binding.postDate
+        private var postDate = binding.postDate
         var postLocation = binding.postLocation
         var postParticipation = binding.postParticipation
-        var postParticipantTotal = binding.postParticipationTotal
+        private var postParticipantTotal = binding.postParticipationTotal
         var postCost = binding.postCost
 
         fun bind(accountData: PostData, position : Int) {
@@ -86,7 +86,7 @@ class MyAccountParticipationAdapter : RecyclerView.Adapter<RecyclerView.ViewHold
             }
         }
     }
-    inner class LoadingViewHolder(var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
+    inner class LoadingViewHolder(private var loadingBinding: RvLoadingBinding) : RecyclerView.ViewHolder(loadingBinding.root) {
         val processBar : ProgressBar = loadingBinding.loadingPb
     }
 
@@ -142,9 +142,9 @@ class MyAccountParticipationAdapter : RecyclerView.Adapter<RecyclerView.ViewHold
 
     //약한 참조로 참조하는 객체가 사용되지 않을 경우 가비지 콜렉션에 의해 자동해제
     //private var itemClickListener: WeakReference<ItemClickListener>? = null
-    private lateinit var itemClickListener: MyAccountParticipationAdapter.ItemClickListener
+    private lateinit var itemClickListener: ItemClickListener
 
-    fun setItemClickListener(itemClickListener: MyAccountParticipationAdapter.ItemClickListener) {
+    fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener
     }
 

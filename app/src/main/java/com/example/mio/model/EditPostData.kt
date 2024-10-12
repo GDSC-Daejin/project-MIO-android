@@ -25,6 +25,4 @@ data class EditPostData(
     var cost: Int,
     @SerializedName("region3Depth")
     var region3Depth: String,
-) : java.io.Serializable {
-
-}
+) : java.io.Serializable

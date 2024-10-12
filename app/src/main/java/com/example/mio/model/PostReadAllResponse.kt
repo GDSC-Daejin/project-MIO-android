@@ -1,6 +1,8 @@
 package com.example.mio.model
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
 class PostReadAllResponse(
     @SerializedName("totalPages")
@@ -25,9 +27,7 @@ class PostReadAllResponse(
     var first : Boolean,
     @SerializedName("empty")
     var empty : Boolean,
-): java.io.Serializable {
-
-}
+): java.io.Serializable
 
 data class Content(
     @SerializedName("postId")
@@ -72,19 +72,16 @@ data class Content(
     var isDeleteYN : String?,
     @SerializedName("postType")
     var postType : String? //BEFORE_DEADLINE, DEADLINE, COMPLETED
-): java.io.Serializable {
-
-}
+): java.io.Serializable
 
 data class Category(
     @SerializedName("categoryId")
     var categoryId : Int,
     @SerializedName("categoryName")
     var categoryName : String,
-): java.io.Serializable {
+): java.io.Serializable
 
-}
-
+@Parcelize
 data class User(
     @SerializedName("id")
     var id : Int,
@@ -112,9 +109,7 @@ data class User(
     var grade : String?,
     @SerializedName("activityLocation")
     var activityLocation : String?
-) : java.io.Serializable {
-
-}
+) : Parcelable
 
 data class Participants(
     @SerializedName("id")
@@ -141,9 +136,7 @@ data class Participants(
     var mannerCount : Int,
     @SerializedName("grade")
     var grade : String,
-): java.io.Serializable {
-
-}
+): java.io.Serializable
 
 data class Sort(
     @SerializedName("empty")
@@ -152,9 +145,7 @@ data class Sort(
     var sorted : Boolean,
     @SerializedName("unsorted")
     var unsorted : Boolean,
-): java.io.Serializable {
-
-}
+): java.io.Serializable
 
 data class Pageable(
     @SerializedName("offset")
@@ -169,6 +160,4 @@ data class Pageable(
     var paged : Boolean,
     @SerializedName("unpaged")
     var unpaged : Boolean,
-): java.io.Serializable {
-
-}
+): java.io.Serializable

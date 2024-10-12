@@ -221,6 +221,11 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                     mtAdapter?.notifyDataSetChanged()
                 }
             }
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                mttBinding.moreRefreshSwipeLayout.isRefreshing = false
+                this.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            }, 1000)
         }
 
         myViewModel.checkFilter.observe(this) {
@@ -374,7 +379,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                         item != null &&
                                 (noConditionDate.isEmpty() || item.postTargetDate == noConditionDate) &&
                                 (noConditionTime.isEmpty() || item.postTargetTime == noConditionTime) &&
-                                (noConditionPeople == -1 || item.postParticipationTotal == noConditionPeople) &&
+                                /*(noConditionPeople == -1 || item.postParticipationTotal == noConditionPeople) &&*/
                                 (noConditionSchool == null || item.postVerifyGoReturn == noConditionSchool) &&
                                 (noConditionGender == null || item.user.gender == noConditionGender) &&
                                 (noConditionSmoke == null || item.user.verifySmoker == noConditionSmoke)
@@ -398,6 +403,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                 //moreCarpoolAllData.clear()
                 Log.d("filter", tempFilterPostData.toString())
                 mtAdapter!!.moreTaxiData = tempFilterPostData
+                mtAdapter?.notifyDataSetChanged()
 
 
                 withContext(Dispatchers.Main) {
@@ -408,7 +414,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                         mttBinding.moreNonfilterTv.visibility = View.GONE
                         mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
                         // UI 조작
-                        mtAdapter!!.notifyDataSetChanged()
+                        mtAdapter?.notifyDataSetChanged()
                     }
                 }
             }
@@ -538,49 +544,9 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                     myViewModel.postCheckFilter(getBottomData)
                                 }
 
-                                when(getBottomSheetData) {
-                                    "최신 순" -> {
-                                        mttBinding.moreSearchTv.text = "최신 순"
-                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
-                                        moreTaxiAllData.sortByDescending { mSort -> mSort?.postCreateDate }
-                                        mtAdapter?.notifyDataSetChanged()
-                                    }
-                                    "마감 임박 순" -> {
-                                        mttBinding.moreSearchTv.text = "마감 임박 순"
-                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
-
-                                        // 날짜 및 시간 형식 지정
-                                        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                                        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-
-                                        // 정렬 로직
-                                        val sortedTargets = moreTaxiAllData.sortedWith { t1, t2 ->
-                                            // 날짜 비교
-                                            val dateComparison = LocalDate.parse(t1?.postTargetDate, dateFormatter)
-                                                .compareTo(LocalDate.parse(t2?.postTargetDate, dateFormatter))
-
-                                            // 날짜가 같으면 시간 비교
-                                            if (dateComparison == 0) {
-                                                LocalTime.parse(t1?.postTargetTime, timeFormatter)
-
-                                                    .compareTo(LocalTime.parse(t2?.postTargetTime, timeFormatter))
-                                            } else {
-                                                dateComparison
-                                            }
-                                        }
-                                        moreTaxiAllData.clear()
-                                        moreTaxiAllData.addAll(sortedTargets)
-                                        mtAdapter?.notifyDataSetChanged()
-                                    }
-                                    "낮은 가격 순" -> {
-                                        mttBinding.moreSearchTv.text = "낮은 가격 순"
-                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreTaxiTabActivity ,R.color.mio_blue_4))
-                                        moreTaxiAllData.sortBy { mSort -> mSort?.postCost }
-                                        mtAdapter?.notifyDataSetChanged()
-                                    }
+                                if (getBottomSheetData.isNotEmpty()) {
+                                    myViewModel.postCheckSearchFilter(getBottomSheetData)
                                 }
-
-                                mtAdapter?.notifyDataSetChanged()
                             }
                         } else {
                             Log.d("Error", "Response code: ${response.code()}")
@@ -688,6 +654,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                                 adapter.moreTaxiData = moreTaxiAllData
                                 adapter.notifyDataSetChanged()
                             }
+                            //mtAdapter?.updateDataList(moreTaxiAllData)
 
                             // ViewModel 필터링 및 검색 필터 확인
                             when {
@@ -743,7 +710,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
     private fun initRecyclerView() {
         setSelectData()
         mtAdapter = MoreTaxiTabAdapter()
-        mtAdapter!!.moreTaxiData = moreTaxiAllData
+        //mtAdapter!!.moreTaxiData = moreTaxiAllData
         mttBinding.moreTaxiTabRv.adapter = mtAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true

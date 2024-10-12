@@ -188,7 +188,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     mttBinding.moreSearchTv.text = "최신 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
                     moreCarpoolAllData.sortByDescending { mSort -> mSort?.postCreateDate }
-                    mtAdapter?.updateDataList(moreCarpoolAllData)
+                    mtAdapter?.notifyDataSetChanged()
                 }
                 "마감 임박 순" -> {
                     mttBinding.moreSearchTv.text = "마감 임박 순"
@@ -214,22 +214,20 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     }
                     moreCarpoolAllData.clear()
                     moreCarpoolAllData.addAll(sortedTargets)
-                    //mtAdapter?.notifyDataSetChanged()
-                    mtAdapter?.updateDataList(sortedTargets)
+                    mtAdapter?.notifyDataSetChanged()
                 }
                 "낮은 가격 순" -> {
                     mttBinding.moreSearchTv.text = "낮은 가격 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
                     moreCarpoolAllData.sortBy { mSort -> mSort?.postCost }
-                    //mtAdapter?.notifyDataSetChanged()
-                    mtAdapter?.updateDataList(moreCarpoolAllData)
+                    mtAdapter?.notifyDataSetChanged()
                 }
             }
             val handler = Handler(Looper.getMainLooper())
             handler.postDelayed({
                 mttBinding.moreRefreshSwipeLayout.isRefreshing = false
                 this.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-            }, 1500)
+            }, 1000)
         }
 
         myViewModel.checkFilter.observe(this) {
@@ -302,16 +300,25 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                         0 -> { // 날짜
                             if (currentCondition.isNotEmpty()) {
                                 noConditionDate = currentCondition
+                                Log.d("condition0", noConditionDate)
+                            } else {
+                                Log.e("No condition0", "empty")
                             }
                         }
                         1 -> { // 시간
                             if (currentCondition.isNotEmpty()) {
                                 noConditionTime = currentCondition
+                                Log.d("condition1", noConditionTime)
+                            } else {
+                                Log.e("No condition1", "empty")
                             }
                         }
                         2 -> { // 인원수
                             if (currentCondition.isNotEmpty()) {
                                 noConditionPeople = currentCondition.toInt()
+                                Log.d("condition2", noConditionPeople.toString())
+                            } else {
+                                Log.e("No condition2", "empty")
                             }
                         }
                         3 -> { // 등하교
@@ -321,6 +328,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 } else if (currentCondition == "하교") {
                                     noConditionSchool = false
                                 }
+                                Log.d("condition3", noConditionSchool.toString())
                             } else {
                                 Log.e("No condition3", "empty")
                             }
@@ -332,6 +340,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 } else if (currentCondition == "남성") {
                                     noConditionGender = false
                                 }
+                                Log.d("condition4", noConditionGender.toString())
                             } else {
                                 Log.e("No condition4", "empty")
                             }
@@ -343,6 +352,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 } else if (temp[5] == "흡연x") {
                                     noConditionSmoke = false
                                 }
+                                Log.d("condition5", noConditionSmoke.toString())
                             } else {
                                 Log.e("No condition5", "empty")
                             }
@@ -381,8 +391,8 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     tempFilterPostData.add(item)
                 }
 
-                //mtAdapter!!.moreTaxiData = tempFilterPostData
-                mtAdapter?.updateDataList(tempFilterPostData)
+                mtAdapter!!.moreTaxiData = tempFilterPostData
+                mtAdapter?.notifyDataSetChanged()
 
 
                 withContext(Dispatchers.Main) {
@@ -393,8 +403,8 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                        mttBinding.moreNonfilterTv.visibility = View.GONE
                        mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
                        // UI 조작
-                       //mtAdapter!!.notifyDataSetChanged()
-                       mtAdapter?.updateDataList(tempFilterPostData)
+                       mtAdapter!!.notifyDataSetChanged()
+                       //mtAdapter?.updateDataList(tempFilterPostData)
                    }
                 }
             }
@@ -453,7 +463,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         isLoading = false
         currentPage = 0
         //moreCarpoolAllData.clear() // Clear existing data
-        mtAdapter?.updateDataList(emptyList()) // Notify adapter of data change
+        mtAdapter?.notifyDataSetChanged() // Notify adapter of data change
 
         // Fetch fresh data
         setSelectData()
@@ -534,51 +544,9 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                     myViewModel.postCheckFilter(getBottomData)
                                 }
 
-                                when(getBottomSheetData) {
-                                    "최신 순" -> {
-                                        mttBinding.moreSearchTv.text = "최신 순"
-                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_blue_4))
-                                        moreCarpoolAllData.sortByDescending { mSort -> mSort?.postCreateDate }
-                                        mtAdapter?.updateDataList(moreCarpoolAllData)
-                                    }
-                                    "마감 임박 순" -> {
-                                        mttBinding.moreSearchTv.text = "마감 임박 순"
-                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_blue_4))
-
-                                        // 날짜 및 시간 형식 지정
-                                        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                                        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-
-                                        // 정렬 로직
-                                        val sortedTargets = moreCarpoolAllData.sortedWith { t1, t2 ->
-                                            // 날짜 비교
-                                            val dateComparison = LocalDate.parse(t1?.postTargetDate, dateFormatter)
-                                                .compareTo(LocalDate.parse(t2?.postTargetDate, dateFormatter))
-
-                                            // 날짜가 같으면 시간 비교
-                                            if (dateComparison == 0) {
-                                                LocalTime.parse(t1?.postTargetTime, timeFormatter)
-
-                                                    .compareTo(LocalTime.parse(t2?.postTargetTime, timeFormatter))
-                                            } else {
-                                                dateComparison
-                                            }
-                                        }
-                                        moreCarpoolAllData.clear()
-                                        moreCarpoolAllData.addAll(sortedTargets)
-                                        //mtAdapter?.notifyDataSetChanged()
-                                        mtAdapter?.updateDataList(sortedTargets)
-                                    }
-                                    "낮은 가격 순" -> {
-                                        mttBinding.moreSearchTv.text = "낮은 가격 순"
-                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_blue_4))
-                                        moreCarpoolAllData.sortBy { mSort->mSort?.postCost }
-                                        //mtAdapter?.notifyDataSetChanged()
-                                        mtAdapter?.updateDataList(moreCarpoolAllData)
-                                    }
-                                }
-                                //mtAdapter?.notifyDataSetChanged()
-                                mtAdapter?.updateDataList(moreCarpoolAllData)
+                               if (getBottomSheetData.isNotEmpty()) {
+                                   myViewModel.postCheckSearchFilter(getBottomSheetData)
+                               }
                             }
                         } else {
                             Log.d("Error", "Response code: ${response.code()}")
@@ -674,7 +642,10 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
 
                             Log.e("moreCarpoolAllData", "$moreCarpoolAllData")
                             // 어댑터 데이터 갱신
-                            mtAdapter?.updateDataList(moreCarpoolAllData)
+                            mtAdapter?.let { adapter ->
+                                adapter.moreTaxiData = moreCarpoolAllData
+                                adapter.notifyDataSetChanged()
+                            }
 
                             // ViewModel 필터링 및 검색 필터 확인
                             when {
@@ -707,17 +678,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                         }
                     } else {
                         Log.e("setSelectData", "Error code: ${response.code()}")
-                        // 게시글 유무에 따른 UI 처리
-                        if (moreCarpoolAllData.isEmpty()) {
-                            mttBinding.moreNonfilterTv.apply {
-                                text = "카풀 게시글이 존재하지 않습니다"
-                                visibility = View.VISIBLE
-                            }
-                            mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
-                        } else {
-                            mttBinding.moreNonfilterTv.visibility = View.GONE
-                            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
-                        }
                     }
                 }
 
@@ -730,7 +690,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
     private fun initRecyclerView() {
         setSelectData()
         mtAdapter = MoreTaxiTabAdapter()
-        //mtAdapter!!.moreTaxiData = moreCarpoolAllData
+        mtAdapter!!.moreTaxiData = moreCarpoolAllData
         mttBinding.moreTaxiTabRv.adapter = mtAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true

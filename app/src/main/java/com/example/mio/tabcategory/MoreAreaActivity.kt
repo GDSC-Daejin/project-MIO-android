@@ -138,46 +138,63 @@ class MoreAreaActivity : AppCompatActivity() {
         })
 
         myViewModel.checkSearchFilter.observe(this) {
-            when(it) {
+            when (it) {
                 "최신 순" -> {
                     mttBinding.moreSearchTv.text = "최신 순"
-                    mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    moreAreaData.sortByDescending { areaData -> areaData?.postCreateDate }
+                    mttBinding.moreSearchTv.setTextColor(
+                        ContextCompat.getColor(
+                            this@MoreAreaActivity,
+                            R.color.mio_blue_4
+                        )
+                    )
+
+                    moreAreaData.sortedByDescending { ms -> ms?.postCreateDate }
+                    //val ma =  moreAreaData.sortedByDescending { ms -> ms?.postCreateDate }
                     mtAdapter?.notifyDataSetChanged()
                 }
                 "마감 임박 순" -> {
                     mttBinding.moreSearchTv.text = "마감 임박 순"
-                    mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
+                    mttBinding.moreSearchTv.setTextColor(
+                        ContextCompat.getColor(
+                            this@MoreAreaActivity,
+                            R.color.mio_blue_4
+                        )
+                    )
 
-                    // 날짜 및 시간 형식 지정
                     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                     val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
                     // 정렬 로직
-                    val sortedTargets = moreAreaData.sortedWith { t1, t2 ->
-                        // 날짜 비교
+                    val sortedList = moreAreaData.sortedWith { t1, t2 ->
                         val dateComparison = LocalDate.parse(t1?.postTargetDate, dateFormatter)
                             .compareTo(LocalDate.parse(t2?.postTargetDate, dateFormatter))
 
-                        // 날짜가 같으면 시간 비교
                         if (dateComparison == 0) {
                             LocalTime.parse(t1?.postTargetTime, timeFormatter)
-
                                 .compareTo(LocalTime.parse(t2?.postTargetTime, timeFormatter))
                         } else {
                             dateComparison
                         }
                     }
                     moreAreaData.clear()
-                    moreAreaData.addAll(sortedTargets)
+                    moreAreaData.addAll(sortedList)
+
                     mtAdapter?.notifyDataSetChanged()
                 }
                 "낮은 가격 순" -> {
                     mttBinding.moreSearchTv.text = "낮은 가격 순"
-                    mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
-                    moreAreaData.sortBy { area -> area?.postCost }
+                    mttBinding.moreSearchTv.setTextColor(
+                        ContextCompat.getColor(
+                            this,
+                            R.color.mio_blue_4
+                        )
+                    )
+
+                    moreAreaData.sortedBy { ms -> ms?.postCost }
+                    //val ma = moreAreaData.sortedBy { ms -> ms?.postCost }
                     mtAdapter?.notifyDataSetChanged()
                 }
+                else -> {}
             }
         }
 
@@ -331,7 +348,7 @@ class MoreAreaActivity : AppCompatActivity() {
                         item != null &&
                                 (noConditionDate.isEmpty() || item.postTargetDate == noConditionDate) &&
                                 (noConditionTime.isEmpty() || item.postTargetTime == noConditionTime) &&
-                                (noConditionPeople == -1 || item.postParticipationTotal == noConditionPeople) &&
+                                /*(noConditionPeople == -1 || item.postParticipationTotal == noConditionPeople) &&*/
                                 (noConditionSchool == null || item.postVerifyGoReturn == noConditionSchool) &&
                                 (noConditionGender == null || item.user.gender == noConditionGender) &&
                                 (noConditionSmoke == null || item.user.verifySmoker == noConditionSmoke)
@@ -355,6 +372,7 @@ class MoreAreaActivity : AppCompatActivity() {
                 //moreCarpoolAllData.clear()
                 Log.d("filterArea", tempFilterPostData.toString())
                 mtAdapter!!.moreTaxiData = tempFilterPostData
+                mtAdapter?.notifyDataSetChanged()
 
 
                 withContext(Dispatchers.Main) {
@@ -365,7 +383,7 @@ class MoreAreaActivity : AppCompatActivity() {
                         mttBinding.moreNonfilterTv.visibility = View.GONE
                         mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
                         // UI 조작
-                        mtAdapter!!.notifyDataSetChanged()
+                        mtAdapter?.notifyDataSetChanged()
                     }
                 }
             }
@@ -430,6 +448,7 @@ class MoreAreaActivity : AppCompatActivity() {
 
                         //currentData.addAll(moreAreaData.take(5))
                         mtAdapter!!.moreTaxiData = moreAreaData
+                        //mtAdapter?.updateDataList(moreAreaData)
                         mtAdapter!!.notifyDataSetChanged()
                     }
 
@@ -592,48 +611,9 @@ class MoreAreaActivity : AppCompatActivity() {
                                     myViewModel.postCheckFilter(getBottomData)
                                 }
 
-                                when(getBottomSheetData) {
-                                    "최신 순" -> {
-                                        mttBinding.moreSearchTv.text = "최신 순"
-                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
-                                        moreAreaData.sortByDescending { area -> area?.postCreateDate }
-                                        mtAdapter?.notifyDataSetChanged()
-                                    }
-                                    "마감 임박 순" -> {
-                                        mttBinding.moreSearchTv.text = "마감 임박 순"
-                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
-
-                                        // 날짜 및 시간 형식 지정
-                                        val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-                                        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-
-                                        // 정렬 로직
-                                        val sortedTargets = moreAreaData.sortedWith { t1, t2 ->
-                                            // 날짜 비교
-                                            val dateComparison = LocalDate.parse(t1?.postTargetDate, dateFormatter)
-                                                .compareTo(LocalDate.parse(t2?.postTargetDate, dateFormatter))
-
-                                            // 날짜가 같으면 시간 비교
-                                            if (dateComparison == 0) {
-                                                LocalTime.parse(t1?.postTargetTime, timeFormatter)
-
-                                                    .compareTo(LocalTime.parse(t2?.postTargetTime, timeFormatter))
-                                            } else {
-                                                dateComparison
-                                            }
-                                        }
-                                        moreAreaData.clear()
-                                        moreAreaData.addAll(sortedTargets)
-                                        mtAdapter?.notifyDataSetChanged()
-                                    }
-                                    "낮은 가격 순" -> {
-                                        mttBinding.moreSearchTv.text = "낮은 가격 순"
-                                        mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreAreaActivity ,R.color.mio_blue_4))
-                                        moreAreaData.sortBy { area -> area?.postCost }
-                                        mtAdapter?.notifyDataSetChanged()
-                                    }
+                                if (getBottomSheetData.isNotEmpty()) {
+                                    myViewModel.postCheckSearchFilter(getBottomSheetData)
                                 }
-                                mtAdapter?.notifyDataSetChanged()
                             }
                         }
                         isLoading = false

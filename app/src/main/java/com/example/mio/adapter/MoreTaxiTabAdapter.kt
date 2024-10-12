@@ -30,7 +30,7 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
 
     private lateinit var binding : PostItemBinding
     //var searchWordData = ArrayList<SearchWordData>()
-    private var moreTaxiData = ArrayList<PostData?>()
+    var moreTaxiData = ArrayList<PostData?>()
     private var sharedPref : SharedPref? = null
     private lateinit var context : Context
 
@@ -131,14 +131,38 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
     }
 
     // Adapter의 데이터 리스트를 업데이트하는 메서드
-    fun updateDataList(newItems: List<PostData?>) {
+    /*fun updateDataList(newItems: List<PostData?>) {
         val diffCallback = ReviewWriteableDiffUtilCallback(moreTaxiData, newItems)
 
         // Calculate the diff
         val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        // 원본 데이터를 업데이트
         moreTaxiData.clear()
-        moreTaxiData.addAll(newItems.toList())
+        moreTaxiData.addAll(newItems)
         // Dispatch the updates to the adapter
         diffResult.dispatchUpdatesTo(this)
-    }
+    }*/
+
+    /*fun updateSortDataList(sortType: String) {
+        // 정렬 방식에 따른 데이터 정렬
+        val sortedItems = when (sortType) {
+            "가격순" -> originalData.sortedBy { it?.postCost }
+            "날짜순" -> originalData.sortedByDescending { it?.postCreateDate }
+            // 추가적인 정렬 방식이 있으면 추가 가능
+            else -> originalData
+        }
+
+        val diffCallback = ReviewWriteableDiffUtilCallback(sortedData, sortedItems)
+
+        // Calculate the diff
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        // sortedData를 업데이트
+        sortedData.clear()
+        sortedData.addAll(sortedItems)
+
+        // Dispatch the updates to the adapter
+        diffResult.dispatchUpdatesTo(this)
+    }*/
 }

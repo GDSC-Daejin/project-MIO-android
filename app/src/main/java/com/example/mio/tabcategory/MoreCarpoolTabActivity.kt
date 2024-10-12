@@ -1,11 +1,9 @@
 package com.example.mio.tabcategory
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.PowerManager
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -190,7 +188,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     mttBinding.moreSearchTv.text = "최신 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
                     moreCarpoolAllData.sortByDescending { mSort -> mSort?.postCreateDate }
-                    mtAdapter?.notifyDataSetChanged()
+                    mtAdapter?.updateDataList(moreCarpoolAllData)
                 }
                 "마감 임박 순" -> {
                     mttBinding.moreSearchTv.text = "마감 임박 순"
@@ -216,13 +214,15 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     }
                     moreCarpoolAllData.clear()
                     moreCarpoolAllData.addAll(sortedTargets)
-                    mtAdapter?.notifyDataSetChanged()
+                    //mtAdapter?.notifyDataSetChanged()
+                    mtAdapter?.updateDataList(sortedTargets)
                 }
                 "낮은 가격 순" -> {
                     mttBinding.moreSearchTv.text = "낮은 가격 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
                     moreCarpoolAllData.sortBy { mSort -> mSort?.postCost }
-                    mtAdapter?.notifyDataSetChanged()
+                    //mtAdapter?.notifyDataSetChanged()
+                    mtAdapter?.updateDataList(moreCarpoolAllData)
                 }
             }
             val handler = Handler(Looper.getMainLooper())
@@ -353,7 +353,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                         }
                     }
                 }
-                Log.d("morecaarpoolfilter", "$noConditionDate $noConditionTime $noConditionPeople $noConditionSchool $noConditionGender $noConditionSmoke")
+                //Log.d("morecaarpoolfilter", "$noConditionDate $noConditionTime $noConditionPeople $noConditionSchool $noConditionGender $noConditionSmoke")
                 val tempData: List<PostData?>?
                 if (noConditionPeople > 0) {
                     // 인원수가 0보다 큰 경우, 모든 조건을 적용하여 필터링
@@ -361,7 +361,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                         item != null &&
                                 (noConditionDate.isEmpty() || item.postTargetDate == noConditionDate) &&
                                 (noConditionTime.isEmpty() || item.postTargetTime == noConditionTime) &&
-                                (noConditionPeople == -1 || item.postParticipationTotal == noConditionPeople) &&
+                               /* (noConditionPeople >= 1 || item.postParticipationTotal == noConditionPeople) &&*/
                                 (noConditionSchool == null || item.postVerifyGoReturn == noConditionSchool) &&
                                 (noConditionGender == null || item.user.gender == noConditionGender) &&
                                 (noConditionSmoke == null || item.user.verifySmoker == noConditionSmoke)
@@ -380,11 +380,9 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                 tempData.forEach { item ->
                     tempFilterPostData.add(item)
                 }
-                //dszcctempFilterPostData.addAll(tempData)
-                Log.d("filter", tempData.toString())
-                //moreCarpoolAllData.clear()
-                Log.d("filter", tempFilterPostData.toString())
-                mtAdapter!!.moreTaxiData = tempFilterPostData
+
+                //mtAdapter!!.moreTaxiData = tempFilterPostData
+                mtAdapter?.updateDataList(tempFilterPostData)
 
 
                 withContext(Dispatchers.Main) {
@@ -395,7 +393,8 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                        mttBinding.moreNonfilterTv.visibility = View.GONE
                        mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
                        // UI 조작
-                       mtAdapter!!.notifyDataSetChanged()
+                       //mtAdapter!!.notifyDataSetChanged()
+                       mtAdapter?.updateDataList(tempFilterPostData)
                    }
                 }
             }
@@ -454,7 +453,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         isLoading = false
         currentPage = 0
         //moreCarpoolAllData.clear() // Clear existing data
-        mtAdapter?.notifyDataSetChanged() // Notify adapter of data change
+        mtAdapter?.updateDataList(emptyList()) // Notify adapter of data change
 
         // Fetch fresh data
         setSelectData()
@@ -540,7 +539,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                         mttBinding.moreSearchTv.text = "최신 순"
                                         mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_blue_4))
                                         moreCarpoolAllData.sortByDescending { mSort -> mSort?.postCreateDate }
-                                        mtAdapter?.notifyDataSetChanged()
+                                        mtAdapter?.updateDataList(moreCarpoolAllData)
                                     }
                                     "마감 임박 순" -> {
                                         mttBinding.moreSearchTv.text = "마감 임박 순"
@@ -567,16 +566,19 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                         }
                                         moreCarpoolAllData.clear()
                                         moreCarpoolAllData.addAll(sortedTargets)
-                                        mtAdapter?.notifyDataSetChanged()
+                                        //mtAdapter?.notifyDataSetChanged()
+                                        mtAdapter?.updateDataList(sortedTargets)
                                     }
                                     "낮은 가격 순" -> {
                                         mttBinding.moreSearchTv.text = "낮은 가격 순"
                                         mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_blue_4))
                                         moreCarpoolAllData.sortBy { mSort->mSort?.postCost }
-                                        mtAdapter?.notifyDataSetChanged()
+                                        //mtAdapter?.notifyDataSetChanged()
+                                        mtAdapter?.updateDataList(moreCarpoolAllData)
                                     }
                                 }
-                                mtAdapter?.notifyDataSetChanged()
+                                //mtAdapter?.notifyDataSetChanged()
+                                mtAdapter?.updateDataList(moreCarpoolAllData)
                             }
                         } else {
                             Log.d("Error", "Response code: ${response.code()}")
@@ -672,10 +674,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
 
                             Log.e("moreCarpoolAllData", "$moreCarpoolAllData")
                             // 어댑터 데이터 갱신
-                            mtAdapter?.let { adapter ->
-                                adapter.moreTaxiData = moreCarpoolAllData
-                                adapter.notifyDataSetChanged()
-                            }
+                            mtAdapter?.updateDataList(moreCarpoolAllData)
 
                             // ViewModel 필터링 및 검색 필터 확인
                             when {
@@ -731,7 +730,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
     private fun initRecyclerView() {
         setSelectData()
         mtAdapter = MoreTaxiTabAdapter()
-        mtAdapter!!.moreTaxiData = moreCarpoolAllData
+        //mtAdapter!!.moreTaxiData = moreCarpoolAllData
         mttBinding.moreTaxiTabRv.adapter = mtAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true

@@ -1,8 +1,6 @@
 package com.example.mio.navigation
 
 import android.animation.ObjectAnimator
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -10,10 +8,8 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
-import android.text.method.LinkMovementMethod
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -24,7 +20,6 @@ import android.view.WindowManager
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.mio.adapter.AccountTabAdapter
@@ -392,7 +387,7 @@ class AccountFragment : Fragment() {
     }
 
     //클립보드에 복사하기
-    private fun createClipData(message : String) {
+    /*private fun createClipData(message : String) {
         val clipManager = requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 
         val clipData = ClipData.newPlainText("message", message)
@@ -401,7 +396,7 @@ class AccountFragment : Fragment() {
 
         Toast.makeText(context, "복사되었습니다.", Toast.LENGTH_SHORT).show()
     }
-
+*/
     companion object {
         /**
          * Use this factory method to create a new instance of

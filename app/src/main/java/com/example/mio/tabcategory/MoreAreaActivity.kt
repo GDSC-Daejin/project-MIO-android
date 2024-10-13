@@ -447,9 +447,9 @@ class MoreAreaActivity : AppCompatActivity() {
                         }
 
                         //currentData.addAll(moreAreaData.take(5))
-                        mtAdapter!!.moreTaxiData = moreAreaData
-                        //mtAdapter?.updateDataList(moreAreaData)
-                        mtAdapter!!.notifyDataSetChanged()
+                        /*mtAdapter!!.moreTaxiData = moreAreaData
+                        mtAdapter!!.notifyDataSetChanged()*/
+                        mtAdapter?.updateDataList(moreAreaData)
                     }
 
                     if (getBottomData.isNotEmpty()) {
@@ -530,7 +530,8 @@ class MoreAreaActivity : AppCompatActivity() {
         isLoading = false
         currentPage = 0
         //moreCarpoolAllData.clear() // Clear existing data
-        mtAdapter?.notifyDataSetChanged() // Notify adapter of data change
+        //mtAdapter?.notifyDataSetChanged() // Notify adapter of data change
+        mtAdapter?.updateDataList(emptyList())
 
         // Fetch fresh data
         setSelectData()

@@ -194,8 +194,7 @@ class TaxiTabFragment : Fragment() {
                 if (taxiAllData.isNotEmpty()) {
                     try {
                         val selectDateData = taxiAllData.filter { it.postTargetDate == itemId }
-                        Log.d("carpool, selectDateData", selectDateData.toString())
-                        Log.d("carpool, taxiAllData", taxiAllData.toString())
+
                         if (selectDateData.isNotEmpty()) {
                             selectCalendarTaxiData.clear()
 
@@ -256,22 +255,12 @@ class TaxiTabFragment : Fragment() {
 
 
         taxiTabBinding.moreBtn.setOnClickListener {
-            /*data.add(PostData("2020202", 0, "test", "test"))
-            noticeBoardAdapter!!.notifyItemInserted(position)
-            position += 1*/
-            /*val intent = Intent(activity, NoticeBoardEditActivity::class.java).apply {
-                putExtra("type", "ADD")
-            }
-            requestActivity.launch(intent)
-            noticeBoardAdapter!!.notifyDataSetChanged()*/
-
             val intent = Intent(activity, MoreTaxiTabActivity::class.java).apply {
                 //putExtra("type", "MoreADD")
                 putExtra("type", "DATE")
                 putExtra("date", LocalDate.now().monthValue.toString())
             }
             requestActivity.launch(intent)
-
         }
 
         taxiTabBinding.carpoolBannerIv.setOnClickListener {

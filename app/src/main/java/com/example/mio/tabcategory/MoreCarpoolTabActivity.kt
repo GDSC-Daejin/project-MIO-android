@@ -10,9 +10,11 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.*
@@ -24,6 +26,7 @@ import com.example.mio.model.PostReadAllResponse
 import com.example.mio.viewmodel.SharedViewModel
 import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityMoreCarpoolBinding
+import com.example.mio.viewmodel.MoreCarpoolViewModel
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,6 +68,8 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
     //데이터의 전체 페이지 수
     private var totalPages = 0
 
+    private val viewModel: MoreCarpoolViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mttBinding = ActivityMoreCarpoolBinding.inflate(layoutInflater)
@@ -84,6 +89,14 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         initRecyclerView()
         initScrollListener()
         //showBottomSheetAd(this@MoreCarpoolTabActivity)
+        // ViewModel의 데이터 변경을 관찰하여 RecyclerView 업데이트
+        lifecycleScope.launchWhenStarted {
+            viewModel.moreCarpoolPostData.collect { updatedData ->
+                Log.e("viewmodel carpool", "$updatedData")
+                updateUI(updatedData)
+                mtAdapter?.updateDataList(updatedData)  // 데이터를 어댑터에 설정
+            }
+        }
 
         mttBinding.filterResetLl.setOnClickListener {//필터리셋
             mttBinding.moreFilterTv.setTextColor(ContextCompat.getColor(this@MoreCarpoolTabActivity ,R.color.mio_gray_8))
@@ -103,7 +116,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
             bottomSheet.apply {
                 setCallback(object : BottomSheetFragment.OnSendFromBottomSheetDialog{
                     override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                         //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke}"
                         if (value.split(",").count {it == " "} < 5) {
                             getBottomData = value
@@ -124,7 +136,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
             bottomSheet.apply {
                 setCallback(object : AnotherBottomSheetFragment.OnSendFromBottomSheetDialog{
                     override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                         getBottomSheetData = value
                         myViewModel.postCheckSearchFilter(getBottomSheetData)
                     }
@@ -136,7 +147,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         mtAdapter!!.setItemClickListener(object : MoreTaxiTabAdapter.ItemClickListener {
             override fun onClick(view: View, position: Int, itemId: Int) {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val temp = moreCarpoolAllData[position]
+                    val temp = viewModel.moreCarpoolPostData.value[position]//moreCarpoolAllData[position]
                     dataPosition = position
                     val intent = Intent(this@MoreCarpoolTabActivity, NoticeBoardReadActivity::class.java).apply {
                         putExtra("type", "READ")
@@ -188,7 +199,8 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     mttBinding.moreSearchTv.text = "최신 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
                     moreCarpoolAllData.sortByDescending { mSort -> mSort?.postCreateDate }
-                    mtAdapter?.notifyDataSetChanged()
+                    //mtAdapter?.notifyDataSetChanged()
+                    viewModel.sortCarpoolData("최신 순")
                 }
                 "마감 임박 순" -> {
                     mttBinding.moreSearchTv.text = "마감 임박 순"
@@ -214,13 +226,14 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     }
                     moreCarpoolAllData.clear()
                     moreCarpoolAllData.addAll(sortedTargets)
-                    mtAdapter?.notifyDataSetChanged()
+                    viewModel.sortCarpoolData("마감 임박 순")
                 }
                 "낮은 가격 순" -> {
                     mttBinding.moreSearchTv.text = "낮은 가격 순"
                     mttBinding.moreSearchTv.setTextColor(ContextCompat.getColor(this ,R.color.mio_blue_4))
                     moreCarpoolAllData.sortBy { mSort -> mSort?.postCost }
-                    mtAdapter?.notifyDataSetChanged()
+                    //mtAdapter?.notifyDataSetChanged()
+                    viewModel.sortCarpoolData("낮은 가격 순")
                 }
             }
             val handler = Handler(Looper.getMainLooper())
@@ -391,11 +404,12 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                     tempFilterPostData.add(item)
                 }
 
-                mtAdapter!!.moreTaxiData = tempFilterPostData
-                mtAdapter?.notifyDataSetChanged()
+                /*mtAdapter!!.moreTaxiData = tempFilterPostData
+                mtAdapter?.notifyDataSetChanged()*/
+                viewModel.setCarpoolPostData(tempFilterPostData)
 
 
-                withContext(Dispatchers.Main) {
+                /*withContext(Dispatchers.Main) {
                    if (tempFilterPostData.isEmpty()) {
                        mttBinding.moreNonfilterTv.visibility = View.VISIBLE
                        mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
@@ -403,10 +417,10 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                        mttBinding.moreNonfilterTv.visibility = View.GONE
                        mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
                        // UI 조작
-                       mtAdapter!!.notifyDataSetChanged()
+                       //mtAdapter!!.notifyDataSetChanged()
                        //mtAdapter?.updateDataList(tempFilterPostData)
                    }
-                }
+                }*/
             }
 
             if (chipList.isNotEmpty()) {
@@ -463,7 +477,8 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         isLoading = false
         currentPage = 0
         //moreCarpoolAllData.clear() // Clear existing data
-        mtAdapter?.notifyDataSetChanged() // Notify adapter of data change
+        //mtAdapter?.notifyDataSetChanged() // Notify adapter of data change
+        //mtAdapter?.updateDataList(emptyList())
 
         // Fetch fresh data
         setSelectData()
@@ -478,7 +493,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                 val lastVisibleItemPosition = layoutManager?.findLastCompletelyVisibleItemPosition() ?: -1
                 val itemTotalCount = recyclerView.adapter?.itemCount ?: 0
 
-                // 스크롤이 끝에 도달했는지 확인하고 isLoading 상태 확인
+                /*// 스크롤이 끝에 도달했는지 확인하고 isLoading 상태 확인
                 if (lastVisibleItemPosition >= itemTotalCount - 1 && !isLoading) {
                     if (currentPage < totalPages - 1) {
                         isLoading = true // Set isLoading to true to prevent multiple calls
@@ -491,14 +506,18 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                         mttBinding.moreTaxiTabRv.post(runnable)
 
                         // Load more items
-                        getMoreItem()
+                        //getMoreItem()
+                        viewModel.getMoreCarpoolData(this@MoreCarpoolTabActivity)
                     }
+                }*/
+                if (!recyclerView.canScrollVertically(1) && !viewModel.isLoading.value) {
+                    viewModel.getMoreCarpoolData(this@MoreCarpoolTabActivity) // 스크롤이 끝에 도달하면 더 많은 데이터를 요청
                 }
             }
         })
     }
 
-    private fun getMoreItem() {
+    /*private fun getMoreItem() {
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
             // Remove the loading item placeholder
@@ -540,6 +559,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 }
 
                                 moreCarpoolAllData.addAll(newItems)
+                                viewModel.setMoreCarpoolPostData(newItems.toList())
                                 if (getBottomData.isNotEmpty()) {
                                     myViewModel.postCheckFilter(getBottomData)
                                 }
@@ -562,7 +582,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
 
             }
         }, 2000)
-    }
+    }*/
 
 
     private val requestActivity = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
@@ -602,7 +622,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                         response.body()?.let { responseData ->
                             moreCarpoolAllData.clear()
                             totalPages = responseData.totalPages
-
+                            viewModel.setTotalPages(responseData.totalPages)
                             // 필터링된 게시글만 처리
                             val filteredContent = responseData.content.filter {
                                 it.isDeleteYN == "N" && it.postType == "BEFORE_DEADLINE"
@@ -642,12 +662,14 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
 
                             Log.e("moreCarpoolAllData", "$moreCarpoolAllData")
                             // 어댑터 데이터 갱신
-                            mtAdapter?.let { adapter ->
+                            /*mtAdapter?.let { adapter ->
                                 adapter.moreTaxiData = moreCarpoolAllData
                                 adapter.notifyDataSetChanged()
-                            }
+                            }*/
+                            //mtAdapter?.updateDataList(moreCarpoolAllData)
 
                             // ViewModel 필터링 및 검색 필터 확인
+                            viewModel.setCarpoolPostData(moreCarpoolAllData)
                             when {
                                 getBottomData.isNotEmpty() -> myViewModel.postCheckFilter(getBottomData)
                                 getBottomSheetData.isNotEmpty() -> myViewModel.postCheckSearchFilter(getBottomSheetData)
@@ -660,18 +682,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                     mttBinding.moreRefreshSwipeLayout.isRefreshing = false
                                     this@MoreCarpoolTabActivity.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                                 }
-                            }
-
-                            // 게시글 유무에 따른 UI 처리
-                            if (moreCarpoolAllData.isEmpty()) {
-                                mttBinding.moreNonfilterTv.apply {
-                                    text = "카풀 게시글이 존재하지 않습니다"
-                                    visibility = View.VISIBLE
-                                }
-                                mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
-                            } else {
-                                mttBinding.moreNonfilterTv.visibility = View.GONE
-                                mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
                             }
                         } ?: run {
                             Log.e("setSelectData", "Response body is null")
@@ -687,10 +697,24 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
             })
     }
 
+    private fun updateUI(items : List<PostData?>) {
+        // 게시글 유무에 따른 UI 처리
+        if (items.isEmpty()) {
+            mttBinding.moreNonfilterTv.apply {
+                text = "카풀 게시글이 존재하지 않습니다"
+                visibility = View.VISIBLE
+            }
+            mttBinding.moreRefreshSwipeLayout.visibility = View.GONE
+        } else {
+            mttBinding.moreNonfilterTv.visibility = View.GONE
+            mttBinding.moreRefreshSwipeLayout.visibility = View.VISIBLE
+        }
+    }
+
     private fun initRecyclerView() {
         setSelectData()
         mtAdapter = MoreTaxiTabAdapter()
-        mtAdapter!!.moreTaxiData = moreCarpoolAllData
+        //mtAdapter!!.moreTaxiData = moreCarpoolAllData
         mttBinding.moreTaxiTabRv.adapter = mtAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true

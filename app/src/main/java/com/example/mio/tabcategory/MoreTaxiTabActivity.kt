@@ -462,7 +462,8 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         isLoading = false
         currentPage = 0
         //moreCarpoolAllData.clear() // Clear existing data
-        mtAdapter?.notifyDataSetChanged() // Notify adapter of data change
+        //mtAdapter?.notifyDataSetChanged() // Notify adapter of data change
+        mtAdapter?.updateDataList(emptyList())
 
         // Fetch fresh data
         setSelectData()
@@ -650,11 +651,11 @@ class MoreTaxiTabActivity : AppCompatActivity() {
 
                             Log.e("moreTaxiAllData", "$moreTaxiAllData")
                             // 어댑터 데이터 갱신
-                            mtAdapter?.let { adapter ->
+                            /*mtAdapter?.let { adapter ->
                                 adapter.moreTaxiData = moreTaxiAllData
                                 adapter.notifyDataSetChanged()
-                            }
-                            //mtAdapter?.updateDataList(moreTaxiAllData)
+                            }*/
+                            mtAdapter?.updateDataList(moreTaxiAllData)
 
                             // ViewModel 필터링 및 검색 필터 확인
                             when {

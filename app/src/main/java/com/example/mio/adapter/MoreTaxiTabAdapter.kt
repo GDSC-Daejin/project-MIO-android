@@ -104,7 +104,7 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
 
 
     override fun getItemId(position: Int): Long {
-        return position.toLong()
+        return moreTaxiData[position]?.postID?.toLong() ?: position.toLong()
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -131,7 +131,7 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
     }
 
     // Adapter의 데이터 리스트를 업데이트하는 메서드
-    /*fun updateDataList(newItems: List<PostData?>) {
+    fun updateDataList(newItems: List<PostData?>) {
         val diffCallback = ReviewWriteableDiffUtilCallback(moreTaxiData, newItems)
 
         // Calculate the diff
@@ -142,7 +142,7 @@ class MoreTaxiTabAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
         moreTaxiData.addAll(newItems)
         // Dispatch the updates to the adapter
         diffResult.dispatchUpdatesTo(this)
-    }*/
+    }
 
     /*fun updateSortDataList(sortType: String) {
         // 정렬 방식에 따른 데이터 정렬

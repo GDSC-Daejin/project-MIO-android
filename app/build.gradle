@@ -173,10 +173,17 @@ dependencies {
 
     //license library추가
     // library 추가
-    implementation 'com.google.android.gms:play-services-oss-licenses:17.0.1'
+    implementation 'com.google.android.gms:play-services-oss-licenses:17.1.0'
 
     //admob
     implementation 'com.google.android.gms:play-services-ads:23.0.0'
+
+    //in app update
+    // 따라서 프로젝트의 build.gradle 파일에 해당 저장소도 포함해야 합니다.
+    implementation( "com.google.android.play:app-update:2.1.0" )
+
+    // Kotlin 사용자의 경우 Play In-App Update를 위한 Kotlin 확장 라이브러리도 가져옵니다.
+    implementation( "com.google.android.play:app-update-ktx:2.1.0" )
 
     ////
     testImplementation 'junit:junit:4.13.2'

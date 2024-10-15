@@ -617,9 +617,10 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         override fun handleOnBackPressed() {
             if (System.currentTimeMillis() > backPressedTime + 2000) {
                 backPressedTime = System.currentTimeMillis()
-                val dialog = FinishAdFragment(this@MainActivity, this@MainActivity)
+                /*val dialog = FinishAdFragment(this@MainActivity, this@MainActivity)
                 dialog.isCancelable = false
-                dialog.show(this@MainActivity.supportFragmentManager, "FinishAdDialog")
+                dialog.show(this@MainActivity.supportFragmentManager, "FinishAdDialog")*/
+                Toast.makeText(this@MainActivity, "한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show()
             } else {
                 finishAffinity()
             }

@@ -6,15 +6,18 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mio.model.LoginResponsesData
 import com.example.mio.model.TokenRequest
 import com.example.mio.databinding.ActivityLoginBinding
+import com.example.mio.util.AppUpdateManager
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -43,6 +46,7 @@ class LoginActivity : AppCompatActivity() {
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     //로딩
     private var loadingDialog : LoadingProgressDialog? = null
+    private lateinit var appUpdateLauncher: ActivityResultLauncher<IntentSenderRequest>
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,6 +83,42 @@ class LoginActivity : AppCompatActivity() {
             signIn()
         }
 
+        mBinding.signInButton.setOnClickListener {
+            //로딩창 실행
+            loadingDialog = LoadingProgressDialog(this@LoginActivity)
+            loadingDialog?.setCancelable(false)
+            //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
+            //로딩창
+            loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
+            loadingDialog?.window!!.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            loadingDialog?.show()
+            signIn()
+        }
+
+        // ActivityResultLauncher 초기화
+        appUpdateLauncher = registerForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult()
+        ) { result ->
+            // 사용자가 업데이트를 취소하거나 오류가 발생한 경우 처리
+            if (result.resultCode != RESULT_OK) {
+                // 업데이트 실패 처리 (필요 시 다시 시도하거나 메시지 표시)
+                Log.e("LoginActivity", "App Update failed or canceled")
+            }
+        }
+
+        // 앱 업데이트 확인 및 유도
+        checkForAppUpdate()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    private fun checkForAppUpdate() {
+        // 앱 업데이트 체크 및 유도 로직
+        AppUpdateManager.init(this)  // AppUpdateManager 초기화
+        AppUpdateManager.checkUpdate(this, this@LoginActivity)  // 업데이트 확인
     }
 
     private fun signInCheck(userInfoToken : TokenRequest) {

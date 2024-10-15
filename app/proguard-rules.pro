@@ -90,3 +90,8 @@
 -keep class * extends com.google.gson.TypeAdapter
 -keep class com.kakao.vectormap.** { *; }
 -keep interface com.kakao.vectormap.**
+
+-if class androidx.credentials.CredentialManager
+-keep class androidx.credentials.playservices.** {
+  *;
+}

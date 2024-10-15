@@ -14,12 +14,12 @@ def applicationKey = properties.getProperty('mio_application_id')
 
 android {
     namespace 'com.example.mio'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.example.mio"
-        minSdk 26
-        targetSdk 33
+        minSdk 26 // Android 8 (Oreo) 이상을 지원
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -121,11 +121,15 @@ allprojects {
 }
 
 dependencies {
-
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    //구글로그인
+    implementation "androidx.credentials:credentials:1.2.2"
+    implementation "androidx.credentials:credentials-play-services-auth:1.2.2"
+    implementation "com.google.android.libraries.identity.googleid:googleid:1.1.0"
+
     //auth
     implementation 'com.google.android.gms:play-services-auth:21.0.0'
     //okhttp

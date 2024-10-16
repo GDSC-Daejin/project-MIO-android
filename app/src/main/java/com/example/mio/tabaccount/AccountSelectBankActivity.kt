@@ -19,9 +19,11 @@ import com.example.mio.viewmodel.SharedViewModel
 import com.example.mio.R
 import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.ActivityAccountSelectBankBinding
+import com.example.mio.util.AESKeyStoreUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.crypto.SecretKey
 
 class AccountSelectBankActivity : AppCompatActivity() {
     private val  binding by lazy {
@@ -35,7 +37,9 @@ class AccountSelectBankActivity : AppCompatActivity() {
     private var currentPage = 0
     private lateinit var myViewModel : SharedViewModel
     private var sharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-
+    private val secretKey: SecretKey by lazy {
+        AESKeyStoreUtil.getOrCreateAESKey()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
@@ -69,56 +73,56 @@ class AccountSelectBankActivity : AppCompatActivity() {
                         userBank = " 카카오뱅크"
                         binding.accountVf.showNext()
                         currentPage += 1
-                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.kakaobank.channel")
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.kakaobank.channel", secretKey)
                     }
 
                     "토스뱅크" -> {
                         userBank = " 토스뱅크"
                         binding.accountVf.showNext()
                         currentPage += 1
-                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "viva.republica.toss")
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "viva.republica.toss", secretKey)
                     }
 
                     "국민은행" -> {
                         userBank = " 국민은행"
                         binding.accountVf.showNext()
                         currentPage += 1
-                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.kbstar.kbbank")
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.kbstar.kbbank", secretKey)
                     }
 
                     "하나은행" -> {
                         userBank = " 하나은행"
                         binding.accountVf.showNext()
                         currentPage += 1
-                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.kebhana.hanapush")
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.kebhana.hanapush", secretKey)
                     }
 
                     "신한은행" -> {
                         userBank = " 신한은행"
                         binding.accountVf.showNext()
                         currentPage += 1
-                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.shinhan.sbanking")
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.shinhan.sbanking", secretKey)
                     }
 
                     "기업은행" -> {
                         userBank = " 기업은행"
                         binding.accountVf.showNext()
                         currentPage += 1
-                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.ibk.android.ionebank")
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.ibk.android.ionebank", secretKey)
                     }
 
                     "우리은행" -> {
                         userBank = " 우리은행"
                         binding.accountVf.showNext()
                         currentPage += 1
-                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.wooribank.smart.npib")
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "com.wooribank.smart.npib", secretKey)
                     }
 
                     "농협은행" -> {
                         userBank = " 농협은행"
                         binding.accountVf.showNext()
                         currentPage += 1
-                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "nh.smart.banking")
+                        sharedPreferenceGoogleLogin.setAccount(this@AccountSelectBankActivity, "nh.smart.banking", secretKey)
                     }
                 }
             }

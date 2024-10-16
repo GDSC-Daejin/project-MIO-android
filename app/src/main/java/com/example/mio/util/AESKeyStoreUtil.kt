@@ -2,6 +2,7 @@ package com.example.mio.util
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.util.Log
 import java.security.KeyStore
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -9,7 +10,7 @@ import javax.crypto.SecretKey
 object AESKeyStoreUtil {
 
     // Android Keystore에 AES 키 생성 및 저장
-    fun generateAESKeyInKeystore(): SecretKey {
+    private fun generateAESKeyInKeystore(): SecretKey {
         val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
         val keyGenParameterSpec = KeyGenParameterSpec.Builder(
             "MyKeyAlias",  // 키의 별칭
@@ -24,9 +25,15 @@ object AESKeyStoreUtil {
     }
 
     // Android Keystore에서 AES 키 로드
-    fun getSecretKeyFromKeystore(): SecretKey {
+    private fun getSecretKeyFromKeystore(): SecretKey? {
         val keyStore = KeyStore.getInstance("AndroidKeyStore")
         keyStore.load(null)
-        return keyStore.getKey("MyKeyAlias", null) as SecretKey
+        return keyStore.getKey("MyKeyAlias", null) as? SecretKey
+    }
+
+    fun getOrCreateAESKey(): SecretKey {
+        // 키스토어에서 키를 먼저 로드
+        Log.e("getOrCreateAES", "${getSecretKeyFromKeystore() ?: generateAESKeyInKeystore()}")
+        return getSecretKeyFromKeystore() ?: generateAESKeyInKeystore()
     }
 }

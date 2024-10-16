@@ -15,12 +15,15 @@ import com.example.mio.model.EditAccountData
 import com.example.mio.model.User
 import com.example.mio.navigation.AccountFragment
 import com.example.mio.databinding.ActivityAccountSettingBinding
+import com.example.mio.util.AESKeyStoreUtil
+import com.example.mio.util.AESUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import javax.crypto.SecretKey
 
 class AccountSettingActivity : AppCompatActivity() {
     private var aBinding: ActivityAccountSettingBinding? = null
@@ -33,6 +36,9 @@ class AccountSettingActivity : AppCompatActivity() {
     private var setLocation: AddressData? = null
     private var setLocation2: String? = null
     private var setAccountNumber : String? = null
+    private val secretKey: SecretKey by lazy {
+        AESKeyStoreUtil.getOrCreateAESKey()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,6 +97,11 @@ class AccountSettingActivity : AppCompatActivity() {
         }
 
         aBinding!!.accountAccountNumberBtn.setOnClickListener {
+            val intent =
+                Intent(this@AccountSettingActivity, AccountSelectBankActivity::class.java)
+            requestActivity.launch(intent)
+        }
+        aBinding!!.asAccountTv.setOnClickListener {
             val intent =
                 Intent(this@AccountSettingActivity, AccountSelectBankActivity::class.java)
             requestActivity.launch(intent)
@@ -159,8 +170,15 @@ class AccountSettingActivity : AppCompatActivity() {
                     if (response.body()?.accountNumber.isNullOrEmpty()) {
                         aBinding?.asAccountTv?.text = "화살표를 눌러 계좌를 등록해주세요"
                     } else {
-                        aBinding?.asAccountTv?.text = response.body()?.accountNumber
-                        setAccountNumber = response.body()?.accountNumber
+                        if (response.body()?.accountNumber?.contains(",") != true) {
+                            aBinding?.asAccountTv?.text = response.body()?.accountNumber.toString()
+                            setAccountNumber = response.body()?.accountNumber.toString() //암호화
+                        } else {
+                            val splitEnResponse = response.body()?.accountNumber.toString().split(",").map { it }
+                            val deText = AESUtil.decryptAES(secretKey, splitEnResponse[0], splitEnResponse[1])
+                            aBinding?.asAccountTv?.text = deText
+                            setAccountNumber = response.body()?.accountNumber.toString() //암호화
+                        }
                     }
 
                     if (response.body()?.activityLocation.isNullOrEmpty()) {
@@ -183,7 +201,7 @@ class AccountSettingActivity : AppCompatActivity() {
 
     private fun editAccountData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(this)!!
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(this)
         sendAccountData = if (setLocation != null) {
             EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation?.address?.region_3depth_name.toString())
         } else {
@@ -229,7 +247,10 @@ class AccountSettingActivity : AppCompatActivity() {
                     //val locationData : AddressData? = it.data?.getSerializableExtra("locationData") as AddressData?
                     val locationData2 = it.data?.getStringExtra("locationData2")
 
-                    val accountNumber = it.data?.getStringExtra("AccountNumber") ?: ""
+                    //암호화
+                    val accountNumber = it.data?.getStringExtra("AccountNumber") ?: "" //account+bank=entext
+                    val enAccount = AESUtil.encryptAES(secretKey, accountNumber) //entext+lv
+                    Log.e("accountEN", accountNumber)
                     val handler = Handler(Looper.getMainLooper())
                     when (it.data?.getIntExtra("flag", -1)) {
                         //add
@@ -240,8 +261,9 @@ class AccountSettingActivity : AppCompatActivity() {
                         }*/
                         2 -> {
                             handler.post {
-                                setAccountNumber = accountNumber
-                                aBinding?.asAccountTv?.text = setAccountNumber.toString()
+                                setAccountNumber = "${enAccount.first},${enAccount.second}"
+                                //수정할 수 있으니 보이는건 보이게
+                                aBinding?.asAccountTv?.text = accountNumber
                             }
                         }
 

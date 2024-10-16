@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0" />
 
-    <LinearLayout
+    <!--<LinearLayout
         android:id="@+id/sign_in_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -32,28 +32,32 @@
         app:layout_constraintVertical_bias="0.808"
         app:layout_constraintTop_toBottomOf="@+id/logo_iv">
 
-        <TextView
-            android:id="@+id/signInButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:text="학교 계정으로 로그인하기"
-            android:textSize="12sp"
-            android:textColor="@color/mio_gray_8" />
-    </LinearLayout>
+
+    </LinearLayout>-->
+    <TextView
+        android:id="@+id/signInButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="10dp"
+        android:gravity="center"
+        android:text="학교 계정으로 로그인하기"
+        android:textColor="@color/mio_gray_7"
+        android:textSize="11sp"
+        app:layout_constraintBottom_toTopOf="@+id/google_sign"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.gms.common.SignInButton
-        android:id="@+id/sign_in_button"
-        android:layout_width="match_parent"
+        android:id="@+id/google_sign"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginEnd="50dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="100dp"
+        android:focusable="true"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sign_in_ll" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginHorizontal="50dp" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

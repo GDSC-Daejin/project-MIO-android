@@ -21,7 +21,7 @@ android {
         minSdk 26 // Android 8 (Oreo) 이상을 지원
         targetSdk 34
         versionCode 1
-        versionName "1.0"
+        versionName "1.0" //업데이트마다 0.1씩 증가 시키고 5이상되어 1.5가되면 2로 올리고 versioncode도 2로 올리기
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         //key set

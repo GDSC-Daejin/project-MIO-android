@@ -8,9 +8,22 @@ private const val KEY_BEFORE_NOTIFICATION_DATA = "beforeNotificationData"*/
 class SharedPref(context: Context) {
     private var mySharedPref: SharedPreferences //
     private var storeSharedPref : SharedPreferences
+
+    private val version = "VERSION"
     init {
         mySharedPref = context.getSharedPreferences("filename", Context.MODE_PRIVATE)
         storeSharedPref = context.getSharedPreferences("store_data", Context.MODE_PRIVATE)
+    }
+
+    fun getMinSupportedVersion(): String? {
+        return mySharedPref.getString(version, "1.0.0")
+    }
+
+
+    fun setMinSupportedVersion(newVersion: String?) {
+        val editor = mySharedPref.edit()
+        editor.putString(version, newVersion)
+        editor.apply()
     }
 
     /*fun getSearchData() : String {

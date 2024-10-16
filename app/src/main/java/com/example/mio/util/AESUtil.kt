@@ -1,34 +1,31 @@
 package com.example.mio.util
 
 import android.util.Base64
-import java.security.SecureRandom
 import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 object AESUtil {
     // AES 비밀키 생성 (보통은 저장해두어야 함)
-    fun generateAESKey(): SecretKey {
+    /*fun generateAESKey(): SecretKey {
         val keyGen = KeyGenerator.getInstance("AES")
         keyGen.init(256) // 256-bit AES 키 생성
         return keyGen.generateKey()
-    }
+    }*/
 
-    // 비밀키로 문자열 암호화 (AES/GCM/NoPadding)
+
+    // AES 암호화 함수 (IV는 Cipher가 자동으로 생성)
     fun encryptAES(secretKey: SecretKey, plainText: String): Pair<String, String> {
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
 
-        // IV(Initial Vector) 생성 (GCM 모드에서는 12바이트 권장)
-        val iv = ByteArray(12)
-        SecureRandom().nextBytes(iv) // 랜덤 IV 생성
-
-        // GCMParameterSpec에 IV와 인증 태그 크기(128비트) 설정
-        val gcmSpec = GCMParameterSpec(128, iv)
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmSpec)
+        // 자동으로 IV가 생성됨
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
 
         // 암호화 수행
         val encryptedBytes = cipher.doFinal(plainText.toByteArray(Charsets.UTF_8))
+
+        // 자동으로 생성된 IV를 가져옴
+        val iv = cipher.iv
 
         // 암호화된 결과와 IV를 Base64로 인코딩하여 반환
         val encryptedText = Base64.encodeToString(encryptedBytes, Base64.DEFAULT)
@@ -37,18 +34,18 @@ object AESUtil {
         return Pair(encryptedText, encodedIV)
     }
 
-    // 비밀키로 문자열 복호화 (AES/GCM/NoPadding)
-    fun decryptAES(secretKey: SecretKey, encryptedText: String, encodedIV: String): String {
+    // AES 복호화 함수 (IV를 받아서 사용)
+    fun decryptAES(secretKey: SecretKey, encryptedText: String, ivString: String): String {
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
 
-        // Base64로 인코딩된 IV를 복호화
-        val iv = Base64.decode(encodedIV, Base64.DEFAULT)
+        // Base64로 인코딩된 IV를 다시 디코딩
+        val iv = Base64.decode(ivString, Base64.DEFAULT)
 
-        // GCMParameterSpec을 사용해 IV와 인증 태그 크기(128비트)를 설정
+        // GCMParameterSpec에 IV와 인증 태그 크기(128비트) 설정
         val gcmSpec = GCMParameterSpec(128, iv)
         cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmSpec)
 
-        // 암호화된 텍스트 복호화
+        // 암호화된 텍스트를 디코딩하여 복호화
         val decodedBytes = Base64.decode(encryptedText, Base64.DEFAULT)
         val decryptedBytes = cipher.doFinal(decodedBytes)
 

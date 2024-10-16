@@ -16,6 +16,8 @@ import androidx.annotation.RequiresApi
 import com.example.mio.model.PostData
 import com.example.mio.model.User
 import com.example.mio.databinding.ActivityCompleteBinding
+import com.example.mio.util.AESKeyStoreUtil
+import javax.crypto.SecretKey
 
 class CompleteActivity : AppCompatActivity() {
     private val cBinding by lazy {
@@ -29,6 +31,10 @@ class CompleteActivity : AppCompatActivity() {
     private var category : String? = null
     private var sharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var userAccount = ""
+
+    private val secretKey: SecretKey by lazy {
+        AESKeyStoreUtil.getOrCreateAESKey()
+    }
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +42,7 @@ class CompleteActivity : AppCompatActivity() {
 
         type = intent.getStringExtra("type") as String
         category = intent.getStringExtra("category") as String
-        userAccount = sharedPreferenceGoogleLogin.getAccount(this@CompleteActivity).toString()
+        userAccount = sharedPreferenceGoogleLogin.getAccount(this@CompleteActivity, secretKey).toString()
 
         if (type == "PASSENGER") {
             postData = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {

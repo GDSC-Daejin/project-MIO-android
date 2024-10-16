@@ -3,6 +3,8 @@ package com.example.mio
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
+import com.example.mio.util.AESUtil
+import javax.crypto.SecretKey
 
 
 class SaveSharedPreferenceGoogleLogin {
@@ -28,15 +30,23 @@ class SaveSharedPreferenceGoogleLogin {
     //alarm key
     private val alarmSetting = "alarm_setting"
 
-    fun getAccount(ctx: Context?): String? {
-        return getSharedPreferences(ctx).getString(privateUserAccountName, "")
+    fun setAccount(ctx: Context?, accountBank: String?, secretKey: SecretKey) {
+        val encryptedAccountBank = AESUtil.encryptAES(secretKey, accountBank ?: "")
+        val formatEncrypted = "${encryptedAccountBank.first},${encryptedAccountBank.second}" // ',' 구분자로 변경
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putString(privateUserAccountName, formatEncrypted) // 암호화된 값을 저장
+        editor.apply()
     }
 
-
-    fun setAccount(ctx: Context?, accountBank: String?) {
-        val editor = getSharedPreferences(ctx).edit()
-        editor.putString(privateUserAccountName, accountBank)
-        editor.apply()
+    fun getAccount(ctx: Context?, secretKey: SecretKey): String? {
+        val encryptedAccountBank = getSharedPreferences(ctx).getString(privateUserAccountName, "")
+        return if (encryptedAccountBank.isNullOrEmpty()) {
+            null
+        } else {
+            // ','로 암호화된 텍스트와 IV를 구분하여 가져옴
+            val splitEncrypted = encryptedAccountBank.split(",")
+            AESUtil.decryptAES(secretKey, splitEncrypted[0], splitEncrypted[1]) // 복호화하여 원래 값을 반환
+        }
     }
 
     //알람 받을 건지 아닌지 get

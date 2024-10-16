@@ -59,15 +59,22 @@ class CompleteActivity : AppCompatActivity() {
 
             postCost = postData?.postCost
 
-            var driverName = driverData?.name
-            val sb = driverName?.let { it -> StringBuilder(it).also { it.setCharAt(1, '*') } }
-            driverName = sb.toString()
+            val driverName = driverData?.email
+            /*val sb = driverName?.let { it -> StringBuilder(it).also { it.setCharAt(1, '*') } }
+            driverName = sb.toString()*/
 
             val splitEnResponse = driverData?.accountNumber.toString().split(",").map { it }
             val deText = AESUtil.decryptAES(secretKey, splitEnResponse[0], splitEnResponse[1])
+            //val protectDeText = deText.let { it -> StringBuilder(it).also { it.setCharAt(, '*') } }
+
+            val protectDeText = StringBuilder(deText)
+
+            for (i in 5 until deText.length) { // 5번째(인덱스 4)부터 9번째(인덱스 8)까지
+                protectDeText.setCharAt(i, '*')
+            }
 
             cBinding.completeDriverAccountNumber.text = try {
-                "$driverName \n${deText}"
+                "$driverName \n${protectDeText}" //학번 , 계좌정보
             } catch (e : NullPointerException) {
                 "null $driverName"
             }
@@ -76,7 +83,7 @@ class CompleteActivity : AppCompatActivity() {
 
             cBinding.completeDriverAccountNumber.paintFlags = Paint.UNDERLINE_TEXT_FLAG  //밑줄긋기
             cBinding.completeDriverAccountNumber.setOnClickListener {
-                driverData?.accountNumber?.let { it1 -> createClipData(it1) }
+                createClipData(deText)
             }
             cBinding.completeCostLl.visibility = View.VISIBLE
             cBinding.completeBankLl.visibility = View.VISIBLE
@@ -86,21 +93,21 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.completeDivideView2.visibility = View.VISIBLE
 
             cBinding.tossBankLl.setOnClickListener {
-                driverData?.accountNumber?.let { it1 -> createClipData(it1) }
+                createClipData(deText)
                 if (postCost != null) {
                     deepLink("viva.republica.toss")
                 }
             }
 
             cBinding.kakaoPayLl.setOnClickListener {
-                driverData?.accountNumber?.let { it1 -> createClipData(it1) }
+                createClipData(deText)
                 if (postCost != null) {
                     deepLink("com.kakao.talk")
                 }
             }
 
             cBinding.accountTransferLl.setOnClickListener {
-                driverData?.accountNumber?.let { it1 -> createClipData(it1) }
+                createClipData(deText)
                 if (postCost != null) {
                     deepLink(userAccount)
                 }

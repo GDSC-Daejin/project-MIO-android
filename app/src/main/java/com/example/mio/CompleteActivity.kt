@@ -17,6 +17,7 @@ import com.example.mio.model.PostData
 import com.example.mio.model.User
 import com.example.mio.databinding.ActivityCompleteBinding
 import com.example.mio.util.AESKeyStoreUtil
+import com.example.mio.util.AESUtil
 import javax.crypto.SecretKey
 
 class CompleteActivity : AppCompatActivity() {
@@ -62,10 +63,13 @@ class CompleteActivity : AppCompatActivity() {
             val sb = driverName?.let { it -> StringBuilder(it).also { it.setCharAt(1, '*') } }
             driverName = sb.toString()
 
+            val splitEnResponse = driverData?.accountNumber.toString().split(",").map { it }
+            val deText = AESUtil.decryptAES(secretKey, splitEnResponse[0], splitEnResponse[1])
+
             cBinding.completeDriverAccountNumber.text = try {
-                "$driverName \n${driverData?.accountNumber}"
+                "$driverName \n${deText}"
             } catch (e : NullPointerException) {
-                "null ${driverData?.name}"
+                "null $driverName"
             }
 
             cBinding.completePassengerCost.text = getString(R.string.setCost, "$postCost")//"${postCost.toString()}원"

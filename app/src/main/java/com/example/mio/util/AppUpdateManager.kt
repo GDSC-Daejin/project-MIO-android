@@ -3,14 +3,11 @@ package com.example.mio.util
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
-import android.content.IntentSender
 import android.os.Build
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.IntentSenderRequest
 import androidx.annotation.RequiresApi
 import com.example.mio.R
 import com.google.android.play.core.appupdate.AppUpdateInfo
@@ -22,7 +19,7 @@ import com.google.android.play.core.install.model.UpdateAvailability
 
 object AppUpdateManager {
     private var appUpdateManager: com.google.android.play.core.appupdate.AppUpdateManager? = null
-    private const val APP_UPDATE_REQUEST_CODE = 1001
+    //private const val APP_UPDATE_REQUEST_CODE = 1001
 
     // 앱 업데이트 매니저 초기화
     fun init(context: Context) {
@@ -44,15 +41,21 @@ object AppUpdateManager {
 
     @RequiresApi(Build.VERSION_CODES.P)
     private fun triggerAppUpdate(appUpdateInfo: AppUpdateInfo, context: Context, activity: Activity) {
+        // 현재 설치된 앱의 버전 코드 가져오기
         val currentVersion = context.packageManager.getPackageInfo(context.packageName, 0).longVersionCode
-        val minSupportedVersion = 1L // 첫 번째 출시 버전
 
-        if (currentVersion < minSupportedVersion) {
-            // 즉시 업데이트 수행
-            showImmediateUpdate(appUpdateInfo, activity)
-        } else {
-            // 유연한 업데이트 수행
-            showFlexibleUpdate(appUpdateInfo, context, activity)
+        // 마켓에서 가져온 최신 버전 정보
+        val availableVersionCode = appUpdateInfo.availableVersionCode() // appUpdateInfo에서 최신 버전 코드 가져옴
+
+        if (currentVersion < availableVersionCode) {
+            // 만약 현재 버전이 마켓의 최신 버전보다 낮다면 업데이트를 유도
+            if (appUpdateInfo.updatePriority() >= 5) {
+                // 우선순위가 높다면 즉시 업데이트
+                showImmediateUpdate(appUpdateInfo, activity)
+            } else {
+                // 그렇지 않다면 유연한 업데이트
+                showFlexibleUpdate(appUpdateInfo, context, activity)
+            }
         }
     }
 

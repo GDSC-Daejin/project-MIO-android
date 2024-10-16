@@ -48,6 +48,7 @@ class LoginActivity : AppCompatActivity() {
     private var loadingDialog : LoadingProgressDialog? = null
     private lateinit var appUpdateLauncher: ActivityResultLauncher<IntentSenderRequest>
 
+
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         //상태바 지우기(이 activity만)
@@ -67,7 +68,7 @@ class LoginActivity : AppCompatActivity() {
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        mBinding.signInLl.setOnClickListener {
+        /*mBinding.signInLl.setOnClickListener {
             //로딩창 실행
             loadingDialog = LoadingProgressDialog(this@LoginActivity)
             loadingDialog?.setCancelable(false)
@@ -81,9 +82,10 @@ class LoginActivity : AppCompatActivity() {
             )
             loadingDialog?.show()
             signIn()
-        }
+        }*/
 
-        mBinding.signInButton.setOnClickListener {
+        mBinding.googleSign.setOnClickListener {
+            Log.e("signinbtn", "click")
             //로딩창 실행
             loadingDialog = LoadingProgressDialog(this@LoginActivity)
             loadingDialog?.setCancelable(false)

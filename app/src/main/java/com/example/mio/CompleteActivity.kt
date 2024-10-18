@@ -64,17 +64,14 @@ class CompleteActivity : AppCompatActivity() {
             driverName = sb.toString()*/
 
             val splitEnResponse = driverData?.accountNumber.toString().split(",").map { it }
-            val deText = AESUtil.decryptAES(secretKey, splitEnResponse[0], splitEnResponse[1])
+            val deText = AESUtil.decryptAES(secretKey, splitEnResponse[0], splitEnResponse[1]).split(" ").map { it }
             //val protectDeText = deText.let { it -> StringBuilder(it).also { it.setCharAt(, '*') } }
 
-            val protectDeText = StringBuilder(deText)
-
-            for (i in 5 until deText.length) { // 5번째(인덱스 4)부터 9번째(인덱스 8)까지
-                protectDeText.setCharAt(i, '*')
-            }
+            // 5번째 이후 문자열을 모두 '*'로 바꿈
+            val protectDeText = deText[0].substring(0, 5) + "*".repeat(deText[0].length - 5)
 
             cBinding.completeDriverAccountNumber.text = try {
-                "$driverName \n${protectDeText}" //학번 , 계좌정보
+                "$driverName \n${protectDeText} ${deText[1]}" //학번 , 계좌정보
             } catch (e : NullPointerException) {
                 "null $driverName"
             }
@@ -83,7 +80,7 @@ class CompleteActivity : AppCompatActivity() {
 
             cBinding.completeDriverAccountNumber.paintFlags = Paint.UNDERLINE_TEXT_FLAG  //밑줄긋기
             cBinding.completeDriverAccountNumber.setOnClickListener {
-                createClipData(deText)
+                createClipData("${deText[0]} ${deText[1]}")
             }
             cBinding.completeCostLl.visibility = View.VISIBLE
             cBinding.completeBankLl.visibility = View.VISIBLE
@@ -93,21 +90,21 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.completeDivideView2.visibility = View.VISIBLE
 
             cBinding.tossBankLl.setOnClickListener {
-                createClipData(deText)
+                createClipData("${deText[0]} ${deText[1]}")
                 if (postCost != null) {
                     deepLink("viva.republica.toss")
                 }
             }
 
             cBinding.kakaoPayLl.setOnClickListener {
-                createClipData(deText)
+                createClipData("${deText[0]} ${deText[1]}")
                 if (postCost != null) {
                     deepLink("com.kakao.talk")
                 }
             }
 
             cBinding.accountTransferLl.setOnClickListener {
-                createClipData(deText)
+                createClipData("${deText[0]} ${deText[1]}")
                 if (postCost != null) {
                     deepLink(userAccount)
                 }

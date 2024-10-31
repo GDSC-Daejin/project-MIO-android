@@ -34,8 +34,6 @@ interface MioInterface {
     @GET("/detail/{id}")
     fun getPostIdDetailSearch(@Path("id") postId : Int) : Call<Content>
 
-    @GET("/detail/{id}")
-    suspend fun getSuspendPostIdDetailSearch(@Path("id") postId : Int) : Call<Content>
 
     //카테고리에 따른 게시글 생성 순 조회 1=카풀, 2=택시
     @GET("/categoryPost/{categoryId}")
@@ -45,14 +43,14 @@ interface MioInterface {
                             @Query("size") size : Int) : Call<PostReadAllResponse>
 
 
-    @GET("/readAll")
+    /*@GET("/readAll")
     fun getCurrentServerPostData(@Query("sort") sort : String) : Call<PostReadAllResponse>
 
     //게시글 마감날짜순
     @GET("/readAll/targetDate")
     fun getServerDateData() : Call<PostReadAllResponse>
     @GET("/readAll/cost")
-    fun getServerCostData() : Call<PostReadAllResponse>
+    fun getServerCostData() : Call<PostReadAllResponse>*/
 // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 /*    @GET("/post/location")
     fun getLocationPostData(@Query("latitude") latitude : Double, @Query("longitude") longitude : Double) : Call<List<LocationReadAllResponse>>*/
@@ -202,8 +200,8 @@ interface MioInterface {
     ////////////////////////////////
     //알람
 
-    @POST("/alarm/create")
-    fun addAlarm(@Body alarmSendData : AddAlarmData) : Call<AddAlarmResponseData>
+    /*@POST("/alarm/create")
+    fun addAlarm(@Body alarmSendData : AddAlarmData) : Call<AddAlarmResponseData>*/
 
     @GET("/alarm/readAll")
     fun getMyAlarm() : Call<List<AddAlarmResponseData>>
@@ -247,7 +245,7 @@ interface MioInterface {
     fun getBookmark() : Call<List<BookMarkResponseData>>
 
     //북마크 실시간알람
-    @GET("/subscribe/{user_id}")
+    /*@GET("/subscribe/{user_id}")
     @Headers("Accept: text/event-stream")
-    fun getRealTimeBookMarkAlarm(@Path("user_id") userId: Long) : Call<SSEData>
+    fun getRealTimeBookMarkAlarm(@Path("user_id") userId: Long) : Call<SSEData>*/
 }

@@ -73,7 +73,7 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.completeDriverAccountNumber.text = try {
                 "$driverName \n${protectDeText} ${deText[1]}" //학번 , 계좌정보
             } catch (e : NullPointerException) {
-                "null $driverName"
+                "$driverName \n계좌정보를 등록하지 않은 운전자입니다.\n운전자에게 계좌정보를 확인하세요"
             }
 
             cBinding.completePassengerCost.text = getString(R.string.setCost, "$postCost")//"${postCost.toString()}원"

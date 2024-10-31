@@ -139,5 +139,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/open_source_license" />
 
+    <TextView
+        android:id="@+id/policy_intent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="30dp"
+        android:fontFamily="@font/pretendard_medium"
+        android:text="개인정보처리방침"
+        android:textColor="@color/mio_gray_12"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/open_source_license2" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

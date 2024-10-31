@@ -92,6 +92,13 @@ class SettingFragment : Fragment() {
             }
         }
 
+        binding.policyIntent.setOnClickListener {
+            val url = "https://sites.google.com/daejin.ac.kr/mio/%ED%99%88"
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse(url)
+            }
+            startActivity(intent)
+        }
 
         binding.openSourceLicense.setOnClickListener {
             val intent = Intent(requireActivity(), OssLicensesMenuActivity::class.java)

@@ -1,7 +1,6 @@
 package com.example.mio
 
 import com.example.mio.model.*
-import com.example.mio.sse.SSEData
 import retrofit2.Call
 import retrofit2.http.*
 
@@ -137,6 +136,9 @@ interface MioInterface {
     @GET("/user/id/{userId}")
     fun getUserProfileData(@Path("userId") userId : Int) : Call<User>
 
+    //계좌 정보 승인여부
+    @POST("/user/accountStatus")
+    fun postUserAcceptPolicy(@Path("status") status : AccountStatus) : Call<User>
 
     //유저 정보 추가입력
     @PATCH("/user/{userId}")

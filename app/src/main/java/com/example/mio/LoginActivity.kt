@@ -1,13 +1,16 @@
 package com.example.mio
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
@@ -17,6 +20,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.mio.model.LoginResponsesData
 import com.example.mio.model.TokenRequest
 import com.example.mio.databinding.ActivityLoginBinding
+import com.example.mio.model.AccountStatus
+import com.example.mio.model.User
 import com.example.mio.util.AppUpdateManager
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -27,6 +32,7 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
 import kotlinx.coroutines.*
 import okhttp3.*
+import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
@@ -47,7 +53,8 @@ class LoginActivity : AppCompatActivity() {
     //로딩
     private var loadingDialog : LoadingProgressDialog? = null
     private lateinit var appUpdateLauncher: ActivityResultLauncher<IntentSenderRequest>
-
+    //체크용
+    private var isPolicyAllow : Boolean? = null
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,11 +92,9 @@ class LoginActivity : AppCompatActivity() {
         }*/
 
         mBinding.googleSign.setOnClickListener {
-            Log.e("signinbtn", "click")
             //로딩창 실행
             loadingDialog = LoadingProgressDialog(this@LoginActivity)
             loadingDialog?.setCancelable(false)
-            //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
             //로딩창
             loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
@@ -98,7 +103,7 @@ class LoginActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
             loadingDialog?.show()
-            signIn()
+            initPersonalInformationConsent()
         }
 
         // ActivityResultLauncher 초기화
@@ -123,6 +128,65 @@ class LoginActivity : AppCompatActivity() {
         AppUpdateManager.checkUpdate(this, this@LoginActivity)  // 업데이트 확인
     }
 
+    private fun initPersonalInformationConsent() {
+        val sharedPref = this.getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
+        //isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
+        val layoutInflater = LayoutInflater.from(this@LoginActivity)
+        val dialogView = layoutInflater.inflate(R.layout.privacy_policy_dialog_layout, null)
+        val alertDialog = android.app.AlertDialog.Builder(this@LoginActivity, R.style.CustomAlertDialog)
+            .setView(dialogView)
+            .create()
+        val dialogContent = dialogView.findViewById<TextView>(R.id.message_text)
+        val dialogLeftBtn = dialogView.findViewById<View>(R.id.dialog_left_btn)
+        val dialogRightBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
+
+        dialogContent.setOnClickListener {
+            val url = "https://sites.google.com/daejin.ac.kr/mio/%ED%99%88"
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse(url)
+            }
+            startActivity(intent)
+        }
+
+        dialogLeftBtn.setOnClickListener {
+            Toast.makeText(this@LoginActivity, "서비스 이용이 제한될 수 있습니다.", Toast.LENGTH_SHORT).show()
+            with(sharedPref.edit()) {
+                putBoolean("isPolicyAllow", false)
+                apply() // 비동기적으로 데이터를 저장
+            }
+            isPolicyAllow = false
+            alertDialog.dismiss()
+        }
+
+        dialogRightBtn.setOnClickListener {
+            RetrofitServerConnect.create(this@LoginActivity).postUserAcceptPolicy(AccountStatus.APPROVED).enqueue(object : retrofit2.Callback<User> {
+                override fun onResponse(call: Call<User>, response: retrofit2.Response<User>) {
+                    if (response.isSuccessful) {
+                        Log.e("loginPolicy", response.code().toString())
+                        signIn()
+                    } else {
+                        Log.e("loginPolicy", response.code().toString())
+                        Log.e("loginPolicy", response.errorBody()?.string()!!)
+                        Toast.makeText(this@LoginActivity, "승인 확인 데이터 전송에 실패하였습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<User>, t: Throwable) {
+                    Log.e("loginPolicy", t.message.toString())
+                    Toast.makeText(this@LoginActivity, "예상치 못한 오류가 발생했습니다. ${t.message}}", Toast.LENGTH_SHORT).show()
+                }
+            })
+
+            with(sharedPref.edit()) {
+                putBoolean("isPolicyAllow", true)
+                apply() // 비동기적으로 데이터를 저장
+            }
+            isPolicyAllow = true
+            alertDialog.dismiss()
+        }
+        alertDialog.show()
+    }
+
     private fun signInCheck(userInfoToken : TokenRequest) {
         val serverUrl = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(serverUrl)
@@ -131,7 +195,7 @@ class LoginActivity : AppCompatActivity() {
         val service: MioInterface = retrofit.create(MioInterface::class.java)
         service.addUserInfoData(userInfoToken).enqueue(object : retrofit2.Callback<LoginResponsesData> {
             override fun onResponse(
-                call: retrofit2.Call<LoginResponsesData>,
+                call: Call<LoginResponsesData>,
                 response: retrofit2.Response<LoginResponsesData?>
             ) {
                 if (response.isSuccessful) {
@@ -173,7 +237,7 @@ class LoginActivity : AppCompatActivity() {
                     Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
-            override fun onFailure(call: retrofit2.Call<LoginResponsesData>, t: Throwable) {
+            override fun onFailure(call: Call<LoginResponsesData>, t: Throwable) {
                 if (loadingDialog != null && loadingDialog!!.isShowing) {
                     loadingDialog?.dismiss()
                     loadingDialog = null // 다이얼로그 인스턴스 참조 해제

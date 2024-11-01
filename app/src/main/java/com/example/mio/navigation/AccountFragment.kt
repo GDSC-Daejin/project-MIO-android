@@ -86,7 +86,7 @@ class AccountFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         aBinding = FragmentAccountBinding.inflate(inflater, container, false)
-        saveSettingData()
+        //saveSettingData()
         initSetAccountData()
 
         aBinding.accountSettingIv.setOnClickListener {
@@ -98,7 +98,7 @@ class AccountFragment : Fragment() {
                 requestActivity.launch(intent)
             } else {
                 Toast.makeText(requireContext(), "개인정보처리방침에 동의해주세요.", Toast.LENGTH_SHORT).show()
-                saveSettingData()
+                //saveSettingData()
             }
         }
 
@@ -119,17 +119,17 @@ class AccountFragment : Fragment() {
         return aBinding.root
     }
 
-    private fun saveSettingData() { //처음 앱 사용 시 저장한 isPolicyAllow 없어서 null이니 true로 저장 후 dialog를 실행토록함
+    /*private fun saveSettingData() { //처음 앱 사용 시 저장한 isPolicyAllow 없어서 null이니 true로 저장 후 dialog를 실행토록함
         //다음에는 true가 저장되어있었으니 false로 저장내용을 바꾸고 다시 저장하여 dialog가 나오지 않도록 함
         val sharedPref = requireActivity().getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
         isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
 
         if (isPolicyAllow != true) {
-            initPersonalInformationConsent()
+            //initPersonalInformationConsent()
         }
-    }
+    }*/
 
-    private fun initPersonalInformationConsent() {
+    /*private fun initPersonalInformationConsent() {
         val sharedPref = requireActivity().getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
         //isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
         val layoutInflater = LayoutInflater.from(context)
@@ -170,7 +170,7 @@ class AccountFragment : Fragment() {
             alertDialog.dismiss()
         }
         alertDialog.show()
-    }
+    }*/
 
     private fun initSetAccountData() {
         //여기서 기본설정들 다 넣기

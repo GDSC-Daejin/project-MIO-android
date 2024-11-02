@@ -5,15 +5,17 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mio.model.PostData
 import com.example.mio.R
 import com.example.mio.databinding.PostItemBinding
 import com.example.mio.databinding.RvLoadingBinding
+import com.example.mio.diffutil.ReviewWriteableDiffUtilCallback
 
 class ProfilePostAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     private lateinit var binding : PostItemBinding
-    var profilePostItemData = ArrayList<PostData?>()
+    private var profilePostItemData = ArrayList<PostData?>()
     private lateinit var context : Context
 
     companion object {
@@ -140,4 +142,16 @@ class ProfilePostAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
         this.itemClickListener = itemClickListener
     }
 
+    fun updateDataList(newItems: List<PostData?>) {
+        // Create a new DiffUtil.Callback instance
+        val diffCallback = ReviewWriteableDiffUtilCallback(profilePostItemData, newItems)
+
+        // Calculate the diff
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
+        profilePostItemData.clear()
+        profilePostItemData.addAll(newItems.toList())
+
+        diffResult.dispatchUpdatesTo(this)
+    }
 }

@@ -6,7 +6,6 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -59,7 +58,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
     private var totalPages = 0
 
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-    private var token : String = ""
+    //private var token : String = ""
     private var getExpireDate = ""
     private var email = ""
     private var userId = ""
@@ -79,7 +78,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
         savedInstanceState: Bundle?
     ): View {
         pBinding = FragmentMyPostBinding.inflate(inflater, container, false)
-        token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
+        //token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
         getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity())!!.split("@").map { it }.first()
         userId = saveSharedPreferenceGoogleLogin.getUserId(requireActivity()).toString()
@@ -107,42 +106,6 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
 
 
     private fun setMyPostData() {
-
-
-        /*val interceptor = Interceptor { chain ->
-            var newRequest: Request
-            if (token != null && token != "") { // 토큰이 없는 경우
-                // Authorization 헤더에 토큰 추가
-                newRequest =
-                    chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()
-                val expireDate: Long = getExpireDate.toLong()
-                if (expireDate <= System.currentTimeMillis()) { // 토큰 만료 여부 체크
-                    //refresh 들어갈 곳
-                    *//*newRequest =
-                        chain.request().newBuilder().addHeader("Authorization", "Bearer $token").build()*//*
-                    Log.e("postFrag", "postFrag1")
-                    val intent = Intent(requireActivity(), LoginActivity::class.java)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                    Toast.makeText(requireActivity(), "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                    startActivity(intent)
-                    requireActivity().finish()
-                    return@Interceptor chain.proceed(newRequest)
-                }
-            } else newRequest = chain.request()
-            chain.proceed(newRequest)
-        }
-        val SERVER_URL = BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(SERVER_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
-        val api = retrofit2.create(MioInterface::class.java)*/
-
-        //println(userId)
-
         RetrofitServerConnect.create(requireActivity()).getMyPostData(userId.toInt(),"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
             override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                 if (response.isSuccessful) {
@@ -183,14 +146,11 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                                 response.body()!!.content[i].user,
                                 response.body()!!.content[i].latitude,
                                 response.body()!!.content[i].longitude
-                            ))
-
-                        // 새로 고침 완료 및 터치 가능하게 설정
-                        pBinding.accountSwipe.isRefreshing = false
-                        requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-
-                        myAdapter!!.notifyDataSetChanged()
+                            )
+                        )
                     }
+
+                    myAdapter?.updateDataList(myAccountPostAllData)
                     if (myAccountPostAllData.size > 0) {
                         pBinding.accountPostNotDataLl.visibility = View.GONE
                         pBinding.accountSwipe.visibility = View.VISIBLE
@@ -200,6 +160,9 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                         pBinding.accountSwipe.visibility = View.GONE
                         pBinding.myAccountPostRv.visibility = View.GONE
                     }
+                    // 새로 고침 완료 및 터치 가능하게 설정
+                    pBinding.accountSwipe.isRefreshing = false
+                    requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                     loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                     loadingDialog?.dismiss()
 
@@ -241,7 +204,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
         loadingDialog?.show()
         setMyPostData()
         myAdapter = MyAccountPostAdapter()
-        myAdapter!!.myPostItemData = myAccountPostAllData
+        //myAdapter!!.myPostItemData = myAccountPostAllData
         pBinding.myAccountPostRv.adapter = myAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true
@@ -272,7 +235,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
         isLoading = false
         currentPage = 0
         //moreCarpoolAllData.clear() // Clear existing data
-        myAdapter?.notifyDataSetChanged() // Notify adapter of data change
+        myAdapter?.updateDataList(emptyList()) // Notify adapter of data change
 
         // Fetch fresh data
         setMyPostData()
@@ -349,7 +312,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                                 }
 
                                 myAccountPostAllData.addAll(newItems)
-                                myAdapter?.notifyDataSetChanged()
+                                myAdapter?.updateDataList(newItems)
                             }
                         } else {
                             requireActivity().runOnUiThread {

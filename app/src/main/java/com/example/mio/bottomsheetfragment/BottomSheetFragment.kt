@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import com.example.mio.R
-import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.databinding.FragmentBottomSheetBinding
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -37,7 +36,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     private var param2: String? = null
 
     private lateinit var bsBinding : FragmentBottomSheetBinding
-    private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
+    //private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     //선택한 날짜
     private var selectTargetDate = ""
     //선택한 시간
@@ -146,7 +145,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.gtschoolBtn.setOnClickListener {
             isCheckSchool = "등교" //등교
-            saveSharedPreferenceGoogleLogin.setSchool(context, isCheckSchool)
+            //saveSharedPreferenceGoogleLogin.setSchool(context, isCheckSchool)
 
             bsBinding.gtschoolBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
@@ -161,7 +160,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.aschoolBtn.setOnClickListener {
             isCheckSchool = "하교" //하교
-            saveSharedPreferenceGoogleLogin.setSchool(context, isCheckSchool)
+            //saveSharedPreferenceGoogleLogin.setSchool(context, isCheckSchool)
 
             bsBinding.aschoolBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
@@ -175,7 +174,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.manBtn.setOnClickListener {
             isCheckGender = "남성" //남성
-            saveSharedPreferenceGoogleLogin.setGender(context, isCheckGender)
+            //saveSharedPreferenceGoogleLogin.setGender(context, isCheckGender)
 
             bsBinding.manBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
@@ -189,7 +188,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.womanBtn.setOnClickListener {
             isCheckGender = "여성" //여성
-            saveSharedPreferenceGoogleLogin.setGender(context, isCheckSchool)
+            //saveSharedPreferenceGoogleLogin.setGender(context, isCheckSchool)
 
             bsBinding.womanBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
@@ -203,7 +202,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.smokerBtn.setOnClickListener {
             isCheckSmoke = "흡연O" //흡연 O
-            saveSharedPreferenceGoogleLogin.setSmoke(context, isCheckSmoke)
+            //saveSharedPreferenceGoogleLogin.setSmoke(context, isCheckSmoke)
             bsBinding.smokerBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))
@@ -216,7 +215,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         bsBinding.nsmokerBtn.setOnClickListener {
             isCheckSmoke = "흡연x" //흡연 X
-            saveSharedPreferenceGoogleLogin.setSmoke(context, isCheckSmoke)
+            //saveSharedPreferenceGoogleLogin.setSmoke(context, isCheckSmoke)
             bsBinding.nsmokerBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
                 setTextColor(ContextCompat.getColor(requireActivity() , R.color.mio_gray_1))

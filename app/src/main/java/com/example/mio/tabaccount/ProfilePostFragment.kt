@@ -130,7 +130,7 @@ class ProfilePostFragment : Fragment() {
                     ppBinding.profileSearchFilterTv.text = "최신 순"
                     ppBinding.profileSearchFilterTv.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
                     profilePostAllData.sortByDescending { it?.postCreateDate }
-                    myAdapter?.notifyDataSetChanged()
+                    myAdapter?.updateDataList(profilePostAllData.sortedByDescending { it?.postCreateDate })
                 }
                 "마감 임박 순" -> {
                     ppBinding.profileSearchFilterTv.text = "마감 임박 순"
@@ -157,13 +157,13 @@ class ProfilePostFragment : Fragment() {
                     }
                     profilePostAllData.clear()
                     profilePostAllData.addAll(sortedTargets)
-                    myAdapter?.notifyDataSetChanged()
+                    myAdapter?.updateDataList(sortedTargets)
                 }
                 "낮은 가격 순" -> {
                     ppBinding.profileSearchFilterTv.text = "낮은 가격 순"
                     ppBinding.profileSearchFilterTv.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_blue_4))
                     profilePostAllData.sortBy { it?.postCost }
-                    myAdapter?.notifyDataSetChanged()
+                    myAdapter?.updateDataList(profilePostAllData.sortedBy { it?.postCost })
                 }
             }
 
@@ -196,7 +196,7 @@ class ProfilePostFragment : Fragment() {
         isLoading = false
         currentPage = 0
         //moreCarpoolAllData.clear() // Clear existing data
-        myAdapter?.notifyDataSetChanged() // Notify adapter of data change
+        myAdapter?.updateDataList(emptyList()) // Notify adapter of data change
 
         // Fetch fresh data
         setMyPostData()
@@ -233,7 +233,7 @@ class ProfilePostFragment : Fragment() {
 
     private fun setMyPostData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(requireActivity())!!
+        val profileUserId = saveSharedPreferenceGoogleLogin.getProfileUserId(requireActivity())
 
         //deadLine 안씀
         RetrofitServerConnect.create(requireActivity()).getMyPostData(profileUserId,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
@@ -274,10 +274,11 @@ class ProfilePostFragment : Fragment() {
                                 response.body()!!.content[i].user,
                                 response.body()!!.content[i].latitude,
                                 response.body()!!.content[i].longitude
-                            ))
+                            )
+                        )
                     }
 
-                    myAdapter!!.notifyDataSetChanged()
+                    myAdapter?.updateDataList(profilePostAllData)
 
                     if (getBottomSheetData.isNotEmpty()) {
                         myViewModel.postCheckSearchFilter(getBottomSheetData)
@@ -359,8 +360,9 @@ class ProfilePostFragment : Fragment() {
                                     }
 
                                     profilePostAllData.addAll(newItems)
-                                    myAdapter?.notifyDataSetChanged()
+                                    myAdapter?.updateDataList(profilePostAllData)
                                 }
+                                //profilePostAllData.sortByDescending { sortData -> sortData?.postCreateDate }
                             } else {
                                 requireActivity().runOnUiThread {
                                     if (isAdded && !requireActivity().isFinishing) {
@@ -389,7 +391,7 @@ class ProfilePostFragment : Fragment() {
     private fun initMyRecyclerView() {
         setMyPostData()
         myAdapter = ProfilePostAdapter()
-        myAdapter!!.profilePostItemData = profilePostAllData
+        //myAdapter!!.profilePostItemData = profilePostAllData
         ppBinding.profilePostRv.adapter = myAdapter
         //레이아웃 뒤집기 안씀
         //manager.reverseLayout = true

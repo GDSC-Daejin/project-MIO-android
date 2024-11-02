@@ -119,12 +119,14 @@ class MyAccountPostAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     fun updateDataList(newItems: List<PostData?>) {
+        // Create a new DiffUtil.Callback instance
         val diffCallback = ReviewWriteableDiffUtilCallback(myPostItemData, newItems)
 
+        // Calculate the diff
         val diffResult = DiffUtil.calculateDiff(diffCallback)
 
         myPostItemData.clear()
-        myPostItemData.addAll(newItems)
+        myPostItemData.addAll(newItems.toList())
 
         diffResult.dispatchUpdatesTo(this)
     }

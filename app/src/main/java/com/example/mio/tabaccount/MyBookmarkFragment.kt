@@ -240,6 +240,7 @@ class MyBookmarkFragment : Fragment() {
             activity?.window!!.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) // 화면 터치 못하게 하기
             val handler = Handler(Looper.getMainLooper())
             handler.postDelayed({
+                myBookmarkAllData.clear()
                 setMyBookmarkData()
                 myAdapter!!.myPostItemData = myBookmarkAllData
                 //noticeBoardAdapter.recyclerView.startLayoutAnimation()

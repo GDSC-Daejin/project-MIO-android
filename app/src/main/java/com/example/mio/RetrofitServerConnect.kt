@@ -5,15 +5,20 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
+import com.example.mio.util.AESKeyStoreUtil
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.crypto.SecretKey
 
 object RetrofitServerConnect {
     fun create(context: Context): MioInterface {
+        val secretKey: SecretKey by lazy {
+            AESKeyStoreUtil.getOrCreateAESKey()
+        }
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val token = saveSharedPreferenceGoogleLogin.getToken(context).toString()
+        val token = saveSharedPreferenceGoogleLogin.getToken(context,secretKey).toString()
         val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
 
         val interceptor = Interceptor { chain ->

@@ -2,6 +2,7 @@ package com.example.mio
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.preference.PreferenceManager
 import com.example.mio.util.AESUtil
 import javax.crypto.SecretKey
@@ -12,7 +13,7 @@ class SaveSharedPreferenceGoogleLogin {
     private val acctoken = "token"
     private val expireDate = "expireDate"
     private val privateUserId = "userId"
-    private val refreshTokenTag = "refreshToken"
+    //private val refreshTokenTag = "refreshToken"
     private val myAreaTag = "myArea"
 
     private val notificationCheck = "notificationCheck"
@@ -20,9 +21,9 @@ class SaveSharedPreferenceGoogleLogin {
     private val privateProfileUserId = "profileUserId"
     private val privateUserAccountName = "privateUserAccountName"
 
-    private val isGender = "geneder"
+    /*private val isGender = "geneder"
     private val isSchool = "school"
-    private val isSmoke = "smoke"
+    private val isSmoke = "smoke"*/
 
     // SharedPreferences 키
     private val prefLastBottomSheetTime = "last_bottom_sheet_time"
@@ -83,7 +84,7 @@ class SaveSharedPreferenceGoogleLogin {
         editor.apply()
     }
 
-    fun getSharedGender(ctx: Context?): String? {
+    /*fun getSharedGender(ctx: Context?): String? {
         return getSharedPreferences(ctx).getString(isGender, "")
     }
 
@@ -113,7 +114,7 @@ class SaveSharedPreferenceGoogleLogin {
         val editor = getSharedPreferences(ctx).edit()
         editor.putString(isSmoke, smoke)
         editor.apply()
-    }
+    }*/
 
 
     private fun getSharedPreferences(ctx: Context?): SharedPreferences {
@@ -132,23 +133,33 @@ class SaveSharedPreferenceGoogleLogin {
     }
 
 
-    fun setToken(ctx: Context?, token: String?) {
+    fun setToken(ctx: Context?, token: String?, secretKey : SecretKey) {
+        val encryptedTk = AESUtil.encryptAES(secretKey, token ?: "")
+        val formatEncrypted = "${encryptedTk.first},${encryptedTk.second}" // ',' 구분자로 변경
+        Log.e("setToken", formatEncrypted)
         val editor = getSharedPreferences(ctx).edit()
-        editor.putString(acctoken, token)
+        editor.putString(acctoken, formatEncrypted)
         editor.apply()
     }
-    fun getToken(ctx: Context?): String? {
-        return getSharedPreferences(ctx).getString(acctoken, "")
+    fun getToken(ctx: Context?, secretKey: SecretKey): String? {
+        val encryptedTk = getSharedPreferences(ctx).getString(acctoken, "")
+        return if (encryptedTk.isNullOrEmpty()) {
+            null
+        } else {
+            // ','로 암호화된 텍스트와 IV를 구분하여 가져옴
+            val splitEncrypted = encryptedTk.split(",")
+            AESUtil.decryptAES(secretKey, splitEncrypted[0], splitEncrypted[1]) // 복호화하여 원래 값을 반환
+        }
     }
 
-    fun setRefreshToken(ctx: Context?, refreshToken: String?) {
+    /*fun setRefreshToken(ctx: Context?, refreshToken: String?) {
         val editor = getSharedPreferences(ctx).edit()
         editor.putString(refreshTokenTag, refreshToken)
         editor.apply()
     }
     fun getRefreshToken(ctx: Context?): String? {
         return getSharedPreferences(ctx).getString(refreshTokenTag, "")
-    }
+    }*/
 
     fun setExpireDate(ctx: Context?, expire: String?) {
         val editor = getSharedPreferences(ctx).edit()

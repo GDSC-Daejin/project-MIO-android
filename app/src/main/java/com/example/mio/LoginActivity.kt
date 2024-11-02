@@ -22,6 +22,7 @@ import com.example.mio.model.TokenRequest
 import com.example.mio.databinding.ActivityLoginBinding
 import com.example.mio.model.AccountStatus
 import com.example.mio.model.User
+import com.example.mio.util.AESKeyStoreUtil
 import com.example.mio.util.AppUpdateManager
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -37,6 +38,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import javax.crypto.SecretKey
 
 
 class LoginActivity : AppCompatActivity() {
@@ -55,6 +57,10 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var appUpdateLauncher: ActivityResultLauncher<IntentSenderRequest>
     //체크용
     private var isPolicyAllow : Boolean? = null
+
+    private val secretKey: SecretKey by lazy {
+        AESKeyStoreUtil.getOrCreateAESKey()
+    }
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -173,14 +179,11 @@ class LoginActivity : AppCompatActivity() {
             RetrofitServerConnect.create(this@LoginActivity).postUserAcceptPolicy(AccountStatus("APPROVED")).enqueue(object : retrofit2.Callback<User> {
                 override fun onResponse(call: Call<User>, response: retrofit2.Response<User>) {
                     if (response.isSuccessful) {
-                        Log.e("loginPolicy", response.code().toString())
                         Toast.makeText(this@LoginActivity, "승인이 완료되었습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
                         val intent = Intent(this@LoginActivity, MainActivity::class.java)
                         startActivity(intent)
                         this@LoginActivity.finish()
                     } else {
-                        Log.e("loginPolicy", response.code().toString())
-                        Log.e("loginPolicy", response.errorBody()?.string()!!)
                         Toast.makeText(this@LoginActivity, "승인 확인 데이터 전송에 실패하였습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
                         if (loadingDialog != null && loadingDialog!!.isShowing) {
                             loadingDialog?.dismiss()
@@ -190,7 +193,6 @@ class LoginActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<User>, t: Throwable) {
-                    Log.e("loginPolicy", t.message.toString())
                     if (loadingDialog != null && loadingDialog!!.isShowing) {
                         loadingDialog?.dismiss()
                         loadingDialog = null // 다이얼로그 인스턴스 참조 해제
@@ -224,13 +226,13 @@ class LoginActivity : AppCompatActivity() {
                     val loginResponse = response.body()
                     if (loginResponse != null) {
                         val accessToken = loginResponse.accessToken
+
                         val accessTokenExpiresIn = loginResponse.accessTokenExpiresIn
-                        val refreshToken = loginResponse.refreshToken
 
                         // AccessToken, ExpireDate, RefreshToken 저장
-                        saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, accessToken)
+                        saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, accessToken, secretKey)
                         saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, accessTokenExpiresIn.toString())
-                        saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, refreshToken)
+                        //saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, refreshToken)
 
 
                         //5초

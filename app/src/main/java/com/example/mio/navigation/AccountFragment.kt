@@ -125,7 +125,7 @@ class AccountFragment : Fragment() {
         isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
 
         if (isPolicyAllow != true) {
-            //initPersonalInformationConsent()
+            initPersonalInformationConsent()
         }
     }*/
 
@@ -160,7 +160,31 @@ class AccountFragment : Fragment() {
         }
 
         dialogRightBtn.setOnClickListener {
-            //todo 서비스 이용확인 api?
+            RetrofitServerConnect.create(requireContext()).postUserAcceptPolicy(AccountStatus("APPROVED")).enqueue(object : retrofit2.Callback<User> {
+                override fun onResponse(call: Call<User>, response: retrofit2.Response<User>) {
+                    if (response.isSuccessful) {
+                        Log.e("loginPolicy", response.code().toString())
+                        Toast.makeText(requireContext(), "승인이 완료되었습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Log.e("loginPolicy", response.code().toString())
+                        Log.e("loginPolicy", response.errorBody()?.string()!!)
+                        Toast.makeText(requireContext(), "승인 확인 데이터 전송에 실패하였습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
+                        if (loadingDialog != null && loadingDialog!!.isShowing) {
+                            loadingDialog?.dismiss()
+                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                        }
+                    }
+                }
+
+                override fun onFailure(call: Call<User>, t: Throwable) {
+                    Log.e("loginPolicy", t.message.toString())
+                    if (loadingDialog != null && loadingDialog!!.isShowing) {
+                        loadingDialog?.dismiss()
+                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                    }
+                    Toast.makeText(requireContext(), "예상치 못한 오류가 발생했습니다. ${t.message}}", Toast.LENGTH_SHORT).show()
+                }
+            })
 
             with(sharedPref.edit()) {
                 putBoolean("isPolicyAllow", true)

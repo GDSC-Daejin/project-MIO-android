@@ -65,7 +65,7 @@ class LoginActivity : AppCompatActivity() {
         setContentView(mBinding.root)
         MobileAds.initialize(this@LoginActivity) {}
         setResultSignUp()
-
+        saveSettingData()
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
             .requestIdToken(clientWebKey)
@@ -103,7 +103,8 @@ class LoginActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
             loadingDialog?.show()
-            initPersonalInformationConsent()
+            //initPersonalInformationConsent()
+            signIn()
         }
 
         // ActivityResultLauncher 초기화
@@ -128,6 +129,12 @@ class LoginActivity : AppCompatActivity() {
         AppUpdateManager.checkUpdate(this, this@LoginActivity)  // 업데이트 확인
     }
 
+    private fun saveSettingData() { //처음 앱 사용 시 저장한 isPolicyAllow 없어서 null이니 true로 저장 후 dialog를 실행토록함
+        //다음에는 true가 저장되어있었으니 false로 저장내용을 바꾸고 다시 저장하여 dialog가 나오지 않도록 함
+        val sharedPref = this@LoginActivity.getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
+        isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
+    }
+
     private fun initPersonalInformationConsent() {
         val sharedPref = this.getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
         //isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
@@ -149,7 +156,11 @@ class LoginActivity : AppCompatActivity() {
         }
 
         dialogLeftBtn.setOnClickListener {
-            Toast.makeText(this@LoginActivity, "서비스 이용이 제한될 수 있습니다.", Toast.LENGTH_SHORT).show()
+            if (loadingDialog != null && loadingDialog!!.isShowing) {
+                loadingDialog?.dismiss()
+                loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+            }
+            Toast.makeText(this@LoginActivity, "서비스 이용이 제한됩니다.", Toast.LENGTH_SHORT).show()
             with(sharedPref.edit()) {
                 putBoolean("isPolicyAllow", false)
                 apply() // 비동기적으로 데이터를 저장
@@ -159,20 +170,31 @@ class LoginActivity : AppCompatActivity() {
         }
 
         dialogRightBtn.setOnClickListener {
-            RetrofitServerConnect.create(this@LoginActivity).postUserAcceptPolicy(AccountStatus.APPROVED).enqueue(object : retrofit2.Callback<User> {
+            RetrofitServerConnect.create(this@LoginActivity).postUserAcceptPolicy(AccountStatus("APPROVED")).enqueue(object : retrofit2.Callback<User> {
                 override fun onResponse(call: Call<User>, response: retrofit2.Response<User>) {
                     if (response.isSuccessful) {
                         Log.e("loginPolicy", response.code().toString())
-                        signIn()
+                        Toast.makeText(this@LoginActivity, "승인이 완료되었습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                        startActivity(intent)
+                        this@LoginActivity.finish()
                     } else {
                         Log.e("loginPolicy", response.code().toString())
                         Log.e("loginPolicy", response.errorBody()?.string()!!)
                         Toast.makeText(this@LoginActivity, "승인 확인 데이터 전송에 실패하였습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
+                        if (loadingDialog != null && loadingDialog!!.isShowing) {
+                            loadingDialog?.dismiss()
+                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                        }
                     }
                 }
 
                 override fun onFailure(call: Call<User>, t: Throwable) {
                     Log.e("loginPolicy", t.message.toString())
+                    if (loadingDialog != null && loadingDialog!!.isShowing) {
+                        loadingDialog?.dismiss()
+                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                    }
                     Toast.makeText(this@LoginActivity, "예상치 못한 오류가 발생했습니다. ${t.message}}", Toast.LENGTH_SHORT).show()
                 }
             })
@@ -225,9 +247,14 @@ class LoginActivity : AppCompatActivity() {
                         }
 
                         Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                        startActivity(intent)
-                        this@LoginActivity.finish()
+
+                        if (isPolicyAllow != true) {
+                            initPersonalInformationConsent()
+                        } else {
+                            val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                            startActivity(intent)
+                            this@LoginActivity.finish()
+                        }
                     }
                 } else {
                     if (loadingDialog != null && loadingDialog!!.isShowing) {

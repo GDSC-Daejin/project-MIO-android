@@ -138,7 +138,7 @@ interface MioInterface {
 
     //계좌 정보 승인여부
     @POST("/user/accountStatus")
-    fun postUserAcceptPolicy(@Path("status") status : AccountStatus) : Call<User>
+    fun postUserAcceptPolicy(@Body status : AccountStatus) : Call<User>
 
     //유저 정보 추가입력
     @PATCH("/user/{userId}")

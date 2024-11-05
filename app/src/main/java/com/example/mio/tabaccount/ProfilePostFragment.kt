@@ -107,7 +107,6 @@ class ProfilePostFragment : Fragment() {
             bottomSheet.apply {
                 setCallback(object : AnotherBottomSheetFragment.OnSendFromBottomSheetDialog{
                     override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                         getBottomSheetData = value
                         myViewModel.postCheckSearchFilter(getBottomSheetData)
                     }

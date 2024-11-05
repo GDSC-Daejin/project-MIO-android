@@ -33,7 +33,6 @@ object AESKeyStoreUtil {
 
     fun getOrCreateAESKey(): SecretKey {
         // 키스토어에서 키를 먼저 로드
-        Log.e("getOrCreateAES", "${getSecretKeyFromKeystore() ?: generateAESKeyInKeystore()}")
         return getSecretKeyFromKeystore() ?: generateAESKeyInKeystore()
     }
 }

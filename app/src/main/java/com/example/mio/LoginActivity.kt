@@ -57,6 +57,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var appUpdateLauncher: ActivityResultLauncher<IntentSenderRequest>
     //체크용
     private var isPolicyAllow : Boolean? = null
+    private var isFirst : Boolean? = null
 
     private val secretKey: SecretKey by lazy {
         AESKeyStoreUtil.getOrCreateAESKey()
@@ -67,35 +68,13 @@ class LoginActivity : AppCompatActivity() {
         //상태바 지우기(이 activity만)
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
-
         setContentView(mBinding.root)
         MobileAds.initialize(this@LoginActivity) {}
+
         setResultSignUp()
         saveSettingData()
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            .requestIdToken(clientWebKey)
-            .requestServerAuthCode(clientWebKey)
-            .requestProfile()
-            .build()
 
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        /*mBinding.signInLl.setOnClickListener {
-            //로딩창 실행
-            loadingDialog = LoadingProgressDialog(this@LoginActivity)
-            loadingDialog?.setCancelable(false)
-            //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-            //로딩창
-            loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-            loadingDialog?.window!!.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            loadingDialog?.show()
-            signIn()
-        }*/
 
         mBinding.googleSign.setOnClickListener {
             //로딩창 실행
@@ -110,7 +89,11 @@ class LoginActivity : AppCompatActivity() {
             )
             loadingDialog?.show()
             //initPersonalInformationConsent()
-            signIn()
+            if (isPolicyAllow != true) {
+                initPersonalInformationConsent()
+            } else {
+                signIn()
+            }
         }
 
         // ActivityResultLauncher 초기화
@@ -138,7 +121,9 @@ class LoginActivity : AppCompatActivity() {
     private fun saveSettingData() { //처음 앱 사용 시 저장한 isPolicyAllow 없어서 null이니 true로 저장 후 dialog를 실행토록함
         //다음에는 true가 저장되어있었으니 false로 저장내용을 바꾸고 다시 저장하여 dialog가 나오지 않도록 함
         val sharedPref = this@LoginActivity.getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
+        isFirst = sharedPref.getBoolean("isPolicyConnectFirstCheck", false)
         isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
+        Log.e("isPolicyConnectFirstCheck", isFirst.toString())
     }
 
     private fun initPersonalInformationConsent() {
@@ -176,39 +161,45 @@ class LoginActivity : AppCompatActivity() {
         }
 
         dialogRightBtn.setOnClickListener {
-            RetrofitServerConnect.create(this@LoginActivity).postUserAcceptPolicy(AccountStatus("APPROVED")).enqueue(object : retrofit2.Callback<User> {
-                override fun onResponse(call: Call<User>, response: retrofit2.Response<User>) {
-                    if (response.isSuccessful) {
-                        Toast.makeText(this@LoginActivity, "승인이 완료되었습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this@LoginActivity, MainActivity::class.java)
-                        startActivity(intent)
-                        this@LoginActivity.finish()
-                    } else {
-                        Toast.makeText(this@LoginActivity, "승인 확인 데이터 전송에 실패하였습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
-                        if (loadingDialog != null && loadingDialog!!.isShowing) {
-                            loadingDialog?.dismiss()
-                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                        }
-                    }
-                }
-
-                override fun onFailure(call: Call<User>, t: Throwable) {
-                    if (loadingDialog != null && loadingDialog!!.isShowing) {
-                        loadingDialog?.dismiss()
-                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                    }
-                    Toast.makeText(this@LoginActivity, "예상치 못한 오류가 발생했습니다. ${t.message}}", Toast.LENGTH_SHORT).show()
-                }
-            })
-
             with(sharedPref.edit()) {
                 putBoolean("isPolicyAllow", true)
                 apply() // 비동기적으로 데이터를 저장
             }
             isPolicyAllow = true
+
+            signIn()
             alertDialog.dismiss()
         }
         alertDialog.show()
+    }
+
+    private fun isPolicyArrowRetrofitConnect() {
+        RetrofitServerConnect.create(this@LoginActivity).postUserAcceptPolicy(AccountStatus("APPROVED")).enqueue(object : retrofit2.Callback<User> {
+            override fun onResponse(call: Call<User>, response: retrofit2.Response<User>) {
+                if (response.isSuccessful) {
+                    isFirst = true
+
+                    Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
+                    val intent = Intent(this@LoginActivity, MainActivity::class.java)
+                    startActivity(intent)
+                    this@LoginActivity.finish()
+                } else {
+                    if (loadingDialog != null && loadingDialog!!.isShowing) {
+                        loadingDialog?.dismiss()
+                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                    }
+                    Toast.makeText(this@LoginActivity, "승인 확인 데이터 전송에 실패하였습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                if (loadingDialog != null && loadingDialog!!.isShowing) {
+                    loadingDialog?.dismiss()
+                    loadingDialog = null // 다이얼로그 인스턴스 참조 해제
+                }
+                Toast.makeText(this@LoginActivity, "예상치 못한 오류가 발생했습니다. ${t.message}}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun signInCheck(userInfoToken : TokenRequest) {
@@ -248,11 +239,15 @@ class LoginActivity : AppCompatActivity() {
                             loadingDialog = null // 다이얼로그 인스턴스 참조 해제
                         }
 
-                        Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다.", Toast.LENGTH_SHORT).show()
-
-                        if (isPolicyAllow != true) {
-                            initPersonalInformationConsent()
+                        if (isFirst != true) {
+                            val sharedPref = this@LoginActivity.getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
+                            with(sharedPref.edit()) {
+                                putBoolean("isPolicyConnectFirstCheck", true)
+                                apply() // 비동기적으로 데이터를 저장
+                            }
+                            isPolicyArrowRetrofitConnect()
                         } else {
+                            Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
                             val intent = Intent(this@LoginActivity, MainActivity::class.java)
                             startActivity(intent)
                             this@LoginActivity.finish()
@@ -289,6 +284,15 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun setResultSignUp() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            .requestIdToken(clientWebKey)
+            .requestServerAuthCode(clientWebKey)
+            .requestProfile()
+            .build()
+
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+
         resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
@@ -323,6 +327,7 @@ class LoginActivity : AppCompatActivity() {
             userEmail = email
             saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
             val userInfoToken = TokenRequest(idToken.toString())
+            Log.e("userInfo", userInfoToken.token.toString())
             signInCheck(userInfoToken)
         } catch (e: ApiException) {
             loadingDialog?.dismiss()

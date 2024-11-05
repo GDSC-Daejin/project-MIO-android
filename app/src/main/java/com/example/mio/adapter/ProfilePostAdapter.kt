@@ -112,7 +112,7 @@ class ProfilePostAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(){
     }
 
     override fun getItemId(position: Int): Long {
-        return position.toLong()
+        return profilePostItemData[position]?.postID?.toLong() ?: position.toLong()
     }
 
     override fun getItemViewType(position: Int): Int {

@@ -5,6 +5,7 @@ plugins {
     id 'kotlin-parcelize'
     // plugin 추가
     id 'com.google.android.gms.oss-licenses-plugin'
+    //id 'com.google.firebase.crashlytics'
 }
 
 Properties properties = new Properties()
@@ -188,6 +189,11 @@ dependencies {
 
     // Kotlin 사용자의 경우 Play In-App Update를 위한 Kotlin 확장 라이브러리도 가져옵니다.
     implementation( "com.google.android.play:app-update-ktx:2.1.0" )
+
+    //firebase crash
+    /*implementation platform('com.google.firebase:firebase-bom:31.2.3')
+    implementation ("com.google.firebase:firebase-crashlytics-ktx:18.3.5")
+    implementation ("com.google.firebase:firebase-analytics-ktx:21.2.0")*/
 
     ////
     testImplementation 'junit:junit:4.13.2'

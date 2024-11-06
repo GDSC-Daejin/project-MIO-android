@@ -38,6 +38,9 @@
     <string name="setUserDescribe">%1$s님의 프로필</string>
     <string name="privacy_policy_message">정상적인 서비스 이용을 위해 계좌정보와 은행이름에 대한 정보를 안전하게 서버에 저장하여야합니다. 동의하시겠습니까? <a href="https://sites.google.com/daejin.ac.kr/mio/%ED%99%88">개인 정보 처리 방침</a></string>
 
+    <!--complete-->
+    <string name="setCompleteActivityAcNum">%1$s \n계좌정보를 등록하지 않은 운전자입니다.\n운전자에게 계좌정보를 확인하세요</string>
+
     <!--search count-->
     <string name="setSearchPostCount">+%1$s</string>
 

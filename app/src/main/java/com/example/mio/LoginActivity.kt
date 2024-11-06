@@ -74,7 +74,9 @@ class LoginActivity : AppCompatActivity() {
         setResultSignUp()
         saveSettingData()
 
-
+        /*mBinding.logoIv.setOnClickListener {
+            throw RuntimeException("Test Crash")
+        }*/
 
         mBinding.googleSign.setOnClickListener {
             //로딩창 실행

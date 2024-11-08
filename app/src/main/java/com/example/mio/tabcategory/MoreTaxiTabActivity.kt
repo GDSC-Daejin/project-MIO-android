@@ -78,7 +78,6 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         //showBottomSheetAd(this)
         lifecycleScope.launchWhenStarted {
             viewModel.moreTaxiPostData.collect { updatedData ->
-                Log.e("viewmodel taxi", "$updatedData")
                 updateUI(updatedData)
                 mtAdapter?.updateDataList(updatedData)  // 데이터를 어댑터에 설정
             }
@@ -328,8 +327,6 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                         0 -> { // 날짜
                             if (currentCondition.isNotEmpty()) {
                                 noConditionDate = currentCondition
-                            } else {
-                                Log.e("No condition0", "empty")
                             }
                         }
                         1 -> { // 시간
@@ -371,7 +368,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                         }
                         else -> {
                             // 추가 조건이 있는 경우 여기에 추가할 수 있음
-                            Log.e("Unknown condition", "Index $i not handled")
+                            //Log.e("Unknown condition", "Index $i not handled")
                         }
                     }
                 }

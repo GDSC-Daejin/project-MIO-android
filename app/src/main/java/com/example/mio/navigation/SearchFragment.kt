@@ -290,8 +290,6 @@ class SearchFragment : Fragment() {
                 }
 
                 override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
-                    Log.d("error", t.toString())
-                    Log.e("SearchFragment", "Error fetching nearby post data: ${t.localizedMessage}")
                     loadingDialog?.dismiss()
                     Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                 }
@@ -338,13 +336,11 @@ class SearchFragment : Fragment() {
     private fun initializeMapIfNeeded() {
         if (map == null) {
             try {
-                Log.e("SearchFragment", "try")
                 initMapView()
             } catch (re: RuntimeException) {
                 Log.e("SearchFragment", re.toString())
             }
         } else {
-            Log.e("SearchFragment", "map is not null")
             map = null
             initMapView()
         }
@@ -352,11 +348,9 @@ class SearchFragment : Fragment() {
     private fun startMapLifeCycle() {
         map?.start(object : MapLifeCycleCallback() {
             override fun onMapDestroy() {
-                Log.e("searchFragment1", "onMapDestroy")
             }
 
             override fun onMapError(error: Exception?) {
-                Log.e("searchFragment1", "onMApError", error)
             }
 
         }, object : KakaoMapReadyCallback() {
@@ -370,7 +364,6 @@ class SearchFragment : Fragment() {
             }
 
             override fun onMapReady(kakaoMap: KakaoMap) {
-                Log.e("searchFragment1", "onMapReady")
 
                 kakaoMapValue = kakaoMap
                 labelLayer = kakaoMap.labelManager!!.layer
@@ -378,7 +371,6 @@ class SearchFragment : Fragment() {
 
                 //선택한 값을 중심으로 poi찍기
                 if (searchPostData?.isNotEmpty() == true) {
-                    Log.e("pendingTest 1", searchPostData.toString())
                     loadNearbyPostData(searchPostData?.first()?.postId)
                     // 현재 위치를 나타낼 label를 그리기 위해 kakaomap 인스턴스에서 LabelLayer를 가져옵니다.
                     val layer = kakaoMap.labelManager!!.layer
@@ -501,15 +493,7 @@ class SearchFragment : Fragment() {
 
                 //KakaoMap kakaoMap, LabelLayer layer, Label label
                 kakaoMapValue!!.setOnLabelClickListener { _, _, label ->
-                    if (label != null) { //return 값이 true 이면, 이벤트가 OnLabelClickListener 에서 끝난다.
-
-                        Log.e("kakao map sear", "label")
-                        //trackingManager?.startTracking(label)
-                        return@setOnLabelClickListener false
-                    } else { //return 값이 false 이면, 이벤트가 OnPoiClickListener, OnMapClickListener 까지 전달된다.
-                        Log.e("kakao map sear", "label x")
-                        return@setOnLabelClickListener true
-                    }
+                    return@setOnLabelClickListener label == null
                 }
             }
         })
@@ -532,7 +516,6 @@ class SearchFragment : Fragment() {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                 // API 30 이하의 경우
                 val data = result.data?.getParcelableExtra<LocationReadAllResponse>("location")
-                Log.e("getParcelableExtra1", data.toString())
                 val flag = result.data?.getIntExtra("flag", -1)
 
                 if (flag == 103) {
@@ -554,7 +537,6 @@ class SearchFragment : Fragment() {
                 }
             } else {
                 val data = result.data?.getParcelableExtra("location", LocationReadAllResponse::class.java)
-                Log.e("getParcelableExtra", data.toString())
                 val flag = result.data?.getIntExtra("flag", -1)
 
                 if (flag == 103) {

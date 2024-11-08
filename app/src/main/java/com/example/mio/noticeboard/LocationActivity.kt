@@ -34,11 +34,9 @@ class LocationActivity : AppCompatActivity() {
     private fun startMapLifeCycle() {
         mapView?.start(object : MapLifeCycleCallback() {
             override fun onMapDestroy() {
-                Log.e("LocationActivity", "onMapDestroy")
             }
 
             override fun onMapError(error: Exception?) {
-                Log.e("LocationActivity", "onMapError", error)
             }
 
         }, object : KakaoMapReadyCallback() {

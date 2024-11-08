@@ -2,7 +2,6 @@ package com.example.mio.adapter
 
 import android.content.Context
 import android.content.res.ColorStateList
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -117,7 +116,6 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                         notifyItemChanged(position)
                     } else {
                         // 에러 처리 (필요시)
-                        Log.e("fetchItemDetails", "Failed to approve participation")
                         Toast.makeText(context, "승인 신청에 실패하였습니다. 다시 시도해주세요", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -158,16 +156,11 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 if (response.isSuccessful) {
                     participationItemData[position].approvalOrReject = "REJECT"
                 } else {
-                    Log.e("PART Remove ERROR ", response.code().toString())
-                    Log.e("PART Remove ERROR ", response.errorBody()?.string()!!)
-                    Log.e("PART Remove ERROR ", response.message().toString())
-                    
                     Toast.makeText(context, "삭제 오류가 발생했습니다. 다시 시도해주세요. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<Void>, t: Throwable) {
-                Log.e("PART Remove ERROR ", t.toString())
                 Toast.makeText(context, "삭제 오류가 발생했습니다. 다시 시도해주세요. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })

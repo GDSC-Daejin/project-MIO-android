@@ -6,7 +6,6 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -177,7 +176,6 @@ class MyParticipationFragment : Fragment() { //두번쨰
 
 
                 } else {
-                    Log.e("f", response.code().toString())
                     loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                     loadingDialog?.dismiss()
                     if (myParticipationAllData.size > 0) {
@@ -193,7 +191,6 @@ class MyParticipationFragment : Fragment() { //두번쨰
             }
 
             override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
-                Log.e("error", t.toString())
                 loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
                 loadingDialog?.dismiss()
                 if (myParticipationAllData.size > 0) {
@@ -210,7 +207,6 @@ class MyParticipationFragment : Fragment() { //두번쨰
     }
 
     private fun updateUI() {
-        Log.e("updateui", "in ui")
         loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
         loadingDialog?.dismiss()
         if (loadingDialog != null && loadingDialog!!.isShowing) {
@@ -291,7 +287,6 @@ class MyParticipationFragment : Fragment() { //두번쨰
                     }
 
                     override fun onFailure(call: Call<Content>, t: Throwable) {
-                        Log.e("MyParticipationFail", t.message.toString())
                         updateUI()
                     }
                 })

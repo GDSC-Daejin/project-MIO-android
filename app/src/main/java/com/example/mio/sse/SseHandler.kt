@@ -29,7 +29,6 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
     override fun onMessage(event: String?, messageEvent: MessageEvent?) {
 
         val messageData = messageEvent?.data ?: return
-        Log.e("SSE", "Received data: $messageData")
 
         val eventId = messageEvent.lastEventId
         val eventType = messageEvent.eventName
@@ -45,7 +44,6 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
             eventData
         }
 
-        Log.e("SSE Comment", comment.toString())
         if (!comment.contains("EventStream")) {
             // Android 8.0 이상에서는 Notification Channel을 설정해야 합니다.
             val tapResultIntent = Intent(context, LoginActivity::class.java).apply {
@@ -78,7 +76,6 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
 
             try {
                 notificationManager.notify(1, builder.build())
-                Log.d("Notification", "Notification created successfully")
             } catch (e: Exception) {
                 Log.e("Notification", "Failed to create notification: ${e.message}")
             }
@@ -89,7 +86,6 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
     }
 
     override fun onError(t: Throwable?) {
-        Log.d("SSE", "SSE연결 실패")
         Log.e("SSE", t.toString())
         //java.net.SocketTimeoutException: timeout
     }

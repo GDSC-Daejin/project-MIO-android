@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.MotionEvent
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -353,7 +352,6 @@ class PassengersReviewActivity : AppCompatActivity() {
         loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
         loadingDialog.show()
         if (passengersData?.isNotEmpty() == true) {
-            Log.e("userInfo", "$passengersData")
             for (i in passengersData) {
                 RetrofitServerConnect.create(this@PassengersReviewActivity)
                     .getUserProfileData(i.userId)
@@ -381,20 +379,17 @@ class PassengersReviewActivity : AppCompatActivity() {
                                     }*/
                                     setupChipListeners()
                                 } ?: run {
-                                    Log.e("userInfo", "Response body is null")
                                     loadingDialog.dismiss()
                                 }
                             } else {
-                                Log.e("userInfo", response.code().toString())
-                                response.errorBody()?.string()?.let { errorMsg ->
+                                /*response.errorBody()?.string()?.let { errorMsg ->
                                     Log.e("userInfo", errorMsg)
-                                }
+                                }*/
                                 loadingDialog.dismiss()
                             }
                         }
 
                         override fun onFailure(call: Call<User>, t: Throwable) {
-                            Log.e("userInfo", t.toString())
                             loadingDialog.dismiss()
                         }
                     })
@@ -427,7 +422,6 @@ class PassengersReviewActivity : AppCompatActivity() {
 
                         override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
                             loadingDialog.dismiss()
-                            Log.e("ERROR", "review : ${t.message.toString()}")
                         }
                     })
                 }
@@ -451,7 +445,7 @@ class PassengersReviewActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
-                    Log.e("ERROR", "review : ${t.message.toString()}")
+
                     loadingDialog.dismiss()
                     Toast.makeText(this@PassengersReviewActivity, "후기 전송에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                 }

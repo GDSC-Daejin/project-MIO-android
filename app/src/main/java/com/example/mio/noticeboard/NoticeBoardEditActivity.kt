@@ -899,7 +899,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
             } else if (type.equals("EDIT")) {
 
-                Log.e("editactivity", "edit")
                 if (isFirst) {
                     /*val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(this@NoticeBoardEditActivity).toString()*/
                     val temp2 = EditPostData(editTitle, detailContent, selectCategoryId, selectFormattedDate, selectFormattedTime, participateNumberOfPeople, latitude, longitude, location, selectCost.toInt(), region3Depth)
@@ -1358,22 +1357,18 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
     private fun startMapLifeCycle() {
         map?.start(object : MapLifeCycleCallback() {
             override fun onMapDestroy() {
-                Log.e("noticeboardeditMapTest", "onMapDestroy")
             }
 
             override fun onMapPaused() {
                 super.onMapPaused()
-                Log.e("noticeboardeditMapTest", "onmappaused")
                 map?.resume()
             }
 
             override fun onMapResumed() {
                 super.onMapResumed()
-                Log.e("noticeboardeditMapTest", "onmapresumed")
             }
 
             override fun onMapError(error: Exception?) {
-                Log.e("noticeboardedit", "onMapError", error)
             }
 
         }, object : KakaoMapReadyCallback() {

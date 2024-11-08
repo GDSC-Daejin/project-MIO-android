@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -234,7 +235,7 @@ class TaxiTabFragment : Fragment() {
                         Log.e("current taxi", e.toString())
                     }
                 } else {
-                    Log.e("current taxi is empty", taxiAllData.toString())
+                    Toast.makeText(requireContext(), "선택된 날의 게시글이 없거나 최신글이 아닙니다. 더보기를 통해 확인해주세요.", Toast.LENGTH_SHORT).show()
                 }
                 /* calendarAdapter!!.notifyItemChanged(selectedPostion)
                 calendarAdapter!!.notifyItemChanged(oldSelectedPostion)*/
@@ -435,7 +436,6 @@ class TaxiTabFragment : Fragment() {
         // 어댑터 데이터 변경 후 "오늘" 항목을 자동으로 클릭
         if (calendarItemData.isNotEmpty()) {
             val todayPosition = calendarItemData.indexOfFirst { it?.day == "오늘" }
-            Log.e("calendarItemData", "$todayPosition")
             if (todayPosition >= 0) {
                 triggerFirstItemOfCalendarAdapter(todayPosition)
             }
@@ -534,8 +534,6 @@ class TaxiTabFragment : Fragment() {
                                 )
                             )
                         }
-
-                        Log.e("taxiAllData", "$taxiAllData")
                         // 어댑터 데이터 갱신
                         if (isFirst) {
                             // 첫 호출일 때, 오늘 날짜에 해당하는 데이터만 필터링
@@ -555,7 +553,6 @@ class TaxiTabFragment : Fragment() {
 
                             // 어댑터에 필터링된 데이터 적용
                             noticeBoardAdapter?.let { adapter ->
-                                Log.e("First Call - carpoolAllData", "$todayFilteredList")
                                 adapter.postItemData = todayFilteredList as ArrayList<PostData>
                                 adapter.notifyDataSetChanged()
                             }
@@ -581,7 +578,6 @@ class TaxiTabFragment : Fragment() {
 
                     }
                 } else {
-                    Log.e("f", response.code().toString())
                     loadingDialog.dismiss()
                     if (taxiAllData.isEmpty()) {
                         taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
@@ -594,7 +590,6 @@ class TaxiTabFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                Log.e("error", t.toString())
                 loadingDialog.dismiss()
                 if (taxiAllData.isEmpty()) {
                     taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE

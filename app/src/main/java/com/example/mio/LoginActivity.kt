@@ -8,7 +8,6 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.TextView
 import android.widget.Toast
@@ -105,7 +104,7 @@ class LoginActivity : AppCompatActivity() {
             // 사용자가 업데이트를 취소하거나 오류가 발생한 경우 처리
             if (result.resultCode != RESULT_OK) {
                 // 업데이트 실패 처리 (필요 시 다시 시도하거나 메시지 표시)
-                Log.e("LoginActivity", "App Update failed or canceled")
+                Toast.makeText(this@LoginActivity, "앱의 업데이터가 취소되거나 실패하였습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -125,7 +124,6 @@ class LoginActivity : AppCompatActivity() {
         val sharedPref = this@LoginActivity.getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
         isFirst = sharedPref.getBoolean("isPolicyConnectFirstCheck", false)
         isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
-        Log.e("isPolicyConnectFirstCheck", isFirst.toString())
     }
 
     private fun initPersonalInformationConsent() {
@@ -141,7 +139,7 @@ class LoginActivity : AppCompatActivity() {
         val dialogRightBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
 
         dialogContent.setOnClickListener {
-            val url = "https://sites.google.com/daejin.ac.kr/mio/%ED%99%88"
+            val url = "https://github.com/MIO-Privacy-Policy-for-Android/MIO_Privacy_Policy_for_Android"
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse(url)
             }
@@ -181,7 +179,7 @@ class LoginActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     isFirst = true
 
-                    Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this@LoginActivity, MainActivity::class.java)
                     startActivity(intent)
                     this@LoginActivity.finish()
@@ -190,7 +188,7 @@ class LoginActivity : AppCompatActivity() {
                         loadingDialog?.dismiss()
                         loadingDialog = null // 다이얼로그 인스턴스 참조 해제
                     }
-                    Toast.makeText(this@LoginActivity, "승인 확인 데이터 전송에 실패하였습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@LoginActivity, "승인 확인 데이터 전송에 실패하였습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -249,7 +247,7 @@ class LoginActivity : AppCompatActivity() {
                             }
                             isPolicyArrowRetrofitConnect()
                         } else {
-                            Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다. ${response.code()}}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                             val intent = Intent(this@LoginActivity, MainActivity::class.java)
                             startActivity(intent)
                             this@LoginActivity.finish()
@@ -329,7 +327,6 @@ class LoginActivity : AppCompatActivity() {
             userEmail = email
             saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
             val userInfoToken = TokenRequest(idToken.toString())
-            Log.e("userInfo", userInfoToken.token.toString())
             signInCheck(userInfoToken)
         } catch (e: ApiException) {
             loadingDialog?.dismiss()

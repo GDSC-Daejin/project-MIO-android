@@ -71,14 +71,12 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                 /*loadingDialog = LoadingProgressDialog(this@ParticipationReceiveActivity)
                 loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
                 loadingDialog.show()*/
-                Log.e("onApprovalClick", "onApprovalClick")
             }
 
             override fun onRefuseClick(position: Int, participantId: String) {
                 /*loadingDialog = LoadingProgressDialog(this@ParticipationReceiveActivity)
                 loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
                 loadingDialog.show()*/
-                Log.e("onRefuseClick", "onRefuseClick")
             }
         })
     }
@@ -109,14 +107,11 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                                 }
                             }
                         } else {
-                            Log.e("fff", response.code().toString())
-                            Log.e("fff", response.errorBody()?.string()!!)
                             Toast.makeText(this@ParticipationReceiveActivity, "게시글 상태 변경에 실패했습니다. 다시 시도해주세요. ${response.code()}", Toast.LENGTH_SHORT).show()
                         }
                     }
 
                     override fun onFailure(call: Call<Content>, t: Throwable) {
-                        Log.e("ffffail", t.toString())
                         loadingDialog.dismiss()
                         Toast.makeText(this@ParticipationReceiveActivity, "게시글 상태 변경에 실패했습니다. 다시 시도해주세요. ${t.message}", Toast.LENGTH_SHORT).show()
                     }
@@ -154,15 +149,12 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                             }
                         }
                     } else {
-                        Log.e("fff", response.code().toString())
-                        Log.e("fff", response.errorBody()?.string()!!)
                         loadingDialog.dismiss()
                         Toast.makeText(this@ParticipationReceiveActivity, "게시글 상태 변경에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<Content>, t: Throwable) {
-                    Log.e("ffffail", t.toString())
                     loadingDialog.dismiss()
                     Toast.makeText(this@ParticipationReceiveActivity, "게시글 상태 변경에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                 }
@@ -198,15 +190,12 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                         }
                     }
                 } else {
-                    Log.e("fail receive", response.code().toString())
-                    Log.e("fail receive", response.errorBody()?.string()!!)
                     loadingDialog.dismiss()
                     Toast.makeText(this@ParticipationReceiveActivity, "게시글 정보를 불러오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<Content>, t: Throwable) {
-                Log.e("Failure receive", t.toString())
                 loadingDialog.dismiss()
                 Toast.makeText(this@ParticipationReceiveActivity, "게시글 정보를 불러오는데 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
@@ -284,10 +273,6 @@ class ParticipationReceiveActivity : AppCompatActivity() {
     }
 
     private fun setParticipantsUserData(postList: List<ParticipationData>?) {
-        Log.e("ParticipationReceiveActivity PostId Test", "진입완료")
-        Log.e("setParticipantsUserData", postList.toString())
-        val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-
         participantsUserAllData.clear()
 
         if (postList?.isNotEmpty() == true) {

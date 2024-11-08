@@ -8,7 +8,6 @@ import android.graphics.Paint
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -46,6 +45,7 @@ class CompleteActivity : AppCompatActivity() {
         category = intent.getStringExtra("category") as String
         userAccount = sharedPreferenceGoogleLogin.getAccount(this@CompleteActivity, secretKey).toString()
 
+
         if (type == "PASSENGER") {
             postData = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
                 intent.getParcelableExtra("postData")
@@ -57,8 +57,6 @@ class CompleteActivity : AppCompatActivity() {
             } else {
                 intent.getParcelableExtra("postDriver", User::class.java)
             }
-            Log.e("deAText", postData.toString())
-            Log.e("deAText", driverData.toString())
 
             postCost = postData?.postCost
 
@@ -66,28 +64,22 @@ class CompleteActivity : AppCompatActivity() {
             val sb = driverData?.name?.let { it -> StringBuilder(it).also { it.setCharAt(1, '*') } }.toString()
             val deText : List<String>
             if (driverData?.accountNumber?.contains(" ") == true || driverData?.accountNumber.isNullOrEmpty()) {
-                Log.e("deAText", "123")
                 deText = driverData?.accountNumber?.split(" ")?.map { it } ?: listOf("1","test")
                 if (deText == listOf("1", "test")) {
-                    Log.e("deAText", "1234")
                     cBinding.completeDriverAccountNumber.text = getString(R.string.setCompleteActivityAcNum, sb)
                 } else {
-                    Log.e("deAText", "12345")
                     cBinding.completeDriverAccountNumber.text = try {
                         "$sb \n${deText[1]} ${deText[0]}" //학번 , 계좌정보
                     } catch (e : NullPointerException) {
-                        "$sb \n계좌정보를 등록하지 않은 운전자입니다.\n운전자에게 계좌정보를 확인하세요"
+                        "$sb \n운전자에게 계좌정보를 확인하세요"
                     }
                 }
             } else {
-                Log.e("deAText", "123456")
                 deText = driverData?.accountNumber.toString().split(",").map { it }
                 val deAText = AESUtil.decryptAES(secretKey, deText[0], deText[1]).split(" ").map { it }
                 //val protectDeText = deText.let { it -> StringBuilder(it).also { it.setCharAt(, '*') } }
-                Log.e("deAText", deAText.toString())
                 // 5번째 이후 문자열을 모두 '*'로 바꿈
                 val protectDeText = deAText[0].substring(0, 5) + "*".repeat(deAText[0].length - 5)
-                Log.e("deAText", protectDeText.toString())
 
                 cBinding.completeDriverAccountNumber.text = try {
                     "$sb \n${protectDeText} ${deAText[0]}" //학번 , 계좌정보

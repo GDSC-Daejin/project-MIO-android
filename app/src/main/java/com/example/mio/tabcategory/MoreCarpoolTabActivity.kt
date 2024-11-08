@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -82,7 +81,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         // ViewModel의 데이터 변경을 관찰하여 RecyclerView 업데이트
         lifecycleScope.launchWhenStarted {
             viewModel.moreCarpoolPostData.collect { updatedData ->
-                Log.e("viewmodel carpool", "$updatedData")
                 updateUI(updatedData)
                 mtAdapter?.updateDataList(updatedData)  // 데이터를 어댑터에 설정
             }
@@ -304,25 +302,16 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                         0 -> { // 날짜
                             if (currentCondition.isNotEmpty()) {
                                 noConditionDate = currentCondition
-                                Log.d("condition0", noConditionDate)
-                            } else {
-                                Log.e("No condition0", "empty")
                             }
                         }
                         1 -> { // 시간
                             if (currentCondition.isNotEmpty()) {
                                 noConditionTime = currentCondition
-                                Log.d("condition1", noConditionTime)
-                            } else {
-                                Log.e("No condition1", "empty")
                             }
                         }
                         2 -> { // 인원수
                             if (currentCondition.isNotEmpty()) {
                                 noConditionPeople = currentCondition.toInt()
-                                Log.d("condition2", noConditionPeople.toString())
-                            } else {
-                                Log.e("No condition2", "empty")
                             }
                         }
                         3 -> { // 등하교
@@ -332,9 +321,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 } else if (currentCondition == "하교") {
                                     noConditionSchool = false
                                 }
-                                Log.d("condition3", noConditionSchool.toString())
-                            } else {
-                                Log.e("No condition3", "empty")
                             }
                         }
                         4 -> { // 성별
@@ -344,9 +330,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 } else if (currentCondition == "남성") {
                                     noConditionGender = false
                                 }
-                                Log.d("condition4", noConditionGender.toString())
-                            } else {
-                                Log.e("No condition4", "empty")
                             }
                         }
                         5 -> { // 흡연여부
@@ -356,14 +339,11 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                                 } else if (temp[5] == "흡연x") {
                                     noConditionSmoke = false
                                 }
-                                Log.d("condition5", noConditionSmoke.toString())
-                            } else {
-                                Log.e("No condition5", "empty")
                             }
                         }
                         else -> {
                             // 추가 조건이 있는 경우 여기에 추가할 수 있음
-                            Log.e("Unknown condition", "Index $i not handled")
+                            //Log.e("Unknown condition", "Index $i not handled")
                         }
                     }
                 }

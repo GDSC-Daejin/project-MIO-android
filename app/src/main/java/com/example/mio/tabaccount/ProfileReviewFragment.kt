@@ -3,7 +3,6 @@ package com.example.mio.tabaccount
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -87,13 +86,11 @@ class ProfileReviewFragment : Fragment() {
             RetrofitServerConnect.create(requireActivity()).getMyMannersReceiveReview(it).enqueue(object : Callback<List<MyAccountReviewData>> {
                 override fun onResponse(call: Call<List<MyAccountReviewData>>, response: Response<List<MyAccountReviewData>>) {
                     if (response.isSuccessful) {
-                        Log.e("reviewProfile", response.body()?.toString()!!)
                         viewModel.setLoading(false)
                         response.body()?.let { profileReview ->
                             viewModel.setReviews(profileReview)
                         }
                     } else {
-                        Log.e("f", response.code().toString())
                         requireActivity().runOnUiThread {
                             if (isAdded && !requireActivity().isFinishing) {
                                 viewModel.setLoading(false)

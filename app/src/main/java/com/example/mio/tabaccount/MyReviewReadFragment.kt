@@ -11,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
@@ -75,7 +74,6 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
         viewModel.reviews.observe(viewLifecycleOwner) { reviews ->
             reviewAdapter?.submitList(reviews.toList().sortedByDescending { it.createDate })
             updateUI2(reviews)
-            Log.e("myreviewread", reviews.toString())
         }
 
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
@@ -127,7 +125,7 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
     }
     private fun setReadReviewData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)
         viewModel.setLoading(true)
         RetrofitServerConnect.create(requireActivity()).getMyMannersReceiveReview(userId).enqueue(object :
             Callback<List<MyAccountReviewData>> {

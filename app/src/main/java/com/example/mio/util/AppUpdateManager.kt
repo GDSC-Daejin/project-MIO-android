@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.TextView
@@ -35,7 +34,7 @@ object AppUpdateManager {
             triggerAppUpdate(appUpdateInfo, context, activity)
         }?.addOnFailureListener {
             // 실패 시 로그 또는 처리 추가
-            Log.e("AppUpdateManager", "Update check failed", it)
+            //Log.e("AppUpdateManager", "Update check failed", it)
         }
     }
 

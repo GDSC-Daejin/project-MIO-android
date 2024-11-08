@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -229,10 +230,10 @@ class CarpoolTabFragment : Fragment() {
                         }
 
                     } catch (e: java.lang.IndexOutOfBoundsException) {
-                        println("tesetstes")
+                        Log.e("current carpool", e.toString())
                     }
                 } else {
-                    println("null")
+                    Toast.makeText(requireContext(), "선택된 날의 게시글이 없거나 최신글이 아닙니다. 더보기를 통해 확인해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
         })
@@ -329,7 +330,6 @@ class CarpoolTabFragment : Fragment() {
         setCurrentCarpoolData()
         // LiveData 구독 (데이터 관찰)
         viewModel.currentCarpoolLiveData.observe(viewLifecycleOwner) { data ->
-            Log.e("viewcarppol", data.toString())
             currentTaxiAllData.sortByDescending {item -> item?.postCreateDate}
             currentCarpoolAdapter?.updateDataList(data.toList())
         }
@@ -402,7 +402,6 @@ class CarpoolTabFragment : Fragment() {
 
         val sharedPref = requireActivity().getSharedPreferences("saveSetting", Context.MODE_PRIVATE)
         isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", "") ?: "true"
-        Log.e("shaerdPref", isFirstAccountEdit.toString())
 
         if (isFirstAccountEdit == "true") {
             initSettingDialog()
@@ -529,7 +528,6 @@ class CarpoolTabFragment : Fragment() {
         // 어댑터 데이터 변경 후 "오늘" 항목을 자동으로 클릭
         if (calendarItemData.isNotEmpty()) {
             val todayPosition = calendarItemData.indexOfFirst { it?.day == "오늘" }
-            Log.e("calendarItemData", "$todayPosition")
             if (todayPosition >= 0) {
                 triggerFirstItemOfCalendarAdapter(todayPosition)
             }

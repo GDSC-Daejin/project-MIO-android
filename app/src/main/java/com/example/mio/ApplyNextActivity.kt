@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
@@ -320,7 +319,6 @@ class ApplyNextActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<ParticipationData>, t: Throwable) {
-                    Log.e("error", t.toString())
                     Toast.makeText(this@ApplyNextActivity, "참여 신청에 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
 
                 }
@@ -368,7 +366,6 @@ class ApplyNextActivity : AppCompatActivity() {
                 isComplete = !isComplete
                 myViewModel.postCheckComplete(false)
                 currentPage += 1
-                Log.e("applyNext" , currentPage.toString())
                 myViewModel.postCheckPage(currentPage)
             }
         }

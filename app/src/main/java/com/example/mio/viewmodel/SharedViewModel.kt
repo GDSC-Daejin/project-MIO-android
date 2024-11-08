@@ -36,7 +36,6 @@ class SharedViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 // Log the exception
-                Log.e("fetchIsBeforeDeadLine", "Exception: ${e.message}")
                 _isNotDeadLine.value = false
             }
         }

@@ -2,7 +2,6 @@ package com.example.mio
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.util.Log
 import androidx.preference.PreferenceManager
 import com.example.mio.util.AESUtil
 import javax.crypto.SecretKey
@@ -136,7 +135,6 @@ class SaveSharedPreferenceGoogleLogin {
     fun setToken(ctx: Context?, token: String?, secretKey : SecretKey) {
         val encryptedTk = AESUtil.encryptAES(secretKey, token ?: "")
         val formatEncrypted = "${encryptedTk.first},${encryptedTk.second}" // ',' 구분자로 변경
-        Log.e("setToken", formatEncrypted)
         val editor = getSharedPreferences(ctx).edit()
         editor.putString(acctoken, formatEncrypted)
         editor.apply()

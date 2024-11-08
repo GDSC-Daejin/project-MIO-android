@@ -31,7 +31,6 @@ class SSEForegroundService : Service() {
         sharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         userId = sharedPreferenceGoogleLogin!!.getUserId(this)?.toLong()
         isGetAlarm = sharedPreferenceGoogleLogin!!.getSharedAlarm(this)
-        Log.e("onStartCommand", isGetAlarm.toString())
 
         if (!hasNotificationBeenShown && isGetAlarm == true) {
             //startForegroundServiceWithNotification()
@@ -39,8 +38,6 @@ class SSEForegroundService : Service() {
         }
 
         if (userId != null && isGetAlarm == true) {
-            Log.e("Service", "서비스가 실행 중입니다...")
-            Log.e("Service on Start", userId.toString())
             eventSource = BackgroundEventSource // 백그라운드에서 이벤트를 처리하기 위한 EVENTSOURCE의 하위 클래스
                 .Builder(
                     SseHandler(context = this),
@@ -58,8 +55,6 @@ class SSEForegroundService : Service() {
                 .build()
             // EventSource 연결 시작
             eventSource!!.start()
-        } else {
-            Log.e("Service", "서비스 종료입니다...")
         }
 
         return START_STICKY
@@ -67,7 +62,6 @@ class SSEForegroundService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.e("SERVICE", "MyService onDestroy")
         eventSource?.close()
         serviceIntent = null
         setAlarmTimer()

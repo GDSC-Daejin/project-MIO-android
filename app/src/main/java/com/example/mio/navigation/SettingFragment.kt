@@ -93,7 +93,7 @@ class SettingFragment : Fragment() {
         }
 
         binding.policyIntent.setOnClickListener {
-            val url = "https://sites.google.com/daejin.ac.kr/mio/%ED%99%88"
+            val url = "https://github.com/MIO-Privacy-Policy-for-Android/MIO_Privacy_Policy_for_Android"
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse(url)
             }

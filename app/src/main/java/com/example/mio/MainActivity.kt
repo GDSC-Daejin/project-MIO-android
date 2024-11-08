@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import android.util.Log
 import android.view.*
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -261,13 +260,11 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         val sharedPref = this.getSharedPreferences("saveSetting", Context.MODE_PRIVATE)
         isFirstAccountEdit = sharedPref.getString("isFirstAccountEdit", "") ?: "true"
         if (isFirstAccountEdit == "true") {
-            Log.e("isFirstAccountEdit", "true")
             with(sharedPref.edit()) {
                 putString("isFirstAccountEdit", "true")
                 apply() // 비동기적으로 데이터를 저장
             }
         } else {
-            Log.e("isFirstAccountEdit", "false")
             with(sharedPref.edit()) {
                 putString("isFirstAccountEdit", "false")
                 apply() // 비동기적으로 데이터를 저장
@@ -558,7 +555,6 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
             }
 
             override fun onFailure(call: Call<User>, t: Throwable) {
-                Log.e("MainActivity set user", t.message.toString())
                 Toast.makeText(this@MainActivity, "유저 정보를 가져오지 못했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })

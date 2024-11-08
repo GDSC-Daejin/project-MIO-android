@@ -72,7 +72,6 @@ class MoreAreaActivity : AppCompatActivity() {
 
         lifecycleScope.launchWhenStarted {
             viewModel.moreAreaPostData.collect { updatedData ->
-                Log.e("viewmodel area", "$updatedData")
                 updateUI(updatedData)
                 mtAdapter?.updateDataList(updatedData)  // 데이터를 어댑터에 설정
             }
@@ -331,7 +330,7 @@ class MoreAreaActivity : AppCompatActivity() {
                         }
                         else -> {
                             // 추가 조건이 있는 경우 여기에 추가할 수 있음
-                            Log.e("Unknown condition", "Index $i not handled")
+                            //Log.e("Unknown condition", "Index $i not handled")
                         }
                     }
                 }

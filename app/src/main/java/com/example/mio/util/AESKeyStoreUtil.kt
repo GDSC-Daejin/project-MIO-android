@@ -2,7 +2,6 @@ package com.example.mio.util
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.util.Log
 import java.security.KeyStore
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -13,11 +12,11 @@ object AESKeyStoreUtil {
     private fun generateAESKeyInKeystore(): SecretKey {
         val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
         val keyGenParameterSpec = KeyGenParameterSpec.Builder(
-            "MyKeyAlias",  // 키의 별칭
+            "MyKeyAlias",
             KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
         )
-            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)  // AES GCM 모드
-            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)  // 패딩 없음
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
             .build()
 
         keyGenerator.init(keyGenParameterSpec)
@@ -32,7 +31,18 @@ object AESKeyStoreUtil {
     }
 
     fun getOrCreateAESKey(): SecretKey {
-        // 키스토어에서 키를 먼저 로드
         return getSecretKeyFromKeystore() ?: generateAESKeyInKeystore()
     }
+
+    /*fun deleteAESKeyFromKeystore() {
+        try {
+            val keyStore = KeyStore.getInstance("AndroidKeyStore")
+            keyStore.load(null)
+            keyStore.deleteEntry("MyKeyAlias")
+            println("SecretKey deleted from Keystore")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            println("Error deleting SecretKey: ${e.message}")
+        }
+    }*/
 }

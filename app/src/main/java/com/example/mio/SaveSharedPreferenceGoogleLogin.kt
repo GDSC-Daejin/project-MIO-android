@@ -30,7 +30,7 @@ class SaveSharedPreferenceGoogleLogin {
     //alarm key
     private val alarmSetting = "alarm_setting"
 
-    fun setAccount(ctx: Context?, accountBank: String?, secretKey: SecretKey) {
+    fun setAccount(ctx: Context?, accountBank: String?, secretKey: SecretKey) { //은행
         val encryptedAccountBank = AESUtil.encryptAES(secretKey, accountBank ?: "")
         val formatEncrypted = "${encryptedAccountBank.first},${encryptedAccountBank.second}" // ',' 구분자로 변경
         val editor = getSharedPreferences(ctx).edit()

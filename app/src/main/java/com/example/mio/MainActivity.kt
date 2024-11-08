@@ -27,6 +27,7 @@ import com.example.mio.navigation.*
 import com.example.mio.noticeboard.NoticeBoardEditActivity
 import com.example.mio.databinding.ActivityMainBinding
 import com.example.mio.sse.SSEForegroundService
+import com.example.mio.util.AESKeyStoreUtil
 import com.google.android.gms.ads.MobileAds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -66,6 +67,8 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         setContentView(mBinding.root)
         MobileAds.initialize(this@MainActivity) {}
         this.onBackPressedDispatcher.addCallback(this, callback)
+
+        AESKeyStoreUtil.getOrCreateAESKey()
 
         sharedViewModel = ViewModelProvider(this)[SharedViewModel::class.java]
         sharedViewModel.notificationType.observe(this) {

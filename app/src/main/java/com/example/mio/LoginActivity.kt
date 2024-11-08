@@ -74,7 +74,7 @@ class LoginActivity : AppCompatActivity() {
         saveSettingData()
 
         /*mBinding.logoIv.setOnClickListener {
-            throw RuntimeException("Test Crash")
+            AESKeyStoreUtil.deleteAESKeyFromKeystore()
         }*/
 
         mBinding.googleSign.setOnClickListener {
@@ -327,6 +327,7 @@ class LoginActivity : AppCompatActivity() {
             userEmail = email
             saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
             val userInfoToken = TokenRequest(idToken.toString())
+            //Log.e("IdToken", userInfoToken.toString())
             signInCheck(userInfoToken)
         } catch (e: ApiException) {
             loadingDialog?.dismiss()

@@ -62,29 +62,41 @@ class CompleteActivity : AppCompatActivity() {
 
 
             val sb = driverData?.name?.let { it -> StringBuilder(it).also { it.setCharAt(1, '*') } }.toString()
-            val deText : List<String>
+            var deText : List<String> = ArrayList()
             if (driverData?.accountNumber?.contains(" ") == true || driverData?.accountNumber.isNullOrEmpty()) {
-                deText = driverData?.accountNumber?.split(" ")?.map { it } ?: listOf("1","test")
-                if (deText == listOf("1", "test")) {
-                    cBinding.completeDriverAccountNumber.text = getString(R.string.setCompleteActivityAcNum, sb)
-                } else {
-                    cBinding.completeDriverAccountNumber.text = try {
-                        "$sb \n${deText[1]} ${deText[0]}" //학번 , 계좌정보
-                    } catch (e : NullPointerException) {
-                        "$sb \n운전자에게 계좌정보를 확인하세요"
+                try {
+                    deText = driverData?.accountNumber?.split(" ")?.map { it } ?: listOf("1","test")
+                    if (deText == listOf("1", "test")) {
+                        cBinding.completeDriverAccountNumber.text = getString(R.string.setCompleteActivityAcNum, sb)
+                    } else {
+                        cBinding.completeDriverAccountNumber.text = try {
+                            "$sb \n${deText[1]} ${deText[0]}" //학번 , 계좌정보
+                        } catch (e : NullPointerException) {
+                            "$sb \n계좌정보를 등록하지 않은 운전자입니다.\n운전자에게 계좌정보를 확인하세요"
+                        }
                     }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    // 복호화 실패 처리, 오류 메시지 출력 또는 기본 메시지 설정
+                    cBinding.completeDriverAccountNumber.text = this@CompleteActivity.getString(R.string.AccountSettingText2, sb)
                 }
             } else {
-                deText = driverData?.accountNumber.toString().split(",").map { it }
-                val deAText = AESUtil.decryptAES(secretKey, deText[0], deText[1]).split(" ").map { it }
-                //val protectDeText = deText.let { it -> StringBuilder(it).also { it.setCharAt(, '*') } }
-                // 5번째 이후 문자열을 모두 '*'로 바꿈
-                val protectDeText = deAText[0].substring(0, 5) + "*".repeat(deAText[0].length - 5)
+                try {
+                    deText = driverData?.accountNumber.toString().split(",").map { it }
+                    val deAText = AESUtil.decryptAES(secretKey, deText[0], deText[1]).split(" ").map { it }
+                    //val protectDeText = deText.let { it -> StringBuilder(it).also { it.setCharAt(, '*') } }
+                    // 5번째 이후 문자열을 모두 '*'로 바꿈
+                    val protectDeText = deAText[0].substring(0, 5) + "*".repeat(deAText[0].length - 5)
 
-                cBinding.completeDriverAccountNumber.text = try {
-                    "$sb \n${protectDeText} ${deAText[0]}" //학번 , 계좌정보
-                } catch (e : NullPointerException) {
-                    "$sb \n계좌정보를 등록하지 않은 운전자입니다.\n운전자에게 계좌정보를 확인하세요"
+                    cBinding.completeDriverAccountNumber.text = try {
+                        "$sb \n${protectDeText} ${deAText[0]}" //학번 , 계좌정보
+                    } catch (e : NullPointerException) {
+                        "$sb \n계좌정보를 등록하지 않은 운전자입니다.\n운전자에게 계좌정보를 확인하세요"
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    // 복호화 실패 처리, 오류 메시지 출력 또는 기본 메시지 설정
+                    cBinding.completeDriverAccountNumber.text = this@CompleteActivity.getString(R.string.AccountSettingText2, sb)
                 }
             }
 
@@ -103,21 +115,27 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.completeDivideView2.visibility = View.VISIBLE
 
             cBinding.tossBankLl.setOnClickListener {
-                createClipData("${deText[0]} ${deText[1]}")
+                if (deText.isNotEmpty()) {
+                    createClipData("${deText[0]} ${deText[1]}")
+                }
                 if (postCost != null) {
                     deepLink("viva.republica.toss")
                 }
             }
 
             cBinding.kakaoPayLl.setOnClickListener {
-                createClipData("${deText[0]} ${deText[1]}")
+                if (deText.isNotEmpty()) {
+                    createClipData("${deText[0]} ${deText[1]}")
+                }
                 if (postCost != null) {
                     deepLink("com.kakao.talk")
                 }
             }
 
             cBinding.accountTransferLl.setOnClickListener {
-                createClipData("${deText[0]} ${deText[1]}")
+                if (deText.isNotEmpty()) {
+                    createClipData("${deText[0]} ${deText[1]}")
+                }
                 if (postCost != null) {
                     //패키지 이름으로 변경해야함
                     deepLink(userAccount)

@@ -5,7 +5,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -17,9 +16,6 @@ import com.example.mio.navigation.AccountFragment
 import com.example.mio.databinding.ActivityAccountSettingBinding
 import com.example.mio.util.AESKeyStoreUtil
 import com.example.mio.util.AESUtil
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -170,14 +166,22 @@ class AccountSettingActivity : AppCompatActivity() {
                     if (response.body()?.accountNumber.isNullOrEmpty()) {
                         aBinding?.asAccountTv?.text = "화살표를 눌러 계좌를 등록해주세요"
                     } else {
-                        if (response.body()?.accountNumber?.contains(",") != true) {
-                            aBinding?.asAccountTv?.text = response.body()?.accountNumber.toString()
-                            setAccountNumber = response.body()?.accountNumber.toString() //암호화
-                        } else {
-                            val splitEnResponse = response.body()?.accountNumber.toString().split(",").map { it }
-                            val deText = AESUtil.decryptAES(secretKey, splitEnResponse[0], splitEnResponse[1])
-                            aBinding?.asAccountTv?.text = deText
-                            setAccountNumber = response.body()?.accountNumber.toString() //암호화
+                        try {
+                            if (response.body()?.accountNumber?.contains(",") != true) {
+                                aBinding?.asAccountTv?.text = response.body()?.accountNumber.toString()
+                                setAccountNumber = response.body()?.accountNumber.toString()
+                            } else {
+                                val splitEnResponse = response.body()?.accountNumber.toString().split(",").map { it }
+                                // 복호화
+                                val deText = AESUtil.decryptAES(secretKey, splitEnResponse[0], splitEnResponse[1])
+                                aBinding?.asAccountTv?.text = deText
+                                setAccountNumber = deText // 암호화된 값 저장
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            // 복호화 실패 처리, 오류 메시지 출력 또는 기본 메시지 설정
+                            aBinding?.asAccountTv?.text = this@AccountSettingActivity.getString(R.string.AccountSettingText)
+                            setAccountNumber = ""
                         }
                     }
 
@@ -202,36 +206,36 @@ class AccountSettingActivity : AppCompatActivity() {
     private fun editAccountData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val userId = saveSharedPreferenceGoogleLogin.getUserId(this)
+        val enAN = AESUtil.encryptAES(secretKey, setAccountNumber.toString())
+
         sendAccountData = if (setLocation != null) {
-            EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation?.address?.region_3depth_name.toString())
+            EditAccountData(isGender, isSmoker, "${enAN.first},${enAN.second}", setLocation?.address?.region_3depth_name.toString())
         } else {
-            EditAccountData(isGender, isSmoker, setAccountNumber.toString(), setLocation2.toString())
+            EditAccountData(isGender, isSmoker, "${enAN.first},${enAN.second}", setLocation2.toString())
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            RetrofitServerConnect.create(this@AccountSettingActivity).editMyAccountData(userId, sendAccountData!!).enqueue(object : Callback<User> {
-                override fun onResponse(call: Call<User>, response: Response<User>) {
-                    if (response.isSuccessful) {
-                        runOnUiThread {
-                            saveSharedPreferenceGoogleLogin.setArea(this@AccountSettingActivity, sendAccountData?.activityLocation)
+        RetrofitServerConnect.create(this@AccountSettingActivity).editMyAccountData(userId, sendAccountData!!).enqueue(object : Callback<User> {
+            override fun onResponse(call: Call<User>, response: Response<User>) {
+                if (response.isSuccessful) {
+                    runOnUiThread {
+                        saveSharedPreferenceGoogleLogin.setArea(this@AccountSettingActivity, sendAccountData?.activityLocation)
 
-                            val intent = Intent(this@AccountSettingActivity, AccountFragment::class.java).apply {
-                                putExtra("flag", 6)
-                            }
-
-                            setResult(RESULT_OK, intent)
-                            finish() // 액티비티 종료
+                        val intent = Intent(this@AccountSettingActivity, AccountFragment::class.java).apply {
+                            putExtra("flag", 6)
                         }
-                    } else {
-                        Toast.makeText(this@AccountSettingActivity, "계정의 내용 수정에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
-                    }
-                }
 
-                override fun onFailure(call: Call<User>, t: Throwable) {
-                    Toast.makeText(this@AccountSettingActivity, "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
+                        setResult(RESULT_OK, intent)
+                        finish() // 액티비티 종료
+                    }
+                } else {
+                    Toast.makeText(this@AccountSettingActivity, "계정의 내용 수정에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
-            })
-        }
+            }
+
+            override fun onFailure(call: Call<User>, t: Throwable) {
+                Toast.makeText(this@AccountSettingActivity, "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
 
@@ -249,8 +253,7 @@ class AccountSettingActivity : AppCompatActivity() {
 
                     //암호화
                     val accountNumber = it.data?.getStringExtra("AccountNumber") ?: "" //account+bank=entext
-                    val enAccount = AESUtil.encryptAES(secretKey, accountNumber) //entext+lv
-                    Log.e("accountEN", accountNumber)
+
                     val handler = Handler(Looper.getMainLooper())
                     when (it.data?.getIntExtra("flag", -1)) {
                         //add
@@ -261,7 +264,7 @@ class AccountSettingActivity : AppCompatActivity() {
                         }*/
                         2 -> {
                             handler.post {
-                                setAccountNumber = "${enAccount.first},${enAccount.second}"
+                                setAccountNumber = accountNumber
                                 //수정할 수 있으니 보이는건 보이게
                                 aBinding?.asAccountTv?.text = accountNumber
                             }

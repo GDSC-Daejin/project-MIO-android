@@ -3,8 +3,7 @@ package com.example.mio.sse
 import android.app.*
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
-
+import androidx.core.app.NotificationCompat
 
 
 class SSERestartService : Service() {
@@ -13,9 +12,8 @@ class SSERestartService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i("정보태그", "RestartService")
-
         // 알림 생성
+        val builder = NotificationCompat.Builder(this, "channelId")
         /*val builder = NotificationCompat.Builder(this, "channelId")
         builder.setSmallIcon(com.example.mio.R.drawable.top_icon_vector) // 유효한 아이콘 설정
         builder.setContentTitle("SSE Restart Service")
@@ -33,8 +31,11 @@ class SSERestartService : Service() {
         )
         manager.createNotificationChannel(channel)
 
-        /*val notification: Notification = builder.build()
-        startForeground(9, notification)*/
+        val notification: Notification = builder.build()
+
+        // 포그라운드 서비스로 시작
+        startForeground(9, notification)
+
 
         val tempIntent = Intent(this, SSEForegroundService::class.java)
         startService(tempIntent)

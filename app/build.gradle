@@ -50,10 +50,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file('C:\\kotlinStore\\androidReleaseMioKeyStore.jks')
-            storePassword "!bluegagel5676"
-            keyAlias "mio0"
-            keyPassword "!bluegagel5676"
+            storeFile file(properties['STORE_FILE'])
+            storePassword properties['STORE_PASS']
+            keyAlias properties['KEY_ALIAS']
+            keyPassword properties['KEY_PASS']
         }
     }
 

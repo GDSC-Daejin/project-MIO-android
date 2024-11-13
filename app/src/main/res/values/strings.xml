@@ -33,12 +33,14 @@
     <string name="setBottomSheetComment">%1$s님에게</string>
 
     <!--account-->
-    <string name="setUserGrade">%1$s님의 현재 등급은 B 입니다</string>
-    <string name="setUserGrade2">%1$s님의 현재 등급은 %2$s 입니다</string>
+    <string name="setUserGrade">%1$s님의 현재 학점은 B 입니다</string>
+    <string name="setUserGrade2">%1$s님의 현재 학점은 %2$s 입니다</string>
     <string name="setUserDescribe">%1$s님의 프로필</string>
     <string name="privacy_policy_message">정상적인 서비스 이용을 위해 개인정보처리방침에 동의하여주세요. <a href="https://github.com/MIO-Privacy-Policy-for-Android/MIO_Privacy_Policy_for_Android">개인 정보 처리 방침</a></string>
     <string name="AccountSettingText">계좌 정보를 불러올 수 없습니다. 다시 설정해주세요.</string>
     <string name="AccountSettingText2">%1$s님의 계좌 정보를 불러올 수 없습니다. 운전자로 부터 계좌정보를 확인하세요.</string>
+    <string name="AccountCancellationTitle">정말 탈퇴하시겠습니까?</string>
+    <string name="AccountCancellationContent">계정 정보는 복구가 불가능합니다.</string>
 
     <!--complete-->
     <string name="setCompleteActivityAcNum">%1$s \n운전자에게 계좌정보를 확인하세요</string>

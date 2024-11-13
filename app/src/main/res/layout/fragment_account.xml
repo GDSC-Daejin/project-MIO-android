@@ -159,7 +159,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="5dp"
-            android:text="20202020님의 현재 등급은 MIO 교수님 입니다"
+            android:text="20202020님의 현재 학점은 MIO 교수님 입니다"
             android:textColor="@color/mio_gray_8"
             android:fontFamily="@font/pretendard_medium"
             />

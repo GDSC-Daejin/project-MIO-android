@@ -61,24 +61,34 @@ class CompleteActivity : AppCompatActivity() {
             postCost = postData?.postCost
 
 
-            val sb = driverData?.name?.let { it -> StringBuilder(it).also { it.setCharAt(1, '*') } }.toString()
+            var sb = ""
+            if (driverData?.name == "(알 수 없음)") {
+                sb = "(알 수 없음)"
+                Toast.makeText(this@CompleteActivity, "탈퇴한 사용자입니다.", Toast.LENGTH_SHORT).show()
+            } else {
+                sb = driverData?.name?.let { it -> StringBuilder(it).also { it.setCharAt(1, '*') } }.toString()
+            }
             var deText : List<String> = ArrayList()
-            if (driverData?.accountNumber?.contains(" ") == true || driverData?.accountNumber.isNullOrEmpty()) {
-                try {
-                    deText = driverData?.accountNumber?.split(" ")?.map { it } ?: listOf("1","test")
-                    if (deText == listOf("1", "test")) {
-                        cBinding.completeDriverAccountNumber.text = getString(R.string.setCompleteActivityAcNum, sb)
-                    } else {
-                        cBinding.completeDriverAccountNumber.text = try {
-                            "$sb \n${deText[1]} ${deText[0]}" //학번 , 계좌정보
-                        } catch (e : NullPointerException) {
-                            "$sb \n계좌정보를 등록하지 않은 운전자입니다.\n운전자에게 계좌정보를 확인하세요"
+            if (driverData?.accountNumber?.contains(" ") == true || driverData?.accountNumber.isNullOrEmpty() || driverData?.email == "(알 수 없음)") {
+                if (driverData?.email == "(알 수 없음)") {
+                    cBinding.completeDriverAccountNumber.text = "탈퇴한 사용자입니다."
+                } else {
+                    try {
+                        deText = driverData?.accountNumber?.split(" ")?.map { it } ?: listOf("1","test")
+                        if (deText == listOf("1", "test")) {
+                            cBinding.completeDriverAccountNumber.text = getString(R.string.setCompleteActivityAcNum, sb)
+                        } else {
+                            cBinding.completeDriverAccountNumber.text = try {
+                                "$sb \n${deText[1]} ${deText[0]}" //학번 , 계좌정보
+                            } catch (e : NullPointerException) {
+                                "$sb \n계좌정보를 등록하지 않은 운전자입니다.\n운전자에게 계좌정보를 확인하세요"
+                            }
                         }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        // 복호화 실패 처리, 오류 메시지 출력 또는 기본 메시지 설정
+                        cBinding.completeDriverAccountNumber.text = this@CompleteActivity.getString(R.string.AccountSettingText2, sb)
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    // 복호화 실패 처리, 오류 메시지 출력 또는 기본 메시지 설정
-                    cBinding.completeDriverAccountNumber.text = this@CompleteActivity.getString(R.string.AccountSettingText2, sb)
                 }
             } else {
                 try {

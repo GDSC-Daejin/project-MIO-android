@@ -3,8 +3,6 @@ package com.example.mio
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -19,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.mio.model.LoginResponsesData
 import com.example.mio.model.TokenRequest
 import com.example.mio.databinding.ActivityLoginBinding
+import com.example.mio.loading.LoadingProgressDialogManager
 import com.example.mio.model.AccountStatus
 import com.example.mio.model.User
 import com.example.mio.util.AESKeyStoreUtil
@@ -51,8 +50,6 @@ class LoginActivity : AppCompatActivity() {
     private var userEmail = ""
     //
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-    //로딩
-    private var loadingDialog : LoadingProgressDialog? = null
     private lateinit var appUpdateLauncher: ActivityResultLauncher<IntentSenderRequest>
     //체크용
     private var isPolicyAllow : Boolean? = null
@@ -78,22 +75,16 @@ class LoginActivity : AppCompatActivity() {
         }*/
 
         mBinding.googleSign.setOnClickListener {
-            //로딩창 실행
-            loadingDialog = LoadingProgressDialog(this@LoginActivity)
-            loadingDialog?.setCancelable(false)
-            //로딩창
-            loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-            loadingDialog?.window!!.setLayout(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            loadingDialog?.show()
+            LoadingProgressDialogManager.show(this@LoginActivity)
             //initPersonalInformationConsent()
             if (isPolicyAllow != true) {
                 initPersonalInformationConsent()
             } else {
-                signIn()
+                if (canUserLogin()) {
+                    signIn()
+                } else {
+                    Toast.makeText(this, "계정을 탈퇴한 후 30일 동안은 재가입 및 로그인이 제한됩니다.", Toast.LENGTH_LONG).show()
+                }
             }
         }
 
@@ -110,6 +101,24 @@ class LoginActivity : AppCompatActivity() {
 
         // 앱 업데이트 확인 및 유도
         checkForAppUpdate()
+    }
+
+    private fun canUserLogin(): Boolean {
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(this@LoginActivity)
+
+        if (userId == -1) {
+            val deletionDate = saveSharedPreferenceGoogleLogin.getDeleteAccountDate(this@LoginActivity)
+            if (deletionDate != -1L) {
+                val currentTime = System.currentTimeMillis()
+                val daysSinceDeletion = (currentTime - deletionDate) / (1000 * 60 * 60 * 24)
+
+                if (daysSinceDeletion < 30) {
+                    // 30일이 지나지 않으면 로그인 불가
+                    return false
+                }
+            }
+        }
+        return true // 로그인 가능
     }
 
     @RequiresApi(Build.VERSION_CODES.P)
@@ -147,10 +156,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         dialogLeftBtn.setOnClickListener {
-            if (loadingDialog != null && loadingDialog!!.isShowing) {
-                loadingDialog?.dismiss()
-                loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-            }
+            LoadingProgressDialogManager.hide()
             Toast.makeText(this@LoginActivity, "서비스 이용이 제한됩니다.", Toast.LENGTH_SHORT).show()
             with(sharedPref.edit()) {
                 putBoolean("isPolicyAllow", false)
@@ -184,19 +190,13 @@ class LoginActivity : AppCompatActivity() {
                     startActivity(intent)
                     this@LoginActivity.finish()
                 } else {
-                    if (loadingDialog != null && loadingDialog!!.isShowing) {
-                        loadingDialog?.dismiss()
-                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                    }
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(this@LoginActivity, "승인 확인 데이터 전송에 실패하였습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<User>, t: Throwable) {
-                if (loadingDialog != null && loadingDialog!!.isShowing) {
-                    loadingDialog?.dismiss()
-                    loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                }
+                LoadingProgressDialogManager.hide()
                 Toast.makeText(this@LoginActivity, "예상치 못한 오류가 발생했습니다. ${t.message}}", Toast.LENGTH_SHORT).show()
             }
         })
@@ -234,10 +234,7 @@ class LoginActivity : AppCompatActivity() {
                             .addInterceptor(HeaderInterceptor(response.body()!!.accessToken))
                         builder.build()
 
-                        if (loadingDialog != null && loadingDialog!!.isShowing) {
-                            loadingDialog?.dismiss()
-                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                        }
+                        LoadingProgressDialogManager.hide()
 
                         if (isFirst != true) {
                             val sharedPref = this@LoginActivity.getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
@@ -254,18 +251,12 @@ class LoginActivity : AppCompatActivity() {
                         }
                     }
                 } else {
-                    if (loadingDialog != null && loadingDialog!!.isShowing) {
-                        loadingDialog?.dismiss()
-                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                    }
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
             override fun onFailure(call: Call<LoginResponsesData>, t: Throwable) {
-                if (loadingDialog != null && loadingDialog!!.isShowing) {
-                    loadingDialog?.dismiss()
-                    loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                }
+                LoadingProgressDialogManager.hide()
                 Toast.makeText(this@LoginActivity, "로그인에 오류가 발생하였습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
             }
         })
@@ -301,14 +292,14 @@ class LoginActivity : AppCompatActivity() {
                 if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true || userEmailMap?.contains("sonms5676") == true) {
                     handleSignInResult(task)
                 } else {
-                    loadingDialog?.dismiss()
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
                     mGoogleSignInClient.signOut().addOnCompleteListener {
                         signIn() // Prompt for sign-in again
                     }
                 }
             } else {
-                loadingDialog?.dismiss()
+                LoadingProgressDialogManager.hide()
                 Toast.makeText(this, "로그인에 실패하였습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                 mGoogleSignInClient.signOut().addOnCompleteListener {
                     signIn() // Prompt for sign-in again
@@ -330,7 +321,7 @@ class LoginActivity : AppCompatActivity() {
             //Log.e("IdToken", userInfoToken.toString())
             signInCheck(userInfoToken)
         } catch (e: ApiException) {
-            loadingDialog?.dismiss()
+            LoadingProgressDialogManager.hide()
             Toast.makeText(this, "로그인에 오류가 발생했습니다. ${e.statusCode}", Toast.LENGTH_SHORT).show()
         }
     }
@@ -343,10 +334,7 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        if (loadingDialog != null && loadingDialog!!.isShowing) {
-            loadingDialog?.dismiss()
-            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-        }
+        LoadingProgressDialogManager.hide()
     }
 
     override fun onDestroy() {

@@ -15,12 +15,16 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import com.example.mio.OpenSourceManagementActivity
-import com.example.mio.SaveSharedPreferenceGoogleLogin
+import com.example.mio.*
 import com.example.mio.databinding.FragmentSettingBinding
+import com.example.mio.loading.LoadingProgressDialogManager
+import com.example.mio.model.User
 import com.example.mio.sse.SSEForegroundService
 import com.example.mio.viewmodel.SharedViewModel
 import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -40,8 +44,9 @@ class SettingFragment : Fragment() {
     private lateinit var binding : FragmentSettingBinding
     private var sharedPreference = SaveSharedPreferenceGoogleLogin()
     private var serviceIntent: Intent? = null
-
     private lateinit var sharedViewModel : SharedViewModel
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,32 +68,6 @@ class SettingFragment : Fragment() {
             sharedPreference.setSharedAlarm(requireActivity(), check)
             if (sharedPreference.getSharedAlarm(requireActivity())) {
                 requestIgnoreBatteryOptimization()
-                /*Log.e("switch", "start service")
-                //foreground실행행
-                serviceIntent =
-                    Intent(requireActivity(), SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
-
-
-                //절전사용금지앱
-                val pm = requireActivity().applicationContext.getSystemService(AppCompatActivity.POWER_SERVICE) as PowerManager
-                var isWhiteListing = false
-                isWhiteListing = pm.isIgnoringBatteryOptimizations(requireActivity().applicationContext.packageName)
-                if (!isWhiteListing) {
-                    val intent = Intent()
-                    intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-                    intent.data = Uri.parse("package:" + requireActivity().applicationContext.packageName)
-                    startActivity(intent)
-                }
-
-                if (!foregroundServiceRunning()) { // 이미 작동중인 동일한 서비스가 없다면 실행
-                    serviceIntent =
-                        Intent(requireActivity(), SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) { // 빌드 버전코드 "O" 보다 높은 버전일 경우
-                        requireActivity().startService(serviceIntent) // 서비스 인텐트를 전달한 서비스 시작 메서드 실행
-                    }
-                } else {
-                    serviceIntent = SSEForegroundService().serviceIntent
-                }*/
             }
         }
 
@@ -111,6 +90,56 @@ class SettingFragment : Fragment() {
         binding.openSourceLicense2.setOnClickListener {
             val intent = Intent(requireActivity(), OpenSourceManagementActivity::class.java)
             startActivity(intent)
+        }
+
+        binding.accountCancellation.setOnClickListener {
+            LoadingProgressDialogManager.show(requireContext())
+            val layoutInflater = LayoutInflater.from(requireContext())
+            val dialogView = layoutInflater.inflate(R.layout.account_cancellation_dialog_layout, null)
+            val alertDialog = android.app.AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
+                .setView(dialogView)
+                .create()
+            val dialogCancelBtn = dialogView.findViewById<View>(R.id.dialog_left_btn)
+            val dialogAcceptBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
+
+
+            dialogCancelBtn.setOnClickListener {
+                alertDialog.dismiss()
+            }
+
+
+            dialogAcceptBtn.setOnClickListener {
+                RetrofitServerConnect.create(requireContext()).deleteAccountData(sharedPreference.getUserId(requireContext())).enqueue(object :
+                    Callback<User> {
+                    override fun onResponse(call: Call<User>, response: Response<User>) {
+                        if (response.isSuccessful) {
+                            LoadingProgressDialogManager.hide()
+                            Toast.makeText(requireContext(), "MIO를 이용해 주셔서 감사합니다.", Toast.LENGTH_SHORT).show()
+
+                            // SharedPreference에서 사용자 정보를 삭제하고 로그아웃 처리
+                            sharedPreference.clearUserData(requireContext())
+
+                            sharedPreference.setUserId(requireContext(), -1)
+                            sharedPreference.setDeleteAccountDate(requireContext(), System.currentTimeMillis())
+
+                            // 로그인 화면으로 이동 및 모든 스택 제거
+                            val loginIntent = Intent(requireContext(), LoginActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            }
+                            startActivity(loginIntent)
+                        }
+                    }
+
+                    override fun onFailure(call: Call<User>, t: Throwable) {
+                        LoadingProgressDialogManager.hide()
+                        Toast.makeText(requireContext(), "탈퇴 요청에 실패했습니다. 다시 시도해 주세요.", Toast.LENGTH_SHORT).show()
+                    }
+                })
+                alertDialog.dismiss()
+            }
+
+
+            alertDialog.show()
         }
 
         return binding.root

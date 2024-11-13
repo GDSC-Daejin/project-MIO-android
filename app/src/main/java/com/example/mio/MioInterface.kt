@@ -144,6 +144,10 @@ interface MioInterface {
     @PATCH("/user/{userId}")
     fun editMyAccountData(@Path("userId") userId : Int, @Body editData : EditAccountData) : Call<User>
 
+    //유저 정보 삭제
+    @PATCH("/user/delete/{userId}")
+    fun deleteAccountData(@Path("userId") userId : Int) : Call<User>
+
     ///////////////////////////
     //포스트 id로 참가 신청한 내역 가져오기
     @GET("/{postId}/participants")

@@ -19,6 +19,7 @@ class SaveSharedPreferenceGoogleLogin {
 
     private val privateProfileUserId = "profileUserId"
     private val privateUserAccountName = "privateUserAccountName"
+    private val accountDeletionDate = "accountDeletionDate"
 
     /*private val isGender = "geneder"
     private val isSchool = "school"
@@ -29,6 +30,23 @@ class SaveSharedPreferenceGoogleLogin {
 
     //alarm key
     private val alarmSetting = "alarm_setting"
+
+
+    fun clearUserData(ctx: Context?) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.clear()
+        editor.apply()
+    }
+
+    fun getDeleteAccountDate(ctx: Context?): Long {
+        return getSharedPreferences(ctx).getLong(accountDeletionDate, System.currentTimeMillis())
+    }
+    //알람 set
+    fun setDeleteAccountDate(ctx: Context?, deleteDate: Long) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putLong(accountDeletionDate, deleteDate)
+        editor.apply()
+    }
 
     fun setAccount(ctx: Context?, accountBank: String?, secretKey: SecretKey) { //은행
         val encryptedAccountBank = AESUtil.encryptAES(secretKey, accountBank ?: "")
@@ -174,7 +192,7 @@ class SaveSharedPreferenceGoogleLogin {
         editor.apply()
     }
     fun getUserId(ctx: Context?): Int {
-        return getSharedPreferences(ctx).getInt(privateUserId, 0)
+        return getSharedPreferences(ctx).getInt(privateUserId, -1)
     }
 
     fun setProfileUserId(ctx: Context?, userId: Int?) {
@@ -184,13 +202,6 @@ class SaveSharedPreferenceGoogleLogin {
     }
     fun getProfileUserId(ctx: Context?): Int {
         return getSharedPreferences(ctx).getInt(privateProfileUserId, 0)
-    }
-
-    // 로그아웃
-    fun clearUserEMAIL(ctx: Context?) {
-        val editor = getSharedPreferences(ctx).edit()
-        editor.clear()
-        editor.apply()
     }
 
     fun setLastBottomSheetTime(ctx: Context?, time: Long?) {

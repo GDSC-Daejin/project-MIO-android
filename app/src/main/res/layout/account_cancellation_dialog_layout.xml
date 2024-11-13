@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:background="@drawable/dialog_round_background"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/cancel_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/AccountCancellationTitle"
+            android:layout_margin="10dp"
+            android:textSize="18sp"
+            android:paddingBottom="8dp"
+            android:gravity="center"
+            android:textColor="@color/mio_gray_10"
+            android:fontFamily="@font/pretendard_bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/cancel_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/AccountCancellationContent"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:fontFamily="@font/pretendard_medium"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="15dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_gravity="bottom"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/dialog_left_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/pretendard_medium"
+                android:background="@drawable/round_btn_layout"
+                android:backgroundTint="@color/mio_gray_1"
+                android:text="계속 사용하기"
+                android:textColor="@color/mio_gray_10"
+                style="?android:attr/buttonBarButtonStyle" />
+
+            <Button
+                android:id="@+id/dialog_right_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/round_btn_layout"
+                android:backgroundTint="@color/mio_gray_1"
+                android:fontFamily="@font/pretendard_medium"
+                android:text="네, 탈퇴할게요"
+                android:textColor="@color/mio_blue_5"
+                style="?android:attr/buttonBarButtonStyle" />
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <!--<Button
+        android:id="@+id/accept_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="권한 허용"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/message_text"
+        android:layout_marginTop="16dp"/>
+
+    <Button
+        android:id="@+id/cancel_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="취소"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/accept_button"
+        android:layout_marginTop="8dp"/>-->
+
+</androidx.constraintlayout.widget.ConstraintLayout>

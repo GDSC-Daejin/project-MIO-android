@@ -1,18 +1,19 @@
-package com.example.mio
+package com.example.mio.loading
 
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
 import android.view.ViewGroup
 import android.view.Window
+import com.example.mio.R
 
 
 class LoadingProgressDialog(context: Context?) : Dialog(context!!) {
+    init {
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 다이얼 로그 제목을 안보이게...
-        requestWindowFeature(Window.FEATURE_NO_TITLE)
-
         val window = this.window
 
         window?.setLayout(

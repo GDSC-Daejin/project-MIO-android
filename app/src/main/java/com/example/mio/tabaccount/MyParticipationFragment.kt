@@ -1,23 +1,24 @@
 package com.example.mio.tabaccount
 
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mio.*
+import com.example.mio.RetrofitServerConnect
 import com.example.mio.adapter.MyAccountParticipationAdapter
-import com.example.mio.model.*
-import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentMyParticipationBinding
+import com.example.mio.loading.LoadingProgressDialogManager
+import com.example.mio.model.Content
+import com.example.mio.model.ParticipationData
+import com.example.mio.model.PostData
+import com.example.mio.noticeboard.NoticeBoardReadActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,8 +46,6 @@ class MyParticipationFragment : Fragment() { //두번쨰
 
 
     private lateinit var mpBinding : FragmentMyParticipationBinding
-    //로딩창
-    private var loadingDialog : LoadingProgressDialog? = null
 
     private var myAdapter : MyAccountParticipationAdapter? = null
     //자신이 신청한 예약의 게시글 정보를 순서대로 담은 데이터 변수
@@ -100,17 +99,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
         return mpBinding.root
     }
     private fun initMyParticipationRecyclerView() {
-        //로딩창 실행
-        loadingDialog = LoadingProgressDialog(activity)
-        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        //로딩창
-        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-        loadingDialog?.window!!.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        loadingDialog?.show()
+        LoadingProgressDialogManager.show(requireContext())
 
         CoroutineScope(Dispatchers.IO).launch {
             setMyParticipationData()
@@ -150,11 +139,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
                     myParticipationAllData.clear()
 
                     if (responseData.isNullOrEmpty()) {
-                        loadingDialog?.dismiss()
-                        if (loadingDialog != null && loadingDialog!!.isShowing) {
-                            loadingDialog?.dismiss()
-                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                        }
+                        LoadingProgressDialogManager.hide()
                         if (myParticipationAllData.size > 0) {
                             mpBinding.accountParticipationNotDataLl.visibility = View.GONE
                             mpBinding.participationAccountSwipe.visibility = View.VISIBLE
@@ -176,8 +161,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
 
 
                 } else {
-                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                    loadingDialog?.dismiss()
+                    LoadingProgressDialogManager.hide()
                     if (myParticipationAllData.size > 0) {
                         mpBinding.accountParticipationNotDataLl.visibility = View.GONE
                         mpBinding.participationAccountSwipe.visibility = View.VISIBLE
@@ -191,8 +175,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
             }
 
             override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
-                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                loadingDialog?.dismiss()
+                LoadingProgressDialogManager.hide()
                 if (myParticipationAllData.size > 0) {
                     mpBinding.accountParticipationNotDataLl.visibility = View.GONE
                     mpBinding.participationAccountSwipe.visibility = View.VISIBLE
@@ -207,12 +190,7 @@ class MyParticipationFragment : Fragment() { //두번쨰
     }
 
     private fun updateUI() {
-        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        loadingDialog?.dismiss()
-        if (loadingDialog != null && loadingDialog!!.isShowing) {
-            loadingDialog?.dismiss()
-            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-        }
+        LoadingProgressDialogManager.hide()
         myAdapter?.updateDataList(myParticipationAllData)
         if (myParticipationAllData.size > 0) {
             mpBinding.accountParticipationNotDataLl.visibility = View.GONE

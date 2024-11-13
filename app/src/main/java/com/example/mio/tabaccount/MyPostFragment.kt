@@ -1,33 +1,32 @@
 package com.example.mio.tabaccount
 
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mio.*
+import com.example.mio.RetrofitServerConnect
+import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.adapter.MyAccountPostAdapter
+import com.example.mio.databinding.FragmentMyPostBinding
+import com.example.mio.loading.LoadingProgressDialogManager
 import com.example.mio.model.PostData
 import com.example.mio.model.PostReadAllResponse
 import com.example.mio.noticeboard.NoticeBoardReadActivity
-import com.example.mio.databinding.FragmentMyPostBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import kotlin.collections.ArrayList
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -62,8 +61,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
     private var getExpireDate = ""
     private var email = ""
     private var userId = ""
-    //로딩창
-    private var loadingDialog : LoadingProgressDialog? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -162,15 +160,12 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                     }
                     // 새로 고침 완료 및 터치 가능하게 설정
                     pBinding.accountSwipe.isRefreshing = false
-                    requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                    loadingDialog?.dismiss()
+                    LoadingProgressDialogManager.hide()
 
                 } else {
                     requireActivity().runOnUiThread {
                         if (isAdded && !requireActivity().isFinishing) {
-                            loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                            loadingDialog?.dismiss()
+                            LoadingProgressDialogManager.hide()
                             Toast.makeText(requireActivity(), "게시글 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -180,8 +175,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
                 requireActivity().runOnUiThread {
                     if (isAdded && !requireActivity().isFinishing) {
-                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                        loadingDialog?.dismiss()
+                        LoadingProgressDialogManager.hide()
                         Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -190,18 +184,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
     }
 
     private fun initMyRecyclerView() {
-        //로딩창 실행
-        loadingDialog = LoadingProgressDialog(activity)
-        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        //로딩창
-        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-        loadingDialog?.window!!.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        loadingDialog?.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        loadingDialog?.show()
+        LoadingProgressDialogManager.show(requireContext())
         setMyPostData()
         myAdapter = MyAccountPostAdapter()
         //myAdapter!!.myPostItemData = myAccountPostAllData
@@ -317,8 +300,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                         } else {
                             requireActivity().runOnUiThread {
                                 if (isAdded && !requireActivity().isFinishing) {
-                                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                                    loadingDialog?.dismiss()
+                                    LoadingProgressDialogManager.hide()
                                     Toast.makeText(requireActivity(), "게시글 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                                 }
                             }
@@ -330,8 +312,7 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
                         isLoading = false
                         requireActivity().runOnUiThread {
                             if (isAdded && !requireActivity().isFinishing) {
-                                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                                loadingDialog?.dismiss()
+                                LoadingProgressDialogManager.hide()
                                 Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                             }
                         }

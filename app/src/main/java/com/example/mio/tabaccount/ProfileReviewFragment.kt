@@ -1,20 +1,20 @@
 package com.example.mio.tabaccount
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mio.*
+import com.example.mio.RetrofitServerConnect
+import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.adapter.ProfileReviewAdapter
+import com.example.mio.databinding.FragmentProfileReviewBinding
+import com.example.mio.loading.LoadingProgressDialogManager
 import com.example.mio.model.MyAccountReviewData
 import com.example.mio.viewmodel.ReviewViewModel
-import com.example.mio.databinding.FragmentProfileReviewBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -40,8 +40,7 @@ class ProfileReviewFragment : Fragment() {
     //private var profileReviewAllData = ArrayList<MyAccountReviewData>()
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     private lateinit var viewModel: ReviewViewModel
-    //로딩
-    private var loadingDialog : LoadingProgressDialog? = null
+
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var profileUserId : Int? = null
 
@@ -115,10 +114,7 @@ class ProfileReviewFragment : Fragment() {
 
     private fun updateUI2(reviews: List<MyAccountReviewData>) {
         viewModel.setLoading(false)
-        if (loadingDialog != null && loadingDialog?.isShowing == true) {
-            loadingDialog?.dismiss()
-            loadingDialog = null
-        }
+        LoadingProgressDialogManager.hide()
 
         if (reviews.isNotEmpty()) {
             prBinding.profileReviewNotDataLl.visibility = View.GONE
@@ -143,24 +139,9 @@ class ProfileReviewFragment : Fragment() {
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
             if (isLoading) {
                 // 로딩 다이얼로그를 생성하고 표시
-                if (loadingDialog == null) {
-                    loadingDialog = LoadingProgressDialog(requireActivity())
-                    loadingDialog?.setCancelable(false)
-                    loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                    loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog
-                    loadingDialog?.window!!.setLayout(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    loadingDialog?.show()
-                }
+                LoadingProgressDialogManager.show(requireContext())
             } else {
-                // 로딩 다이얼로그를 해제
-                if (loadingDialog != null && loadingDialog?.isShowing == true)  {
-                    loadingDialog?.dismiss()
-                    loadingDialog = null
-                }
-
+                LoadingProgressDialogManager.hide()
             }
         }
 

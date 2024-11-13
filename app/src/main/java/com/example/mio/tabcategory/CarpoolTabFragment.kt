@@ -1,6 +1,5 @@
 package com.example.mio.tabcategory
 
-import com.example.mio.adapter.CurrentCarpoolAdapter
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -8,7 +7,10 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,11 +23,18 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import com.example.mio.*
-import com.example.mio.adapter.*
-import com.example.mio.model.*
+import com.example.mio.adapter.CalendarAdapter
+import com.example.mio.adapter.CurrentCarpoolAdapter
+import com.example.mio.adapter.NoticeBoardAdapter
+import com.example.mio.adapter.NoticeBoardMyAreaAdapter
+import com.example.mio.databinding.FragmentCarpoolTabBinding
+import com.example.mio.loading.LoadingProgressDialogManager
+import com.example.mio.model.Content
+import com.example.mio.model.DateData
+import com.example.mio.model.PostData
+import com.example.mio.model.PostReadAllResponse
 import com.example.mio.noticeboard.NoticeBoardEditActivity
 import com.example.mio.noticeboard.NoticeBoardReadActivity
-import com.example.mio.databinding.FragmentCarpoolTabBinding
 import com.example.mio.viewmodel.CurrentDataViewModel
 import com.example.mio.viewmodel.SharedViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -41,7 +50,7 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
-import kotlin.collections.ArrayList
+
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
@@ -89,9 +98,6 @@ class CarpoolTabFragment : Fragment() {
     //edit에서 받은 값
     //private var selectCalendarData = HashMap<String, ArrayList<PostData>>()
     private var testselectCalendarData = HashMap<String, ArrayList<PostData>>()
-
-    //로딩창
-    private var loadingDialog : LoadingProgressDialog? = null
 
     //처음 시작 시 계정 수정요청용
     private var isFirstAccountEdit : String? = null
@@ -143,7 +149,6 @@ class CarpoolTabFragment : Fragment() {
                     dataPosition = position
                     when(status) {
                         CurrentCarpoolAdapter.PostStatus.Passenger -> {//내가 손님으로 카풀이 완료되었을 떄
-                            Log.d("Carpool", "Passenger")
                             intent = Intent(activity, CompleteActivity::class.java).apply {
                                 putExtra("type", "PASSENGER")
                                 putExtra("postDriver", temp?.user)
@@ -155,7 +160,6 @@ class CarpoolTabFragment : Fragment() {
                         }
 
                         CurrentCarpoolAdapter.PostStatus.Driver -> { //내가 운전자로 카풀이 완료되었을 떄
-                            Log.d("Carpool", "Driver")
                             intent = Intent(activity, CompleteActivity::class.java).apply {
                                 putExtra("type", "DRIVER")
                                 putExtra("postData", currentTaxiAllData[position])
@@ -166,7 +170,6 @@ class CarpoolTabFragment : Fragment() {
                         }
 
                         CurrentCarpoolAdapter.PostStatus.Neither -> {
-                            Log.d("Carpool", "Neither")
                             intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
                                 putExtra("type", "READ")
                                 putExtra("postItem", temp)
@@ -379,17 +382,8 @@ class CarpoolTabFragment : Fragment() {
             testselectCalendarData = textValue
         }
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
-        //로딩창 실행
-        loadingDialog = LoadingProgressDialog(activity)
-        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        //로딩창
-        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-        loadingDialog?.window!!.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        loadingDialog?.show()
+
+        LoadingProgressDialogManager.show(requireContext())
 
         setData()
 
@@ -667,10 +661,10 @@ class CarpoolTabFragment : Fragment() {
                         }
 
                         //calendarAdapter!!.notifyDataSetChanged()
-                        loadingDialog?.dismiss()
+                        LoadingProgressDialogManager.hide()
                     }
                 } else {
-                    loadingDialog?.dismiss()
+                    LoadingProgressDialogManager.hide()
                     if (carpoolAllData.isEmpty()) {
                         taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                         taxiTabBinding.noticeBoardRV.visibility = View.GONE
@@ -682,7 +676,7 @@ class CarpoolTabFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                loadingDialog?.dismiss()
+                LoadingProgressDialogManager.hide()
                 if (carpoolAllData.isEmpty()) {
                     taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                     taxiTabBinding.noticeBoardRV.visibility = View.GONE
@@ -746,7 +740,7 @@ class CarpoolTabFragment : Fragment() {
                             //Log.e("morearea", moreAreaData.toString())
                             noticeBoardMyAreaAdapter!!.postAreaItemData = myAreaItemData
                             noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
-                            loadingDialog?.dismiss()
+                            LoadingProgressDialogManager.hide()
                         }
 
                         if (myAreaItemData.isNotEmpty()) {
@@ -860,14 +854,9 @@ class CarpoolTabFragment : Fragment() {
                         taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
                     }
 
-                    loadingDialog?.dismiss()
+                    LoadingProgressDialogManager.hide()
 
                 } else {
-                    println("faafa")
-                    Log.d("add", response.errorBody()?.string()!!)
-                    Log.d("message", call.request().toString())
-                    Log.d("f", response.code().toString())
-
                     if (response.code().toString() == "500") {
                         if (response.errorBody()?.string() != null) {
                             taxiTabBinding.currentRv.visibility = View.GONE
@@ -887,7 +876,6 @@ class CarpoolTabFragment : Fragment() {
                                 }
                             }
                             taxiTabBinding.carpoolText.setOnClickListener {
-                                Log.d("carpoolText", "clcickckckc")
                                 lifecycleScope.launch {
                                     setCurrentCarpoolData()
                                 }
@@ -905,10 +893,12 @@ class CarpoolTabFragment : Fragment() {
                         taxiTabBinding.nonCurrentRvTv.visibility = View.GONE
                         taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
                     }
+                    LoadingProgressDialogManager.hide()
                 }
             }
 
             override fun onFailure(call: Call<List<Content>>, t: Throwable) {
+                LoadingProgressDialogManager.hide()
                 taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE
                 taxiTabBinding.nonCurrentRvTv.text = "예상치 못한 오류가 발생했습니다"
                 taxiTabBinding.nonCurrentRvTv2.visibility = View.VISIBLE
@@ -1001,10 +991,7 @@ class CarpoolTabFragment : Fragment() {
     override fun onDestroy() {
         super.onDestroy()
 
-        //다이얼로그가 띄워져 있는 상태(showing)인 경우 dismiss() 호출
-        if (loadingDialog != null && loadingDialog!!.isShowing) {
-            loadingDialog!!.dismiss()
-        }
+        LoadingProgressDialogManager.hide()
     }
 
     companion object {

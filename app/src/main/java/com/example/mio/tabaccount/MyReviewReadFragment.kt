@@ -1,22 +1,21 @@
 package com.example.mio.tabaccount
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mio.*
+import com.example.mio.RetrofitServerConnect
+import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.adapter.MyReviewAdapter
-import com.example.mio.model.*
 import com.example.mio.databinding.FragmentMyReviewReadBinding
+import com.example.mio.loading.LoadingProgressDialogManager
+import com.example.mio.model.MyAccountReviewData
 import com.example.mio.viewmodel.MyReviewReadViewModel
 import retrofit2.Call
 import retrofit2.Callback
@@ -42,8 +41,7 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
     private var reviewAdapter : MyReviewAdapter? = null
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     private lateinit var viewModel: MyReviewReadViewModel
-    //로딩
-    private var loadingDialog : LoadingProgressDialog? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -78,31 +76,15 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
 
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
             if (isLoading) {
-                // 로딩 다이얼로그를 생성하고 표시
-                if (loadingDialog == null) {
-                    loadingDialog = LoadingProgressDialog(requireActivity())
-                    loadingDialog?.setCancelable(false)
-                    loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                    loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog
-                    loadingDialog?.window!!.setLayout(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    loadingDialog?.show()
-                }
+                LoadingProgressDialogManager.show(requireContext())
             } else {
-                // 로딩 다이얼로그를 해제
-                if (loadingDialog != null && loadingDialog?.isShowing == true)  {
-                    loadingDialog?.dismiss()
-                    loadingDialog = null
-                }
-
+                LoadingProgressDialogManager.hide()
             }
         }
 
         viewModel.error.observe(viewLifecycleOwner) { errorMessage ->
             if (errorMessage != null) {
-                Log.e("error observe", errorMessage)
+                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -110,10 +92,7 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
 
     private fun updateUI2(reviews: List<MyAccountReviewData>) {
         viewModel.setLoading(false)
-        if (loadingDialog != null && loadingDialog?.isShowing == true) {
-            loadingDialog?.dismiss()
-            loadingDialog = null
-        }
+        LoadingProgressDialogManager.hide()
 
         if (reviews.isNotEmpty()) {
             mrBinding.readReviewPostNotDataLl.visibility = View.GONE
@@ -144,8 +123,7 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
                 } else {
                     requireActivity().runOnUiThread {
                         if (isAdded && !requireActivity().isFinishing) {
-                            loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                            loadingDialog?.dismiss()
+                            LoadingProgressDialogManager.hide()
                             updateUI2(emptyList())
                         }
                     }
@@ -155,8 +133,7 @@ class MyReviewReadFragment : Fragment() { //내가 받은 리뷰 보는 곳
             override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
                 requireActivity().runOnUiThread {
                     if (isAdded && !requireActivity().isFinishing) {
-                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                        loadingDialog?.dismiss()
+                        LoadingProgressDialogManager.hide()
                         updateUI2(emptyList())
                     }
                 }

@@ -1,12 +1,9 @@
 package com.example.mio.noticeboard
 
-import com.example.mio.viewmodel.CommentsViewModel
 import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.*
@@ -34,14 +31,15 @@ import com.example.mio.*
 import com.example.mio.adapter.NoticeBoardReadAdapter
 import com.example.mio.bottomsheetfragment.BottomSheetCommentFragment
 import com.example.mio.bottomsheetfragment.ReadSettingBottomSheet2Fragment
+import com.example.mio.databinding.ActivityNoticeBoardReadBinding
 import com.example.mio.helper.*
+import com.example.mio.loading.LoadingProgressDialogManager
 import com.example.mio.model.*
 import com.example.mio.tabaccount.ProfileActivity
 import com.example.mio.tabcategory.MoreCarpoolTabActivity
 import com.example.mio.tabcategory.MoreTaxiTabActivity
-import com.example.mio.databinding.ActivityNoticeBoardReadBinding
+import com.example.mio.viewmodel.CommentsViewModel
 import com.example.mio.viewmodel.SharedViewModel
-import com.google.android.gms.ads.AdRequest
 import com.google.android.material.chip.Chip
 import kotlinx.coroutines.*
 import retrofit2.*
@@ -49,7 +47,6 @@ import java.text.SimpleDateFormat
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
-import kotlin.collections.ArrayList
 
 
 class NoticeBoardReadActivity : AppCompatActivity() {
@@ -91,8 +88,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
     private var email = ""
 
     private var writerEmail = ""
-
-    private var loadingDialog : LoadingProgressDialog? = null
 
     private var sharedViewModel : SharedViewModel? = null
     private var sharedPref : SharedPref? = null
@@ -217,8 +212,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             target: com.bumptech.glide.request.target.Target<Drawable>?,
                             isFirstResource: Boolean
                         ): Boolean {
-                            Log.d("Glide", "Image load failed: ${e?.message}")
-                            println(e?.message.toString())
+                            nbrBinding.readUserCheckIv.visibility = View.GONE
                             return false
                         }
 
@@ -229,7 +223,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                             dataSource: DataSource?,
                             isFirstResource: Boolean
                         ): Boolean {
-                            println("glide")
                             return false
                         }
                     })
@@ -405,15 +398,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                             if (response.isSuccessful) {
                                                 Log.d("noticeboardread", response.code().toString())
                                             } else {
-                                                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                                                loadingDialog?.dismiss()
+                                                LoadingProgressDialogManager.hide()
                                                 Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패했습니다 ${response.code()}", Toast.LENGTH_SHORT).show()
                                             }
                                         }
 
                                         override fun onFailure(call: Call<Void>, t: Throwable) {
-                                            loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                                            loadingDialog?.dismiss()
+                                            LoadingProgressDialogManager.hide()
                                             Toast.makeText(this@NoticeBoardReadActivity, "연결에 실패했습니다 ${t.message}", Toast.LENGTH_SHORT).show()
                                         }
                                     })
@@ -906,16 +897,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     if (response.isSuccessful) {
                         initMyBookmarkData()
                     } else {
-                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                        loadingDialog?.dismiss()
+                        LoadingProgressDialogManager.hide()
                         Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패하였습니다 ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<Void>, t: Throwable) {
-                    Log.d("error", t.toString())
-                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                    loadingDialog?.dismiss()
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(this@NoticeBoardReadActivity, "연결에 실패하였습니다 ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
@@ -965,25 +953,9 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         commentsViewModel.loading.observe(this) { isLoading ->
             if (isLoading) {
-                // 로딩 다이얼로그를 생성하고 표시
-                if (loadingDialog == null) {
-                    loadingDialog = LoadingProgressDialog(this)
-                    loadingDialog?.setCancelable(false)
-                    loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                    loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog
-                    loadingDialog?.window!!.setLayout(
-                        LayoutParams.MATCH_PARENT,
-                        LayoutParams.MATCH_PARENT
-                    )
-                    loadingDialog?.show()
-                }
-
+                LoadingProgressDialogManager.show(this@NoticeBoardReadActivity)
             } else {
-                // 로딩 다이얼로그를 해제
-                if (loadingDialog != null && loadingDialog?.isShowing == true)  {
-                    loadingDialog?.dismiss()
-                    loadingDialog = null
-                }
+                LoadingProgressDialogManager.hide()
                 nbrBinding.readSwipe.isRefreshing = false
                 this.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
             }
@@ -1199,15 +1171,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         }
                     }
                 } else {
-                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                    loadingDialog?.dismiss()
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(this@NoticeBoardReadActivity, "게시글 정보를 가져오는데 실패하였습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<Content>, t: Throwable) {
-                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                loadingDialog?.dismiss()
+                LoadingProgressDialogManager.hide()
                 Toast.makeText(this@NoticeBoardReadActivity, "연결에 실패하였습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
@@ -1234,15 +1204,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         }
                     }
                 } else {
-                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                    loadingDialog?.dismiss()
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(this@NoticeBoardReadActivity, "북마크 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<BookMarkResponseData>>, t: Throwable) {
-                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                loadingDialog?.dismiss()
+                LoadingProgressDialogManager.hide()
                 Toast.makeText(this@NoticeBoardReadActivity, "북마크 정보를 가져오는데 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
@@ -1265,17 +1233,14 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         participantApplyBtnSet(isParticipation!!, isDeadLineCheck2)
                     }
                 } else {
-                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                    loadingDialog?.dismiss()
-                    //Toast.makeText(this@NoticeBoardReadActivity, "참여 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                    LoadingProgressDialogManager.hide()
+                    Toast.makeText(this@NoticeBoardReadActivity, "참여 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<ParticipationData>>, t: Throwable) {
-                Log.d("error", t.toString())
-                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                loadingDialog?.dismiss()
-                //Toast.makeText(this@NoticeBoardReadActivity, "참여 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
+                LoadingProgressDialogManager.hide()
+                Toast.makeText(this@NoticeBoardReadActivity, "참여 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -1660,16 +1625,13 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
 
                 } else {
-                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                    loadingDialog?.dismiss()
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(this@NoticeBoardReadActivity, "연결에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<CheckParticipateData>, t: Throwable) {
-                Log.d("error", t.toString())
-                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                loadingDialog?.dismiss()
+                LoadingProgressDialogManager.hide()
                 Toast.makeText(this@NoticeBoardReadActivity, "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })

@@ -1,8 +1,6 @@
 package com.example.mio.tabcategory
 
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -23,11 +21,11 @@ import com.example.mio.adapter.CalendarAdapter
 import com.example.mio.adapter.CurrentNoticeBoardAdapter
 import com.example.mio.adapter.NoticeBoardAdapter
 import com.example.mio.adapter.NoticeBoardMyAreaAdapter
-import com.example.mio.CalendarUtil
+import com.example.mio.databinding.FragmentTaxiTabBinding
+import com.example.mio.loading.LoadingProgressDialogManager
 import com.example.mio.model.*
 import com.example.mio.noticeboard.NoticeBoardEditActivity
 import com.example.mio.noticeboard.NoticeBoardReadActivity
-import com.example.mio.databinding.FragmentTaxiTabBinding
 import com.example.mio.viewmodel.CurrentDataViewModel
 import com.example.mio.viewmodel.SharedViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -43,7 +41,6 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
-import kotlin.collections.ArrayList
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -90,9 +87,6 @@ class TaxiTabFragment : Fragment() {
     private var selectCalendarTaxiData : ArrayList<PostData> = ArrayList()
     //edit에서 받은 값
     private var testselectCalendarData = HashMap<String, ArrayList<PostData>>()
-
-    //로딩창
-    private lateinit var loadingDialog : LoadingProgressDialog
 
     private var isFirst = true
 
@@ -148,7 +142,6 @@ class TaxiTabFragment : Fragment() {
                     dataPosition = position
                     when(status) {
                         CurrentNoticeBoardAdapter.PostStatus.Passenger -> {//내가 손님으로 카풀이 완료되었을 떄
-                            Log.d("Carpool", "Passenger")
                             intent = Intent(activity, CompleteActivity::class.java).apply {
                                 putExtra("type", "PASSENGER")
                                 putExtra("postDriver", temp.user)
@@ -160,7 +153,6 @@ class TaxiTabFragment : Fragment() {
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Driver -> { //내가 운전자로 카풀이 완료되었을 떄
-                            Log.d("Carpool", "Driver")
                             intent = Intent(activity, CompleteActivity::class.java).apply {
                                 putExtra("type", "DRIVER")
                                 putExtra("postData", currentTaxiAllData[position])
@@ -171,7 +163,6 @@ class TaxiTabFragment : Fragment() {
                         }
 
                         CurrentNoticeBoardAdapter.PostStatus.Neither -> {
-                            Log.d("Carpool", "Neither")
                             intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
                                 putExtra("type", "READ")
                                 putExtra("postItem", temp)
@@ -323,19 +314,8 @@ class TaxiTabFragment : Fragment() {
             testselectCalendarData = textValue
         }
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
-        //로딩창 실행
-        loadingDialog = LoadingProgressDialog(activity)
-        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        //로딩창
-        loadingDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        loadingDialog.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
 
-
-        loadingDialog.window!!.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        loadingDialog.show()
+        LoadingProgressDialogManager.show(requireContext())
 
         setData()
 
@@ -574,11 +554,11 @@ class TaxiTabFragment : Fragment() {
                             }
                         }
 
-                        loadingDialog.dismiss()
+                        LoadingProgressDialogManager.hide()
 
                     }
                 } else {
-                    loadingDialog.dismiss()
+                    LoadingProgressDialogManager.hide()
                     if (taxiAllData.isEmpty()) {
                         taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                         taxiTabBinding.noticeBoardRV.visibility = View.GONE
@@ -590,7 +570,7 @@ class TaxiTabFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                loadingDialog.dismiss()
+                LoadingProgressDialogManager.hide()
                 if (taxiAllData.isEmpty()) {
                     taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                     taxiTabBinding.noticeBoardRV.visibility = View.GONE
@@ -652,7 +632,7 @@ class TaxiTabFragment : Fragment() {
 
                             noticeBoardMyAreaAdapter!!.notifyDataSetChanged()
 
-                            loadingDialog.dismiss()
+                            LoadingProgressDialogManager.hide()
                         }
 
                         if (myAreaItemData.isNotEmpty()) {
@@ -675,13 +655,12 @@ class TaxiTabFragment : Fragment() {
                             taxiTabBinding.nonAreaRvTv.visibility = View.VISIBLE
                             taxiTabBinding.nonAreaRvTv2.visibility = View.VISIBLE
                         }
-                        loadingDialog.dismiss()
+                        LoadingProgressDialogManager.hide()
                     }
                 }
 
                 override fun onFailure(call: Call<PostReadAllResponse>, t: Throwable) {
-                    Log.d("error", t.toString())
-                    loadingDialog.dismiss()
+                    LoadingProgressDialogManager.hide()
                     if (myAreaItemData.isNotEmpty()) {
                         taxiTabBinding.areaRvLl.visibility = View.VISIBLE
                         taxiTabBinding.nonAreaRvTv.visibility = View.GONE
@@ -756,7 +735,7 @@ class TaxiTabFragment : Fragment() {
                         taxiTabBinding.nonCurrentRvTv2.visibility = View.GONE
                     }
 
-                    loadingDialog.dismiss()
+                    LoadingProgressDialogManager.hide()
 
                 } else {
                     if (response.code().toString() == "500") {
@@ -800,7 +779,7 @@ class TaxiTabFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<List<Content>>, t: Throwable) {
-                loadingDialog.dismiss()
+                LoadingProgressDialogManager.hide()
                 if (currentTaxiAllData.isEmpty()) {
                     taxiTabBinding.currentRv.visibility = View.GONE
                     taxiTabBinding.nonCurrentRvTv.visibility = View.VISIBLE

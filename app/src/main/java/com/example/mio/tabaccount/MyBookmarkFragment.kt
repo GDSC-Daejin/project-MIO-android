@@ -1,24 +1,25 @@
 package com.example.mio.tabaccount
 
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mio.*
+import com.example.mio.RetrofitServerConnect
 import com.example.mio.adapter.MyAccountPostAdapter
-import com.example.mio.model.*
-import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentMyBookmarkBinding
+import com.example.mio.loading.LoadingProgressDialogManager
+import com.example.mio.model.BookMarkResponseData
+import com.example.mio.model.Content
+import com.example.mio.model.PostData
+import com.example.mio.noticeboard.NoticeBoardReadActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,9 +46,6 @@ class MyBookmarkFragment : Fragment() {
     private var myAdapter : MyAccountPostAdapter? = null //간단한건 그냥 같이 사용 adpater
     private var myBookmarkAllData = ArrayList<PostData?>()
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
-
-    //로딩창
-    private var loadingDialog : LoadingProgressDialog? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -84,19 +82,7 @@ class MyBookmarkFragment : Fragment() {
     }
 
     private fun initMyRecyclerView() {
-        //로딩창 실행
-        loadingDialog = LoadingProgressDialog(activity)
-        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        //로딩창
-        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-        loadingDialog?.window!!.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        loadingDialog?.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        loadingDialog?.show()
-
+        LoadingProgressDialogManager.show(requireContext())
         CoroutineScope(Dispatchers.IO).launch {
             setMyBookmarkData()
         }
@@ -129,10 +115,7 @@ class MyBookmarkFragment : Fragment() {
                             initBookMarkPostData(thisData)
                         }
                     } else {
-                        if (loadingDialog != null && loadingDialog!!.isShowing) {
-                            loadingDialog?.dismiss()
-                            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                        }
+                        LoadingProgressDialogManager.hide()
                         if (myBookmarkAllData.isNotEmpty()) {
                             binding.bookmarkPostNotDataLl.visibility = View.GONE
                             binding.bookmarkSwipe.visibility = View.VISIBLE
@@ -142,19 +125,15 @@ class MyBookmarkFragment : Fragment() {
                             binding.bookmarkSwipe.visibility = View.GONE
                             binding.bookmarkRv.visibility = View.GONE
                         }
-                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                        loadingDialog?.dismiss()
                     }
                 } else {
-                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                    loadingDialog?.dismiss()
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(requireActivity(), "북마크 정보를 가져오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<List<BookMarkResponseData>>, t: Throwable) {
-                loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                loadingDialog?.dismiss()
+                LoadingProgressDialogManager.hide()
                 Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
@@ -196,7 +175,7 @@ class MyBookmarkFragment : Fragment() {
                                 }
                             }
                         } else {
-                            loadingDialog?.dismiss()
+                            LoadingProgressDialogManager.hide()
                             shouldBreak = true
                         }
                     }
@@ -213,11 +192,6 @@ class MyBookmarkFragment : Fragment() {
     }
 
     private fun updateUI() {
-        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-        if (loadingDialog != null && loadingDialog!!.isShowing) {
-            loadingDialog?.dismiss()
-            loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-        }
         myAdapter!!.notifyDataSetChanged()
 
         if (myBookmarkAllData.isNotEmpty()) {
@@ -229,7 +203,7 @@ class MyBookmarkFragment : Fragment() {
             binding.bookmarkSwipe.visibility = View.GONE
             binding.bookmarkRv.visibility = View.GONE
         }
-        loadingDialog?.dismiss()
+        LoadingProgressDialogManager.hide()
     }
 
     private fun initSwipeRefresh() {

@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -14,6 +13,7 @@ import com.example.mio.adapter.ParticipationAdapter
 import com.example.mio.model.*
 import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.ActivityParticipationReceiveBinding
+import com.example.mio.loading.LoadingProgressDialogManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,7 +23,6 @@ import retrofit2.Response
 
 class ParticipationReceiveActivity : AppCompatActivity() {
     private lateinit var pBinding : ActivityParticipationReceiveBinding
-    private lateinit var loadingDialog : LoadingProgressDialog
     private lateinit var participationAdapter : ParticipationAdapter
 
     private var manager : LinearLayoutManager = LinearLayoutManager(this)
@@ -41,8 +40,6 @@ class ParticipationReceiveActivity : AppCompatActivity() {
         setContentView(pBinding.root)
         postId = intent.getIntExtra("postId", 0)
         targetDate = intent.getStringExtra("targetDate").toString()
-
-        Log.d("ParticipationReceiveActivity PostId Test", postId.toString()) //ok완료
         initPostDeadLine()
         //기기의 뒤로가기 콜백
         onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
@@ -112,7 +109,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                     }
 
                     override fun onFailure(call: Call<Content>, t: Throwable) {
-                        loadingDialog.dismiss()
+                        LoadingProgressDialogManager.hide()
                         Toast.makeText(this@ParticipationReceiveActivity, "게시글 상태 변경에 실패했습니다. 다시 시도해주세요. ${t.message}", Toast.LENGTH_SHORT).show()
                     }
                 })
@@ -149,13 +146,13 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                             }
                         }
                     } else {
-                        loadingDialog.dismiss()
+                        LoadingProgressDialogManager.hide()
                         Toast.makeText(this@ParticipationReceiveActivity, "게시글 상태 변경에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<Content>, t: Throwable) {
-                    loadingDialog.dismiss()
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(this@ParticipationReceiveActivity, "게시글 상태 변경에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
@@ -190,23 +187,20 @@ class ParticipationReceiveActivity : AppCompatActivity() {
                         }
                     }
                 } else {
-                    loadingDialog.dismiss()
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(this@ParticipationReceiveActivity, "게시글 정보를 불러오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<Content>, t: Throwable) {
-                loadingDialog.dismiss()
+                LoadingProgressDialogManager.hide()
                 Toast.makeText(this@ParticipationReceiveActivity, "게시글 정보를 불러오는데 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
 
     private fun initParticipationRecyclerView() {
-        //로딩창 실행
-        loadingDialog = LoadingProgressDialog(this)
-        loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        loadingDialog.show()
+        LoadingProgressDialogManager.show(this@ParticipationReceiveActivity)
 
         CoroutineScope(Dispatchers.IO).launch {
             setParticipationData()
@@ -260,7 +254,7 @@ class ParticipationReceiveActivity : AppCompatActivity() {
 
     private fun updateUI() {
         CoroutineScope(Dispatchers.Main).launch {
-            loadingDialog.dismiss()
+            LoadingProgressDialogManager.hide()
             if (participantsUserAllData.isNotEmpty()) {
                 pBinding.participationRv.visibility = View.VISIBLE
                 pBinding.nonParticipation.visibility = View.GONE
@@ -301,14 +295,14 @@ class ParticipationReceiveActivity : AppCompatActivity() {
 
     private fun handleEmptyData() {
         CoroutineScope(Dispatchers.Main).launch {
-            loadingDialog.dismiss()
+            LoadingProgressDialogManager.hide()
             pBinding.participationRv.visibility = View.GONE
             pBinding.nonParticipation.visibility = View.VISIBLE
         }
     }
 
     private fun handleError(error: String?) {
-        loadingDialog.dismiss()
+        LoadingProgressDialogManager.hide()
         Toast.makeText(this, "받아온 신청자 데이터가 없습니다. 다시 시도해주세요 $error", Toast.LENGTH_SHORT).show()
     }
 }

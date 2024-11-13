@@ -2,7 +2,6 @@ package com.example.mio.navigation
 
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
@@ -17,12 +16,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.mio.*
+import com.example.mio.R
+import com.example.mio.databinding.FragmentSearchBinding
+import com.example.mio.loading.LoadingProgressDialogManager
 import com.example.mio.model.*
 import com.example.mio.noticeboard.NoticeBoardReadActivity
-import com.example.mio.R
 import com.example.mio.tapsearch.NearbypostActivity
 import com.example.mio.tapsearch.SearchResultActivity
-import com.example.mio.databinding.FragmentSearchBinding
 import com.example.mio.viewmodel.FragSharedViewModel
 import com.example.mio.viewmodel.FragSharedViewModel2
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -71,8 +71,6 @@ class SearchFragment : Fragment() {
     private var labelLayer: LabelLayer? = null
 
     private var hashMapPoiAndPostData : HashMap<String, LocationReadAllResponse>? = HashMap()
-    //로딩창
-    private var loadingDialog : LoadingProgressDialog? = null
 
     //private var eventListener : MarkerEventListener? = null   // 마커 클릭 이벤트 리스너
 
@@ -227,16 +225,11 @@ class SearchFragment : Fragment() {
                             }
                         }
                     }
-
-                    loadingDialog?.dismiss()
-                    if (loadingDialog != null && loadingDialog!!.isShowing) {
-                        loadingDialog?.dismiss()
-                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                    }
+                    LoadingProgressDialogManager.hide()
                 } else {
                     requireActivity().runOnUiThread {
                         if (isAdded && !requireActivity().isFinishing) {
-                            loadingDialog?.dismiss()
+                            LoadingProgressDialogManager.hide()
                             Toast.makeText(requireContext(), "검색에 실패하였습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -246,7 +239,7 @@ class SearchFragment : Fragment() {
             override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
                 requireActivity().runOnUiThread {
                     if (isAdded && !requireActivity().isFinishing) {
-                        loadingDialog?.dismiss()
+                        LoadingProgressDialogManager.hide()
                         Toast.makeText(requireContext(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
@@ -281,16 +274,13 @@ class SearchFragment : Fragment() {
                             }
                         }
                     } else {
-                        Log.d("comment", response.errorBody()?.string() ?: "Unknown error")
-                        Log.d("message", call.request().toString())
-                        Log.d("response code", response.code().toString())
-                        loadingDialog?.dismiss()
+                        LoadingProgressDialogManager.hide()
                         Toast.makeText(requireActivity(), "주위 게시글 검색에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
-                    loadingDialog?.dismiss()
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(requireActivity(), "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })
@@ -519,13 +509,7 @@ class SearchFragment : Fragment() {
                 val flag = result.data?.getIntExtra("flag", -1)
 
                 if (flag == 103) {
-                    // 로딩창 실행
-                    loadingDialog = LoadingProgressDialog(activity).apply {
-                        window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                        window?.attributes?.windowAnimations = R.style.FullScreenDialog
-                        window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                        show()
-                    }
+                    LoadingProgressDialogManager.show(requireContext())
                     map?.finish()
                     kakaoMapValue = null
                     initMapView()
@@ -540,13 +524,7 @@ class SearchFragment : Fragment() {
                 val flag = result.data?.getIntExtra("flag", -1)
 
                 if (flag == 103) {
-                    // 로딩창 실행
-                    loadingDialog = LoadingProgressDialog(activity).apply {
-                        window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                        window?.attributes?.windowAnimations = R.style.FullScreenDialog
-                        window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                        show()
-                    }
+                    LoadingProgressDialogManager.show(requireContext())
                     map?.finish()
                     kakaoMapValue = null
                     initMapView()

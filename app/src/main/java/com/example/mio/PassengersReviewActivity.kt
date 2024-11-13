@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import com.example.mio.model.*
 import com.example.mio.databinding.ActivityPassengersReviewBinding
+import com.example.mio.loading.LoadingProgressDialogManager
 import com.google.android.material.chip.Chip
 import retrofit2.Call
 import retrofit2.Callback
@@ -44,11 +45,9 @@ class PassengersReviewActivity : AppCompatActivity() {
     private var currentUser = ""
     private var currentContent = ""
     private var currentMannerCount = ""
-    private lateinit var loadingDialog : LoadingProgressDialog
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         prBinding = ActivityPassengersReviewBinding.inflate(layoutInflater)
-        loadingDialog = LoadingProgressDialog(this)
         setIcon()
 
         type = intent.getStringExtra("type") as String
@@ -349,8 +348,7 @@ class PassengersReviewActivity : AppCompatActivity() {
     }
 
     private fun userInfo(passengersData: ArrayList<ParticipationData>?) {
-        loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        loadingDialog.show()
+        LoadingProgressDialogManager.show(this@PassengersReviewActivity)
         if (passengersData?.isNotEmpty() == true) {
             for (i in passengersData) {
                 RetrofitServerConnect.create(this@PassengersReviewActivity)
@@ -379,18 +377,18 @@ class PassengersReviewActivity : AppCompatActivity() {
                                     }*/
                                     setupChipListeners()
                                 } ?: run {
-                                    loadingDialog.dismiss()
+                                    LoadingProgressDialogManager.hide()
                                 }
                             } else {
                                 /*response.errorBody()?.string()?.let { errorMsg ->
                                     Log.e("userInfo", errorMsg)
                                 }*/
-                                loadingDialog.dismiss()
+                                LoadingProgressDialogManager.hide()
                             }
                         }
 
                         override fun onFailure(call: Call<User>, t: Throwable) {
-                            loadingDialog.dismiss()
+                            LoadingProgressDialogManager.hide()
                         }
                     })
             }
@@ -399,8 +397,7 @@ class PassengersReviewActivity : AppCompatActivity() {
 
 
     private fun sendReviewData() {
-        loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        loadingDialog.show()
+        LoadingProgressDialogManager.show(this@PassengersReviewActivity)
         if (type == "DRIVER") { //내가 운전자일 때 손님들의 리뷰데이터를 전송
             if (passengersData != null) {
                 for (i in passengerReviewHashMapData) {
@@ -411,17 +408,17 @@ class PassengersReviewActivity : AppCompatActivity() {
                             response: Response<PassengersReviewData>
                         ) {
                             if (response.isSuccessful) {
-                                loadingDialog.dismiss()
+                                LoadingProgressDialogManager.hide()
                                 Toast.makeText(this@PassengersReviewActivity, "후기 감사드립니다!", Toast.LENGTH_SHORT).show()
                                 this@PassengersReviewActivity.finish()
                             } else {
-                                loadingDialog.dismiss()
+                                LoadingProgressDialogManager.hide()
                                 Toast.makeText(this@PassengersReviewActivity, "이미 평가한 유저입니다.", Toast.LENGTH_SHORT).show()
                             }
                         }
 
                         override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
-                            loadingDialog.dismiss()
+                            LoadingProgressDialogManager.hide()
                         }
                     })
                 }
@@ -434,19 +431,18 @@ class PassengersReviewActivity : AppCompatActivity() {
                     response: Response<PassengersReviewData>
                 ) {
                     if (response.isSuccessful) {
-                        loadingDialog.dismiss()
+                        LoadingProgressDialogManager.hide()
                         Toast.makeText(this@PassengersReviewActivity, "후기 감사드립니다!", Toast.LENGTH_SHORT).show()
                         this@PassengersReviewActivity.finish()
                     } else {
-                        loadingDialog.dismiss()
+                        LoadingProgressDialogManager.hide()
                         Toast.makeText(this@PassengersReviewActivity,
                             "이미 평가한 운전자입니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
 
                 override fun onFailure(call: Call<PassengersReviewData>, t: Throwable) {
-
-                    loadingDialog.dismiss()
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(this@PassengersReviewActivity, "후기 전송에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
                 }
             })

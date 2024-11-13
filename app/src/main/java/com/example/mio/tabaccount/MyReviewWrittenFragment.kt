@@ -1,22 +1,21 @@
 package com.example.mio.tabaccount
 
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mio.*
+import com.example.mio.RetrofitServerConnect
+import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.adapter.MyReviewWrittenAdapter
+import com.example.mio.databinding.FragmentMyReivewWrittenBinding
+import com.example.mio.loading.LoadingProgressDialogManager
 import com.example.mio.model.MyAccountReviewData
 import com.example.mio.viewmodel.ReviewWrittenViewModel
-import com.example.mio.databinding.FragmentMyReivewWrittenBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -41,7 +40,6 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
     private var manager : LinearLayoutManager = LinearLayoutManager(activity)
     private var reviewWrittenAllData = ArrayList<MyAccountReviewData>()
     private lateinit var viewModel: ReviewWrittenViewModel
-    private var loadingDialog : LoadingProgressDialog? = null
 
     private var isLoading = false
 
@@ -68,7 +66,7 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
 
     private fun setReadReviewData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)!!
+        val userId = saveSharedPreferenceGoogleLogin.getUserId(activity)
         viewModel.setLoading(true)
         /////////////////////////////////////////////////////
         RetrofitServerConnect.create(requireActivity()).getMyMannersSendReview(userId).enqueue(object :
@@ -99,10 +97,7 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
     }
     private fun updateUI2(reviews: List<MyAccountReviewData>) {
         viewModel.setLoading(false)
-        if (loadingDialog != null && loadingDialog?.isShowing == true) {
-            loadingDialog?.dismiss()
-            loadingDialog = null
-        }
+        LoadingProgressDialogManager.hide()
 
         if (reviews.isNotEmpty()) {
             rwBinding.writtenReviewPostNotDataLl.visibility = View.GONE
@@ -151,25 +146,9 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
 
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
             if (isLoading) {
-                // 로딩 다이얼로그를 생성하고 표시
-                if (loadingDialog == null) {
-                    loadingDialog = LoadingProgressDialog(requireActivity())
-                    loadingDialog?.setCancelable(false)
-                    loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                    loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog
-                    loadingDialog?.window!!.setLayout(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    loadingDialog?.show()
-                }
+                LoadingProgressDialogManager.show(requireContext())
             } else {
-                // 로딩 다이얼로그를 해제
-                if (loadingDialog != null && loadingDialog?.isShowing == true)  {
-                    loadingDialog?.dismiss()
-                    loadingDialog = null
-                }
-
+                LoadingProgressDialogManager.hide()
             }
         }
 

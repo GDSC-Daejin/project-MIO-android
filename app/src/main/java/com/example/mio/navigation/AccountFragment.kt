@@ -5,32 +5,27 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.net.Uri
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import com.example.mio.adapter.AccountTabAdapter
-import com.example.mio.LoadingProgressDialog
 import com.example.mio.model.User
 import com.example.mio.R
 import com.example.mio.RetrofitServerConnect
 import com.example.mio.SaveSharedPreferenceGoogleLogin
+import com.example.mio.adapter.AccountTabAdapter
 import com.example.mio.tabaccount.AccountReviewActivity
 import com.example.mio.tabaccount.AccountSettingActivity
 import com.example.mio.databinding.FragmentAccountBinding
+import com.example.mio.loading.LoadingProgressDialogManager
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -66,9 +61,6 @@ class AccountFragment : Fragment() {
     private var mannerCount = 0
     private var grade : String? = null
     private var activityLocation : String? = null
-
-    //로딩창
-    private var loadingDialog : LoadingProgressDialog? = null
 
     //체크용
     private var isPolicyAllow : Boolean? = null
@@ -198,19 +190,7 @@ class AccountFragment : Fragment() {
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(activity).toString()
         aBinding.accountUserId.text = email.split("@").map { it }.first()
 
-        //로딩창 실행
-        loadingDialog = LoadingProgressDialog(activity)
-        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        //로딩창
-        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-        loadingDialog?.window!!.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        loadingDialog?.window?.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-
-        loadingDialog?.show()
+        LoadingProgressDialogManager.show(requireContext())
 
         RetrofitServerConnect.create(requireContext()).getAccountData(email).enqueue(object : Callback<User> {
             override fun onResponse(call: Call<User>, response: Response<User>) {
@@ -218,42 +198,36 @@ class AccountFragment : Fragment() {
                     gender = try {
                         response.body()!!.gender
                     } catch (e : java.lang.NullPointerException) {
-                        Log.d("null", e.toString())
                         null
                     }
 
                     accountNumber = try {
                         response.body()!!.accountNumber
                     } catch (e : java.lang.NullPointerException) {
-                        Log.d("null", e.toString())
                         null
                     }
 
                     verifySmoker = try {
                         response.body()!!.verifySmoker
                     } catch (e : java.lang.NullPointerException) {
-                        Log.d("null", e.toString())
                         null
                     }
 
                     mannerCount = try {
                         response.body()?.mannerCount!!.toInt()
                     } catch (e : java.lang.NullPointerException) {
-                        Log.d("null", e.toString())
                         0
                     }
 
                     grade = try {
                         response.body()!!.grade
                     } catch (e : java.lang.NullPointerException) {
-                        Log.d("null", e.toString())
                         "F"
                     }
 
                     activityLocation = try {
                         response.body()!!.activityLocation
                     } catch (e : java.lang.NullPointerException) {
-                        Log.d("null", e.toString())
                         null
                     }
 
@@ -347,11 +321,7 @@ class AccountFragment : Fragment() {
                         aBinding.accountBank.text = ""
                     }
 
-                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                    if (loadingDialog != null && loadingDialog!!.isShowing) {
-                        loadingDialog?.dismiss()
-                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                    }
+                    LoadingProgressDialogManager.hide()
                 } else {
                     aBinding.accountGender.text = "기본 세팅"
                     aBinding.accountSmokingStatus.text = "기본 세팅"
@@ -361,11 +331,7 @@ class AccountFragment : Fragment() {
                     aBinding.accountGradeTv.text = requireActivity().getString(R.string.setUserGrade,
                         myAccountData!!.studentId
                     )//"${myAccountData!!.studentId}님의 현재 등급은 B 입니다"
-                    loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                    if (loadingDialog != null && loadingDialog!!.isShowing) {
-                        loadingDialog?.dismiss()
-                        loadingDialog = null // 다이얼로그 인스턴스 참조 해제
-                    }
+                    LoadingProgressDialogManager.hide()
 
                     requireActivity().runOnUiThread {
                         if (isAdded && !requireActivity().isFinishing) {
@@ -376,11 +342,9 @@ class AccountFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<User>, t: Throwable) {
-                Log.d("error","error $t")
                 requireActivity().runOnUiThread {
                     if (isAdded && !requireActivity().isFinishing) {
-                        loadingDialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
-                        loadingDialog?.dismiss()
+                        LoadingProgressDialogManager.hide()
                         Toast.makeText(requireActivity(), "계정 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${t.message}", Toast.LENGTH_SHORT).show()
                     }
                 }

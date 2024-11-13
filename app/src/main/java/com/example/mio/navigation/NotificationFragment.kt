@@ -2,8 +2,6 @@ package com.example.mio.navigation
 
 import android.app.AlertDialog
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -18,12 +16,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.mio.*
+import com.example.mio.PassengersReviewActivity
+import com.example.mio.R
+import com.example.mio.RetrofitServerConnect
+import com.example.mio.SaveSharedPreferenceGoogleLogin
 import com.example.mio.adapter.NotificationAdapter
-import com.example.mio.helper.SharedPref
-import com.example.mio.model.*
-import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.databinding.FragmentNotificationBinding
+import com.example.mio.helper.SharedPref
+import com.example.mio.loading.LoadingProgressDialogManager
+import com.example.mio.model.AddAlarmResponseData
+import com.example.mio.model.NotificationData
+import com.example.mio.noticeboard.NoticeBoardReadActivity
 import com.example.mio.viewmodel.NotificationViewModel
 import com.example.mio.viewmodel.SharedViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -63,8 +66,7 @@ class NotificationFragment : Fragment() {
     //private var notificationPostAllData : ArrayList<PostData?> = ArrayList()
     //private var notificationPostParticipationAllData : ArrayList<Pair<Int, ArrayList<ParticipationData>?>> = ArrayList()
     private var dataPosition = 0
-    //로딩
-    private var loadingDialog : LoadingProgressDialog? = null
+
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     private var identification : String? = null
     //private var hashMapCurrentPostItemData = HashMap<Int, NotificationAdapter.NotificationStatus>()
@@ -226,21 +228,7 @@ class NotificationFragment : Fragment() {
 
 
     private fun initNotificationRV() {
-        //로딩창 실행
-        loadingDialog = LoadingProgressDialog(requireActivity())
-        loadingDialog?.setCancelable(false)
-        //loadingDialog.window!!.setBackgroundDrawableResource(android.R.color.transparent)
-        //로딩창
-        loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog // 위에서 정의한 스타일을 적용
-        loadingDialog?.window!!.setLayout(
-            ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT
-        )
-        loadingDialog?.show()
-        /*CoroutineScope(Dispatchers.IO).launch {
-            setNotificationData()
-        }*/
+        LoadingProgressDialogManager.show(requireContext())
         nAdapter = NotificationAdapter()
         nfBinding.notificationRV.apply {
             layoutManager = LinearLayoutManager(context)
@@ -279,10 +267,7 @@ class NotificationFragment : Fragment() {
     }
     private fun updateUI2(notifications: List<AddAlarmResponseData>) {
         viewModel.setLoading(false)
-        if (loadingDialog != null && loadingDialog?.isShowing == true) {
-            loadingDialog?.dismiss()
-            loadingDialog = null
-        }
+        LoadingProgressDialogManager.hide()
         if (notifications.isEmpty()) {
             nfBinding.notNotificationLl.visibility = View.VISIBLE
             nfBinding.notificationSwipe.visibility = View.GONE
@@ -315,25 +300,9 @@ class NotificationFragment : Fragment() {
 
         viewModel.loading.observe(viewLifecycleOwner) { isLoading ->
             if (isLoading) {
-                // 로딩 다이얼로그를 생성하고 표시
-                if (loadingDialog == null) {
-                    loadingDialog = LoadingProgressDialog(requireActivity())
-                    loadingDialog?.setCancelable(false)
-                    loadingDialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-                    loadingDialog?.window?.attributes?.windowAnimations = R.style.FullScreenDialog
-                    loadingDialog?.window!!.setLayout(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                    )
-                    loadingDialog?.show()
-                }
+                LoadingProgressDialogManager.show(requireContext())
             } else {
-                // 로딩 다이얼로그를 해제
-                if (loadingDialog != null && loadingDialog?.isShowing == true)  {
-                    loadingDialog?.dismiss()
-                    loadingDialog = null
-                }
-
+                LoadingProgressDialogManager.hide()
             }
         }
 

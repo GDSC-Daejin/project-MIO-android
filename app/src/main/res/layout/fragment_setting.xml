@@ -155,6 +155,21 @@
         app:layout_constraintTop_toBottomOf="@+id/open_source_license2" />
 
     <TextView
+        android:id="@+id/terms_intent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="30dp"
+        android:fontFamily="@font/pretendard_medium"
+        android:text="서비스 이용약관"
+        android:textColor="@color/mio_gray_12"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/policy_intent" />
+
+    <TextView
         android:id="@+id/account_cancellation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -168,6 +183,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/policy_intent" />
+        app:layout_constraintTop_toBottomOf="@+id/terms_intent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -148,7 +148,7 @@ class LoginActivity : AppCompatActivity() {
         val dialogRightBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
 
         dialogContent.setOnClickListener {
-            val url = "https://github.com/MIO-Privacy-Policy-for-Android/MIO_Privacy_Policy_for_Android"
+            val url = "https://github.com/MIO-Privacy-Policy-for-Android"
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse(url)
             }

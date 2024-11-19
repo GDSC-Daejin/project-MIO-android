@@ -465,6 +465,17 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             val today = Calendar.getInstance()
 
             val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
+
+                val selectedDate = Calendar.getInstance()
+                selectedDate.set(year, month, day)
+
+                // 주말 여부 확인
+                val dayOfWeek = selectedDate.get(Calendar.DAY_OF_WEEK)
+                if (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) {
+                    Toast.makeText(this, "현행법상 주말은 선택할 수 없습니다. 다른 날짜를 선택해주세요.", Toast.LENGTH_SHORT).show()
+                    return@OnDateSetListener
+                }
+
                 selectTargetDate = "${year}년/${month + 1}월/${day}일"
                 selectFormattedDate = LocalDate.parse(selectTargetDate, DateTimeFormatter.ofPattern("yyyy년/M월/d일")).format(DateTimeFormatter.ISO_DATE)
                 mBinding.editSelectDateTv.text = getString(R.string.setDateText3, "$year", "${month+1}", "$day")
@@ -1028,15 +1039,30 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             TimePickerDialog.OnTimeSetListener { view, hourOfDay, pickerMinute ->
                 if (view.isShown) {
 
+                    // 시간 검증
+                    val isValidTime = (hourOfDay in 7..8 && pickerMinute >= 0) || (hourOfDay in 18..19 && pickerMinute >= 0)
+                    if (!isValidTime) {
+                        Toast.makeText(
+                            this,
+                            "현행법상 오전 7시부터 9시, 오후 6시부터 8시까지만 선택 가능합니다.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        showHourPicker() // 다시 시간 선택창 띄움
+                        return@OnTimeSetListener
+                    }
+
                     val tempS = "${hourOfDay}시 ${pickerMinute}분"
                     selectFormattedTime = LocalTime.parse(tempS, DateTimeFormatter.ofPattern("H시 m분")).format(DateTimeFormatter.ofPattern("HH:mm"))
 
                     // 오전/오후 표시 처리
-                    selectTime = if (hourOfDay >= 12) {
-                        val pm = if (hourOfDay == 12) hourOfDay else hourOfDay - 12
-                        "오후 $pm 시 $pickerMinute 분"
-                    } else {
-                        "오전 $hourOfDay 시 $pickerMinute 분"
+                    selectTime = when {
+                        hourOfDay > 12 -> { // 오후 시간
+                            val pm = hourOfDay - 12
+                            "오후 $pm 시 $pickerMinute 분"
+                        }
+                        else -> { // 오전 시간
+                            "오전 $hourOfDay 시 $pickerMinute 분"
+                        }
                     }
 
                     // 선택된 시간 UI 업데이트

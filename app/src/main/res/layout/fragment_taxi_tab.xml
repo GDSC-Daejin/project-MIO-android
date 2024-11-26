@@ -181,14 +181,53 @@
                 app:layout_constraintTop_toBottomOf="@+id/refresh_swipe_layout" />
 
 
-            <ImageView
+            <LinearLayout
                 android:id="@+id/carpool_banner_iv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="18dp"
                 android:layout_gravity="center"
-                android:src="@drawable/home_banner_iv"
-                />
+                android:background="@drawable/round_layout2"
+                android:backgroundTint="@color/mio_blue_4"
+                android:layout_margin="20dp"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="지금 나에게 딱 맞는"
+                    android:textSize="18sp"
+                    android:textColor="@color/mio_gray_1"
+                    android:fontFamily="@font/pretendard_extrabold"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginStart="20dp"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="카풀 상대를 찾아보세요!"
+                    android:textSize="24sp"
+                    android:textColor="@color/mio_gray_1"
+                    android:fontFamily="@font/pretendard_extrabold"
+                    android:layout_marginStart="20dp"
+                    />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:text="바로 글쓰러가기"
+                    android:alpha="0.7"
+                    android:textSize="12sp"
+                    android:textColor="@color/mio_gray_3"
+                    android:fontFamily="@font/pretendard_extrabold"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="20dp"
+                    app:drawableEndCompat="@drawable/front_arrow"
+                    app:drawableTint="@color/mio_gray_3"
+                    />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/carpool_my_area_tv"

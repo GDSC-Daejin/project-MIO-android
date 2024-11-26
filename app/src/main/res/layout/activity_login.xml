@@ -61,4 +61,19 @@
         android:layout_marginHorizontal="50dp" />
 
 
+    <TextView
+        android:id="@+id/privacy_policy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="개인정보 처리방침 및 이용 약관"
+        android:textColor="@color/mio_gray_7"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/google_sign" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

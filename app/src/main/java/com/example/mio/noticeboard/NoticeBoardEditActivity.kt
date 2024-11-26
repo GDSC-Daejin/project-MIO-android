@@ -27,8 +27,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mio.*
 import com.example.mio.adapter.PlaceAdapter
-import com.example.mio.model.*
 import com.example.mio.databinding.ActivityNoticeBoardEditBinding
+import com.example.mio.model.*
 import com.example.mio.viewmodel.SharedViewModel
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -40,12 +40,15 @@ import com.kakao.vectormap.label.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.*
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.net.URL
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -476,14 +479,55 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                     return@OnDateSetListener
                 }
 
-                selectTargetDate = "${year}년/${month + 1}월/${day}일"
-                selectFormattedDate = LocalDate.parse(selectTargetDate, DateTimeFormatter.ofPattern("yyyy년/M월/d일")).format(DateTimeFormatter.ISO_DATE)
-                mBinding.editSelectDateTv.text = getString(R.string.setDateText3, "$year", "${month+1}", "$day")
-                mBinding.editSelectDateTv.setTextColor(ContextCompat.getColor(this, R.color.mio_gray_11))
-                isAllCheck.isFirstVF.isCalendar = true
-                myViewModel.postCheckValue(isAllCheck)
-                if (selectTargetDate != null) {
-                    mBinding.editCalendar.setImageResource(R.drawable.filter_calendar_update_icon)
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        // URL 요청 및 JSON 데이터 읽기
+                        val url = URL("https://holidays.hyunbin.page/basic.json")
+                        val inputStream = withContext(Dispatchers.IO) { url.openStream() }
+                        val data = inputStream.bufferedReader().use { it.readText() }
+                        val holidays = parseHolidays(data, year.toString()) // JSON 파싱 함수 호출
+
+                        // 선택한 날짜와 비교
+                        val formattedDate = String.format("%04d-%02d-%02d", year, month + 1, day) // 2024-04-10 형식
+                        withContext(Dispatchers.Main) {
+                            if (holidays.containsKey(formattedDate)) {
+                                Toast.makeText(
+                                    this@NoticeBoardEditActivity,
+                                    "현행법상 공휴일은 선택할 수 없습니다. 다른 날짜를 선택해주세요.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@withContext
+                            } else {
+                                // 선택이 유효한 경우, 처리 로직 실행
+                                selectTargetDate = "${year}년/${month + 1}월/${day}일"
+                                selectFormattedDate = LocalDate.parse(
+                                    selectTargetDate,
+                                    DateTimeFormatter.ofPattern("yyyy년/M월/d일")
+                                ).format(DateTimeFormatter.ISO_DATE)
+                                mBinding.editSelectDateTv.text = getString(
+                                    R.string.setDateText3,
+                                    "$year",
+                                    "${month + 1}",
+                                    "$day"
+                                )
+                                mBinding.editSelectDateTv.setTextColor(
+                                    ContextCompat.getColor(this@NoticeBoardEditActivity, R.color.mio_gray_11)
+                                )
+                                isAllCheck.isFirstVF.isCalendar = true
+                                myViewModel.postCheckValue(isAllCheck)
+
+                                if (selectTargetDate != null) {
+                                    mBinding.editCalendar.setImageResource(R.drawable.filter_calendar_update_icon)
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@NoticeBoardEditActivity, "공휴일 확인 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
             }
 
@@ -495,6 +539,11 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
             // Set minimum date to today
             datePicker.minDate = today.timeInMillis
+
+            //최대날짜를 현재년도의 다음년도의 12월 31일까지
+            val maxDate = Calendar.getInstance()
+            maxDate.set(today.get(Calendar.YEAR) + 1, Calendar.DECEMBER, 31)
+            datePicker.maxDate = maxDate.timeInMillis
 
             datePickerDialog.show()
         }
@@ -590,6 +639,34 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         }*/
     }
 
+    fun parseHolidays(jsonString: String, year : String): Map<String, List<String>> {
+        val holidaysMap = mutableMapOf<String, List<String>>()
+
+        try {
+            // JSON 객체 생성
+            val jsonObject = JSONObject(jsonString)
+
+            // 데이터 가져오기
+            val yearParse = jsonObject.getJSONObject(year)
+
+            // 키셋(날짜) 반복
+            for (key in yearParse.keys()) {
+                val holidayNames = yearParse.getJSONArray(key)
+
+                // JSONArray를 List<String>으로 변환
+                val holidayList = mutableListOf<String>()
+                for (i in 0 until holidayNames.length()) {
+                    holidayList.add(holidayNames.getString(i))
+                }
+                // Map에 추가
+                holidaysMap[key] = holidayList
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return holidaysMap
+    }
+
     private fun secondVF() {
         val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
         val gson = Gson()
@@ -675,7 +752,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 inputMethodManager.hideSoftInputFromWindow(mBinding.btnSearch.windowToken, 0)
             }
             searchKeyword(keyword)
-            Log.d("edit btn click", keyword)
             mBinding.rvRecentSearchList.visibility = View.INVISIBLE
             map?.resume()
 

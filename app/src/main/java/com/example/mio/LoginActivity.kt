@@ -74,6 +74,14 @@ class LoginActivity : AppCompatActivity() {
             AESKeyStoreUtil.deleteAESKeyFromKeystore()
         }*/
 
+        mBinding.privacyPolicy.setOnClickListener {
+            val url = "https://github.com/MIO-Privacy-Policy-for-Android/MIO_Privacy_Policy"
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = Uri.parse(url)
+            }
+            startActivity(intent)
+        }
+
         mBinding.googleSign.setOnClickListener {
             LoadingProgressDialogManager.show(this@LoginActivity)
             //initPersonalInformationConsent()
@@ -148,7 +156,7 @@ class LoginActivity : AppCompatActivity() {
         val dialogRightBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
 
         dialogContent.setOnClickListener {
-            val url = "https://github.com/MIO-Privacy-Policy-for-Android"
+            val url = "https://github.com/MIO-Privacy-Policy-for-Android/MIO_Privacy_Policy"
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse(url)
             }
@@ -252,12 +260,14 @@ class LoginActivity : AppCompatActivity() {
                     }
                 } else {
                     LoadingProgressDialogManager.hide()
-                    Toast.makeText(this@LoginActivity, "로그인이 취소되었습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                    val message = response.message()
+                    Toast.makeText(this@LoginActivity, message, Toast.LENGTH_SHORT).show()
                 }
             }
             override fun onFailure(call: Call<LoginResponsesData>, t: Throwable) {
                 LoadingProgressDialogManager.hide()
-                Toast.makeText(this@LoginActivity, "로그인에 오류가 발생하였습니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+                val message = t.message
+                Toast.makeText(this@LoginActivity, "로그인에 오류가 발생하였습니다. 다시 로그인해주세요. $message", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -289,7 +299,7 @@ class LoginActivity : AppCompatActivity() {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 val userEmailMap = task.result.email?.split("@")?.map { it }
 
-                if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true || userEmailMap?.contains("sonms5676") == true) {
+                if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true) {
                     handleSignInResult(task)
                 } else {
                     LoadingProgressDialogManager.hide()

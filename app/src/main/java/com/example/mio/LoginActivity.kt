@@ -91,7 +91,7 @@ class LoginActivity : AppCompatActivity() {
                 if (canUserLogin()) {
                     signIn()
                 } else {
-                    Toast.makeText(this, "계정을 탈퇴한 후 30일 동안은 재가입 및 로그인이 제한됩니다.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "계정을 탈퇴한 후 재가입 및 로그인이 제한됩니다.", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -103,7 +103,7 @@ class LoginActivity : AppCompatActivity() {
             // 사용자가 업데이트를 취소하거나 오류가 발생한 경우 처리
             if (result.resultCode != RESULT_OK) {
                 // 업데이트 실패 처리 (필요 시 다시 시도하거나 메시지 표시)
-                Toast.makeText(this@LoginActivity, "앱의 업데이터가 취소되거나 실패하였습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@LoginActivity, "앱의 업데이트가 취소되거나 실패하였습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
 

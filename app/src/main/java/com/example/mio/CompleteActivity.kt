@@ -115,7 +115,7 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.completeDriverAccountNumber.paintFlags = Paint.UNDERLINE_TEXT_FLAG  //밑줄긋기
             cBinding.completeDriverAccountNumber.setOnClickListener {
                 //createClipData("${deText[0]} ${deText[1]}")
-                Toast.makeText(this@CompleteActivity, "개인정보 보호를 위해 계좌이체 버튼을 눌러 운전자의 계좌를 확인하세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@CompleteActivity, "계좌이체 버튼을 통해 운전자의 계좌를 복사하여 은행앱으로 이동됩니다.", Toast.LENGTH_SHORT).show()
             }
             cBinding.completeCostLl.visibility = View.VISIBLE
             cBinding.completeBankLl.visibility = View.VISIBLE

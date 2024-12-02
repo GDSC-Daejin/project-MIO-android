@@ -183,16 +183,17 @@ class TaxiTabFragment : Fragment() {
         calendarAdapter?.setItemClickListener(object : CalendarAdapter.ItemClickListener {
             //여기서 position = 0시작은 date가 되야함 itemId=1로 시작함
             override fun onClick(view: View, position: Int, itemId: String) {
-                if (taxiAllData.isNotEmpty()) {
+                setData(itemId)
+                /*if (taxiAllData.isNotEmpty()) {
                     try {
                         val selectDateData = taxiAllData.filter { it.postTargetDate == itemId }
 
                         if (selectDateData.isNotEmpty()) {
                             selectCalendarTaxiData.clear()
 
-                            /* for (i in selectDateData.indices) {
+                            *//* for (i in selectDateData.indices) {
                                  calendarTaxiAllData.add(selectDateData[i])
-                             }*/
+                             }*//*
                             for (select in selectDateData) {
                                 selectCalendarTaxiData.add(select)
                             }
@@ -201,7 +202,7 @@ class TaxiTabFragment : Fragment() {
                             noticeBoardAdapter!!.postItemData = selectCalendarTaxiData
                             taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
                             taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
-                            /* noticeBoardAdapter?.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
+                            *//* noticeBoardAdapter?.setItemClickListener(object : NoticeBoardAdapter.ItemClickListener {
                                  override fun onClick(view: View, position: Int, itemId: Int) {
                                      CoroutineScope(Dispatchers.IO).launch {
                                          val temp = taxiAllData[position]
@@ -214,7 +215,7 @@ class TaxiTabFragment : Fragment() {
                                          requestActivity.launch(intent)
                                      }
                                  }
-                             })*/
+                             })*//*
 
 
                         } else {
@@ -228,10 +229,10 @@ class TaxiTabFragment : Fragment() {
                 } else {
                     Toast.makeText(requireContext(), "선택된 날의 게시글이 없거나 최신글이 아닙니다. 더보기를 통해 확인해주세요.", Toast.LENGTH_SHORT).show()
                 }
-                /* calendarAdapter!!.notifyItemChanged(selectedPostion)
-                calendarAdapter!!.notifyItemChanged(oldSelectedPostion)*/
+                *//* calendarAdapter!!.notifyItemChanged(selectedPostion)
+                calendarAdapter!!.notifyItemChanged(oldSelectedPostion)*//*
 
-                noticeBoardAdapter!!.notifyDataSetChanged()
+                noticeBoardAdapter!!.notifyDataSetChanged()*/
             }
         })
 
@@ -317,7 +318,9 @@ class TaxiTabFragment : Fragment() {
 
         LoadingProgressDialogManager.show(requireContext())
 
-        setData()
+        if (isFirst) {
+            setData(LocalDate.now().toString())
+        }
 
 
         noticeBoardAdapter = NoticeBoardAdapter()
@@ -469,8 +472,10 @@ class TaxiTabFragment : Fragment() {
     }
 
 
-    private fun setData() {
-        RetrofitServerConnect.create(requireContext()).getCategoryPostData(2,"createDate,desc", 0, 5).enqueue(object : Callback<PostReadAllResponse> {
+    private fun setData(targetDate : String) {
+        val postsByDate = PostsByDateData(2, targetDate, "BEFORE_DEADLINE")
+
+        RetrofitServerConnect.create(requireContext()).postTargetDatePageList("createDate,desc", 0, 5, postsByDate).enqueue(object : Callback<PostReadAllResponse> {
             override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                 if (response.isSuccessful) {
                     response.body()?.let { responseData ->
@@ -487,7 +492,7 @@ class TaxiTabFragment : Fragment() {
                             val location = post.location
                             val title = post.title
                             val content = post.content
-                            val targetDate = post.targetDate
+                            val targetDate2 = post.targetDate
                             val targetTime = post.targetTime
                             val categoryName = post.category.categoryName
                             val cost = post.cost
@@ -500,7 +505,7 @@ class TaxiTabFragment : Fragment() {
                                     title,
                                     content,
                                     post.createDate,
-                                    targetDate,
+                                    targetDate2,
                                     targetTime,
                                     categoryName,
                                     location,
@@ -514,48 +519,23 @@ class TaxiTabFragment : Fragment() {
                                 )
                             )
                         }
-                        // 어댑터 데이터 갱신
-                        if (isFirst) {
-                            // 첫 호출일 때, 오늘 날짜에 해당하는 데이터만 필터링
-                            isFirst = false
-                            val todayDate = LocalDate.now().toString()
-                            val todayFilteredList = taxiAllData.filter {
-                                it.postTargetDate == todayDate
-                            }
 
-                            if (todayFilteredList.isEmpty()) {
-                                taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
-                                taxiTabBinding.noticeBoardRV.visibility = View.GONE
-                            } else {
-                                taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
-                                taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
-                            }
-
-                            // 어댑터에 필터링된 데이터 적용
-                            noticeBoardAdapter?.let { adapter ->
-                                adapter.postItemData = todayFilteredList as ArrayList<PostData>
-                                adapter.notifyDataSetChanged()
-                            }
-
+                        // 첫 호출이 아닐 때는 전체 데이터를 반영
+                        if (taxiAllData.isEmpty()) {
+                            taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
+                            taxiTabBinding.noticeBoardRV.visibility = View.GONE
                         } else {
-                            // 첫 호출이 아닐 때는 전체 데이터를 반영
-                            if (taxiAllData.isEmpty()) {
-                                taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
-                                taxiTabBinding.noticeBoardRV.visibility = View.GONE
-                            } else {
-                                taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
-                                taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
-                            }
+                            taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
+                            taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
+                        }
 
-                            // 어댑터에 전체 데이터를 적용
-                            noticeBoardAdapter?.let { adapter ->
-                                adapter.postItemData = taxiAllData
-                                adapter.notifyDataSetChanged()
-                            }
+                        // 어댑터에 전체 데이터를 적용
+                        noticeBoardAdapter?.let { adapter ->
+                            adapter.postItemData = taxiAllData
+                            adapter.notifyDataSetChanged()
                         }
 
                         LoadingProgressDialogManager.hide()
-
                     }
                 } else {
                     LoadingProgressDialogManager.hide()
@@ -578,9 +558,9 @@ class TaxiTabFragment : Fragment() {
                     taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                     taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
                 }
+                Toast.makeText(requireContext(), "선택된 날의 게시글이 없거나 최신글이 아닙니다. 더보기를 통해 확인해주세요.", Toast.LENGTH_SHORT).show()
             }
         })
-
     }
 
     private fun setMyAreaData() {
@@ -823,7 +803,7 @@ class TaxiTabFragment : Fragment() {
 
                             println(selectCalendarData)*/
                             setCurrentTaxiData()
-                            setData()
+                            //setData()
                         }
                         //livemodel을 통해 저장
                         //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)

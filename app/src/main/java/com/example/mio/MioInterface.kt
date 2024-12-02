@@ -41,6 +41,20 @@ interface MioInterface {
                             @Query("page") page : Int,
                             @Query("size") size : Int) : Call<PostReadAllResponse>
 
+    //게시글 생성 날짜순 + 카테고리별 + 타겟 날짜 리스트
+    @POST("/read/mainPageList")
+    fun postTargetDateList(
+        @Body body : PostsByDateData
+    ) : Call<List<PostReadAllResponse>>
+
+    //타겟날짜 페이징
+    @POST("/read/mainPagePaging")
+    fun postTargetDatePageList(
+        @Query("sort") sort : String,
+        @Query("page") page : Int,
+        @Query("size") size : Int,
+        @Body body : PostsByDateData
+    ) : Call<PostReadAllResponse>
 
     /*@GET("/readAll")
     fun getCurrentServerPostData(@Query("sort") sort : String) : Call<PostReadAllResponse>
@@ -53,11 +67,6 @@ interface MioInterface {
 // ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 /*    @GET("/post/location")
     fun getLocationPostData(@Query("latitude") latitude : Double, @Query("longitude") longitude : Double) : Call<List<LocationReadAllResponse>>*/
-
-    //게시글 상태 변경 deadline verfi
-
-    @PATCH("/post/verfiyFinish/{id}")
-    fun patchVerifyFinish(@Body verifyFinish : VerifyFinishData, @Path("id") id : Int) : Call<AddPostResponse>
 
     //마감기한 지난거 또는 마감할때
     @PATCH("/post/deadLine/{postId}")

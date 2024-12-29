@@ -59,7 +59,7 @@ class LoginActivity : AppCompatActivity() {
         AESKeyStoreUtil.getOrCreateAESKey()
     }
 
-    @RequiresApi(Build.VERSION_CODES.P)
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         //상태바 지우기(이 activity만)
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -75,7 +75,7 @@ class LoginActivity : AppCompatActivity() {
         }*/
 
         mBinding.privacyPolicy.setOnClickListener {
-            val url = "https://github.com/MIO-Privacy-Policy-for-Android/MIO_Privacy_Policy"
+            val url = "https://github.com/MIO-Privacy-Policy-for-Android"
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse(url)
             }
@@ -92,6 +92,7 @@ class LoginActivity : AppCompatActivity() {
                     signIn()
                 } else {
                     Toast.makeText(this, "계정을 탈퇴한 후 재가입 및 로그인이 제한됩니다.", Toast.LENGTH_LONG).show()
+                    LoadingProgressDialogManager.hide()
                 }
             }
         }
@@ -114,18 +115,9 @@ class LoginActivity : AppCompatActivity() {
     private fun canUserLogin(): Boolean {
         val userId = saveSharedPreferenceGoogleLogin.getUserId(this@LoginActivity)
 
-        if (userId == -1) {
-            val deletionDate = saveSharedPreferenceGoogleLogin.getDeleteAccountDate(this@LoginActivity)
-            if (deletionDate != -1L) {
-                val currentTime = System.currentTimeMillis()
-                val daysSinceDeletion = (currentTime - deletionDate) / (1000 * 60 * 60 * 24)
-
-                if (daysSinceDeletion < 30) {
-                    // 30일이 지나지 않으면 로그인 불가
-                    return false
-                }
-            }
-        }
+        /*if (userId == -1) {
+            RetrofitServerConnect.create(this@LoginActivity).getUserProfileData()
+        }*/
         return true // 로그인 가능
     }
 
@@ -143,6 +135,7 @@ class LoginActivity : AppCompatActivity() {
         isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     private fun initPersonalInformationConsent() {
         val sharedPref = this.getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
         //isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
@@ -155,8 +148,17 @@ class LoginActivity : AppCompatActivity() {
         val dialogLeftBtn = dialogView.findViewById<View>(R.id.dialog_left_btn)
         val dialogRightBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
 
+        val rect = windowManager.currentWindowMetrics.bounds
+
+        val window = alertDialog.window
+        val x = (rect.width() * 0.8f).toInt()
+        val y = (rect.height() * 0.4f).toInt()
+
+        window?.setLayout(x, y)
+
+
         dialogContent.setOnClickListener {
-            val url = "https://github.com/MIO-Privacy-Policy-for-Android/MIO_Privacy_Policy"
+            val url = "https://github.com/MIO-Privacy-Policy-for-Android"
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = Uri.parse(url)
             }
@@ -211,6 +213,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun signInCheck(userInfoToken : TokenRequest) {
+        LoadingProgressDialogManager.show(this@LoginActivity)
         val serverUrl = BuildConfig.server_URL
         val retrofit = Retrofit.Builder().baseUrl(serverUrl)
             .addConverterFactory(GsonConverterFactory.create())
@@ -258,10 +261,12 @@ class LoginActivity : AppCompatActivity() {
                             this@LoginActivity.finish()
                         }
                     }
+                } else if (response.code() == 403){ //탈퇴사용자
+                    LoadingProgressDialogManager.hide()
+                    Toast.makeText(this@LoginActivity, "계정을 탈퇴한 후 재가입 및 로그인이 제한됩니다.", Toast.LENGTH_SHORT).show()
                 } else {
                     LoadingProgressDialogManager.hide()
-                    val message = response.message()
-                    Toast.makeText(this@LoginActivity, message, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@LoginActivity, "로그인에 실패했습니다. 네트워크 및 계정 확인 후 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
             override fun onFailure(call: Call<LoginResponsesData>, t: Throwable) {
@@ -299,7 +304,7 @@ class LoginActivity : AppCompatActivity() {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 val userEmailMap = task.result.email?.split("@")?.map { it }
 
-                if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true) {
+                if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true || userEmailMap?.contains("end90le51") == true || userEmailMap?.contains("sonms5676") == true) {
                     handleSignInResult(task)
                 } else {
                     LoadingProgressDialogManager.hide()
@@ -310,7 +315,7 @@ class LoginActivity : AppCompatActivity() {
                 }
             } else {
                 LoadingProgressDialogManager.hide()
-                Toast.makeText(this, "로그인에 실패하였습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@LoginActivity, "로그인에 실패했습니다. 네트워크 및 계정 확인 후 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
                 mGoogleSignInClient.signOut().addOnCompleteListener {
                     signIn() // Prompt for sign-in again
                 }

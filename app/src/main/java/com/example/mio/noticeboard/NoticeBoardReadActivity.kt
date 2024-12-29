@@ -877,18 +877,26 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         nbrBinding.readUserId.setOnClickListener {
             saveSharedPreferenceGoogleLogin.setProfileUserId(this, temp!!.user.id)
-            val intent = Intent(this, ProfileActivity::class.java).apply {
-                putExtra("studentId", temp!!.user.id)
+            if (temp?.user?.name != "(알 수 없음)") {
+                val intent = Intent(this, ProfileActivity::class.java).apply {
+                    putExtra("studentId", temp!!.user.id)
+                }
+                startActivity(intent)
+            } else {
+                Toast.makeText(this@NoticeBoardReadActivity, "탈퇴한 사용자입니다.", Toast.LENGTH_SHORT).show()
             }
-            startActivity(intent)
         }
 
         nbrBinding.readUserProfile.setOnClickListener {
             saveSharedPreferenceGoogleLogin.setProfileUserId(this, temp!!.user.id)
-            val intent = Intent(this, ProfileActivity::class.java).apply {
-                putExtra("studentId", temp!!.user.id)
+            if (temp?.user?.name != "(알 수 없음)") {
+                val intent = Intent(this, ProfileActivity::class.java).apply {
+                    putExtra("studentId", temp!!.user.id)
+                }
+                startActivity(intent)
+            } else {
+                Toast.makeText(this@NoticeBoardReadActivity, "탈퇴한 사용자입니다.", Toast.LENGTH_SHORT).show()
             }
-            startActivity(intent)
         }
 
         nbrBinding.readBookmark.setOnClickListener {

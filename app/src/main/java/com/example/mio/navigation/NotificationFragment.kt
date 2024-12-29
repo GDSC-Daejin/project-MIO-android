@@ -197,6 +197,7 @@ class NotificationFragment : Fragment() {
                 dialogContent.text = "정말로 삭제하시겠습니까?"
                 //아니오
                 dialogLeftBtn.setOnClickListener {
+                    viewModel.setLoading(false)
                     alertDialog.dismiss()
                 }
 

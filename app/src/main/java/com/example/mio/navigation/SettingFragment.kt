@@ -1,19 +1,25 @@
 package com.example.mio.navigation
 
 import android.app.ActivityManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.lifecycle.ViewModelProvider
 import com.example.mio.*
 import com.example.mio.databinding.FragmentSettingBinding
@@ -56,6 +62,7 @@ class SettingFragment : Fragment() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -110,8 +117,25 @@ class SettingFragment : Fragment() {
             val dialogCancelBtn = dialogView.findViewById<View>(R.id.dialog_left_btn)
             val dialogAcceptBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
 
+            val windowManager = requireActivity().getSystemService(Context.WINDOW_SERVICE) as WindowManager
+
+            val rect = windowManager.currentWindowMetrics.bounds
+
+            val window = alertDialog.window
+            val x = (rect.width() * 0.8f).toInt()
+            val y = (rect.height() * 0.4f).toInt()
+
+            window?.setLayout(x, y)
+
+            // 다이얼로그 창 크기 조정
+            /*alertDialog.window?.let { window ->
+                val layoutParams = window.attributes
+                layoutParams.width = (resources.displayMetrics.widthPixels * 1f).toInt() // 80%의 너비로 설정
+                window.attributes = layoutParams
+            }*/
 
             dialogCancelBtn.setOnClickListener {
+                LoadingProgressDialogManager.hide()
                 alertDialog.dismiss()
             }
 
@@ -145,7 +169,11 @@ class SettingFragment : Fragment() {
                 })
                 alertDialog.dismiss()
             }
-
+            alertDialog.setOnDismissListener {
+                // 다이얼로그가 종료된 후 처리할 동작
+                LoadingProgressDialogManager.hide()
+                Log.d("Dialog", "Dialog was dismissed")
+            }
 
             alertDialog.show()
         }

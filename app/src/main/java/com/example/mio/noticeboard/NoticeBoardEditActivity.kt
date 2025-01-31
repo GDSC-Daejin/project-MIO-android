@@ -59,7 +59,7 @@ import kotlin.math.*
 class NoticeBoardEditActivity : AppCompatActivity() {
     companion object {
         const val BASE_URL = "https://dapi.kakao.com/"
-        private const val API_KEY = BuildConfig.map_api_key
+        const val API_KEY = BuildConfig.map_api_key
     }
 
     private lateinit var mBinding : ActivityNoticeBoardEditBinding
@@ -1289,7 +1289,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             }
 
             override fun onFailure(call: Call<ResultSearchAddress>, t: Throwable) {
-                Log.w("LocalSearch", "통신 실패: ${t.message}")
                 Toast.makeText(this@NoticeBoardEditActivity, "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })

@@ -1,5 +1,6 @@
 package com.example.mio.tapsearch
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -8,20 +9,27 @@ import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.mio.KakaoAPI
 import com.example.mio.adapter.RecentSearchAdapter
 import com.example.mio.adapter.SearchResultAdapter
 import com.example.mio.helper.SharedPrefManager
 import com.example.mio.model.*
 import com.example.mio.RetrofitServerConnect
 import com.example.mio.databinding.ActivitySearchResultBinding
+import com.example.mio.helper.SharedPrefManager.loadRecentSearch
+import com.example.mio.noticeboard.NoticeBoardEditActivity
 import com.example.mio.viewmodel.FragSharedViewModel
 import com.example.mio.viewmodel.FragSharedViewModel2
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class SearchResultActivity : AppCompatActivity() { //검색창
     private lateinit var binding: ActivitySearchResultBinding
@@ -53,17 +61,28 @@ class SearchResultActivity : AppCompatActivity() { //검색창
         recentSearchAdapter = RecentSearchAdapter(emptyList()).apply {
             setOnItemClickListener(object : RecentSearchAdapter.OnItemClickListener {
                 override fun onItemClicked(location: LocationReadAllResponse) {
-                    sharedViewModel.selectedLocation.value = location
-                    //val locationJson = convertLocationToJSON(location)
-                    SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location)
-                    moveToSearchFragment(location)
+                    if (location.postId == -1) {
+                        moveToSearchFragment(location)
+                        SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location)
+                        val resultIntent = Intent().apply {
+                            putExtra("flag", 105) // 필요한 결과 값을 설정
+                            putExtra("location", location)
+                        }
+                        setResult(RESULT_OK, resultIntent)
+                        finish()
+                    } else {
+                        sharedViewModel.selectedLocation.value = location
+                        //val locationJson = convertLocationToJSON(location)
+                        SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location)
+                        moveToSearchFragment(location)
 
-                    val resultIntent = Intent().apply {
-                        putExtra("flag", 103) // 필요한 결과 값을 설정
-                        putExtra("location", location)
+                        val resultIntent = Intent().apply {
+                            putExtra("flag", 103) // 필요한 결과 값을 설정
+                            putExtra("location", location)
+                        }
+                        setResult(RESULT_OK, resultIntent)
+                        finish() // Activity 종료
                     }
-                    setResult(RESULT_OK, resultIntent)
-                    finish() // Activity 종료
                 }
                 override fun onItemRemove(location: LocationReadAllResponse) {
                     // 선택된 위치를 SharedPref에서 제거합니다.
@@ -147,16 +166,17 @@ class SearchResultActivity : AppCompatActivity() { //검색창
 
 
 
-    private fun filterAndHighlightText(query: String) {
+    private fun filterAndHighlightText(query: String) { //검색 및 하이라이트 처리
         RetrofitServerConnect.create(this@SearchResultActivity).getLocationPostData(query).enqueue(object :
             Callback<List<LocationReadAllResponse>> {
             override fun onResponse(call: Call<List<LocationReadAllResponse>>, response: Response<List<LocationReadAllResponse>>) {
                 if (response.isSuccessful) {
                     val responseData = response.body()
                     if (responseData.isNullOrEmpty()) {
-                        binding.textView4.visibility = View.VISIBLE
+                        searchKeyword(query)
+                        /*binding.textView4.visibility = View.VISIBLE
                         binding.textView5.visibility = View.VISIBLE
-                        binding.rvSearchList.visibility = View.GONE
+                        binding.rvSearchList.visibility = View.GONE*/
                     }
                     else {
                         adapter.updateData(responseData, query)
@@ -173,10 +193,76 @@ class SearchResultActivity : AppCompatActivity() { //검색창
             }
 
             override fun onFailure(call: Call<List<LocationReadAllResponse>>, t: Throwable) {
-                Log.d("error", t.toString())
                 binding.textView4.visibility = View.VISIBLE
                 binding.textView5.visibility = View.VISIBLE
                 binding.rvSearchList.visibility = View.GONE
+            }
+        })
+    }
+
+    private fun searchKeyword(keyword: String) {
+        val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+        if (inputMethodManager.isActive) {
+            // 가상 키보드가 올라가 있다면 내립니다.
+            inputMethodManager.hideSoftInputFromWindow(binding.etSearchField2.windowToken, 0)
+        }
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl(NoticeBoardEditActivity.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val api = retrofit.create(KakaoAPI::class.java)
+        val call = api.getSearchKeyword(NoticeBoardEditActivity.API_KEY, keyword)
+
+        call.enqueue(object : Callback<ResultSearchKeyword> {
+            override fun onResponse(call: Call<ResultSearchKeyword>, response: Response<ResultSearchKeyword>) {
+                if (response.isSuccessful) {
+                    val result = response.body()
+                    if (response.code() == 200) {
+                        val documents = result?.documents
+                        if (documents?.isNotEmpty() == true) {
+                            // 변환 작업
+                            val responseDataList = documents.map { document ->
+                                LocationReadAllResponse(
+                                    postId = -1, // 기본값
+                                    title = document.place_name,
+                                    content = document.category_name,
+                                    createDate = "",
+                                    targetDate = "",
+                                    targetTime = "",
+                                    category = null,
+                                    verifyGoReturn = false,
+                                    numberOfPassengers = 0,
+                                    user = null,
+                                    viewCount = 0,
+                                    verifyFinish = false,
+                                    participants = arrayListOf(),
+                                    latitude = document.y.toDouble(),
+                                    longitude = document.x.toDouble(),
+                                    bookMarkCount = 0,
+                                    participantsCount = 0,
+                                    location = document.address_name,
+                                    cost = 0,
+                                    isDeleteYN = "N",
+                                    postType = "BEFORE_DEADLINE"
+                                )
+                            }
+                            // 어댑터에 업데이트
+                            adapter.updateData(responseDataList, keyword)
+                        } else {
+                            Toast.makeText(this@SearchResultActivity, "검색 결과가 없습니다", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(this@SearchResultActivity, "검색에 실패하였습니다 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(this@SearchResultActivity, "검색에 실패하였습니다 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<ResultSearchKeyword>, t: Throwable) {
+                Toast.makeText(this@SearchResultActivity, "연결에 실패하였습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -199,18 +285,29 @@ class SearchResultActivity : AppCompatActivity() { //검색창
     }
 
 
-    private fun setupAdapter(items: List<LocationReadAllResponse>) {
+    private fun setupAdapter(items: List<LocationReadAllResponse>) { //지역 검색 클릭리스너
         adapter = SearchResultAdapter(items).apply {
             setOnItemClickListener(object : SearchResultAdapter.OnItemClickListener {
                 override fun onItemClicked(location: LocationReadAllResponse) {
-                    moveToSearchFragment(location)
-                    SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location)
-                    val resultIntent = Intent().apply {
-                        putExtra("flag", 103) // 필요한 결과 값을 설정
-                        putExtra("location", location)
+                    if (location.postId == -1) {
+                        moveToSearchFragment(location)
+                        SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location)
+                        val resultIntent = Intent().apply {
+                            putExtra("flag", 105) // 필요한 결과 값을 설정
+                            putExtra("location", location)
+                        }
+                        setResult(RESULT_OK, resultIntent)
+                        finish()
+                    } else {
+                        moveToSearchFragment(location)
+                        SharedPrefManager.saveRecentSearch(this@SearchResultActivity, location)
+                        val resultIntent = Intent().apply {
+                            putExtra("flag", 103) // 필요한 결과 값을 설정
+                            putExtra("location", location)
+                        }
+                        setResult(RESULT_OK, resultIntent)
+                        finish()
                     }
-                    setResult(RESULT_OK, resultIntent)
-                    finish()
                 }
             })
         }

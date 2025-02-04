@@ -22,12 +22,12 @@
 
 # retrofit
 -keep class MyApi.models.* { *; }
--keep interface com.example.mio.MioInterface.* { *; }
+-keep interface com.gdsc.mio.MioInterface.* { *; }
 -keepclassmembers enum MyApi.models.* { *; }
 # model, utils
--keep class com.example.mio.model.** { *; }
--keep class com.example.mio.KakaoAPI.** {*;}
--keepclassmembers class com.example.mio.model.** { *; }
+-keep class com.gdsc.mio.model.** { *; }
+-keep class com.gdsc.mio.KakaoAPI.** {*;}
+-keepclassmembers class com.gdsc.mio.model.** { *; }
 -keepclassmembers enum * { *; }
 # azure call
 

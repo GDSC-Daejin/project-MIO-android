@@ -15,11 +15,11 @@ def kakao_native_app_key = properties.getProperty('kakao_native_app_key')
 def applicationKey = properties.getProperty('mio_application_id')
 
 android {
-    namespace 'com.example.mio'
+    namespace 'com.gdsc.mio'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.mio"
+        applicationId "com.gdsc.mio"
         minSdk 26 // Android 8 (Oreo) 이상을 지원
         targetSdk 34
         versionCode 1

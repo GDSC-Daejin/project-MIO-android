@@ -14,11 +14,11 @@
         <Preference
             android:key="openSource_license"
             android:title="오픈소스 라이선스"
-            app:fragment="com.example.mio.OpenSourceLicenseFragment" />
+            app:fragment="com.gdsc.mio.OpenSourceLicenseFragment" />
 
         <Preference
             android:key="openSource_license2"
             android:title="오픈소스 라이선스2"
-            app:fragment="com.example.mio.OpenSourceManagementFragment" />
+            app:fragment="com.gdsc.mio.OpenSourceManagementFragment" />
     </PreferenceCategory>
 </PreferenceScreen>

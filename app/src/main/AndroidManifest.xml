@@ -16,7 +16,6 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
 
     <queries>
@@ -209,16 +208,16 @@
            Adding this meta data is required as of Google Mobile Ads SDK version 17.0.0 as explained in
            https://developers.google.com/ad-manager/mobile-ads-sdk/android/quick-start#update_your_androidmanifestxml
         -->
-        <meta-data
+        <!--<meta-data
             android:name="com.google.android.gms.ads.AD_MANAGER_APP"
-            android:value="true" />
+            android:value="true" />-->
         <!--
         This is the sample AdMob App ID. Insert your own AdMob App ID in quotes
         https://googlemobileadssdk.page.link/admob-android-update-manifest
         -->
-        <meta-data
+        <!--<meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="${applicationKey}" />
+            android:value="${applicationKey}" />-->
     </application>
 
 </manifest>

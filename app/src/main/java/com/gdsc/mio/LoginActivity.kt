@@ -22,7 +22,7 @@ import com.gdsc.mio.model.AccountStatus
 import com.gdsc.mio.model.User
 import com.gdsc.mio.util.AESKeyStoreUtil
 import com.gdsc.mio.util.AppUpdateManager
-import com.google.android.gms.ads.MobileAds
+import com.gdsc.mio.util.DebuggingCheck
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -65,7 +65,7 @@ class LoginActivity : AppCompatActivity() {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
         setContentView(mBinding.root)
-        MobileAds.initialize(this@LoginActivity) {}
+        //MobileAds.initialize(this@LoginActivity) {}
 
         setResultSignUp()
         saveSettingData()
@@ -341,6 +341,13 @@ class LoginActivity : AppCompatActivity() {
         resultLauncher.launch(signIntent)
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (DebuggingCheck.isUsbDebuggingEnabled(this)) {
+            Toast.makeText(this, "USB 디버깅이 감지되어 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()
+            finish()
+        }
+    }
 
     override fun onStop() {
         super.onStop()

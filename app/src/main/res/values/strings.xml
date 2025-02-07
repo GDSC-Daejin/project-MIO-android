@@ -14,7 +14,7 @@
     <string name="setDateText">%1$s.%2$s.%3$s (%4$s) %5$s:%6$s</string>
     <string name="setDateText2">%1$s %2$s</string>
     <string name="setDateText3">%1$s년/%2$s월/%3$s일</string>
-    <string name="setDateTextMonth">%1$s월</string>
+    <string name="setDateTextMonth">%1$s년 %2$s월</string>
 
     <string name="setInitDateText">yyyy/mm/dd</string>
     <string name="setInitTimeText">오전 00:00</string>
@@ -65,8 +65,4 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
-
-    <string name="banner_ad">ca-app-pub-2168794711133266/9176999241</string>
-    <string name="test_banner_ad">ca-app-pub-3940256099942544/6300978111</string>
-    <string name="ad_id">ca-app-pub-2168794711133266~8618596049</string>
 </resources>

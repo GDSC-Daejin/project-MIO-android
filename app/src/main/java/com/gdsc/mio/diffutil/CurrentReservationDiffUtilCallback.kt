@@ -1,6 +1,5 @@
 package com.gdsc.mio.diffutil
 
-import android.util.Log
 import androidx.recyclerview.widget.DiffUtil
 import com.gdsc.mio.model.PostData
 
@@ -21,7 +20,6 @@ class CurrentReservationDiffUtilCallback(
         val oldItem = mOldList[oldItemPosition]
         val newItem = mNewList[newItemPosition]
         val result = oldItem?.postID == newItem?.postID
-        Log.d("DiffUtil", "areItemsTheSame: oldPostID=${oldItem?.postID}, newPostID=${newItem?.postID}, result=$result")
         return result
     }
 
@@ -43,7 +41,6 @@ class CurrentReservationDiffUtilCallback(
                 oldItem?.postParticipation == newItem?.postParticipation &&
                 oldItem?.postParticipationTotal == newItem?.postParticipationTotal
 
-        Log.d("DiffUtil", "areContentsTheSame: oldItem=$oldItem, newItem=$newItem, result=$result")
         return result
     }
 

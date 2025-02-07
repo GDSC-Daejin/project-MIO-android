@@ -22,8 +22,8 @@ android {
         applicationId "com.gdsc.mio"
         minSdk 26 // Android 8 (Oreo) 이상을 지원
         targetSdk 34
-        versionCode 1
-        versionName "1.0" //업데이트마다 0.1씩 증가 시키고 5이상되어 1.5가되면 2로 올리고 versioncode도 2로 올리기
+        versionCode 5
+        versionName "1.0.4" //업데이트마다 0.1씩 증가 시키고 5이상되어 1.5가되면 2로 올리고 versioncode도 2로 올리기
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         //key set
@@ -42,8 +42,8 @@ android {
 
         buildConfigField "String", "server_URL", properties['server_URL']
         buildConfigField "String", "map_api_key", properties['map_api_key']
-        buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
-        buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
+//        buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
+//        buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
 
         manifestPlaceholders = [kakaoNativeAppKey: kakao_native_app_key, applicationKey: applicationKey]
     }
@@ -67,8 +67,8 @@ android {
             buildConfigField "String", "kakao_native_app_key",  "\"${properties['kakao_native_app_key']}\""
             buildConfigField "String", "server_URL", properties['server_URL']
             buildConfigField "String", "map_api_key", properties['map_api_key']
-            buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
-            buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
+            /*buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
+            buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']*/
             manifestPlaceholders = [kakaoNativeAppKey: kakao_native_app_key, applicationKey: applicationKey]
             //debugger true
             minifyEnabled true
@@ -83,8 +83,8 @@ android {
             buildConfigField "String", "server_URL", properties['server_URL']
             buildConfigField "String", "kakao_native_app_key",  "\"${properties['kakao_native_app_key']}\""
             buildConfigField "String", "map_api_key", properties['map_api_key']
-            buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
-            buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
+            /*buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
+            buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']*/
             manifestPlaceholders = [kakaoNativeAppKey: kakao_native_app_key, applicationKey: applicationKey]
         }
     }
@@ -182,7 +182,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-oss-licenses:17.1.0'
 
     //admob
-    implementation 'com.google.android.gms:play-services-ads:23.0.0'
+    //implementation 'com.google.android.gms:play-services-ads:23.0.0'
 
     //in app update
     // 따라서 프로젝트의 build.gradle 파일에 해당 저장소도 포함해야 합니다.

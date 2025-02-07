@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -29,6 +28,7 @@ import com.google.android.material.chip.Chip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.YearMonth
 import kotlin.collections.ArrayList
 
 
@@ -68,7 +68,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
         if (date == "DATE") {
             date = intent.getStringExtra("date").toString()
 
-            mttBinding.moreDate.text = getString(R.string.setDateTextMonth, date)
+            mttBinding.moreDate.text = getString(R.string.setDateTextMonth, YearMonth.now().year.toString(), date)
         }
 
 
@@ -95,14 +95,12 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             //setSelectData()
         }
         //이건 날짜, 탑승 수, 담배, 성별, 학교 순서 등 필터
-        //필터 취소 기능 넣기 TODO
         mttBinding.moreFilterBtn.setOnClickListener {
             val bottomSheet = BottomSheetFragment()
             bottomSheet.show(this.supportFragmentManager, bottomSheet.tag)
             bottomSheet.apply {
                 setCallback(object : BottomSheetFragment.OnSendFromBottomSheetDialog{
                     override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                         //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke}"
                         if (value.split(",").count {it == " "} < 5) {
                             getBottomData = value
@@ -123,7 +121,6 @@ class MoreTaxiTabActivity : AppCompatActivity() {
             bottomSheet.apply {
                 setCallback(object : AnotherBottomSheetFragment.OnSendFromBottomSheetDialog{
                     override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                         getBottomSheetData = value
                         myViewModel.postCheckSearchFilter(getBottomSheetData)
                     }
@@ -380,7 +377,7 @@ class MoreTaxiTabActivity : AppCompatActivity() {
                         item != null &&
                                 (noConditionDate.isEmpty() || item.postTargetDate == noConditionDate) &&
                                 (noConditionTime.isEmpty() || item.postTargetTime == noConditionTime) &&
-                                /*(noConditionPeople == -1 || item.postParticipationTotal == noConditionPeople) &&*/
+                                (item.postParticipationTotal == noConditionPeople) &&
                                 (noConditionSchool == null || item.postVerifyGoReturn == noConditionSchool) &&
                                 (noConditionGender == null || item.user.gender == noConditionGender) &&
                                 (noConditionSmoke == null || item.user.verifySmoker == noConditionSmoke)

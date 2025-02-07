@@ -524,6 +524,12 @@ class TaxiTabFragment : Fragment() {
                         if (taxiAllData.isEmpty()) {
                             taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                             taxiTabBinding.noticeBoardRV.visibility = View.GONE
+
+                            if (isFirst) {
+                                isFirst = false
+                            } else {
+                                Toast.makeText(requireContext(), "선택하신 날의 게시글이 존재하지 않습니다 더보기를 통해 게시글을 확인해주세요", Toast.LENGTH_SHORT).show()
+                            }
                         } else {
                             taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                             taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
@@ -558,7 +564,7 @@ class TaxiTabFragment : Fragment() {
                     taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                     taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
                 }
-                Toast.makeText(requireContext(), "선택된 날의 게시글이 없거나 최신글이 아닙니다. 더보기를 통해 확인해주세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "예상치 못한 오류가 발생했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }

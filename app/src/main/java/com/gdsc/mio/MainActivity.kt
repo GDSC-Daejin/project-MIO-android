@@ -28,7 +28,6 @@ import com.gdsc.mio.noticeboard.NoticeBoardEditActivity
 import com.gdsc.mio.databinding.ActivityMainBinding
 import com.gdsc.mio.sse.SSEForegroundService
 import com.gdsc.mio.util.AESKeyStoreUtil
-import com.google.android.gms.ads.MobileAds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +36,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 
-class MainActivity : AppCompatActivity(), FinishAdInterface {
+class MainActivity : AppCompatActivity() {
     private lateinit var mBinding : ActivityMainBinding
 
     private val TAG_HOME = "home_fragment"
@@ -65,7 +64,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
-        MobileAds.initialize(this@MainActivity) {}
+        //MobileAds.initialize(this@MainActivity) {}
         this.onBackPressedDispatcher.addCallback(this, callback)
 
         AESKeyStoreUtil.getOrCreateAESKey()
@@ -626,7 +625,7 @@ class MainActivity : AppCompatActivity(), FinishAdInterface {
         }
     }
 
-    override fun onYesButtonClick() {
+    /*override fun onYesButtonClick() {
         finishAffinity()
-    }
+    }*/
 }

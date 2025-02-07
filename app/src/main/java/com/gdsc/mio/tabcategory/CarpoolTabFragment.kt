@@ -611,7 +611,12 @@ class CarpoolTabFragment : Fragment() {
                         if (carpoolAllData.isEmpty()) {
                             taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                             taxiTabBinding.noticeBoardRV.visibility = View.GONE
-                            Toast.makeText(requireContext(), "선택한 날의 게시글이 존재하지 않습니다 더보기를 통해 게시글을 확인해주세요", Toast.LENGTH_SHORT).show()
+
+                            if (isFirst) {
+                                isFirst = false
+                            } else {
+                                Toast.makeText(requireContext(), "선택하신 날의 게시글이 존재하지 않습니다 더보기를 통해 게시글을 확인해주세요", Toast.LENGTH_SHORT).show()
+                            }
                         } else {
                             taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                             taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE

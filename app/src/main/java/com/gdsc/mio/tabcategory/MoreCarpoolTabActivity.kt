@@ -28,6 +28,7 @@ import com.google.android.material.chip.Chip
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.YearMonth
 import kotlin.collections.ArrayList
 
 
@@ -70,7 +71,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
         if (date == "DATE") {
             date = intent.getStringExtra("date").toString()
 
-            mttBinding.moreDate.text = getString(R.string.setDateTextMonth, date)
+            mttBinding.moreDate.text = getString(R.string.setDateTextMonth, YearMonth.now().year.toString(), date)
         }
 
 
@@ -98,7 +99,6 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
             //setSelectData()
         }
         //이건 날짜, 탑승 수, 담배, 성별, 학교 순서 등 필터
-        //필터 취소 기능 넣기 TODO
         mttBinding.moreFilterBtn.setOnClickListener {
             val bottomSheet = BottomSheetFragment()
             bottomSheet.show(this.supportFragmentManager, bottomSheet.tag)
@@ -355,7 +355,7 @@ class MoreCarpoolTabActivity : AppCompatActivity() {
                         item != null &&
                                 (noConditionDate.isEmpty() || item.postTargetDate == noConditionDate) &&
                                 (noConditionTime.isEmpty() || item.postTargetTime == noConditionTime) &&
-                               /* (noConditionPeople >= 1 || item.postParticipationTotal == noConditionPeople) &&*/
+                               (item.postParticipationTotal == noConditionPeople) &&
                                 (noConditionSchool == null || item.postVerifyGoReturn == noConditionSchool) &&
                                 (noConditionGender == null || item.user.gender == noConditionGender) &&
                                 (noConditionSmoke == null || item.user.verifySmoker == noConditionSmoke)

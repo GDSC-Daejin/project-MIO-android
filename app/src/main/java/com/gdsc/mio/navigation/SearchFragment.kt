@@ -261,6 +261,7 @@ class SearchFragment : Fragment() {
                         val responseData = response.body()
                         if (responseData.isNullOrEmpty()) {
                             Toast.makeText(requireActivity(), "검색된 주위 게시글이 없습니다", Toast.LENGTH_SHORT).show()
+                            sBinding?.postMore?.visibility = View.GONE
                         } else {
                             val selectedData = responseData.firstOrNull { it.postId == postId }
                             if (selectedData != null) {
@@ -279,6 +280,7 @@ class SearchFragment : Fragment() {
                     } else {
                         LoadingProgressDialogManager.hide()
                         Toast.makeText(requireActivity(), "주위 게시글 검색에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
+                        sBinding?.postMore?.visibility = View.GONE
                     }
                 }
 

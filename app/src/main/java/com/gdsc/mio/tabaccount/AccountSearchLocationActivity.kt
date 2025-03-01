@@ -58,18 +58,17 @@ class AccountSearchLocationActivity : AppCompatActivity() {
                 override fun onItemClicked(location: LocationReadAllResponse) {
                     sharedViewModel.selectedAccountLocation.value = location
 
-                    if (location.location.split(" ").size < 2) {
+                    if (location.location.split(" ").size > 2) {
                         val locationJson = convertAccountLocationToJSON(location)
                         SharedPrefManager.saveAccountLocationRecentSearch(this@AccountSearchLocationActivity, locationJson)
 
                         val intent = Intent(this@AccountSearchLocationActivity, AccountSettingActivity::class.java).apply {
                             putExtra("flag", 4)
-                            putExtra("locationData2", location.location.split(" ")[2])
+                            putExtra("locationData2", location.location.split(" ").last())
                         }
                         setResult(RESULT_OK, intent)
                         finish()
                     } else {
-
                         Toast.makeText(this@AccountSearchLocationActivity, "동으로 검색해주세요", Toast.LENGTH_SHORT).show()
                     }
                 }

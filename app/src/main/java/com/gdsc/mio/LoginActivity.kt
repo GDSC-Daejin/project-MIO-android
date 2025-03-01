@@ -299,8 +299,8 @@ class LoginActivity : AppCompatActivity() {
             if (result.resultCode == Activity.RESULT_OK) {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 val userEmailMap = task.result.email?.split("@")?.map { it }
-
-                if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true || userEmailMap?.contains("end90le51") == true || userEmailMap?.contains("sonms5676") == true) {
+                handleSignInResult(task)
+                /*if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true || userEmailMap?.contains("end90le51") == true || userEmailMap?.contains("sonms5676") == true) {
                     handleSignInResult(task)
                 } else {
                     LoadingProgressDialogManager.hide()
@@ -308,7 +308,7 @@ class LoginActivity : AppCompatActivity() {
                     mGoogleSignInClient.signOut().addOnCompleteListener {
                         signIn() // Prompt for sign-in again
                     }
-                }
+                }*/
             } else {
                 LoadingProgressDialogManager.hide()
                 Toast.makeText(this@LoginActivity, "로그인에 실패했습니다. 네트워크 및 계정 확인 후 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
@@ -341,13 +341,13 @@ class LoginActivity : AppCompatActivity() {
         resultLauncher.launch(signIntent)
     }
 
-    override fun onResume() {
+    /*override fun onResume() {
         super.onResume()
         if (DebuggingCheck.isUsbDebuggingEnabled(this)) {
             Toast.makeText(this, "USB 디버깅이 감지되어 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()
             finish()
         }
-    }
+    }*/
 
     override fun onStop() {
         super.onStop()

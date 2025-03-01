@@ -26,6 +26,7 @@ import com.gdsc.mio.loading.LoadingProgressDialogManager
 import com.gdsc.mio.model.*
 import com.gdsc.mio.noticeboard.NoticeBoardEditActivity
 import com.gdsc.mio.noticeboard.NoticeBoardReadActivity
+import com.gdsc.mio.util.AESKeyStoreUtil
 import com.gdsc.mio.viewmodel.CurrentDataViewModel
 import com.gdsc.mio.viewmodel.SharedViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +42,7 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.*
+import javax.crypto.SecretKey
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -84,13 +86,16 @@ class TaxiTabFragment : Fragment() {
     //게시글과 targetDate를 받아 viewmodel에저장
     private var sharedViewModel: SharedViewModel? = null
     private var calendarTempData = ArrayList<String>()
-    private var selectCalendarTaxiData : ArrayList<PostData> = ArrayList()
     //edit에서 받은 값
     private var testselectCalendarData = HashMap<String, ArrayList<PostData>>()
 
     private var isFirst = true
 
     private lateinit var viewModel : CurrentDataViewModel
+
+    private val secretKey: SecretKey by lazy {
+        AESKeyStoreUtil.getOrCreateAESKey()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -265,7 +270,7 @@ class TaxiTabFragment : Fragment() {
 
         taxiTabBinding.moreAreaBtn.setOnClickListener {
             val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-            val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity()).toString()
+            val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity(), secretKey).toString()
             val intent = Intent(requireActivity(), MoreAreaActivity::class.java).apply {
                 putExtra("area", myAreaData)
             }
@@ -571,7 +576,7 @@ class TaxiTabFragment : Fragment() {
 
     private fun setMyAreaData() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-        val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity()).toString()
+        val myAreaData = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity(), secretKey).toString()
 
         if (myAreaData.isEmpty() || myAreaData == "") {
             CoroutineScope(Dispatchers.Main).launch {

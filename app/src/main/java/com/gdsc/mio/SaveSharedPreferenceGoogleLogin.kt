@@ -90,8 +90,15 @@ class SaveSharedPreferenceGoogleLogin {
     }
 
 
-    fun getSharedArea(ctx: Context?): String? {
-        return getSharedPreferences(ctx).getString(myAreaTag, "")
+    fun getSharedArea(ctx: Context?, secretKey: SecretKey): String {
+        val encryptedArea =  getSharedPreferences(ctx).getString(myAreaTag, "")
+        return if (encryptedArea.isNullOrEmpty()) {
+            ""
+        } else {
+            // ','로 암호화된 텍스트와 IV를 구분하여 가져옴
+            val splitEncrypted = encryptedArea.split(",")
+            AESUtil.decryptAES(secretKey, splitEncrypted[0], splitEncrypted[1]) // 복호화하여 원래 값을 반환
+        }
     }
 
     // 필터정보저장

@@ -26,6 +26,7 @@ import com.gdsc.mio.tabaccount.AccountReviewActivity
 import com.gdsc.mio.tabaccount.AccountSettingActivity
 import com.gdsc.mio.databinding.FragmentAccountBinding
 import com.gdsc.mio.loading.LoadingProgressDialogManager
+import com.gdsc.mio.util.AESKeyStoreUtil
 import com.google.android.material.tabs.TabLayoutMediator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,6 +34,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import javax.crypto.SecretKey
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -64,6 +66,10 @@ class AccountFragment : Fragment() {
 
     //체크용
     private var isPolicyAllow : Boolean? = null
+
+    private val secretKey: SecretKey by lazy {
+        AESKeyStoreUtil.getOrCreateAESKey()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -306,7 +312,7 @@ class AccountFragment : Fragment() {
                     }
 
                     if (activityLocation != null) {
-                        aBinding.accountAddress.text = activityLocation
+                        aBinding.accountAddress.text = saveSharedPreferenceGoogleLogin.getSharedArea(requireActivity(), secretKey = secretKey)
                         aBinding.accountAddress.setTextColor(ContextCompat.getColor(requireActivity() ,R.color.mio_gray_7))
                         saveSharedPreferenceGoogleLogin.setArea(requireActivity(), activityLocation)
                     } else {

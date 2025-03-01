@@ -188,8 +188,26 @@ class AccountSettingActivity : AppCompatActivity() {
                     if (response.body()?.activityLocation.isNullOrEmpty()) {
                         aBinding?.asLocationTv?.text = "화살표를 눌러 지역을 검색해주세요"
                     } else {
-                        aBinding?.asLocationTv?.text = response.body()?.activityLocation
-                        setLocation2 = response.body()?.activityLocation
+                        try {
+                            /*aBinding?.asLocationTv?.text = response.body()?.activityLocation
+                            setLocation2 = response.body()?.activityLocation
+                            */
+                            if (response.body()?.activityLocation?.contains(",") != true) {
+                                aBinding?.asLocationTv?.text = response.body()?.activityLocation.toString()
+                                setLocation2 = response.body()?.activityLocation.toString()
+                            } else {
+                                val splitEnResponse = response.body()?.activityLocation.toString().split(",").map { it }
+                                // 복호화
+                                val deText = AESUtil.decryptAES(secretKey, splitEnResponse[0], splitEnResponse[1])
+                                aBinding?.asLocationTv?.text = deText
+                                setLocation2 = deText // 암호화된 값 저장
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            // 복호화 실패 처리, 오류 메시지 출력 또는 기본 메시지 설정
+                            aBinding?.asLocationTv?.text = this@AccountSettingActivity.getString(R.string.AccountSettingText)
+                            setLocation2 = ""
+                        }
                     }
 
                 } else {
@@ -207,11 +225,16 @@ class AccountSettingActivity : AppCompatActivity() {
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val userId = saveSharedPreferenceGoogleLogin.getUserId(this)
         val enAN = AESUtil.encryptAES(secretKey, setAccountNumber.toString())
+        val enLocation = if (setLocation != null) {
+            AESUtil.encryptAES(secretKey,  setLocation?.address?.region_3depth_name.toString())
+        } else {
+            AESUtil.encryptAES(secretKey,  setLocation2.toString())
+        }
 
         sendAccountData = if (setLocation != null) {
-            EditAccountData(isGender, isSmoker, "${enAN.first},${enAN.second}", setLocation?.address?.region_3depth_name.toString())
+            EditAccountData(isGender, isSmoker, "${enAN.first},${enAN.second}", "${enLocation.first},${enLocation.second}")
         } else {
-            EditAccountData(isGender, isSmoker, "${enAN.first},${enAN.second}", setLocation2.toString())
+            EditAccountData(isGender, isSmoker, "${enAN.first},${enAN.second}", "${enLocation.first},${enLocation.second}")
         }
 
         RetrofitServerConnect.create(this@AccountSettingActivity).editMyAccountData(userId, sendAccountData!!).enqueue(object : Callback<User> {

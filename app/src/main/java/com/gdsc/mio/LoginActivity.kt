@@ -341,13 +341,13 @@ class LoginActivity : AppCompatActivity() {
         resultLauncher.launch(signIntent)
     }
 
-    /*override fun onResume() {
+    override fun onResume() {
         super.onResume()
         if (DebuggingCheck.isUsbDebuggingEnabled(this)) {
             Toast.makeText(this, "USB 디버깅이 감지되어 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()
             finish()
         }
-    }*/
+    }
 
     override fun onStop() {
         super.onStop()

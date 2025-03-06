@@ -232,7 +232,6 @@ class LoginActivity : AppCompatActivity() {
                         saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, accessTokenExpiresIn.toString())
                         //saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, refreshToken)
 
-
                         //5초
                         val builder =  OkHttpClient.Builder()
                             .connectTimeout(5, TimeUnit.SECONDS)
@@ -262,6 +261,8 @@ class LoginActivity : AppCompatActivity() {
                     Toast.makeText(this@LoginActivity, "계정을 탈퇴한 후 재가입 및 로그인이 제한됩니다.", Toast.LENGTH_SHORT).show()
                 } else {
                     LoadingProgressDialogManager.hide()
+                    /*Log.e("signInCheck", response.errorBody()?.string()!!)
+                    Log.e("signInCheck", response.code().toString())*/
                     Toast.makeText(this@LoginActivity, "로그인에 실패했습니다. 네트워크 및 계정 확인 후 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -311,6 +312,7 @@ class LoginActivity : AppCompatActivity() {
                 }*/
             } else {
                 LoadingProgressDialogManager.hide()
+                //Log.e("Login", result.resultCode.toString())
                 Toast.makeText(this@LoginActivity, "로그인에 실패했습니다. 네트워크 및 계정 확인 후 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
                 mGoogleSignInClient.signOut().addOnCompleteListener {
                     signIn() // Prompt for sign-in again
@@ -330,8 +332,10 @@ class LoginActivity : AppCompatActivity() {
             saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
             val userInfoToken = TokenRequest(idToken.toString())
             signInCheck(userInfoToken)
+
         } catch (e: ApiException) {
             LoadingProgressDialogManager.hide()
+            //Log.e("handleSignInResult", e.statusCode.toString())
             Toast.makeText(this, "로그인에 오류가 발생했습니다. ${e.statusCode}", Toast.LENGTH_SHORT).show()
         }
     }
@@ -341,7 +345,7 @@ class LoginActivity : AppCompatActivity() {
         resultLauncher.launch(signIntent)
     }
 
-    override fun onResume() {
+   override fun onResume() {
         super.onResume()
         if (DebuggingCheck.isUsbDebuggingEnabled(this)) {
             Toast.makeText(this, "USB 디버깅이 감지되어 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()

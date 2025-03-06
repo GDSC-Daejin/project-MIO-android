@@ -97,7 +97,11 @@ class SaveSharedPreferenceGoogleLogin {
         } else {
             // ','로 암호화된 텍스트와 IV를 구분하여 가져옴
             val splitEncrypted = encryptedArea.split(",")
-            AESUtil.decryptAES(secretKey, splitEncrypted[0], splitEncrypted[1]) // 복호화하여 원래 값을 반환
+            if (splitEncrypted.size > 1) {
+                AESUtil.decryptAES(secretKey, splitEncrypted[0], splitEncrypted[1]) // 복호화하여 원래 값을 반환
+            } else {
+                splitEncrypted.first().toString()
+            }
         }
     }
 

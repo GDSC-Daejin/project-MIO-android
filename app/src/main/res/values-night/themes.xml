@@ -13,7 +13,10 @@
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
         <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-        <item name="android:windowFullscreen">true</item>
+       <!-- <item name="windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>-->
+
+        <!-- colorSurface 추가 -->
+        <item name="colorSurface">@color/white</item>
     </style>
 </resources>

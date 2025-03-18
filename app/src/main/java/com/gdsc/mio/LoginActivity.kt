@@ -62,7 +62,7 @@ class LoginActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onCreate(savedInstanceState: Bundle?) {
         //상태바 지우기(이 activity만)
-        supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
+        //supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
         setContentView(mBinding.root)
         //MobileAds.initialize(this@LoginActivity) {}
@@ -96,9 +96,11 @@ class LoginActivity : AppCompatActivity() {
         appUpdateLauncher = registerForActivityResult(
             ActivityResultContracts.StartIntentSenderForResult()
         ) { result ->
-            // 사용자가 업데이트를 취소하거나 오류가 발생한 경우 처리
-            if (result.resultCode != RESULT_OK) {
-                // 업데이트 실패 처리 (필요 시 다시 시도하거나 메시지 표시)
+            if (result.resultCode == RESULT_OK) {
+                //업데이트 성공 후 앱 재시작
+                restartApp()
+            } else {
+                // 업데이트 실패 처리
                 Toast.makeText(this@LoginActivity, "앱의 업데이트가 취소되거나 실패하였습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
             }
         }
@@ -107,14 +109,13 @@ class LoginActivity : AppCompatActivity() {
         checkForAppUpdate()
     }
 
-    private fun canUserLogin(): Boolean {
-        val userId = saveSharedPreferenceGoogleLogin.getUserId(this@LoginActivity)
-
-        /*if (userId == -1) {
-            RetrofitServerConnect.create(this@LoginActivity).getUserProfileData()
-        }*/
-        return true // 로그인 가능
+    private fun restartApp() {
+        val intent = packageManager.getLaunchIntentForPackage(packageName)
+        intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+        startActivity(intent)
+        Runtime.getRuntime().exit(0)  // 현재 프로세스를 종료하고 앱 재시작
     }
+
 
     @RequiresApi(Build.VERSION_CODES.P)
     private fun checkForAppUpdate() {

@@ -2,7 +2,6 @@ package com.gdsc.mio.noticeboard
 
 import android.animation.ObjectAnimator
 import android.app.DatePickerDialog
-import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -18,9 +17,12 @@ import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
+import android.widget.NumberPicker
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -328,7 +330,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 myViewModel.postCheckComplete(complete = true)
                 it.isFirstVF.isFirst = false
                 isFirst = true
-                println("checkbool")
             }
 
             if (it.isSecondVF.isSecond) {
@@ -353,13 +354,12 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 }
                 mBinding.editNext.setOnClickListener {
                     if (currentPage == 2 && countPage == 1) {
-                        returnStatusbar()
+                        returnStatusBar()
                     }
                     mBinding.editViewflipper.showNext()
                     isComplete = !isComplete
                     myViewModel.postCheckComplete(false)
                     currentPage += 1
-                    Log.d("edit currentpage", currentPage.toString())
                     myViewModel.postCheckPage(currentPage)
                     // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
                     val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -435,7 +435,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             }
             override fun afterTextChanged(editable: Editable) {
                 editTitle = editable.toString()
-                println(editable.toString())
                 /*if (editable.isEmpty()) {
                     Toast.makeText("")
                 }*/
@@ -456,96 +455,11 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             selectFormattedDate = eTemp!!.postTargetDate
         }
         mBinding.editCalendar.setOnClickListener {
-            // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
-            val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            // 가상 키보드가 올라가 있는지 여부를 확인합니다.
-            if (inputMethodManager.isActive) {
-                // 가상 키보드가 올라가 있다면 내립니다.
-                inputMethodManager.hideSoftInputFromWindow(mBinding.editCalendar.windowToken, 0)
-            }
+            showDatePicker()
+        }
 
-            val cal = Calendar.getInstance()
-            val today = Calendar.getInstance()
-
-            val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
-
-                val selectedDate = Calendar.getInstance()
-                selectedDate.set(year, month, day)
-
-                // 주말 여부 확인
-                val dayOfWeek = selectedDate.get(Calendar.DAY_OF_WEEK)
-                if (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) {
-                    Toast.makeText(this, "현행법상 주말은 선택할 수 없습니다. 다른 날짜를 선택해주세요.", Toast.LENGTH_SHORT).show()
-                    return@OnDateSetListener
-                }
-
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        // URL 요청 및 JSON 데이터 읽기
-                        val url = URL("https://holidays.hyunbin.page/basic.json")
-                        val inputStream = withContext(Dispatchers.IO) { url.openStream() }
-                        val data = inputStream.bufferedReader().use { it.readText() }
-                        val holidays = parseHolidays(data, year.toString()) // JSON 파싱 함수 호출
-
-                        // 선택한 날짜와 비교
-                        val formattedDate = String.format("%04d-%02d-%02d", year, month + 1, day) // 2024-04-10 형식
-                        withContext(Dispatchers.Main) {
-                            if (holidays.containsKey(formattedDate)) {
-                                Toast.makeText(
-                                    this@NoticeBoardEditActivity,
-                                    "현행법상 공휴일은 선택할 수 없습니다. 다른 날짜를 선택해주세요.",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                return@withContext
-                            } else {
-                                // 선택이 유효한 경우, 처리 로직 실행
-                                selectTargetDate = "${year}년/${month + 1}월/${day}일"
-                                selectFormattedDate = LocalDate.parse(
-                                    selectTargetDate,
-                                    DateTimeFormatter.ofPattern("yyyy년/M월/d일")
-                                ).format(DateTimeFormatter.ISO_DATE)
-                                mBinding.editSelectDateTv.text = getString(
-                                    R.string.setDateText3,
-                                    "$year",
-                                    "${month + 1}",
-                                    "$day"
-                                )
-                                mBinding.editSelectDateTv.setTextColor(
-                                    ContextCompat.getColor(this@NoticeBoardEditActivity, R.color.mio_gray_11)
-                                )
-                                isAllCheck.isFirstVF.isCalendar = true
-                                myViewModel.postCheckValue(isAllCheck)
-
-                                if (selectTargetDate != null) {
-                                    mBinding.editCalendar.setImageResource(R.drawable.filter_calendar_update_icon)
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(this@NoticeBoardEditActivity, "공휴일 확인 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                }
-            }
-
-            val datePickerDialog = DatePickerDialog(this, R.style.MySpinnerDatePickerStyle, data,
-                cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
-
-            // Get the DatePicker instance from the DatePickerDialog
-            val datePicker = datePickerDialog.datePicker
-
-            // Set minimum date to today
-            datePicker.minDate = today.timeInMillis
-
-            //최대날짜를 현재년도의 다음년도의 12월 31일까지
-            val maxDate = Calendar.getInstance()
-            maxDate.set(today.get(Calendar.YEAR) + 1, Calendar.DECEMBER, 31)
-            datePicker.maxDate = maxDate.timeInMillis
-
-            datePickerDialog.show()
+        mBinding.editDateLl.setOnClickListener {
+            showDatePicker()
         }
 
 
@@ -554,7 +468,10 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             selectFormattedTime = eTemp!!.postTargetTime
         }
         mBinding.editTime.setOnClickListener {
-            showHourPicker()
+            showCustomTimePickerDialog()
+        }
+        mBinding.editTimeLl.setOnClickListener {
+            showCustomTimePickerDialog()
         }
 
         //카테고리 관리
@@ -639,7 +556,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         }*/
     }
 
-    fun parseHolidays(jsonString: String, year : String): Map<String, List<String>> {
+    private fun parseHolidays(jsonString: String, year : String): Map<String, List<String>> {
         val holidaysMap = mutableMapOf<String, List<String>>()
 
         try {
@@ -998,7 +915,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                                 response: Response<AddPostResponse>
                             ) {
                                 if (response.isSuccessful) {
-                                    println("succcckkkk")
+                                    Toast.makeText(this@NoticeBoardEditActivity, "게시글 수정을 완료하였습니다.", Toast.LENGTH_SHORT).show()
                                 } else {
                                     Toast.makeText(this@NoticeBoardEditActivity, "게시글 수정에 실패하였습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                                 }
@@ -1058,13 +975,12 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             }
             mBinding.editNext.setOnClickListener {
                 if (currentPage == 2 && countPage == 1) {
-                    returnStatusbar()
+                    returnStatusBar()
                 }
                 mBinding.editViewflipper.showNext()
                 isComplete = !isComplete
                 myViewModel.postCheckComplete(false)
                 currentPage += 1
-                Log.d("edit currentpage", currentPage.toString())
                 myViewModel.postCheckPage(currentPage)
             }
             isFirst = true
@@ -1082,7 +998,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 countPage -= 1
                 myViewModel.postCheckComplete(false)
                 mBinding.editViewflipper.showPrevious()
-                returnStatusbar()
+                returnStatusBar()
             } else if (currentPage == 3) {
                 myViewModel.postCheckComplete(true)
                 currentPage -= 1
@@ -1107,14 +1023,104 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
     }
 
-    private fun showHourPicker() {
+    private fun showDatePicker() {
+        // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+        val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+        if (inputMethodManager.isActive) {
+            // 가상 키보드가 올라가 있다면 내립니다.
+            inputMethodManager.hideSoftInputFromWindow(mBinding.editCalendar.windowToken, 0)
+        }
+
+        val cal = Calendar.getInstance()
+        val today = Calendar.getInstance()
+
+        val data = DatePickerDialog.OnDateSetListener { _, year, month, day ->
+
+            val selectedDate = Calendar.getInstance()
+            selectedDate.set(year, month, day)
+
+            // 주말 여부 확인
+            val dayOfWeek = selectedDate.get(Calendar.DAY_OF_WEEK)
+            if (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) {
+                Toast.makeText(this, "현행법상 주말은 선택할 수 없습니다. 다른 날짜를 선택해주세요.", Toast.LENGTH_SHORT).show()
+                return@OnDateSetListener
+            }
+
+
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    // URL 요청 및 JSON 데이터 읽기
+                    val url = URL("https://holidays.hyunbin.page/basic.json")
+                    val inputStream = withContext(Dispatchers.IO) { url.openStream() }
+                    val data = inputStream.bufferedReader().use { it.readText() }
+                    val holidays = parseHolidays(data, year.toString()) // JSON 파싱 함수 호출
+
+                    // 선택한 날짜와 비교
+                    val formattedDate = String.format("%04d-%02d-%02d", year, month + 1, day) // 2024-04-10 형식
+                    withContext(Dispatchers.Main) {
+                        if (holidays.containsKey(formattedDate)) {
+                            Toast.makeText(
+                                this@NoticeBoardEditActivity,
+                                "현행법상 공휴일은 선택할 수 없습니다. 다른 날짜를 선택해주세요.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@withContext
+                        } else {
+                            // 선택이 유효한 경우, 처리 로직 실행
+                            selectTargetDate = "${year}년/${month + 1}월/${day}일"
+                            selectFormattedDate = LocalDate.parse(
+                                selectTargetDate,
+                                DateTimeFormatter.ofPattern("yyyy년/M월/d일")
+                            ).format(DateTimeFormatter.ISO_DATE)
+                            mBinding.editSelectDateTv.text = getString(
+                                R.string.setDateText3,
+                                "$year",
+                                "${month + 1}",
+                                "$day"
+                            )
+                            mBinding.editSelectDateTv.setTextColor(
+                                ContextCompat.getColor(this@NoticeBoardEditActivity, R.color.mio_gray_11)
+                            )
+                            isAllCheck.isFirstVF.isCalendar = true
+                            myViewModel.postCheckValue(isAllCheck)
+
+                            if (selectTargetDate != null) {
+                                mBinding.editCalendar.setImageResource(R.drawable.filter_calendar_update_icon)
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@NoticeBoardEditActivity, "공휴일 확인 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+
+        val datePickerDialog = DatePickerDialog(this, R.style.MySpinnerDatePickerStyle, data,
+            cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
+
+        val datePicker = datePickerDialog.datePicker
+
+        datePicker.minDate = today.timeInMillis
+
+        //최대날짜를 현재년도의 다음년도의 12월 31일까지
+        val maxDate = Calendar.getInstance()
+        maxDate.set(today.get(Calendar.YEAR) + 1, Calendar.DECEMBER, 31)
+        datePicker.maxDate = maxDate.timeInMillis
+
+        datePickerDialog.show()
+    }
+
+    /*private fun showHourPicker() {
         val myCalender = Calendar.getInstance()
         val hour = myCalender[Calendar.HOUR_OF_DAY]
         val minute = myCalender[Calendar.MINUTE]
         val myTimeListener =
             TimePickerDialog.OnTimeSetListener { view, hourOfDay, pickerMinute ->
                 if (view.isShown) {
-
                     // 시간 검증
                     val isValidTime = (hourOfDay in 7..8 && pickerMinute >= 0) || (hourOfDay in 18..19 && pickerMinute >= 0)
                     if (!isValidTime) {
@@ -1164,10 +1170,88 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         }
 
         timePickerDialog.show()
+    }*/
+    private fun showCustomTimePickerDialog() {
+        val myCalendar = Calendar.getInstance()
+        val hour = myCalendar[Calendar.HOUR_OF_DAY]
+        val minute = myCalendar[Calendar.MINUTE]
+
+        val dialogView = layoutInflater.inflate(R.layout.dialog_time_picker, null)
+
+        val hourPicker: NumberPicker = dialogView.findViewById(R.id.hourPicker)
+        val minutePicker: NumberPicker = dialogView.findViewById(R.id.minutePicker)
+        val btnOk: TextView = dialogView.findViewById(R.id.btn_ok) // 선택 완료 버튼
+
+        // 시간 NumberPicker 설정
+        hourPicker.minValue = 0
+        hourPicker.maxValue = 23
+        hourPicker.value = hour // 기본 값 설정
+        hourPicker.wrapSelectorWheel = true
+
+        // 분 NumberPicker 설정
+        minutePicker.minValue = 0
+        minutePicker.maxValue = 59
+        minutePicker.value = minute // 기본 값 설정
+        minutePicker.wrapSelectorWheel = true
+
+        // 슬라이드 및 수동 입력 가능하도록 설정
+        hourPicker.descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
+        minutePicker.descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
+
+        // 다이얼로그 생성
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            //.setCancelable(true) // 다이얼로그 바깥을 클릭하면 닫히지 않도록 설정
+            .create()
+        dialog.window?.setBackgroundDrawableResource(R.drawable.rounded_corner_dialog)
+
+        btnOk.setOnClickListener {
+            val selectedHour = hourPicker.value
+            val selectedMinute = minutePicker.value
+
+            // 시간 검증 (7시-9시, 18시-20시만 가능)
+            val isValidTime = (selectedHour in 7..8 && selectedMinute >= 0) || (selectedHour in 18..19 && selectedMinute >= 0)
+            if (!isValidTime) {
+                Toast.makeText(
+                    this,
+                    "현행법상 오전 7시부터 9시, 오후 6시부터 8시까지만 선택 가능합니다.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            // 시간 포맷 변경
+            val tempS = "${selectedHour}시 ${selectedMinute}분"
+            selectFormattedTime = LocalTime.parse(tempS, DateTimeFormatter.ofPattern("H시 m분"))
+                .format(DateTimeFormatter.ofPattern("HH:mm"))
+
+            // 오전/오후 표시 처리
+            selectTime = when {
+                selectedHour > 12 -> { // 오후 시간
+                    val pm = selectedHour - 12
+                    "오후 $pm 시 $selectedMinute 분"
+                }
+                else -> { // 오전 시간
+                    "오전 $selectedHour 시 $selectedMinute 분"
+                }
+            }
+
+            // UI 업데이트
+            mBinding.editSelectTime.text = selectTime
+            mBinding.editSelectTime.setTextColor(ContextCompat.getColor(this, R.color.mio_gray_11))
+            isAllCheck.isFirstVF.isTime = true
+
+            // 아이콘 변경
+            mBinding.editTime.setImageResource(R.drawable.filter_time_update_icon)
+
+            // 다이얼로그 닫기
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
-
-    private fun returnStatusbar() {
+    private fun returnStatusBar() {
         mBinding.toolbar.visibility = View.VISIBLE
         // 기존의 FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS를 추가합니다.
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)

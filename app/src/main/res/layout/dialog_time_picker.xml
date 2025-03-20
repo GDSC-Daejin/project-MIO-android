@@ -17,6 +17,35 @@
         android:gravity="center"
         >
         <LinearLayout
+            android:id="@+id/linearLayout13"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="10dp"
+            >
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:fontFamily="@font/pretendard_bold"
+                android:gravity="center"
+                android:text=""
+                android:textSize="14sp" />
+
+            <NumberPicker
+                android:id="@+id/am_pm_picker"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:dividerHeight="1dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:importantForAccessibility="yes"
+                android:inputType="none"
+                android:theme="@style/AppTheme.NumberPicker" />
+        </LinearLayout>
+        <LinearLayout
             android:id="@+id/linearLayout17"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

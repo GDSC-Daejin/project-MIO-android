@@ -17,6 +17,7 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <queries>
         <package android:name="viva.republica.toss" /> <!-- 토스뱅크 -->
@@ -45,10 +46,19 @@
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="33">
 
-        <service android:name=".sse.SSEForegroundService" />
+        <service
+            android:name=".sse.SSEForegroundService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
         <service android:name=".sse.SSERestartService"/>
         <receiver android:name=".sse.SSEAlarmReceiver"/>
-        <receiver android:name=".sse.SSEBroadcastReceiver"/>
+        <receiver android:name=".sse.SSEBroadcastReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name="androidx.startup.InitializationProvider"

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.TextView
 import android.widget.Toast
@@ -131,33 +132,32 @@ class LoginActivity : AppCompatActivity() {
         isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
     }
 
-    @RequiresApi(Build.VERSION_CODES.R)
     private fun initPersonalInformationConsent() {
         val sharedPref = this.getSharedPreferences("privacyPolicySettingCheck", Context.MODE_PRIVATE)
-        //isPolicyAllow = sharedPref.getBoolean("isPolicyAllow", false)
+
         val layoutInflater = LayoutInflater.from(this@LoginActivity)
         val dialogView = layoutInflater.inflate(R.layout.privacy_policy_dialog_layout, null)
         val alertDialog = android.app.AlertDialog.Builder(this@LoginActivity, R.style.CustomAlertDialog)
             .setView(dialogView)
             .create()
+
         val dialogContent = dialogView.findViewById<TextView>(R.id.message_text)
         val dialogLeftBtn = dialogView.findViewById<View>(R.id.dialog_left_btn)
-        val dialogRightBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
-
-        val rect = windowManager.currentWindowMetrics.bounds
+        val dialogRightBtn = dialogView.findViewById<View>(R.id.dialog_right_btn)
 
         val window = alertDialog.window
-        val x = (rect.width() * 0.8f).toInt()
-        val y = (rect.height() * 0.4f).toInt()
+        val displayMetrics = resources.displayMetrics
+        val screenWidth = displayMetrics.widthPixels
+        val screenHeight = displayMetrics.heightPixels
 
-        window?.setLayout(x, y)
+        val x = (screenWidth * 0.8f).toInt()
+        val y = (screenHeight * 0.4f).toInt()
 
+        window?.setLayout(x, y) // 다이얼로그 크기 조절
 
         dialogContent.setOnClickListener {
             val url = "https://github.com/MIO-Privacy-Policy-for-Android"
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                data = Uri.parse(url)
-            }
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             startActivity(intent)
         }
 
@@ -166,7 +166,7 @@ class LoginActivity : AppCompatActivity() {
             Toast.makeText(this@LoginActivity, "서비스 이용이 제한됩니다.", Toast.LENGTH_SHORT).show()
             with(sharedPref.edit()) {
                 putBoolean("isPolicyAllow", false)
-                apply() // 비동기적으로 데이터를 저장
+                apply()
             }
             isPolicyAllow = false
             alertDialog.dismiss()
@@ -175,13 +175,13 @@ class LoginActivity : AppCompatActivity() {
         dialogRightBtn.setOnClickListener {
             with(sharedPref.edit()) {
                 putBoolean("isPolicyAllow", true)
-                apply() // 비동기적으로 데이터를 저장
+                apply()
             }
             isPolicyAllow = true
-
             signIn()
             alertDialog.dismiss()
         }
+
         alertDialog.show()
     }
 
@@ -332,6 +332,7 @@ class LoginActivity : AppCompatActivity() {
             userEmail = email
             saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
             val userInfoToken = TokenRequest(idToken.toString())
+            Log.e("idToken", idToken.toString())
             signInCheck(userInfoToken)
 
         } catch (e: ApiException) {

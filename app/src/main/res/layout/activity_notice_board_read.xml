@@ -159,7 +159,7 @@
                                     android:id="@+id/read_category"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="@font/pretendard_medium"
+                                    android:fontFamily="@font/pretendard_bold"
                                     android:text="카테고리: 택시"
                                     android:textColor="@color/mio_gray_7"
                                     android:textSize="14sp" />

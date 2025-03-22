@@ -3,6 +3,7 @@ package com.gdsc.mio
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -17,6 +18,7 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -95,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         saveSettingData()
     }
 
-    private fun sseStartCheck() {
+    /*private fun sseStartCheck() {
         //foreground실행행
         serviceIntent =
             Intent(this, SSEForegroundService::class.java) // MyBackgroundService 를 실행하는 인텐트 생성
@@ -107,6 +109,16 @@ class MainActivity : AppCompatActivity() {
             startService(serviceIntent) // 서비스 인텐트를 전달한 서비스 시작 메서드 실행
         } else {
             serviceIntent = SSEForegroundService().serviceIntent
+        }
+    }*/
+    private fun sseStartCheck() {
+        if (!foregroundServiceRunning()) {
+            serviceIntent = Intent(this, SSEForegroundService::class.java)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent) // Android 8.0 이상에서는 startForegroundService 사용
+            } else {
+                startService(serviceIntent) // 이하 버전에서는 startService 사용
+            }
         }
     }
 
@@ -413,7 +425,7 @@ class MainActivity : AppCompatActivity() {
                 mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
             }
 
-            22-> {
+            /*22-> {
                 toolbarType = "기본"
                 setToolbarView(toolbarType)
                 selectedTab = result.data?.getStringExtra("selectedTab").toString()
@@ -424,9 +436,35 @@ class MainActivity : AppCompatActivity() {
                 }
                 val homeFragment = HomeFragment().apply {
                     arguments = bundle
+
                 }
                 setFragment(TAG_HOME, homeFragment)
 
+                mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
+            }*/
+            22 -> {
+                selectedTab = result.data?.getStringExtra("selectedTab").toString()
+
+                // 기존 HomeFragment 찾기
+                /*val homeFragment = supportFragmentManager.findFragmentByTag(TAG_HOME) as? HomeFragment
+
+                if (homeFragment != null) {
+                    // HomeFragment 내부의 CarpoolTabFragment를 갱신
+                    homeFragment.refreshCarpoolFragment()
+                } else {
+                    // HomeFragment가 없으면 새로 생성
+                    val newHomeFragment = HomeFragment().apply {
+                        arguments = Bundle().apply {
+                            putString("selectedTab", selectedTab)
+                        }
+                    }
+                    changeFragment(newHomeFragment)
+                }*/
+                toolbarType = "기본"
+                setToolbarView(toolbarType)
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_content, HomeFragment())
+                    .commit()
                 mBinding.bottomNavigationView.selectedItemId = R.id.navigation_home
             }
 
@@ -628,4 +666,34 @@ class MainActivity : AppCompatActivity() {
     /*override fun onYesButtonClick() {
         finishAffinity()
     }*/
+    private fun isIgnoringBatteryOptimization(): Boolean {
+        val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
+        return pm.isIgnoringBatteryOptimizations(applicationContext.packageName)
+    }
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun isNotificationPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    override fun onResume() {
+        super.onResume()
+
+        // 알림 권한 확인
+        if (!isNotificationPermissionGranted()) {
+            saveSharedPreferenceGoogleLogin.setSharedAlarm(this@MainActivity, false)
+        }
+
+        // 배터리 최적화 제외 확인
+        if (!isIgnoringBatteryOptimization()) {
+            saveSharedPreferenceGoogleLogin.setSharedAlarm(this@MainActivity, false)
+        }
+
+        val isAlarm = saveSharedPreferenceGoogleLogin.getSharedAlarm(this@MainActivity)
+        if (isAlarm) {
+            sseStartCheck()
+        }
+    }
 }

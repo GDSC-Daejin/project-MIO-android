@@ -117,7 +117,6 @@ class ApplyNextActivity : AppCompatActivity() {
                     isComplete = !isComplete
                     myViewModel.postCheckComplete(false)
                     currentPage += 1
-                    println(currentPage)
                     myViewModel.postCheckPage(currentPage)
                     // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
                     val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -286,7 +285,6 @@ class ApplyNextActivity : AppCompatActivity() {
                         isComplete = !isComplete
                         myViewModel.postCheckComplete(false)
                         currentPage += 1
-                        println(currentPage)
                         myViewModel.postCheckPage(currentPage)
                     }
                 }
@@ -349,12 +347,9 @@ class ApplyNextActivity : AppCompatActivity() {
 
     private fun updateButtonStatus() {
         val conditions = Conditions(isSClicked, isSmClicked, isGClicked)
-        println("s ${conditions.isSClicked}")
-        println("sm $${conditions.isSmClicked}")
-        println("g ${conditions.isGClicked}")
 
         val shouldEnableButton = conditions.shouldEnableButton()
-        println(shouldEnableButton)
+
         if (shouldEnableButton) {
             anaBinding.applyNext.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)

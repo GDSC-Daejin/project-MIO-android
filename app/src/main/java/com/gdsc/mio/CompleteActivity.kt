@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Paint
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -13,11 +14,17 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import com.gdsc.mio.model.PostData
 import com.gdsc.mio.model.User
 import com.gdsc.mio.databinding.ActivityCompleteBinding
+import com.gdsc.mio.loading.LoadingProgressDialogManager
+import com.gdsc.mio.model.Content
 import com.gdsc.mio.util.AESKeyStoreUtil
 import com.gdsc.mio.util.AESUtil
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import javax.crypto.SecretKey
 
 class CompleteActivity : AppCompatActivity() {
@@ -123,6 +130,7 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.completeEnd2MessageTv.text = "아래 계좌에 본인 학번으로 입금해주세요!"
             cBinding.completeDivideView.visibility = View.VISIBLE
             cBinding.completeDivideView2.visibility = View.VISIBLE
+            cBinding.completeDeadlineBtn.visibility = View.GONE
 
             cBinding.tossBankLl.setOnClickListener {
                 if (deText.isNotEmpty()) {
@@ -163,6 +171,8 @@ class CompleteActivity : AppCompatActivity() {
             } else {
                 intent.getParcelableExtra("postData", PostData::class.java)
             }
+            initPostDeadLine()
+
             cBinding.completeEntireLl.visibility = View.VISIBLE
             cBinding.completeEnd2MessageTv.text = "입금여부를 확인하고 후기를 작성하세요"
 
@@ -170,6 +180,7 @@ class CompleteActivity : AppCompatActivity() {
             cBinding.completeBankLl.visibility = View.GONE
             cBinding.completeDivideView.visibility = View.GONE
             cBinding.completeDivideView2.visibility = View.GONE
+            cBinding.completeDeadlineBtn.visibility = View.VISIBLE
         }
 
         cBinding.closeScreen.setOnClickListener {
@@ -192,6 +203,126 @@ class CompleteActivity : AppCompatActivity() {
         })
     }
 
+    private fun initPostDeadLine() {
+        RetrofitServerConnect.create(this@CompleteActivity).getPostIdDetailSearch(postData?.postID!!).enqueue(object :
+            Callback<Content> {
+            override fun onResponse(call: Call<Content>, response: Response<Content>) {
+                if (response.isSuccessful) {
+                    val responseData = response.body()
+                    if (responseData != null) {
+                        when (responseData.postType) {
+                            "BEFORE_DEADLINE" -> {
+                                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@CompleteActivity , R.color.mio_blue_5)) //마감
+                                cBinding.completeDeadlineBtn.backgroundTintList = colorStateList
+                                cBinding.completeDeadlineBtn.text = "마감하기"
+                                postDeadLineClick(true)
+                            }
+                            "DEADLINE" -> {
+                                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@CompleteActivity , R.color.mio_blue_5)) //마감
+                                cBinding.completeDeadlineBtn.backgroundTintList = colorStateList
+                                cBinding.completeDeadlineBtn.text = "운행 완료"
+                                postComplete()
+                            }
+                            else -> { //completed
+                                val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@CompleteActivity , R.color.mio_gray_4)) //마감
+                                cBinding.completeDeadlineBtn.backgroundTintList = colorStateList
+                                cBinding.completeDeadlineBtn.text = "운행 종료"
+                                cBinding.completeDeadlineBtn.isClickable = false
+                            }
+                        }
+                    }
+                } else {
+                    LoadingProgressDialogManager.hide()
+                    Toast.makeText(this@CompleteActivity, "게시글 정보를 불러오는데 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<Content>, t: Throwable) {
+                LoadingProgressDialogManager.hide()
+                Toast.makeText(this@CompleteActivity, "게시글 정보를 불러오는데 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun postDeadLineClick(deadLine : Boolean) {
+        cBinding.completeDeadlineBtn.setOnClickListener {
+            //deadLine
+            if (deadLine) {
+                RetrofitServerConnect.create(this@CompleteActivity).patchDeadLinePost(postData?.postID!!).enqueue(object : Callback<Content> {
+                    override fun onResponse(call: Call<Content>, response: Response<Content>) {
+                        if (response.isSuccessful) {
+                            val responseData = response.body()
+                            if (responseData != null) {
+                                //BEFORE_DEADLINE, DEADLINE, COMPLETED
+                                when (responseData.postType) {
+                                    "DEADLINE" -> {
+                                        val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@CompleteActivity , R.color.mio_blue_5)) //마감
+                                        cBinding.completeDeadlineBtn.backgroundTintList = colorStateList
+                                        cBinding.completeDeadlineBtn.text = "운행 완료"
+                                        postComplete()
+                                    }
+                                    else -> { //completed
+                                        val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@CompleteActivity , R.color.mio_gray_4)) //마감
+                                        cBinding.completeDeadlineBtn.backgroundTintList = colorStateList
+                                        cBinding.completeDeadlineBtn.text = "운행 종료"
+                                        cBinding.completeDeadlineBtn.isClickable = false
+                                    }
+                                }
+                            }
+                        } else {
+                            Toast.makeText(this@CompleteActivity, "게시글 상태 변경에 실패했습니다. 다시 시도해주세요. ${response.code()}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    override fun onFailure(call: Call<Content>, t: Throwable) {
+                        LoadingProgressDialogManager.hide()
+                        Toast.makeText(this@CompleteActivity, "게시글 상태 변경에 실패했습니다. 다시 시도해주세요. ${t.message}", Toast.LENGTH_SHORT).show()
+                    }
+                })
+            }
+        }
+    }
+
+    private fun postComplete() {
+        cBinding.completeDeadlineBtn.setOnClickListener {
+            RetrofitServerConnect.create(this@CompleteActivity).patchCompletePost(postData?.postID!!).enqueue(object : Callback<Content> {
+                override fun onResponse(call: Call<Content>, response: Response<Content>) {
+                    if (response.isSuccessful) {
+                        val responseData = response.body()
+                        if (responseData != null) {
+                            //BEFORE_DEADLINE, DEADLINE, COMPLETED
+                            when (responseData.postType) {
+                                "BEFORE_DEADLINE" -> {
+                                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@CompleteActivity , R.color.mio_blue_5)) //마감
+                                    cBinding.completeDeadlineBtn.backgroundTintList = colorStateList
+                                    cBinding.completeDeadlineBtn.text = "마감하기"
+                                }
+                                "DEADLINE" -> {
+                                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@CompleteActivity , R.color.mio_blue_5)) //마감
+                                    cBinding.completeDeadlineBtn.backgroundTintList = colorStateList
+                                    cBinding.completeDeadlineBtn.text = "운행 완료"
+                                }
+                                else -> { //completed
+                                    val colorStateList = ColorStateList.valueOf(ContextCompat.getColor(this@CompleteActivity , R.color.mio_gray_4)) //마감
+                                    cBinding.completeDeadlineBtn.backgroundTintList = colorStateList
+                                    cBinding.completeDeadlineBtn.text = "운행 종료"
+                                    cBinding.completeDeadlineBtn.isClickable = false
+                                }
+                            }
+                        }
+                    } else {
+                        LoadingProgressDialogManager.hide()
+                        Toast.makeText(this@CompleteActivity, "게시글 상태 변경에 실패했습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<Content>, t: Throwable) {
+                    LoadingProgressDialogManager.hide()
+                    Toast.makeText(this@CompleteActivity, "게시글 상태 변경에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+    }
 
     private fun createClipData(message : String) {
         val clipManager = applicationContext.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager

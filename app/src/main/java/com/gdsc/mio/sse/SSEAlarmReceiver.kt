@@ -3,13 +3,18 @@ package com.gdsc.mio.sse
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.util.Log
 
 
-
-
-class SSEAlarmReceiver : BroadcastReceiver() { //alarm에 의해 작동하는 리시버, restart실행용
+class SSEAlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
-        val tempIntent = Intent(context, SSERestartService::class.java)
-        context?.startForegroundService(tempIntent)
+        //Log.d("SSEAlarmReceiver", "알람 트리거 -> Foreground Service 재시작")
+        val serviceIntent = Intent(context, SSEForegroundService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            context?.startForegroundService(serviceIntent)
+        } else {
+            context?.startService(serviceIntent)
+        }
     }
 }

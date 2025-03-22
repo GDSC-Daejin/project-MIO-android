@@ -1,6 +1,7 @@
 package com.gdsc.mio.viewmodel
 
 import android.content.Context
+//import android.util.Log
 import androidx.lifecycle.LiveData
 
 import androidx.lifecycle.MutableLiveData
@@ -70,6 +71,8 @@ class SharedViewModel : ViewModel() {
     val checkCurrentPage : LiveData<Int> = _checkCurrentPage
     fun postCheckPage(page : Int) {
         _checkCurrentPage.value = page
+        //Log.e("postPage", page.toString())
+        updateCheckComplete()
     }
 
     //모든 페이지 내용 작성 만족 시 다음 페이지 버튼 활성화
@@ -84,6 +87,24 @@ class SharedViewModel : ViewModel() {
     val allCheck : LiveData<RequirementData> = _allCheck
     fun postCheckValue(check : RequirementData) {
         _allCheck.value = check
+       /* Log.e("postCheckValue", check.isFirstVF.isTitle.toString())
+        Log.e("postCheckValue", check.isFirstVF.isCalendar.toString())
+        Log.e("postCheckValue", check.isFirstVF.isTime.toString())
+        Log.e("postCheckValue", check.isFirstVF.isParticipants.toString())
+        Log.e("postCheckValue", check.isFirstVF.isFirst.toString())*/
+        updateCheckComplete()
+    }
+    private fun updateCheckComplete() {
+        val checkData = _allCheck.value ?: return
+        val isComplete = when (_checkCurrentPage.value) {
+            1 -> checkData.isFirstVF.let { it.isTitle && it.isCalendar && it.isParticipants && it.isTime && it.isFirst }
+            2 -> checkData.isSecondVF.let { it.isPlaceName && it.isPlaceRode && it.isSecond }
+            3 -> checkData.isThirdVF.let { it.isAmount && (it.isGSchool || it.isASchool) && (it.isMGender || it.isWGender) && (it.isSmoke || it.isNSmoke) && it.isThird }
+            4 -> checkData.isFourthVF.let { it.isContent && it.isFourth }
+            else -> false
+        }
+        //Log.e("_checkCurrentPage", _checkCurrentPage.value.toString())
+        _checkComplete.value = isComplete
     }
 
     //댓글의 타입 확인 true = 대댓글 쓰기 , false = 댓글 쓰기

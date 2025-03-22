@@ -168,7 +168,6 @@ class MyReviewWriteableFragment : Fragment() {
                     }
 
                 } else {
-                    Log.d("f", response.code().toString())
                     requireActivity().runOnUiThread {
                         if (isAdded && !requireActivity().isFinishing) {
                             Toast.makeText(requireActivity(), "후기 정보를 가져오는데 실패했습니다. 다시 시도해주세요 ${response.code()}", Toast.LENGTH_SHORT).show()
@@ -204,6 +203,10 @@ class MyReviewWriteableFragment : Fragment() {
                     //add
                     0 -> {
                         setReadReviewData()
+                    }
+
+                    1 -> {
+                        refreshData()
                     }
                 }
             }
@@ -272,7 +275,6 @@ class MyReviewWriteableFragment : Fragment() {
                 wAdapter?.notifyItemRemoved(loadingPosition)
             }
 
-            // Fetch more data if necessary
             if (currentPage < totalPages - 1) {
                 currentPage += 1
                 RetrofitServerConnect.create(requireActivity()).getMyMannersWriteableReview("createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {

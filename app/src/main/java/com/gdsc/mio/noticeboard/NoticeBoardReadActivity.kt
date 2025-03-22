@@ -128,12 +128,17 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         /////
         val type = intent.getStringExtra("type")
         tabType = intent.getStringExtra("tabType").toString()
-
         temp = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("postItem")
         } else {
             intent.getParcelableExtra("postItem", PostData::class.java)
         }
+        refreshNoticeBoardReadData()
+        /*temp = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra("postItem")
+        } else {
+            intent.getParcelableExtra("postItem", PostData::class.java)
+        }*/
 
         sharedViewModel!!.fetchIsBeforeDeadLine(this, temp?.postID!!)
 
@@ -943,6 +948,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
 
         setContentView(nbrBinding.root)
     }
+
 
     private fun commentsViewModelObserve() {
         // Observe LiveData from the ViewModel

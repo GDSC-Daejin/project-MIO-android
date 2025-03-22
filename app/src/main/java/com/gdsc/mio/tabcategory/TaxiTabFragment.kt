@@ -887,6 +887,16 @@ class TaxiTabFragment : Fragment() {
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
     }
 
+    fun reloadData() {
+        initNoticeBoardRecyclerView()
+
+        initCalendarRecyclerView()
+        //initSwipeRefresh()
+
+        initCurrentNoticeBoardRecyclerView()
+        initMyAreaRecyclerView()
+    }
+
     companion object {
         /**
          * Use this factory method to create a new instance of

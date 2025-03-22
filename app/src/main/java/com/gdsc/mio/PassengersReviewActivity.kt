@@ -1,5 +1,7 @@
 package com.gdsc.mio
 
+import android.app.Activity
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Rect
 import android.os.Build
@@ -16,6 +18,7 @@ import androidx.core.view.children
 import com.gdsc.mio.model.*
 import com.gdsc.mio.databinding.ActivityPassengersReviewBinding
 import com.gdsc.mio.loading.LoadingProgressDialogManager
+import com.gdsc.mio.tabaccount.MyReviewWriteableFragment
 import com.google.android.material.chip.Chip
 import retrofit2.Call
 import retrofit2.Callback
@@ -129,10 +132,7 @@ class PassengersReviewActivity : AppCompatActivity() {
                     }
                 } else {
                     Toast.makeText(this@PassengersReviewActivity, "사용자의 리뷰 데이터를 찾을 수 없습니다. \n학생 아이디를 클릭하여 등록해주세요", Toast.LENGTH_SHORT).show()
-
                 }
-
-
             } else {
                 sendReviewData()
             }
@@ -150,10 +150,8 @@ class PassengersReviewActivity : AppCompatActivity() {
             val keypadHeight = screenHeight - rect.bottom
 
             if (keypadHeight > screenHeight * 0.15) {
-                // If keyboard is visible, move the view up
                 rootLayout.translationY = -keypadHeight.toFloat()
             } else {
-                // If keyboard is hidden, reset the view position
                 rootLayout.translationY = 0f
             }
         }
@@ -356,6 +354,7 @@ class PassengersReviewActivity : AppCompatActivity() {
                     .enqueue(object : Callback<User> {
                         override fun onResponse(call: Call<User>, response: Response<User>) {
                             if (response.isSuccessful) {
+                                LoadingProgressDialogManager.hide()
                                 val user = response.body()
                                 val cGroup = prBinding.reviewSetPassengersCg
                                 user?.let {
@@ -410,6 +409,10 @@ class PassengersReviewActivity : AppCompatActivity() {
                             if (response.isSuccessful) {
                                 LoadingProgressDialogManager.hide()
                                 Toast.makeText(this@PassengersReviewActivity, "후기 감사드립니다!", Toast.LENGTH_SHORT).show()
+                                val intent = Intent(this@PassengersReviewActivity, MyReviewWriteableFragment::class.java).apply {
+                                    putExtra("flag", 1)
+                                }
+                                setResult(RESULT_OK, intent)
                                 this@PassengersReviewActivity.finish()
                             } else {
                                 LoadingProgressDialogManager.hide()

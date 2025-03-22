@@ -963,6 +963,14 @@ class CarpoolTabFragment : Fragment() {
         }
     }
 
+    fun reloadData() {
+        setData(LocalDate.now().toString())
+        initNoticeBoardRecyclerView()
+        initCurrentNoticeBoardRecyclerView()
+        initCalendarRecyclerView()
+        initMyAreaRecyclerView()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
 

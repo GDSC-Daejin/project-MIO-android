@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.gdsc.mio.adapter.CategoryTabAdapter
 import com.gdsc.mio.databinding.FragmentHomeBinding
+import com.gdsc.mio.tabcategory.CarpoolTabFragment
 import com.google.android.material.tabs.TabLayoutMediator
 
 
@@ -66,6 +67,25 @@ class HomeFragment : Fragment() {
 
         return homeBinding!!.root
     }
+
+    fun refreshCarpoolFragment() {
+        val carpoolTabFragment = childFragmentManager.findFragmentByTag("CarpoolTabFragment") as? CarpoolTabFragment
+        carpoolTabFragment?.reloadData()
+    }
+
+    /*fun refreshCarpoolFragment() {
+        val viewPager = homeBinding?.viewpager
+        val currentItem = viewPager?.currentItem
+
+        // "카풀" 탭이 선택된 경우에만 새로고침 실행
+        if (currentItem == tabTextList.indexOf("카풀")) {
+            val fragment = childFragmentManager.findFragmentByTag("CarpoolTabFragment") as? CarpoolTabFragment
+            fragment?.reloadData()
+        } else {
+            val fragment = childFragmentManager.findFragmentByTag("TaxiTabFragment") as? TaxiTabFragment
+            fragment?.reloadData()
+        }
+    }*/
 
     override fun onDestroyView() {
         super.onDestroyView()

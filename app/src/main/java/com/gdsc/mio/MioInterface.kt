@@ -29,7 +29,7 @@ interface MioInterface {
                           @Query("page") page : Int,
                           @Query("size") size : Int) : Call<PostReadAllResponse>
 
-    //게시글로 id로 상세조회
+    //게시글 id로 상세조회
     @GET("/detail/{id}")
     fun getPostIdDetailSearch(@Path("id") postId : Int) : Call<Content>
 

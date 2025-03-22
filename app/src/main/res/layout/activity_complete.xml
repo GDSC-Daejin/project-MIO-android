@@ -25,17 +25,19 @@
 
     </androidx.appcompat.widget.Toolbar>
 
-    <!--아이콘과 함께 설명 linear-->
+    <!-- 아이콘과 함께 설명 linear-->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:fillViewport="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/complete_toolbar">
+        app:layout_constraintTop_toBottomOf="@+id/complete_toolbar"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content"> <!-- 내부 높이를 wrap_content로 설정하여 내용에 맞춰 크기 조정 -->
 
             <LinearLayout
                 android:id="@+id/complete_entire_ll"
@@ -46,7 +48,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
-
 
                 <ImageView
                     android:id="@+id/complete_car_icon_iv"
@@ -245,8 +246,24 @@
                         android:textSize="16sp" />
                 </LinearLayout>
             </LinearLayout>
+
+            <Button
+                android:id="@+id/complete_deadline_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="20dp"
+                android:background="@drawable/read_apply_btn_layout"
+                android:fontFamily="@font/pretendard_bold"
+                android:text="마감하기"
+                android:textColor="@color/mio_gray_3"
+                android:textSize="16sp"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

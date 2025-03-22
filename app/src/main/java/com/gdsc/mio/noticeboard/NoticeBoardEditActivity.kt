@@ -158,14 +158,19 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             isContent = false,
             isFourth = false
         )
-
     )
+
     private lateinit var myViewModel : SharedViewModel
     val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
     //뒤로가기
     // private lateinit var loadingDialog : LoadingProgressDialog
     private var backPressedTime = 0L
-    //private var eventListener : SearchFragment.MarkerEventListener? = null   // 마커 클릭 이벤트 리스너
+
+    //체크 변수들 true면 작성완료
+    private var isSchool = false
+    private var isSmoker = false
+    private var isGender = false
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -302,14 +307,14 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         }
 
 
-        myViewModel.allCheck.observe(this) {
+        /*myViewModel.allCheck.observe(this) {
             if (it.isFirstVF.isTitle && it.isFirstVF.isTime && it.isFirstVF.isCalendar) {
                 it.isFirstVF.isFirst = true
                 isFirst = true
-                /*Log.d("Allcheck", it.isFirstVF.isTitle.toString())
+                *//*Log.d("Allcheck", it.isFirstVF.isTitle.toString())
                 Log.d("Allcheck", it.isFirstVF.isTime.toString())
                 Log.d("Allcheck", it.isFirstVF.isCalendar.toString())
-                Log.d("Allcheck", it.isFirstVF.isParticipants.toString())*/
+                Log.d("Allcheck", it.isFirstVF.isParticipants.toString())*//*
 
                 //println("ff")
             }
@@ -318,13 +323,13 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 it.isSecondVF.isSecond = true
             }
 
-            if ((it.isThirdVF.isSmoke || it.isThirdVF.isNSmoke)
+            *//*if ((it.isThirdVF.isSmoke || it.isThirdVF.isNSmoke)
                 && (it.isThirdVF.isGSchool || it.isThirdVF.isASchool)
                 && (it.isThirdVF.isSmoke || it.isThirdVF.isNSmoke)
                 && (it.isThirdVF.isMGender || it.isThirdVF.isWGender)
                 && it.isThirdVF.isAmount ) {
                     it.isThirdVF.isThird = true
-            }
+            }*//*
 
             if (it.isFirstVF.isFirst) {
                 myViewModel.postCheckComplete(complete = true)
@@ -337,11 +342,26 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 it.isSecondVF.isSecond = false
             }
 
-            if (it.isThirdVF.isThird) {
+            *//*if (it.isThirdVF.isThird) {
                 myViewModel.postCheckComplete(complete = true)
                 it.isThirdVF.isThird = false
-            }
+            }*//*
+        }*/
+
+        /*myViewModel.isGender.observe(this) {
+            isGender = it
+            updateButtonStatus()
         }
+
+        myViewModel.isGSchool.observe(this) {
+            isSchool = it
+            updateButtonStatus()
+        }
+
+        myViewModel.isSmoker.observe(this) {
+            isSmoker = it
+            updateButtonStatus()
+        }*/
 
         //버튼 활성화를 실시간 체크를 위함
         myViewModel.checkComplete.observe(this) {
@@ -379,14 +399,31 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 mBinding.editNext.setOnClickListener {
 
                 }
+                /*mBinding.editNext.setOnClickListener {
+                    if (currentPage == 2 && countPage == 1) {
+                        returnStatusBar()
+                    }
+                    mBinding.editViewflipper.showNext()
+                    isComplete = !isComplete
+                    myViewModel.postCheckComplete(false)
+                    currentPage -= 1
+                    myViewModel.postCheckPage(currentPage)
+                    // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
+                    val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    // 가상 키보드가 올라가 있는지 여부를 확인합니다.
+                    if (inputMethodManager.isActive) {
+                        // 가상 키보드가 올라가 있다면 내립니다.
+                        inputMethodManager.hideSoftInputFromWindow(mBinding.editNext.windowToken, 0)
+                    }
+                }*/
             }
         }
 
         //현재 페이지 체크
         myViewModel.checkCurrentPage.observe(this) {
-
             when (it) {
                 5 -> {
+                    isFirst = true
                     mBinding.editNext.visibility = View.GONE
                     mBinding.editPre.visibility = View.GONE
                     mBinding.editBottomSpace.visibility = View.GONE
@@ -414,6 +451,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     }
 
     private fun firstVF() {
+        myViewModel.postCheckPage(currentPage)
         if (type == "EDIT") {
             mBinding.editTitle.setText(eTemp!!.postTitle)
             editTitle = eTemp!!.postTitle
@@ -426,13 +464,12 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 }*/
             }
             override fun onTextChanged(charSequence: CharSequence, i: Int, i1: Int, i2: Int) {
-
                 isAllCheck.isFirstVF.isTitle = true
                 //myViewModel.postCheckValue(isAllCheck.isFirstVF.isTitle)
-                isAllCheck.isFirstVF.isParticipants = true
+                //isAllCheck.isFirstVF.isParticipants = true
                 myViewModel.postCheckValue(isAllCheck)
-
             }
+
             override fun afterTextChanged(editable: Editable) {
                 editTitle = editable.toString()
                 /*if (editable.isEmpty()) {
@@ -503,6 +540,9 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
             }
+
+            isAllCheck.isFirstVF.isFirst = true
+            myViewModel.postCheckValue(isAllCheck)
         }
         mBinding.editCategoryTaxiBtn.setOnClickListener {
             selectCategory = "taxi"
@@ -515,6 +555,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 setBackgroundResource(R.drawable.edit_check_btn)
                 setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_11))
             }
+            isAllCheck.isFirstVF.isFirst = true
+            myViewModel.postCheckValue(isAllCheck)
         }
 
 
@@ -527,6 +569,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             participateNumberOfPeople -= 1
             if (participateNumberOfPeople > 0) {
                 mBinding.editParticipateTv.text = participateNumberOfPeople.toString()
+                isAllCheck.isFirstVF.isParticipants = true
                 myViewModel.postCheckValue(isAllCheck)
             } else {
                 mBinding.editParticipateTv.text = "0"
@@ -539,13 +582,12 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             participateNumberOfPeople += 1
             if (participateNumberOfPeople < 11) {
                 mBinding.editParticipateTv.text = participateNumberOfPeople.toString()
+                isAllCheck.isFirstVF.isParticipants = true
                 myViewModel.postCheckValue(isAllCheck)
             } else {
                 mBinding.editParticipateTv.text = "0"
                 participateNumberOfPeople = 0
-                myViewModel.postCheckValue(isAllCheck)
             }
-
         }
 
         /*if (isTitle && isCalendar && isTime && isParticipants) {
@@ -610,6 +652,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 getAddress(location)
                 isAllCheck.isSecondVF.isPlaceName = true
                 isAllCheck.isSecondVF.isPlaceRode = true
+                isAllCheck.isSecondVF.isSecond = true
                 myViewModel.postCheckValue(isAllCheck)
                 startMapLifeCycle()
             }
@@ -637,6 +680,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 getAddress(location)
                 isAllCheck.isSecondVF.isPlaceName = true
                 isAllCheck.isSecondVF.isPlaceRode = true
+                isAllCheck.isSecondVF.isSecond = true
                 myViewModel.postCheckValue(isAllCheck)
                 startMapLifeCycle()
             }
@@ -725,6 +769,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 }
 
                 isAllCheck.isThirdVF.isAmount = editable.isNotEmpty()
+                isAllCheck.isThirdVF.isThird = true
                 mBinding.editDetailContent.isCursorVisible = false
                // mBinding.editDetailContent.movementMethod = null
                 myViewModel.postCheckValue(isAllCheck)
@@ -757,6 +802,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                isAllCheck.isThirdVF.isASchool = false
                myViewModel.postCheckValue(isAllCheck)
            }
+
            mBinding.editAschoolBtn.setOnClickListener {
                mBinding.editAschoolBtn.apply {
                    setBackgroundResource(R.drawable.round_btn_update_layout)
@@ -799,6 +845,8 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             isAllCheck.isThirdVF.isNSmoke = true
             myViewModel.postCheckValue(isAllCheck)
         }
+
+        //성별
         mBinding.editManBtn.setOnClickListener {
             mBinding.editManBtn.apply {
                 setBackgroundResource(R.drawable.round_btn_update_layout)
@@ -845,6 +893,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
                 detailContent = editable.toString()
                 isAllCheck.isFourthVF.isContent = editable.isNotEmpty()
+                isAllCheck.isFourthVF.isFourth = true
                 mBinding.editDetailContent.isCursorVisible = true
                 mBinding.editDetailContent.movementMethod = null
                 myViewModel.postCheckValue(isAllCheck)
@@ -895,8 +944,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                         setResult(RESULT_OK, intent)
                         finish()
                     }
-
-
                 } else {
                     Toast.makeText(this, "빈 칸이 존재합니다. 빈 칸을 채워주세요!", Toast.LENGTH_SHORT).show()
                 }
@@ -994,19 +1041,19 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 }
                 setResult(RESULT_OK, intent)
                 finish()
-            } else if (currentPage == 2 && countPage == 1) {
-                countPage -= 1
-                myViewModel.postCheckComplete(false)
+            } else if (currentPage == 2) {
+                currentPage -= 1
+                myViewModel.postCheckPage(currentPage)
                 mBinding.editViewflipper.showPrevious()
                 returnStatusBar()
             } else if (currentPage == 3) {
-                myViewModel.postCheckComplete(true)
+                myViewModel.postCheckPage(currentPage)
                 currentPage -= 1
                 mBinding.editViewflipper.showPrevious()
                 changeStatusbar()
             } else {
                 currentPage -= 1
-                myViewModel.postCheckComplete(true)
+                myViewModel.postCheckPage(currentPage)
                 mBinding.editViewflipper.showPrevious()
             }
 
@@ -1173,83 +1220,106 @@ class NoticeBoardEditActivity : AppCompatActivity() {
     }*/
     private fun showCustomTimePickerDialog() {
         val myCalendar = Calendar.getInstance()
-        val hour = myCalendar[Calendar.HOUR_OF_DAY]
+        var hour = myCalendar[Calendar.HOUR_OF_DAY]
         val minute = myCalendar[Calendar.MINUTE]
+        val isAm = hour < 12 // 현재 시간이 오전인지 여부
 
         val dialogView = layoutInflater.inflate(R.layout.dialog_time_picker, null)
 
+        val amPmPicker: NumberPicker = dialogView.findViewById(R.id.am_pm_picker)
         val hourPicker: NumberPicker = dialogView.findViewById(R.id.hourPicker)
         val minutePicker: NumberPicker = dialogView.findViewById(R.id.minutePicker)
         val btnOk: TextView = dialogView.findViewById(R.id.btn_ok) // 선택 완료 버튼
 
+        // 오전/오후 선택 값 설정
+        val values = arrayOf("오전", "오후")
+        amPmPicker.minValue = 0
+        amPmPicker.maxValue = values.size - 1
+        amPmPicker.wrapSelectorWheel = false
+        amPmPicker.displayedValues = values
+        amPmPicker.value = if (isAm) 0 else 1 // 현재 시간 기준으로 자동 선택
+
+        // 현재 시간이 오전이면 7~8시, 오후면 18~19시로 조정
+        hour = when {
+            isAm && hour !in 7..8 -> 7
+            !isAm && hour !in 18..19 -> 18
+            else -> hour
+        }
+
         // 시간 NumberPicker 설정
-        hourPicker.minValue = 0
-        hourPicker.maxValue = 23
-        hourPicker.value = hour // 기본 값 설정
-        hourPicker.wrapSelectorWheel = true
+        hourPicker.minValue = 7
+        hourPicker.maxValue = 8
+        if (!isAm) {
+            hourPicker.minValue = 18
+            hourPicker.maxValue = 19
+        }
+        hourPicker.value = hour
+        hourPicker.wrapSelectorWheel = false
 
         // 분 NumberPicker 설정
         minutePicker.minValue = 0
         minutePicker.maxValue = 59
-        minutePicker.value = minute // 기본 값 설정
+        minutePicker.value = minute // 현재 분 설정
         minutePicker.wrapSelectorWheel = true
 
-        // 슬라이드 및 수동 입력 가능하도록 설정
+        // 슬라이드 및 수동 입력 방지
         hourPicker.descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
         minutePicker.descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
+        amPmPicker.descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
+
+        // 오전/오후 변경 시 시간 Picker 범위 자동 변경
+        amPmPicker.setOnValueChangedListener { _, _, newVal ->
+            if (newVal == 0) { // 오전 선택 시
+                hourPicker.minValue = 7
+                hourPicker.maxValue = 8
+                if (hourPicker.value !in 7..8) {
+                    hourPicker.value = 7
+                }
+            } else { // 오후 선택 시
+                hourPicker.minValue = 18
+                hourPicker.maxValue = 19
+                if (hourPicker.value !in 18..19) {
+                    hourPicker.value = 18
+                }
+            }
+        }
 
         // 다이얼로그 생성
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
-            //.setCancelable(true) // 다이얼로그 바깥을 클릭하면 닫히지 않도록 설정
             .create()
         dialog.window?.setBackgroundDrawableResource(R.drawable.rounded_corner_dialog)
 
         btnOk.setOnClickListener {
+            val selectedAmPm = amPmPicker.value // 0 = 오전, 1 = 오후
             val selectedHour = hourPicker.value
             val selectedMinute = minutePicker.value
 
-            // 시간 검증 (7시-9시, 18시-20시만 가능)
-            val isValidTime = (selectedHour in 7..8 && selectedMinute >= 0) || (selectedHour in 18..19 && selectedMinute >= 0)
-            if (!isValidTime) {
-                Toast.makeText(
-                    this,
-                    "현행법상 오전 7시부터 9시, 오후 6시부터 8시까지만 선택 가능합니다.",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-
-            // 시간 포맷 변경
             val tempS = "${selectedHour}시 ${selectedMinute}분"
             selectFormattedTime = LocalTime.parse(tempS, DateTimeFormatter.ofPattern("H시 m분"))
                 .format(DateTimeFormatter.ofPattern("HH:mm"))
 
             // 오전/오후 표시 처리
-            selectTime = when {
-                selectedHour > 12 -> { // 오후 시간
-                    val pm = selectedHour - 12
-                    "오후 $pm 시 $selectedMinute 분"
-                }
-                else -> { // 오전 시간
-                    "오전 $selectedHour 시 $selectedMinute 분"
-                }
+            selectTime = if (selectedAmPm == 1) { // 오후
+                val pmHour = if (selectedHour > 12) selectedHour - 12 else selectedHour
+                "오후 $pmHour 시 $selectedMinute 분"
+            } else { // 오전
+                "오전 $selectedHour 시 $selectedMinute 분"
             }
 
-            // UI 업데이트
             mBinding.editSelectTime.text = selectTime
             mBinding.editSelectTime.setTextColor(ContextCompat.getColor(this, R.color.mio_gray_11))
             isAllCheck.isFirstVF.isTime = true
+            myViewModel.postCheckValue(isAllCheck)
 
-            // 아이콘 변경
             mBinding.editTime.setImageResource(R.drawable.filter_time_update_icon)
 
-            // 다이얼로그 닫기
             dialog.dismiss()
         }
 
         dialog.show()
     }
+
 
     private fun returnStatusBar() {
         mBinding.toolbar.visibility = View.VISIBLE
@@ -1727,6 +1797,28 @@ val service = retrofit.create(ReverseGeocodingAPI::class.java)
                 }
             }
         })
+    }
+
+    private fun updateButtonStatus() {
+        val conditions = Conditions(isSchool, isGender, isSmoker)
+
+        val shouldEnableButton = conditions.shouldEnableButton()
+
+        if (shouldEnableButton) {
+            mBinding.editNext.apply {
+                setBackgroundResource(R.drawable.round_btn_update_layout)
+                setTextColor(ContextCompat.getColor(this@NoticeBoardEditActivity ,R.color.mio_gray_1))
+            }
+            mBinding.editNext.setOnClickListener {
+                mBinding.editViewflipper.showNext()
+
+                isComplete = !isComplete
+                myViewModel.postCheckComplete(false)
+                currentPage += 1
+                myViewModel.postCheckPage(currentPage)
+            }
+        }
+        mBinding.editNext.isEnabled = shouldEnableButton
     }
 
     private val callback = object : OnBackPressedCallback(true) {

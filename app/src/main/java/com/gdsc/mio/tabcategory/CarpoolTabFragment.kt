@@ -92,7 +92,7 @@ class CarpoolTabFragment : Fragment() {
     private var sharedViewModel: SharedViewModel? = null
     private var calendarTempData = ArrayList<String>()
     //캘린더에서 선택된거 저장하고 없어지고 할 데이터
-    private var selectCalendarCarpoolData : ArrayList<PostData> = ArrayList()
+    //private var selectCalendarCarpoolData : ArrayList<PostData> = ArrayList()
     //edit에서 받은 값
     //private var selectCalendarData = HashMap<String, ArrayList<PostData>>()
     private var testselectCalendarData = HashMap<String, ArrayList<PostData>>()
@@ -100,7 +100,7 @@ class CarpoolTabFragment : Fragment() {
     //처음 시작 시 계정 수정요청용
     private var isFirstAccountEdit : String? = null
 
-    private var isFirst = true
+    //private var isFirst = true
 
     private lateinit var viewModel: CurrentDataViewModel
 
@@ -372,10 +372,7 @@ class CarpoolTabFragment : Fragment() {
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
 
         LoadingProgressDialogManager.show(requireContext())
-
-        if (isFirst) {
-            setData(LocalDate.now().toString())
-        }
+        setData(LocalDate.now().toString())
 
         noticeBoardAdapter = NoticeBoardAdapter()
         noticeBoardAdapter!!.postItemData = carpoolAllData
@@ -520,46 +517,34 @@ class CarpoolTabFragment : Fragment() {
 
 
     private fun setCalendarData() {
-
-        //val cal = Calendar.getInstance()
-        //cal.set(2023, 5, 1)
-        /*cal.add(Calendar.YEAR, LocalDate.now().year)
-        cal.add(Calendar.MONTH, LocalDate.now().monthValue)
-        cal.add(Calendar.DAY_OF_MONTH, LocalDate.now().dayOfMonth)
-
-         */
-
-        //현재 달의 마지막 날짜
         val localDate = LocalDate.now()
         val yearMonth = YearMonth.from(localDate)
         val lastDayOfMonth = yearMonth.lengthOfMonth()
 
-        //월 설정
-        //taxiTabBinding.monthTv.text = LocalDate.now().month.toString()
-
-
-        //val localDate = LocalDate.parse("${LocalDate.now().year}-${LocalDate.now().monthValue}-${LocalDate.now().dayOfMonth}")
-        //현재 날짜
-        //val currentDate = LocalDate.now()
-        //현재 달의 마지막 날짜
-        //val lastDayOfMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
-        //val lastDayOfMonth = localDate.withDayOfMonth(localDate.lengthOfMonth())
-
-        //현재 날짜에서 이번달의 마지막 날짜 까지 ex)오늘 11월20일이면 캘린더 리사이클러뷰에는 20일 부터 30일까지
-        for (i in localDate.toString().substring(8..9).toInt()..lastDayOfMonth) {
-            val date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, i)
+        for (i in localDate.dayOfMonth..lastDayOfMonth) {
+            val date = LocalDate.of(localDate.year, localDate.month, i)
             val dayOfWeek: DayOfWeek = date.dayOfWeek
-            val tempDayOfWeek = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN) //요일
-            //println("dadad" + tempDayOfWeek.toString().substring(0, 3))
-            /*println("날짜" + date)
-            println("dayofweek" + dayOfWeek)*/
-            //현재 월, 현재 요일, 날짜
-            //println(DateData(LocalDate.now().year.toString(), LocalDate.now().month.toString(), dayOfWeek.toString().substring(0, 3), i.toString()))
+            val tempDayOfWeek = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
 
             if (calendarItemData.isEmpty()) {
-                calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), "오늘", i.toString()))
+                calendarItemData.add(DateData(localDate.year.toString(), localDate.monthValue.toString(), "오늘", i.toString()))
             } else {
-                calendarItemData.add(DateData(LocalDate.now().year.toString(), LocalDate.now().monthValue.toString(), tempDayOfWeek.toString().substring(0, 1), i.toString()))
+                calendarItemData.add(DateData(localDate.year.toString(), localDate.monthValue.toString(), tempDayOfWeek.substring(0, 1), i.toString()))
+            }
+        }
+
+        // 현재 날짜가 해당 달의 마지막 날이면 다음 달 추가
+        if (localDate.dayOfMonth == lastDayOfMonth) {
+            val nextMonth = localDate.plusMonths(1)
+            val nextYearMonth = YearMonth.from(nextMonth)
+            val nextMonthLastDay = nextYearMonth.lengthOfMonth()
+
+            for (i in 1..nextMonthLastDay) {
+                val date = LocalDate.of(nextMonth.year, nextMonth.month, i)
+                val dayOfWeek: DayOfWeek = date.dayOfWeek
+                val tempDayOfWeek = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
+
+                calendarItemData.add(DateData(nextMonth.year.toString(), nextMonth.monthValue.toString(), tempDayOfWeek.substring(0, 1), i.toString()))
             }
         }
     }
@@ -617,15 +602,12 @@ class CarpoolTabFragment : Fragment() {
                         if (carpoolAllData.isEmpty()) {
                             taxiTabBinding.nonCalendarDataTv.visibility = View.VISIBLE
                             taxiTabBinding.noticeBoardRV.visibility = View.GONE
-
-                            if (isFirst) {
-                                isFirst = false
-                            } else {
-                                Toast.makeText(requireContext(), "선택하신 날의 게시글이 존재하지 않습니다 더보기를 통해 게시글을 확인해주세요", Toast.LENGTH_SHORT).show()
-                            }
                         } else {
                             taxiTabBinding.nonCalendarDataTv.visibility = View.GONE
                             taxiTabBinding.noticeBoardRV.visibility = View.VISIBLE
+                        }
+                        if (targetDate != LocalDate.now().toString() && carpoolAllData.isEmpty()) {
+                            Toast.makeText(requireContext(), "선택하신 날의 게시글이 존재하지 않습니다 더보기를 통해 게시글을 확인해주세요", Toast.LENGTH_SHORT).show()
                         }
 
                         // 어댑터에 전체 데이터를 적용

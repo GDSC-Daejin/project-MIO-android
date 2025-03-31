@@ -152,7 +152,7 @@
                 android:descendantFocusability="blocksDescendants"
                 android:fontFamily="@font/pretendard_bold"
                 android:gravity="center"
-                android:text="선택한 날짜의 글이 존재하지 않습니다."
+                android:text="오늘 예정된 카풀이 없습니다.\n 미오에서 글을 써보세요!"
                 android:textColor="@color/mio_gray_12"
                 android:textSize="16sp"
                 android:visibility="gone"

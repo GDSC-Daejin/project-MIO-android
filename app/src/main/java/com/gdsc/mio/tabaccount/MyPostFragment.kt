@@ -211,6 +211,12 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
 
             // 스크롤 리스너 초기화
             initScrollListener()
+
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                pBinding.accountSwipe.isRefreshing = false
+                requireActivity().window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE)
+            }, 500)
         }
     }
 

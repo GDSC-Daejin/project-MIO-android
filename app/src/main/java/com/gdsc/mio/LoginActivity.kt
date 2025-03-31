@@ -320,10 +320,11 @@ class LoginActivity : AppCompatActivity() {
                 }*/
             } else {
                 LoadingProgressDialogManager.hide()
-                //Log.e("Login", result.resultCode.toString())
+               /* Log.e("Login", result.resultCode.toString())
+                Log.e("Login", result.data.toString())*/
                 Toast.makeText(this@LoginActivity, "로그인에 실패했습니다. 네트워크 및 계정 확인 후 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
                 mGoogleSignInClient.signOut().addOnCompleteListener {
-                    signIn() // Prompt for sign-in again
+                    signIn()
                 }
             }
         }
@@ -339,7 +340,8 @@ class LoginActivity : AppCompatActivity() {
             userEmail = email
             saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
             val userInfoToken = TokenRequest(idToken.toString())
-            //Log.e("idToken", idToken.toString())
+            /*Log.e("idToken", idToken.toString())
+            Log.e("idToken", clientWebKey.toString())*/
             signInCheck(userInfoToken)
 
         } catch (e: ApiException) {

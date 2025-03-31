@@ -15,11 +15,11 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import com.gdsc.mio.model.LoginResponsesData
-import com.gdsc.mio.model.TokenRequest
 import com.gdsc.mio.databinding.ActivityLoginBinding
 import com.gdsc.mio.loading.LoadingProgressDialogManager
 import com.gdsc.mio.model.AccountStatus
+import com.gdsc.mio.model.LoginResponsesData
+import com.gdsc.mio.model.TokenRequest
 import com.gdsc.mio.model.User
 import com.gdsc.mio.util.AESKeyStoreUtil
 import com.gdsc.mio.util.AppUpdateManager
@@ -71,6 +71,13 @@ class LoginActivity : AppCompatActivity() {
         setResultSignUp()
         saveSettingData()
 
+        try {
+            (mBinding.googleSign.getChildAt(0) as TextView).setText(R.string.sign_in)
+        } catch (e: ClassCastException) {
+            e.printStackTrace()
+        } catch (e: NullPointerException) {
+            e.printStackTrace()
+        }
         /*mBinding.logoIv.setOnClickListener {
             AESKeyStoreUtil.deleteAESKeyFromKeystore()
         }*/
@@ -191,7 +198,7 @@ class LoginActivity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     isFirst = true
 
-                    Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this@LoginActivity, MainActivity::class.java)
                     startActivity(intent)
                     this@LoginActivity.finish()
@@ -251,7 +258,7 @@ class LoginActivity : AppCompatActivity() {
                             }
                             isPolicyArrowRetrofitConnect()
                         } else {
-                            Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
+                            //Toast.makeText(this@LoginActivity, "로그인이 완료되었습니다. ${response.code()}", Toast.LENGTH_SHORT).show()
                             val intent = Intent(this@LoginActivity, MainActivity::class.java)
                             startActivity(intent)
                             this@LoginActivity.finish()
@@ -332,7 +339,7 @@ class LoginActivity : AppCompatActivity() {
             userEmail = email
             saveSharedPreferenceGoogleLogin.setUserEMAIL(this@LoginActivity, email)
             val userInfoToken = TokenRequest(idToken.toString())
-            Log.e("idToken", idToken.toString())
+            //Log.e("idToken", idToken.toString())
             signInCheck(userInfoToken)
 
         } catch (e: ApiException) {

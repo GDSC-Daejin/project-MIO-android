@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">MIO</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="sign_in">Sign in with Google</string>
+
     <string name="setText">%1$s %2$s</string>
     <string name="setCost">%1$s원</string>
     <!--notification-->

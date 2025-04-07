@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,10 +31,7 @@ import com.gdsc.mio.model.NotificationData
 import com.gdsc.mio.noticeboard.NoticeBoardReadActivity
 import com.gdsc.mio.viewmodel.NotificationViewModel
 import com.gdsc.mio.viewmodel.SharedViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -107,125 +106,11 @@ class NotificationFragment : Fragment() {
         }*/
 
 
-        nAdapter.setItemClickListener(object : NotificationAdapter.ItemClickListener {
-            override fun onClick(view: View, position: Int, itemId: Int?, status : NotificationAdapter.NotificationStatus) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    val temp = itemId?.let { id -> //전체 알람에서 알람id를 담은 postid를 찾음
-                        viewModel.notifications.value?.find { it.id == id }?.postId
-                    }
 
-                    val contentPost = temp?.let { postId -> //위 postid를 토대로 post데이터에 있는지 없는지 찾음
-                        viewModel.notificationsPostData.value.find { it.postID == postId }
-                    }
-
-                    if (contentPost == null) {
-                        withContext(context = Dispatchers.Main) {
-                            Toast.makeText(requireContext(), "게시글이 삭제되었거나 종료되었습니다", Toast.LENGTH_SHORT).show()
-                        }
-                        return@launch
-                    }
-
-                    val content =  viewModel.notifications.value?.find { it.id == itemId }?.content
-                    val statusSet = when {
-                        identification == contentPost.user.email && content?.contains("탑승자") == true -> {
-                            NotificationAdapter.NotificationStatus.Driver
-                        }
-                        content?.contains("님과") == true -> {
-                            NotificationAdapter.NotificationStatus.Passenger
-                        }
-                        else -> {
-                            NotificationAdapter.NotificationStatus.Neither
-                        }
-                    }
-
-                    val temp2 = temp.let { postId ->
-                        viewModel.notificationsParticipationData.value.find { it.first == postId }?.second
-                    }
-                    var intent : Intent? = null
-                    dataPosition = position
-
-                    // Handle different statuses
-                    when(statusSet) {
-                        NotificationAdapter.NotificationStatus.Passenger -> { //손님 카풀종료
-                            intent = Intent(activity, PassengersReviewActivity::class.java).apply {
-                                putExtra("type", "PASSENGER")
-                                putExtra("postDriver", contentPost.user)
-                                putExtra("Data", contentPost)
-                            }
-                        }
-
-                        NotificationAdapter.NotificationStatus.Driver -> {//운전자 카풀종료
-                            if (temp2?.isNotEmpty() == true) {
-                                intent = Intent(activity, PassengersReviewActivity::class.java).apply {
-                                    putExtra("type", "DRIVER")
-                                    putExtra("postPassengers", temp2)
-                                    putExtra("Data", contentPost)
-                                }
-                            } else {
-                                withContext(Dispatchers.Main) {
-                                    Toast.makeText(requireContext(), "탑승자가 없습니다.", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        }
-
-                        NotificationAdapter.NotificationStatus.Neither -> {
-                            intent = Intent(activity, NoticeBoardReadActivity::class.java).apply {
-                                putExtra("type", "READ")
-                                putExtra("postItem", contentPost)
-                            }
-                        }
-                    }
-
-                    intent?.let {
-                        requestActivity.launch(it)
-                    }
-                }
-            }
-
-            //position -> 리사이클러뷰 위치, itemId -> 알람 id값, postId -> postdata찾기위한 값인디 없을수도
-            override fun onLongClick(view: View, position: Int, itemId: Int, postId: Int?) {
-                //사용할 곳
-                val layoutInflater = LayoutInflater.from(context)
-                val dialogView = layoutInflater.inflate(R.layout.dialog_layout, null)
-                val alertDialog = AlertDialog.Builder(context, R.style.CustomAlertDialog)
-                    .setView(dialogView)
-                    .create()
-                val dialogContent = dialogView.findViewById<TextView>(R.id.dialog_tv)
-                val dialogLeftBtn = dialogView.findViewById<View>(R.id.dialog_left_btn)
-                val dialogRightBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
-
-                dialogContent.text = "정말로 삭제하시겠습니까?"
-                //아니오
-                dialogLeftBtn.setOnClickListener {
-                    viewModel.setLoading(false)
-                    alertDialog.dismiss()
-                }
-
-                dialogRightBtn.setOnClickListener {
-                    viewModel.setLoading(true)
-                    RetrofitServerConnect.create(requireContext()).deleteMyAlarm(itemId).enqueue(object : Callback<Void> {
-                        override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                            viewModel.setLoading(false) // 로딩 상태 해제
-                            if (response.isSuccessful) {
-                                viewModel.deleteNotification(itemId)
-                                alertDialog.dismiss()
-                            } else {
-                                viewModel.setError("Failed to delete notification: ${response.code()}")
-                            }
-                        }
-
-                        override fun onFailure(call: Call<Void>, t: Throwable) {
-                            viewModel.setLoading(false) // 로딩 상태 해제
-                            viewModel.setError("Error deleting notification: ${t.message}")
-                        }
-                    })
-                }
-                alertDialog.show()
-            }
-        })
 
         return nfBinding.root
     }
+
 
 
     private fun initNotificationRV() {
@@ -282,6 +167,117 @@ class NotificationFragment : Fragment() {
         saveSharedPreferenceGoogleLogin.setNotification(requireActivity(), dataSize)
     }
 
+    private fun setupNotificationClickListener() {
+        nAdapter.setItemClickListener(object : NotificationAdapter.ItemClickListener {
+            override fun onClick(view: View, position: Int, itemId: Int?, status: NotificationAdapter.NotificationStatus) {
+                //Log.e("nadapter", itemId.toString())
+
+                val postId = itemId?.let { id ->
+                    viewModel.notifications.value?.find { it.id == id }?.postId
+                }
+
+                val contentPost = postId?.let { pid ->
+                    viewModel.notificationsPostData.value.find { it.postID == pid }
+                }
+
+                //Log.e("nadapter", contentPost.toString())
+
+                if (contentPost == null) {
+                    Toast.makeText(requireContext(), "게시글이 삭제되었거나 종료되었습니다", Toast.LENGTH_SHORT).show()
+                    return
+                }
+
+                val notification = viewModel.notifications.value?.find { it.id == itemId }
+                val content = notification?.content
+                val postUserEmail = contentPost.user.email
+
+                val statusSet = when {
+                    identification == postUserEmail && content?.contains("탑승자") == true -> NotificationAdapter.NotificationStatus.Driver
+                    content?.contains("님과") == true -> NotificationAdapter.NotificationStatus.Passenger
+                    else -> NotificationAdapter.NotificationStatus.Neither
+                }
+
+                dataPosition = position
+                val intent = when (statusSet) {
+                    NotificationAdapter.NotificationStatus.Passenger -> {
+                        Intent(activity, PassengersReviewActivity::class.java).apply {
+                            putExtra("type", "PASSENGER")
+                            putExtra("postDriver", contentPost.user)
+                            putExtra("Data", contentPost)
+                        }
+                    }
+
+                    NotificationAdapter.NotificationStatus.Driver -> {
+                        val passengers = postId.let {id ->
+                            viewModel.notificationsParticipationData.value.find { it.first == id }?.second
+                        }
+
+                        if (passengers.isNullOrEmpty()) {
+                            Toast.makeText(requireContext(), "탑승자가 없습니다.", Toast.LENGTH_SHORT).show()
+                            null
+                        } else {
+                            Intent(activity, PassengersReviewActivity::class.java).apply {
+                                putExtra("type", "DRIVER")
+                                putExtra("postPassengers", passengers)
+                                putExtra("Data", contentPost)
+                            }
+                        }
+                    }
+
+                    NotificationAdapter.NotificationStatus.Neither -> {
+                        Intent(activity, NoticeBoardReadActivity::class.java).apply {
+                            putExtra("type", "READ")
+                            putExtra("postItem", contentPost)
+                        }
+                    }
+                }
+
+                intent?.let { requestActivity.launch(it) }
+            }
+
+            //position -> 리사이클러뷰 위치, itemId -> 알람 id값, postId -> postdata찾기위한 값인디 없을수도
+            override fun onLongClick(view: View, position: Int, itemId: Int, postId: Int?) {
+                //사용할 곳
+                val layoutInflater = LayoutInflater.from(context)
+                val dialogView = layoutInflater.inflate(R.layout.dialog_layout, null)
+                val alertDialog = AlertDialog.Builder(context, R.style.CustomAlertDialog)
+                    .setView(dialogView)
+                    .create()
+                val dialogContent = dialogView.findViewById<TextView>(R.id.dialog_tv)
+                val dialogLeftBtn = dialogView.findViewById<View>(R.id.dialog_left_btn)
+                val dialogRightBtn =  dialogView.findViewById<View>(R.id.dialog_right_btn)
+
+                dialogContent.text = "정말로 삭제하시겠습니까?"
+                //아니오
+                dialogLeftBtn.setOnClickListener {
+                    viewModel.setLoading(false)
+                    alertDialog.dismiss()
+                }
+
+                dialogRightBtn.setOnClickListener {
+                    viewModel.setLoading(true)
+                    RetrofitServerConnect.create(requireContext()).deleteMyAlarm(itemId).enqueue(object : Callback<Void> {
+                        override fun onResponse(call: Call<Void>, response: Response<Void>) {
+                            viewModel.setLoading(false) // 로딩 상태 해제
+                            if (response.isSuccessful) {
+                                viewModel.deleteNotification(itemId)
+                                alertDialog.dismiss()
+                            } else {
+                                viewModel.setError("Failed to delete notification: ${response.code()}")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<Void>, t: Throwable) {
+                            viewModel.setLoading(false) // 로딩 상태 해제
+                            viewModel.setError("Error deleting notification: ${t.message}")
+                        }
+                    })
+                }
+                alertDialog.show()
+            }
+        })
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
@@ -291,6 +287,16 @@ class NotificationFragment : Fragment() {
         //reviewViewModel = ViewModelProvider(requireActivity())[ReviewViewModel::class.java]
         //setNotificationData()
         viewModel.fetchNotificationData(requireActivity())
+
+        viewModel.allDataReady.observe(viewLifecycleOwner) { isReady ->
+            //Log.e("isReady", isReady.toString())
+            if (isReady) {
+                setupNotificationClickListener()
+                viewModel.setLoading(false)
+            } else {
+                viewModel.setLoading(true)
+            }
+        }
 
        // setReadReviewData()
         // LiveData 관찰
@@ -303,7 +309,10 @@ class NotificationFragment : Fragment() {
             if (isLoading) {
                 LoadingProgressDialogManager.show(requireContext())
             } else {
-                LoadingProgressDialogManager.hide()
+                CoroutineScope(Dispatchers.IO).launch {
+                    delay(2000L)
+                    LoadingProgressDialogManager.hide()
+                }
             }
         }
 

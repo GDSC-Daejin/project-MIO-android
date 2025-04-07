@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -108,11 +109,19 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
         identification = saveSharedPreferenceGoogleLogin.getUserEMAIL(context)!!
 
         holder.itemView.setOnClickListener {
-            itemClickListener.onClick(it, holder.adapterPosition, currentList[position].id, NotificationStatus.Neither)
+            if (itemClickListener == null) {
+                Toast.makeText(context, "데이터를 불러오는 중입니다.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            itemClickListener?.onClick(it, holder.adapterPosition, currentList[position].id, NotificationStatus.Neither)
         }
 
         holder.itemView.setOnLongClickListener {
-            itemClickListener.onLongClick(it, holder.adapterPosition, currentList[position].id, currentList[position].postId)
+            if (itemClickListener == null) {
+                Toast.makeText(context, "데이터를 불러오는 중입니다.", Toast.LENGTH_SHORT).show()
+                return@setOnLongClickListener false
+            }
+            itemClickListener?.onLongClick(it, holder.adapterPosition, currentList[position].id, currentList[position].postId)
             true
         }
     }
@@ -145,7 +154,7 @@ class NotificationAdapter : ListAdapter<AddAlarmResponseData, NotificationAdapte
         fun onLongClick(view: View, position: Int, itemId: Int, postId : Int?) //position -> 리사이클러뷰 위치, itemId -> 알람 id값, postId -> postdata찾기위한 값인디 없을수도
     }
 
-    private lateinit var itemClickListener: ItemClickListener
+    private var itemClickListener: ItemClickListener? = null
 
     fun setItemClickListener(itemClickListener: ItemClickListener) {
         this.itemClickListener = itemClickListener

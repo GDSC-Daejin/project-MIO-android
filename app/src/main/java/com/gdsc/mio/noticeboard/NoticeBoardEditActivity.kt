@@ -931,7 +931,7 @@ class NoticeBoardEditActivity : AppCompatActivity() {
 
                     })
                     if (selectCategoryId == 1) {
-                        val intent = Intent(this, NoticeBoardReadActivity::class.java).apply {
+                        val intent = Intent().apply {
                             putExtra("postData", temp)
                             putExtra("flag", 0)
                         }

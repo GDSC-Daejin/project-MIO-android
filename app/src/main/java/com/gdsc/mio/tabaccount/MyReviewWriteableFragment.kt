@@ -19,6 +19,7 @@ import com.gdsc.mio.*
 import com.gdsc.mio.adapter.MyReviewWriteableAdapter
 import com.gdsc.mio.model.*
 import com.gdsc.mio.databinding.FragmentMyReviewWriteableBinding
+import com.gdsc.mio.loading.LoadingProgressDialogManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -87,6 +88,8 @@ class MyReviewWriteableFragment : Fragment() {
                     val temp = reviewWriteableReadAllData[position]
                     //내가 손님일때
                     if (identification != temp?.user?.email) {
+                       /* Log.e("identification", temp?.user?.email.toString())
+                        Log.e("identification", temp.toString())*/
                         val intent = Intent(activity, PassengersReviewActivity::class.java).apply {
                             putExtra("type", "PASSENGER")
                             putExtra("postDriver", temp!!.user)
@@ -94,6 +97,8 @@ class MyReviewWriteableFragment : Fragment() {
                         }
                         requestActivity.launch(intent)
                     } else { //내가 작성자(운전자)일때
+                       /* Log.e("identification driver", temp?.user?.email.toString())
+                        Log.e("identification driver", temp.toString())*/
                         val intent = Intent(activity, PassengersReviewActivity::class.java).apply {
                             putExtra("type",  "DRIVER")
                             putExtra("postPassengers", reviewPassengersData[reviewWriteableReadAllData[position]?.postCreateDate])
@@ -116,6 +121,7 @@ class MyReviewWriteableFragment : Fragment() {
                     reviewWriteableReadAllData.clear()
                     totalPages = response.body()?.totalPages ?: 0
                     val responseData = response.body()
+
                     //데드라인 체크안함
                     if (responseData != null) {
                         for (i in responseData.content.filter { it.isDeleteYN == "N" }.indices) {
@@ -155,9 +161,10 @@ class MyReviewWriteableFragment : Fragment() {
                                 reviewPassengersData[responseData.content[i].createDate] = responseData.content[i].participants!!
                             }
                         }
-
-                        reviewWriteableReadAllData.sortByDescending {item -> item?.postCreateDate}
-                        wAdapter?.updateDataList(reviewWriteableReadAllData.toList().sortedByDescending { it?.postCreateDate })
+                        //reviewWriteableReadAllData.sortByDescending {item -> item?.postCreateDate}
+                        //wAdapter?.updateDataList(reviewWriteableReadAllData.toList().sortedByDescending { it?.postCreateDate })
+                        reviewWriteableReadAllData.sortByDescending { it?.postTargetDate }
+                        wAdapter?.updateDataList(reviewWriteableReadAllData.toList())
                     }
                     if (reviewWriteableReadAllData.isNotEmpty()) {
                         wBinding.writeableReviewPostNotDataLl.visibility = View.GONE
@@ -266,6 +273,7 @@ class MyReviewWriteableFragment : Fragment() {
     }
 
     private fun getMoreItem() {
+        LoadingProgressDialogManager.show(requireContext())
         val handler = Handler(Looper.getMainLooper())
         handler.postDelayed({
             // Remove the loading item placeholder
@@ -280,6 +288,7 @@ class MyReviewWriteableFragment : Fragment() {
                 RetrofitServerConnect.create(requireActivity()).getMyMannersWriteableReview("createDate,desc", currentPage, 5).enqueue(object : Callback<PostReadAllResponse> {
                     override fun onResponse(call: Call<PostReadAllResponse>, response: Response<PostReadAllResponse>) {
                         if (response.isSuccessful) {
+                            LoadingProgressDialogManager.hide()
                             val responseData = response.body()
                             responseData?.let {
                                 val newItems = it.content.filter { item ->
@@ -306,8 +315,9 @@ class MyReviewWriteableFragment : Fragment() {
                                 }
                                 reviewWriteableReadAllData.addAll(newItems)
                                 wAdapter?.updateDataList(reviewWriteableReadAllData)
+                                wAdapter?.notifyDataSetChanged()
                             }
-                            reviewWriteableReadAllData.sortByDescending { it?.postCreateDate }
+                            reviewWriteableReadAllData.sortByDescending { it?.postTargetDate }
                         } else {
                             requireActivity().runOnUiThread {
                                 if (isAdded && !requireActivity().isFinishing) {

@@ -200,12 +200,25 @@ class SSEForegroundService : Service() {
         }, 1000)
     }
 
-    private fun restartServiceWithAlarm() {
+    /*private fun restartServiceWithAlarm() {
         val intent = Intent(this, SSEAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         // 5초 후 서비스 재시작
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent)
+    }*/
+    private fun restartServiceWithAlarm() {
+        val intent = Intent(this, SSEAlarmReceiver::class.java)
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        } else {
+            PendingIntent.FLAG_UPDATE_CURRENT
+        }
+
+        val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, flags)
+        val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent)
     }
 

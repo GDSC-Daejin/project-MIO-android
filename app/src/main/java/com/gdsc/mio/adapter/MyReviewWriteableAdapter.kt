@@ -117,7 +117,7 @@ class MyReviewWriteableAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>()
         val diffResult = DiffUtil.calculateDiff(diffCallback)
 
         myReviewWriteableData.clear()
-        myReviewWriteableData.addAll(newItems.sortedByDescending { it?.postCreateDate })
+        myReviewWriteableData.addAll(newItems.sortedByDescending { it?.postTargetDate })
 
         diffResult.dispatchUpdatesTo(this)
     }

@@ -2,6 +2,7 @@ package com.gdsc.mio.adapter
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -109,14 +110,14 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
                 }
 
                 // 서버에 승인 요청
-                fetchItemDetails(partData.participantId) { isSuccess ->
+                fetchItemDetails(partData.participantId) { isSuccess, message ->
                     if (isSuccess) {
                         // 서버 응답 후 아이템 갱신
                         participationItemData[position].approvalOrReject = "APPROVAL"
                         notifyItemChanged(position)
                     } else {
                         // 에러 처리 (필요시)
-                        Toast.makeText(context, "승인 신청에 실패하였습니다. 다시 시도해주세요", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -166,18 +167,18 @@ class ParticipationAdapter : RecyclerView.Adapter<ParticipationAdapter.Participa
         })
     }
 
-    private fun fetchItemDetails(participantsId: Int, callback: (Boolean) -> Unit) {
+    private fun fetchItemDetails(participantsId: Int, callback: (Boolean, String) -> Unit) {
         RetrofitServerConnect.create(context).patchParticipantsApproval(participantsId).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
-                    callback(true)  // 성공 시 true 반환
+                    callback(true, "")  // 성공 시 true 반환
                 } else {
-                    callback(false)  // 실패 시 false 반환
+                    callback(false, "같은 날짜에 이미 승인된 참여가 있는 유저입니다.")  // 실패 시 false 반환
                 }
             }
 
             override fun onFailure(call: Call<Void>, t: Throwable) {
-                callback(false)  // 실패 시 false 반환
+                callback(false, "승인 신청에 실패하였습니다. 통신 확인 후 다시 시도해주세요")  // 실패 시 false 반환
             }
         })
     }

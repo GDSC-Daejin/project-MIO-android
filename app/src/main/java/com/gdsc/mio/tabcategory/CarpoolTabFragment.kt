@@ -364,14 +364,14 @@ class CarpoolTabFragment : Fragment() {
 
 
     private fun initNoticeBoardRecyclerView() {
-        sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
+        /*sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         //저장된 거 가져옴
         val editObserver = androidx.lifecycle.Observer<HashMap<String, ArrayList<PostData>>> { textValue ->
             testselectCalendarData = textValue
         }
-        sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
+        sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)*/
 
-        LoadingProgressDialogManager.show(requireContext())
+        //LoadingProgressDialogManager.show(requireContext())
         setData(LocalDate.now().toString())
 
         noticeBoardAdapter = NoticeBoardAdapter()
@@ -905,8 +905,10 @@ class CarpoolTabFragment : Fragment() {
                             selectCalendarData[post.postTargetDate]!!.add(post)
 
                             println(selectCalendarData)*/
-                            setCurrentCarpoolData()
+                            //setCurrentCarpoolData()
                             //setData()
+                            reloadData()
+                            
                         }
                         //livemodel을 통해 저장
                         //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
@@ -947,10 +949,13 @@ class CarpoolTabFragment : Fragment() {
 
     fun reloadData() {
         setData(LocalDate.now().toString())
-        initNoticeBoardRecyclerView()
-        initCurrentNoticeBoardRecyclerView()
-        initCalendarRecyclerView()
-        initMyAreaRecyclerView()
+        //initNoticeBoardRecyclerView()
+        //initCurrentNoticeBoardRecyclerView()
+        //initCalendarRecyclerView()
+        setCurrentCarpoolData()
+        setCalendarData()
+        //initMyAreaRecyclerView()
+        setMyAreaData()
     }
 
     override fun onDestroy() {

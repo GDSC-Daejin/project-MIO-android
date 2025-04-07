@@ -82,6 +82,11 @@ class MainActivity : AppCompatActivity() {
             requestNotificationPermission()
         }
 
+        val isAlarm = saveSharedPreferenceGoogleLogin.getSharedAlarm(this@MainActivity)
+
+        if (isAlarm) {
+            sseStartCheck()
+        }
 
         if (oldFragment != null && oldTAG != "") {
             setFragment(oldTAG, oldFragment!!)
@@ -114,15 +119,11 @@ class MainActivity : AppCompatActivity() {
     private fun sseStartCheck() {
         if (!foregroundServiceRunning()) {
             serviceIntent = Intent(this, SSEForegroundService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent) // Android 8.0 이상에서는 startForegroundService 사용
-            } else {
-                startService(serviceIntent) // 이하 버전에서는 startService 사용
-            }
+            startForegroundService(serviceIntent) // Android 8.0 이상에서는 startForegroundService 사용
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+   /* @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     private fun requestNotificationPermission() {
         if (ActivityCompat.shouldShowRequestPermissionRationale(
                 this,
@@ -134,7 +135,22 @@ class MainActivity : AppCompatActivity() {
             // 권한 요청
             requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
-    }
+    }*/
+   private fun requestNotificationPermission() {
+       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+           if (ActivityCompat.shouldShowRequestPermissionRationale(
+                   this,
+                   android.Manifest.permission.POST_NOTIFICATIONS
+               )) {
+               showPermissionRationaleDialog()
+           } else {
+               requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+           }
+       } else {
+           // API 33 미만은 권한 필요 없음 → 바로 실행
+           requestIgnoreBatteryOptimization()
+       }
+   }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -692,6 +708,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val isAlarm = saveSharedPreferenceGoogleLogin.getSharedAlarm(this@MainActivity)
+
         if (isAlarm) {
             sseStartCheck()
         }

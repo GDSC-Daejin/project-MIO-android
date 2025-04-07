@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.MotionEvent
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -54,7 +55,6 @@ class PassengersReviewActivity : AppCompatActivity() {
         setIcon()
 
         type = intent.getStringExtra("type") as String
-
         if (type == "PASSENGER") { //내가 손님일때
             //Log.e("review", "PASSENGER")
             //driverData = intent.getSerializableExtra("postDriver") as User
@@ -70,6 +70,7 @@ class PassengersReviewActivity : AppCompatActivity() {
             } else {
                 intent.getParcelableExtra("postDriver", User::class.java)
             }
+            LoadingProgressDialogManager.hide()
 
         } else if (type == "DRIVER") { //내가 운전자일때
             //Log.e("review", "DRIVER")
@@ -126,14 +127,18 @@ class PassengersReviewActivity : AppCompatActivity() {
                     }
 
                     if (isNull) {
+                        LoadingProgressDialogManager.hide()
                         Toast.makeText(this@PassengersReviewActivity, "모든 사람의 리뷰를 등록해주세요", Toast.LENGTH_SHORT).show()
                     } else {
+                        LoadingProgressDialogManager.hide()
                         sendReviewData()
                     }
                 } else {
+                    LoadingProgressDialogManager.hide()
                     Toast.makeText(this@PassengersReviewActivity, "사용자의 리뷰 데이터를 찾을 수 없습니다. \n학생 아이디를 클릭하여 등록해주세요", Toast.LENGTH_SHORT).show()
                 }
             } else {
+                LoadingProgressDialogManager.hide()
                 sendReviewData()
             }
         }
@@ -164,6 +169,7 @@ class PassengersReviewActivity : AppCompatActivity() {
     }
 
     private fun setupChipListeners() {
+        LoadingProgressDialogManager.hide()
         prBinding.reviewSetPassengersCg.children.forEachIndexed { _, view ->
             if (view is Chip) {
                 /*if (index == 0 && passengersChipItemData.isNotEmpty()) {
@@ -346,8 +352,8 @@ class PassengersReviewActivity : AppCompatActivity() {
     }
 
     private fun userInfo(passengersData: ArrayList<ParticipationData>?) {
-        LoadingProgressDialogManager.show(this@PassengersReviewActivity)
         if (passengersData?.isNotEmpty() == true) {
+            LoadingProgressDialogManager.show(this@PassengersReviewActivity)
             for (i in passengersData) {
                 RetrofitServerConnect.create(this@PassengersReviewActivity)
                     .getUserProfileData(i.userId)
@@ -396,9 +402,9 @@ class PassengersReviewActivity : AppCompatActivity() {
 
 
     private fun sendReviewData() {
-        LoadingProgressDialogManager.show(this@PassengersReviewActivity)
         if (type == "DRIVER") { //내가 운전자일 때 손님들의 리뷰데이터를 전송
             if (passengersData != null) {
+                LoadingProgressDialogManager.show(this@PassengersReviewActivity)
                 for (i in passengerReviewHashMapData) {
                     //val temp = PassengersReviewData(mannerCount, reviewEditText, postData?.postID!!)
                     RetrofitServerConnect.create(this@PassengersReviewActivity).addPassengersReview(i.key!!, i.value!!).enqueue(object : Callback<PassengersReviewData> {

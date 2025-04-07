@@ -795,8 +795,9 @@ class TaxiTabFragment : Fragment() {
                             selectCalendarData[post.postTargetDate]!!.add(post)
 
                             println(selectCalendarData)*/
-                            setCurrentTaxiData()
+                            //setCurrentTaxiData()
                             //setData()
+                            reloadData()
                         }
                         //livemodel을 통해 저장
                         //sharedViewModel!!.setCalendarLiveData("add", selectCalendarData)
@@ -869,14 +870,15 @@ class TaxiTabFragment : Fragment() {
         sharedViewModel!!.getCalendarLiveData().observe(viewLifecycleOwner, editObserver)
     }
 
-    fun reloadData() {
-        initNoticeBoardRecyclerView()
-
-        initCalendarRecyclerView()
-        //initSwipeRefresh()
-
-        initCurrentNoticeBoardRecyclerView()
-        initMyAreaRecyclerView()
+    private fun reloadData() {
+        setData(LocalDate.now().toString())
+        //initNoticeBoardRecyclerView()
+        //initCurrentNoticeBoardRecyclerView()
+        //initCalendarRecyclerView()
+        setCurrentTaxiData()
+        setCalendarData()
+        //initMyAreaRecyclerView()
+        setMyAreaData()
     }
 
     companion object {

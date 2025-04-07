@@ -34,6 +34,16 @@ class NotificationViewModel : ViewModel() {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> get() = _error
 
+    private val _allDataReady = MutableLiveData(false)
+    val allDataReady: LiveData<Boolean> get() = _allDataReady
+
+    private fun checkDataReady() {
+        val isReady = !_notifications.value.isNullOrEmpty()
+                && _notificationsPostData.value.isNotEmpty()
+                && _notificationsParticipationData.value.isNotEmpty()
+        _allDataReady.postValue(isReady)
+    }
+
     fun fetchNotificationData(context: Context) {
         viewModelScope.launch {
             try {
@@ -101,6 +111,8 @@ class NotificationViewModel : ViewModel() {
                         }
                     }
                 }
+
+                checkDataReady()
             } catch (e: Exception) {
                 Log.e("fetchNotificationData", "Exception: ${e.message}")
             }

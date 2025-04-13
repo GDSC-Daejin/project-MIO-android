@@ -309,10 +309,7 @@ class NotificationFragment : Fragment() {
             if (isLoading) {
                 LoadingProgressDialogManager.show(requireContext())
             } else {
-                CoroutineScope(Dispatchers.IO).launch {
-                    delay(2000L)
-                    LoadingProgressDialogManager.hide()
-                }
+                LoadingProgressDialogManager.hide()
             }
         }
 

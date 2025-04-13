@@ -3,6 +3,7 @@ package com.gdsc.mio.navigation
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -19,6 +20,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.gdsc.mio.*
 import com.gdsc.mio.databinding.FragmentSettingBinding
@@ -50,7 +52,6 @@ class SettingFragment : Fragment() {
     private var sharedPreference = SaveSharedPreferenceGoogleLogin()
     private var serviceIntent: Intent? = null
     private lateinit var sharedViewModel : SharedViewModel
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -250,6 +251,48 @@ class SettingFragment : Fragment() {
                     }
                 })
             }
+        }
+    }
+
+    private fun isIgnoringBatteryOptimization(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = requireActivity().applicationContext.getSystemService(AppCompatActivity.POWER_SERVICE) as PowerManager
+            pm.isIgnoringBatteryOptimizations(requireActivity().applicationContext.packageName)
+        } else {
+            // M 이하 버전은 배터리 최적화 기능이 없으므로 항상 true
+            true
+        }
+    }
+
+    private fun isNotificationPermissionGranted(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            // TIRAMISU 미만은 권한이 필요하지 않음 (자동 허용됨)
+            true
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // 알림 권한 확인
+        if (!isNotificationPermissionGranted()) {
+            sharedPreference.setSharedAlarm(requireContext(), false)
+        }
+
+        // 배터리 최적화 제외 확인
+        if (!isIgnoringBatteryOptimization()) {
+            sharedPreference.setSharedAlarm(requireContext(), false)
+        }
+
+        val isAlarm = sharedPreference.getSharedAlarm(requireContext())
+
+        if (isAlarm) {
+            sseStartCheck()
         }
     }
 

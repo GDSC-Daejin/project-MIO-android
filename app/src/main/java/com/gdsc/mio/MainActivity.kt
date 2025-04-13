@@ -683,17 +683,27 @@ class MainActivity : AppCompatActivity() {
         finishAffinity()
     }*/
     private fun isIgnoringBatteryOptimization(): Boolean {
-        val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
-        return pm.isIgnoringBatteryOptimizations(applicationContext.packageName)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
+            pm.isIgnoringBatteryOptimizations(applicationContext.packageName)
+        } else {
+            // M 이하 버전은 배터리 최적화 기능이 없으므로 항상 true
+            true
+        }
     }
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+
     private fun isNotificationPermissionGranted(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            this,
-            android.Manifest.permission.POST_NOTIFICATIONS
-        ) == PackageManager.PERMISSION_GRANTED
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            // TIRAMISU 미만은 권한이 필요하지 않음 (자동 허용됨)
+            true
+        }
     }
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+
     override fun onResume() {
         super.onResume()
 

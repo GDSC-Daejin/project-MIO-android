@@ -3,10 +3,12 @@ package com.gdsc.mio.sse
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.gdsc.mio.BuildConfig
@@ -177,7 +179,11 @@ class SSEForegroundService : Service() {
         val notificationManager = getSystemService(NotificationManager::class.java)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelID, "SSE Service", NotificationManager.IMPORTANCE_LOW)
+            val channel = NotificationChannel(
+                channelID,
+                "SSE Service",
+                NotificationManager.IMPORTANCE_LOW
+            )
             notificationManager.createNotificationChannel(channel)
         }
 
@@ -188,7 +194,15 @@ class SSEForegroundService : Service() {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
 
-        startForeground(1, notification)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) { // Android 14 이상
+            startForeground(
+                1,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC // ← 타입 명시
+            )
+        } else {
+            startForeground(1, notification)
+        }
 
         Handler(Looper.getMainLooper()).postDelayed({
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -219,7 +233,19 @@ class SSEForegroundService : Service() {
         val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, flags)
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent)
+        //alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (alarmManager.canScheduleExactAlarms()) {
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent)
+            } else {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+            }
+        } else {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + 5000, pendingIntent)
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? {

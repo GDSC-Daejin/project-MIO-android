@@ -130,7 +130,6 @@ class ProfileActivity : AppCompatActivity() {
             }
 
             override fun onFailure(call: Call<User>, t: Throwable) {
-                Log.d("error", t.toString())
                 Toast.makeText(this@ProfileActivity, "연결에 실패했습니다. ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })

@@ -30,13 +30,9 @@ class SseHandler(private val context: Context) : BackgroundEventHandler {
 
         val messageData = messageEvent?.data ?: return
 
-        val eventId = messageEvent.lastEventId
-        val eventType = messageEvent.eventName
+        /*val eventId = messageEvent.lastEventId
+        val eventType = messageEvent.eventName*/
         val eventData = messageEvent.data
-
-        println("Event ID: $eventId")
-        println("Event Type: $eventType")
-        println("Event Data: $eventData")
 
         val comment = if (eventData.contains(":")) {
             messageEvent.data.split(":").map { it }.last()

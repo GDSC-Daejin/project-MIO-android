@@ -304,7 +304,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 bottomSheet.apply {
                     setCallback(object : ReadSettingBottomSheetFragment.OnSendFromBottomSheetDialog{
                         override fun sendValue(value: String) {
-                            Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                             getBottomSheetData = value
 
                             when(value) {
@@ -383,7 +382,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                 bottomSheet.apply {
                     setCallback(object : ReadSettingBottomSheet2Fragment.OnSendFromBottomSheetDialog{
                         override fun sendValue(value: String) {
-                            Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                             getBottomSheetData = value
 
                             when(value) {
@@ -395,14 +393,15 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     startActivity(intent)*/
 
                                     //신고 어케 할건지 Todo
+                                    val reportUrl = ""
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(reportUrl))
+                                    startActivity(intent)
                                 }
 
                                 "북마크" -> {
                                     RetrofitServerConnect.create(this@NoticeBoardReadActivity).addBookmark(postId = temp?.postID!!).enqueue(object : Callback<Void> {
                                         override fun onResponse(call: Call<Void>, response: Response<Void>) {
-                                            if (response.isSuccessful) {
-                                                Log.d("noticeboardread", response.code().toString())
-                                            } else {
+                                            if (!response.isSuccessful) {
                                                 LoadingProgressDialogManager.hide()
                                                 Toast.makeText(this@NoticeBoardReadActivity, "북마크 등록에 실패했습니다 ${response.code()}", Toast.LENGTH_SHORT).show()
                                             }
@@ -480,7 +479,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                 override fun onFailure(call: Call<CommentData>, t: Throwable) {
                                     commentsViewModel.setLoading(false)
                                     commentsViewModel.setError(t.toString())
-                                    Log.d("error", t.toString())
                                 }
                             })
 
@@ -513,19 +511,14 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         commentEditText = ""
                                         //nbrBinding.readCommentTotal.text = rea.size.toString()
                                     } else {
-                                        println("faafa")
                                         commentsViewModel.setLoading(false)
                                         commentsViewModel.setError(response.errorBody()?.string()!!)
-                                        Log.d("comment", response.errorBody()?.string()!!)
-                                        Log.d("message", call.request().toString())
-                                        println(response.code())
                                     }
                                 }
 
                                 override fun onFailure(call: Call<CommentData>, t: Throwable) {
                                     commentsViewModel.setLoading(false)
                                     commentsViewModel.setError(t.toString())
-                                    Log.d("error", t.toString())
                                 }
                             })
                         }
@@ -558,7 +551,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
                         override fun sendValue(value: String) {
                             commentsViewModel.setLoading(true)
-                            Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
                             commentEditText = value
                             sharedViewModel!!.postReply(reply = true) //수정
 
@@ -639,7 +631,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     bottomSheet.apply {
                         setCallback(object : ReadSettingBottomSheetFragment.OnSendFromBottomSheetDialog{
                             override fun sendValue(value: String) {
-                                Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                                 getBottomSheetCommentData = value
                                 //댓글 부분 고치기 Todo
                                 when(value) {
@@ -651,7 +642,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                         bottomSheet2.apply {
                                             setCallback(object : BottomSheetCommentFragment.OnSendFromBottomSheetDialog{
                                                 override fun sendValue(value: String) {
-                                                    Log.d("test", "BottomSheetCommentFragment -> 액티비티로 전달된 값 : $value")
                                                     commentEditText = value
                                                     commentsViewModel.setLoading(true)
                                                     val editCommentTemp = SendCommentData(commentEditText)
@@ -682,14 +672,9 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                                                         )
                                                                         commentsViewModel.updateComment(temp)
                                                                     }
-                                                                    println("수정성공")
                                                                 } else {
-                                                                    println("faafa")
                                                                     commentsViewModel.setLoading(false)
                                                                     commentsViewModel.setError(response.errorBody()?.string()!!)
-                                                                    Log.d("comment", response.errorBody()?.string()!!)
-                                                                    Log.d("message", call.request().toString())
-                                                                    println(response.code())
                                                                 }
                                                             }
 
@@ -835,14 +820,12 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                                                 response.body()?.let {
                                                                     commentsViewModel.updateComment(it)
                                                                 }
-                                                                println("대댓글수정성공")
+
                                                             } else {
-                                                                println("faafa")
+
                                                                 commentsViewModel.setLoading(false)
                                                                 commentsViewModel.setError(response.errorBody()?.string()!!)
-                                                                Log.d("comment", response.errorBody()?.string()!!)
-                                                                Log.d("message", call.request().toString())
-                                                                println(response.code())
+
                                                             }
                                                         }
 
@@ -1396,7 +1379,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         RetrofitServerConnect.create(this).deleteParticipate(postId = temp!!.postID).enqueue(object : Callback<Void> {
                             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                                 if (response.isSuccessful) {
-                                    Log.d("check", response.code().toString())
                                     Toast.makeText(this@NoticeBoardReadActivity, "성공적으로 취소되었습니다", Toast.LENGTH_SHORT).show()
                                     nbrBinding.readNumberOfPassengers.text = if (temp?.postParticipation == 0 || temp?.postParticipation!!.toInt() - 1 <= 0) {
                                         "0"
@@ -1711,58 +1693,9 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                     commentsViewModel.setAllComments(allCommentsList.toList())
                     commentsViewModel.setChildComments(childCommentsMap)
                     commentsViewModel.setParentComments(parentCommentsList.toList())
-
-                    /*for (i in response.body()!!.indices) {
-                        val commentResponse = response.body()!![i]
-                        *//* commentAllData.add(
-                             CommentData(
-                                 response.body()!![i].commentId,
-                                 response.body()!![i].content,
-                                 response.body()!![i].createDate,
-                                 response.body()!![i].postId,
-                                 response.body()!![i].user,
-                                 response.body()!![i].childComments
-                             ))
-                         noticeBoardReadAdapter!!.notifyDataSetChanged()*//*
-
-                        val commentData = CommentData(
-                            commentResponse.commentId,
-                            commentResponse.content,
-                            commentResponse.createDate,
-                            commentResponse.postId,
-                            commentResponse.user,
-                            commentResponse.childComments
-                        )
-
-                        // 대댓글 추가 부분
-                        childComments = kotlin.collections.ArrayList<CommentData>()
-                        for (j in commentResponse.childComments.indices) {
-                            val childCommentResponse = commentResponse.childComments[j]
-                            val childCommentData = CommentData(
-                                childCommentResponse.commentId,
-                                childCommentResponse.content,
-                                childCommentResponse.createDate,
-                                childCommentResponse.postId,
-                                childCommentResponse.user,
-                                childCommentResponse.childComments
-                            )
-                            childComments.add(childCommentData)
-                            //모든 댓글 정보를 얻기 위한 리스트
-                            realCommentAllData.add(childCommentData)
-                            childCommentsSize += 1
-                        }
-                        commentData.childComments = childComments
-
-                        commentAllData.add(commentData)
-                        realCommentAllData.add(commentData)
-                    }*/
                 } else {
                     commentsViewModel.setLoading(false)
                     commentsViewModel.setError(response.errorBody()?.string()!!)
-                    println("faafa")
-                    Log.d("comment", response.errorBody()?.string()!!)
-                    Log.d("message", call.request().toString())
-                    println(response.code())
                 }
 
                 /*val totalSize = commentAllData.size + childCommentsSize
@@ -2172,7 +2105,6 @@ class NoticeBoardReadActivity : AppCompatActivity() {
         RetrofitServerConnect.create(this).deletePostData(temp!!.postID).enqueue(object : Callback<Void> {
             override fun onResponse(call: Call<Void>, response: Response<Void>) {
                 if (response.isSuccessful) {
-                    println("scssucsucsucsdelte")
                     if (isCategory == true) { //카풀
                         val intent = Intent(this@NoticeBoardReadActivity, MoreCarpoolTabActivity::class.java).apply {
                             putExtra("flag", 2)
@@ -2190,16 +2122,16 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                         setResult(RESULT_OK, intent)
                         this@NoticeBoardReadActivity.finish()
                     }
-
                 } else {
-                    println("faafa")
-                    Log.d("comment", response.errorBody()?.string()!!)
-                    println(response.code())
+                    LoadingProgressDialogManager.hide()
+                    Toast.makeText(this@NoticeBoardReadActivity, "게시글 지우기에 실패하였습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
 
             override fun onFailure(call: Call<Void>, t: Throwable) {
-                Log.d("error", t.toString())
+                LoadingProgressDialogManager.hide()
+                Toast.makeText(this@NoticeBoardReadActivity, "게시글 지우기에 실패하였습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
+
             }
         })
     }

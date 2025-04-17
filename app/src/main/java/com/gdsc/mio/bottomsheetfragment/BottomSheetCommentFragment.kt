@@ -121,7 +121,6 @@ class BottomSheetCommentFragment(setEditText : CommentData?, parentId : String?)
     override fun onResume() {
         super.onResume()
         // EditText에 포커스 및 가상 키보드 표시
-        Log.d("bottomsheet", "onresume")
         abBinding.readCommentEt.requestFocus()
         val manager = requireActivity().getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager?
         manager!!.showSoftInput( abBinding.readCommentEt, InputMethodManager.SHOW_IMPLICIT)

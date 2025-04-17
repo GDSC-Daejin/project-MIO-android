@@ -13,16 +13,13 @@ class SSEPermissionReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null) return
 
-        Log.d("SSEPermissionReceiver", "권한 변경 감지됨")
 
         val sharedPreference = SaveSharedPreferenceGoogleLogin()
 
         if (isPermissionsGranted(context)) {
-            Log.d("SSEPermissionReceiver", "권한 허용됨 -> SSE 실행")
             sharedPreference.setSharedAlarm(context, true)
             startSSEForegroundService(context)
         } else {
-            Log.d("SSEPermissionReceiver", "권한 거부됨 -> SSE 중지")
             sharedPreference.setSharedAlarm(context, false)
             stopSSEForegroundService(context)
         }

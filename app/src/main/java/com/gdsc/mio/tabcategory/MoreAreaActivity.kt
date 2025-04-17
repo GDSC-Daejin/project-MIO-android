@@ -89,14 +89,12 @@ class MoreAreaActivity : AppCompatActivity() {
             //setSelectData()
         }
         //이건 날짜, 탑승 수, 담배, 성별, 학교 순서 등 필터
-        //필터 취소 기능 넣기 TODO
         mttBinding.moreFilterBtn.setOnClickListener {
             val bottomSheet = BottomSheetFragment()
             bottomSheet.show(this.supportFragmentManager, bottomSheet.tag)
             bottomSheet.apply {
                 setCallback(object : BottomSheetFragment.OnSendFromBottomSheetDialog{
                     override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                         //"${selectTargetDate} ${selectTime} ${participateNumberOfPeople} ${isCheckSchool} ${isCheckGender} ${isCheckSmoke}"
                         if (value.split(",").count {it == " "} < 5) {
                             getBottomData = value
@@ -117,7 +115,6 @@ class MoreAreaActivity : AppCompatActivity() {
             bottomSheet.apply {
                 setCallback(object : AnotherBottomSheetFragment.OnSendFromBottomSheetDialog{
                     override fun sendValue(value: String) {
-                        Log.d("test", "BottomSheetDialog -> 액티비티로 전달된 값 : $value")
                         getBottomSheetData = value
                         myViewModel.postCheckSearchFilter(getBottomSheetData)
                     }

@@ -172,7 +172,6 @@ class SettingFragment : Fragment() {
             alertDialog.setOnDismissListener {
                 // 다이얼로그가 종료된 후 처리할 동작
                 LoadingProgressDialogManager.hide()
-                Log.d("Dialog", "Dialog was dismissed")
             }
 
             alertDialog.show()

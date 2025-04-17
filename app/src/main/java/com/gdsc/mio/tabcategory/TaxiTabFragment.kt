@@ -730,7 +730,6 @@ class TaxiTabFragment : Fragment() {
                                 }
                             }
                             taxiTabBinding.carpoolText.setOnClickListener {
-                                Log.d("carpoolText", "clcickckckc")
                                 lifecycleScope.launch {
                                     setCurrentTaxiData()
                                 }

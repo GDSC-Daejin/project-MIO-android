@@ -84,13 +84,11 @@ class MyReviewWrittenFragment : Fragment() { //내가 쓴 리뷰 보는 곳
                         updateUI2(reviewWrittenAllData)
                     }
                 } else {
-                    Log.d("f", response.code().toString())
                     updateUI2(emptyList())
                 }
             }
 
             override fun onFailure(call: Call<List<MyAccountReviewData>>, t: Throwable) {
-                Log.d("error", t.toString())
                 updateUI2(emptyList())
             }
         })

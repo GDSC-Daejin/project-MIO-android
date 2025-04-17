@@ -392,8 +392,7 @@ class NoticeBoardReadActivity : AppCompatActivity() {
                                     }
                                     startActivity(intent)*/
 
-                                    //신고 어케 할건지 Todo
-                                    val reportUrl = ""
+                                    val reportUrl = BuildConfig.report_URL
                                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(reportUrl))
                                     startActivity(intent)
                                 }

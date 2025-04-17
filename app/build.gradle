@@ -23,8 +23,8 @@ android {
         applicationId "com.gdsc.mio"
         minSdk 26 // Android 8 (Oreo) 이상을 지원
         targetSdk 34
-        versionCode 23
-        versionName "1.2.2" //업데이트마다 0.1씩 증가 시키고 5이상되어 1.5가되면 2로 올리고 versioncode도 2로 올리기
+        versionCode 24
+        versionName "1.2.3" //업데이트마다 0.1씩 증가 시키고 5이상되어 1.5가되면 2로 올리고 versioncode도 2로 올리기
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         //key set
@@ -42,6 +42,7 @@ android {
         buildConfigField "String", "client_release_id_key", properties['client_release_id_key']
 
         buildConfigField "String", "server_URL", properties['server_URL']
+        buildConfigField "String", "report_URL", properties['report_URL']
         buildConfigField "String", "map_api_key", properties['map_api_key']
 //        buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
 //        buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']
@@ -76,6 +77,7 @@ android {
             buildConfigField "String", "client_release_id_key", properties['client_release_id_key']
             buildConfigField "String", "kakao_native_app_key",  "\"${properties['kakao_native_app_key']}\""
             buildConfigField "String", "server_URL", properties['server_URL']
+            buildConfigField "String", "report_URL", properties['report_URL']
             buildConfigField "String", "map_api_key", properties['map_api_key']
             /*buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']
             buildConfigField "String", "mio_native_ad_id", properties['mio_native_ad_id']*/
@@ -91,6 +93,7 @@ android {
             buildConfigField "String", "client_web_secret_key", properties['client_web_secret_key']
             buildConfigField "String", "client_web_id_key", properties['client_web_id_key']
             buildConfigField "String", "server_URL", properties['server_URL']
+            buildConfigField "String", "report_URL", properties['report_URL']
             buildConfigField "String", "kakao_native_app_key",  "\"${properties['kakao_native_app_key']}\""
             buildConfigField "String", "map_api_key", properties['map_api_key']
             /*buildConfigField "String", "mio_front_ad_id", properties['mio_front_ad_id']

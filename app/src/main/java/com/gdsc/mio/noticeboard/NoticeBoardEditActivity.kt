@@ -224,71 +224,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             }
         }
 
-
-
-        //여기가 사용할것들
-        ////////////////////////////
-       /* mBinding.datePickerBtn.setOnClickListener {
-            val cal = Calendar.getInstance()
-            val data = DatePickerDialog.OnDateSetListener { view, year, month, day ->
-               selectTargetDate = "${year}년/${month+1}월/${day}일"
-            }
-            DatePickerDialog(this, data, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
-        }
-
-        mBinding.categorySelectBtn.setOnClickListener {
-            categorySelect = "taxi"
-        }*/
-        //여기가 사용할것들
-        ///////////////////////////////////
-         //카테고리 생각하여 데이터 변경하기
-         /*mBinding.editAdd.setOnClickListener {
-            val contentPost = mBinding.editPostContent.text.toString()
-            val contentTitle = mBinding.editPostTitle.text.toString()
-
-            if (type.equals("ADD")) {
-                if (contentPost.isNotEmpty() && contentTitle.isNotEmpty() && selectTargetDate.isNotEmpty()) {
-                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                    //현재 로그인된 유저 email 가져오기
-                    userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
-                    //데이터 세팅 후 임시저장
-                    temp = PostData(userEmail, pos, contentTitle, contentPost, selectTargetDate, categorySelect, "location", "targetTime" ,1, 4)
-                    selectCalendarDataNoticeBoard[selectTargetDate] = arrayListOf()
-                    selectCalendarDataNoticeBoard[selectTargetDate]!!.add(temp!!)
-                    //pos는 현재 저장되지 않지만 나중에 짜피 백엔드에 데이터 넣을 거니 괜찮을듯
-                    //나중에 api연결할때 여기 바꾸기
-                    sharedViewModel!!.setCalendarLiveData("add", selectCalendarDataNoticeBoard)
-
-                    val intent = Intent().apply {
-                        putExtra("postData", temp)
-                        putExtra("flag", 0)
-                    }
-                    setResult(RESULT_OK, intent)
-                    finish()
-                   *//*val intent = Intent(this, TaxiTabFragment::class.java).apply {
-                        putExtra("postData", temp)
-                        putExtra("flag", 0)
-                    }*//*
-                    pos += 1
-
-                } else {
-                    if (contentTitle.isEmpty()) {
-                        Toast.makeText(this, "제목을 입력해주세요.", Toast.LENGTH_SHORT) .show()
-                    } else if (contentPost.isEmpty()) {
-                        Toast.makeText(this, "내용을 입력해주세요.", Toast.LENGTH_SHORT) .show()
-                    } else if (selectTargetDate.isEmpty()) {
-                        Toast.makeText(this, "날짜를 선택해주세요.", Toast.LENGTH_SHORT) .show()
-                    }
-                }
-            } else { //edit
-                if (contentPost.isNotEmpty() && contentTitle.isNotEmpty()) {
-                    val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-                    //현재 로그인된 유저 email 가져오기
-                    userEmail = saveSharedPreferenceGoogleLogin.getUserEMAIL(this).toString()
-                }
-            }
-        }*/
-
         mBinding.rvList.layoutManager =
             LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         mBinding.rvList.adapter = placeAdapter
@@ -305,63 +240,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             setResult(RESULT_OK, intent)
             this@NoticeBoardEditActivity.finish()
         }
-
-
-        /*myViewModel.allCheck.observe(this) {
-            if (it.isFirstVF.isTitle && it.isFirstVF.isTime && it.isFirstVF.isCalendar) {
-                it.isFirstVF.isFirst = true
-                isFirst = true
-                *//*Log.d("Allcheck", it.isFirstVF.isTitle.toString())
-                Log.d("Allcheck", it.isFirstVF.isTime.toString())
-                Log.d("Allcheck", it.isFirstVF.isCalendar.toString())
-                Log.d("Allcheck", it.isFirstVF.isParticipants.toString())*//*
-
-                //println("ff")
-            }
-
-            if (it.isSecondVF.isPlaceName && it.isSecondVF.isPlaceRode) {
-                it.isSecondVF.isSecond = true
-            }
-
-            *//*if ((it.isThirdVF.isSmoke || it.isThirdVF.isNSmoke)
-                && (it.isThirdVF.isGSchool || it.isThirdVF.isASchool)
-                && (it.isThirdVF.isSmoke || it.isThirdVF.isNSmoke)
-                && (it.isThirdVF.isMGender || it.isThirdVF.isWGender)
-                && it.isThirdVF.isAmount ) {
-                    it.isThirdVF.isThird = true
-            }*//*
-
-            if (it.isFirstVF.isFirst) {
-                myViewModel.postCheckComplete(complete = true)
-                it.isFirstVF.isFirst = false
-                isFirst = true
-            }
-
-            if (it.isSecondVF.isSecond) {
-                myViewModel.postCheckComplete(complete = true)
-                it.isSecondVF.isSecond = false
-            }
-
-            *//*if (it.isThirdVF.isThird) {
-                myViewModel.postCheckComplete(complete = true)
-                it.isThirdVF.isThird = false
-            }*//*
-        }*/
-
-        /*myViewModel.isGender.observe(this) {
-            isGender = it
-            updateButtonStatus()
-        }
-
-        myViewModel.isGSchool.observe(this) {
-            isSchool = it
-            updateButtonStatus()
-        }
-
-        myViewModel.isSmoker.observe(this) {
-            isSmoker = it
-            updateButtonStatus()
-        }*/
 
         //버튼 활성화를 실시간 체크를 위함
         myViewModel.checkComplete.observe(this) {
@@ -399,23 +277,6 @@ class NoticeBoardEditActivity : AppCompatActivity() {
                 mBinding.editNext.setOnClickListener {
 
                 }
-                /*mBinding.editNext.setOnClickListener {
-                    if (currentPage == 2 && countPage == 1) {
-                        returnStatusBar()
-                    }
-                    mBinding.editViewflipper.showNext()
-                    isComplete = !isComplete
-                    myViewModel.postCheckComplete(false)
-                    currentPage -= 1
-                    myViewModel.postCheckPage(currentPage)
-                    // InputMethodManager를 통해 가상 키보드의 상태를 관리합니다.
-                    val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                    // 가상 키보드가 올라가 있는지 여부를 확인합니다.
-                    if (inputMethodManager.isActive) {
-                        // 가상 키보드가 올라가 있다면 내립니다.
-                        inputMethodManager.hideSoftInputFromWindow(mBinding.editNext.windowToken, 0)
-                    }
-                }*/
             }
         }
 
@@ -590,34 +451,23 @@ class NoticeBoardEditActivity : AppCompatActivity() {
             }
         }
 
-        /*if (isTitle && isCalendar && isTime && isParticipants) {
-            isFirst = true
-            println("F"+isFirst)
-        } else {
-            println("?")
-        }*/
     }
 
     private fun parseHolidays(jsonString: String, year : String): Map<String, List<String>> {
         val holidaysMap = mutableMapOf<String, List<String>>()
 
         try {
-            // JSON 객체 생성
             val jsonObject = JSONObject(jsonString)
 
-            // 데이터 가져오기
             val yearParse = jsonObject.getJSONObject(year)
 
-            // 키셋(날짜) 반복
             for (key in yearParse.keys()) {
                 val holidayNames = yearParse.getJSONArray(key)
 
-                // JSONArray를 List<String>으로 변환
                 val holidayList = mutableListOf<String>()
                 for (i in 0 until holidayNames.length()) {
                     holidayList.add(holidayNames.getString(i))
                 }
-                // Map에 추가
                 holidaysMap[key] = holidayList
             }
         } catch (e: Exception) {
@@ -1256,18 +1106,15 @@ class NoticeBoardEditActivity : AppCompatActivity() {
         hourPicker.value = hour
         hourPicker.wrapSelectorWheel = false
 
-        // 분 NumberPicker 설정
         minutePicker.minValue = 0
         minutePicker.maxValue = 59
         minutePicker.value = minute // 현재 분 설정
         minutePicker.wrapSelectorWheel = true
 
-        // 슬라이드 및 수동 입력 방지
         hourPicker.descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
         minutePicker.descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
         amPmPicker.descendantFocusability = NumberPicker.FOCUS_BLOCK_DESCENDANTS
 
-        // 오전/오후 변경 시 시간 Picker 범위 자동 변경
         amPmPicker.setOnValueChangedListener { _, _, newVal ->
             if (newVal == 0) { // 오전 선택 시
                 hourPicker.minValue = 7

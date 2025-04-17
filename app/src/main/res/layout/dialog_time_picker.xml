@@ -10,12 +10,21 @@
     android:orientation="vertical"
     android:padding="10dp">
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="오전: 7~8시 / 오후: 18~19시만 선택 가능해요"
+        android:gravity="center"
+        android:fontFamily="@font/pretendard_bold"
+        />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
         >
+
         <LinearLayout
             android:id="@+id/linearLayout13"
             android:layout_width="wrap_content"

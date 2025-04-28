@@ -73,8 +73,10 @@ class SettingFragment : Fragment() {
 
         binding.enableFeature.setOnCheckedChangeListener { _, check ->
             sharedPreference.setSharedAlarm(requireActivity(), check)
-            if (sharedPreference.getSharedAlarm(requireActivity())) {
+            if (!sharedPreference.getSharedAlarm(requireActivity())) {
                 requestIgnoreBatteryOptimization()
+            } else {
+
             }
         }
 

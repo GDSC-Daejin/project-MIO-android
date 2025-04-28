@@ -29,14 +29,26 @@ class SSEForegroundService : Service() {
     private var userId: Long? = null
     private var isGetAlarm: Boolean? = null
 
+    private lateinit var preferenceObserver : PreferenceChangeObserver
+
     companion object {
-        private var hasNotificationBeenShown: Boolean = false
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "SSE_NOTIFICATION_CHANNEL"
     }
 
     override fun onCreate() {
         super.onCreate()
+        preferenceObserver = PreferenceChangeObserver(this) { isAlarmOn ->
+            if (!isAlarmOn) {
+                stopForegroundServiceAndClearNotification()
+            }
+        }
+        preferenceObserver.register()
+
+        val alarmSetting = SaveSharedPreferenceGoogleLogin().getSharedAlarm(this)
+        if (!alarmSetting) {
+            stopForegroundServiceAndClearNotification()
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -48,9 +60,28 @@ class SSEForegroundService : Service() {
         isGetAlarm = sharedPreferenceGoogleLogin!!.getSharedAlarm(this)
         if (userId != null && isGetAlarm == true) {
             startSSE()
+        } else {
+            stopSelf()
         }
 
         return START_STICKY // 서비스가 강제 종료되면 자동 재시작
+    }
+
+    private fun stopForegroundServiceAndClearNotification() {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            notificationManager.cancel(null, 1)  // 첫 번째 인자는 태그, 두 번째는 알림 ID
+        } else {
+            notificationManager.cancel(1)  // 태그 없는 경우
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            @Suppress("DEPRECATION")
+            stopForeground(true)
+        }
+        stopSelf()
     }
 
     private fun startSSE() {
@@ -72,6 +103,7 @@ class SSEForegroundService : Service() {
         super.onDestroy()
         eventSource?.close()
         serviceIntent = null
+        preferenceObserver.unregister()
         restartServiceWithAlarm() // 서비스 종료 시 자동 재시작
     }
 

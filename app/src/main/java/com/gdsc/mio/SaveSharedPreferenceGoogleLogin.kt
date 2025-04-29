@@ -12,7 +12,7 @@ class SaveSharedPreferenceGoogleLogin {
     private val acctoken = "token"
     private val expireDate = "expireDate"
     private val privateUserId = "userId"
-    //private val refreshTokenTag = "refreshToken"
+    private val refreshTokenTag = "refreshToken"
     private val myAreaTag = "myArea"
 
     private val notificationCheck = "notificationCheck"
@@ -179,22 +179,31 @@ class SaveSharedPreferenceGoogleLogin {
         }
     }
 
-    /*fun setRefreshToken(ctx: Context?, refreshToken: String?) {
+    fun setRefreshToken(ctx: Context?, refreshToken: String?, secretKey : SecretKey) {
+        val encryptedTk = AESUtil.encryptAES(secretKey, refreshToken ?: "")
+        val formatEncrypted = "${encryptedTk.first},${encryptedTk.second}" // ',' 구분자로 변경
         val editor = getSharedPreferences(ctx).edit()
-        editor.putString(refreshTokenTag, refreshToken)
+        editor.putString(refreshTokenTag, formatEncrypted)
         editor.apply()
     }
-    fun getRefreshToken(ctx: Context?): String? {
-        return getSharedPreferences(ctx).getString(refreshTokenTag, "")
-    }*/
 
-    fun setExpireDate(ctx: Context?, expire: String?) {
+    fun getRefreshToken(ctx: Context?, secretKey : SecretKey): String? {
+        val encryptedTk = getSharedPreferences(ctx).getString(refreshTokenTag, "")
+        return if (encryptedTk.isNullOrEmpty()) {
+            null
+        } else {
+            val splitEncrypted = encryptedTk.split(",")
+            AESUtil.decryptAES(secretKey, splitEncrypted[0], splitEncrypted[1])
+        }
+    }
+
+    fun setExpireDate(ctx: Context?, expire: Long) {
         val editor = getSharedPreferences(ctx).edit()
-        editor.putString(expireDate, expire!!)
+        editor.putLong(expireDate, expire)
         editor.apply()
     }
-    fun getExpireDate(ctx: Context?): String? {
-        return getSharedPreferences(ctx).getString(expireDate, "")
+    fun getExpireDate(ctx: Context?): Long {
+        return getSharedPreferences(ctx).getLong(expireDate, 0L)
     }
 
     fun setUserId(ctx: Context?, userId: Int?) {

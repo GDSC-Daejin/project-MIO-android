@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 
 class PreferenceChangeObserver(
-    private val context: Context,
+    context: Context,
     private val onAlarmSettingChanged: (Boolean) -> Unit
 ) : SharedPreferences.OnSharedPreferenceChangeListener {
 

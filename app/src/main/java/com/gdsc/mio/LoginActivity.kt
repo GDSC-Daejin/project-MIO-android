@@ -6,7 +6,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.TextView
 import android.widget.Toast
@@ -15,12 +14,10 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.gdsc.mio.databinding.ActivityLoginBinding
 import com.gdsc.mio.loading.LoadingProgressDialogManager
-import com.gdsc.mio.model.AccountStatus
-import com.gdsc.mio.model.LoginResponsesData
-import com.gdsc.mio.model.TokenRequest
-import com.gdsc.mio.model.User
+import com.gdsc.mio.model.*
 import com.gdsc.mio.util.AESKeyStoreUtil
 import com.gdsc.mio.util.AppUpdateManager
 import com.gdsc.mio.util.DebuggingCheck
@@ -71,6 +68,10 @@ class LoginActivity : AppCompatActivity() {
         setResultSignUp()
         saveSettingData()
 
+        val refreshToken = saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity, secretKey)
+        val requestToken = RefreshTokenRequest(refreshToken)
+        autoLoginWithRefresh(requestToken)
+
         try {
             (mBinding.googleSign.getChildAt(0) as TextView).setText(R.string.sign_in)
         } catch (e: ClassCastException) {
@@ -115,6 +116,15 @@ class LoginActivity : AppCompatActivity() {
 
         // 앱 업데이트 확인 및 유도
         checkForAppUpdate()
+
+        debuggingCheck()
+    }
+
+    private fun debuggingCheck() {
+        if (DebuggingCheck.isUsbDebuggingEnabled(this)) {
+           Toast.makeText(this, "USB 디버깅이 감지되어 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()
+           finish()
+        }
     }
 
     private fun restartApp() {
@@ -232,13 +242,14 @@ class LoginActivity : AppCompatActivity() {
                     val loginResponse = response.body()
                     if (loginResponse != null) {
                         val accessToken = loginResponse.accessToken
+                        val refreshToken = loginResponse.refreshToken
 
                         val accessTokenExpiresIn = loginResponse.accessTokenExpiresIn
 
                         // AccessToken, ExpireDate, RefreshToken 저장
                         saveSharedPreferenceGoogleLogin.setToken(this@LoginActivity, accessToken, secretKey)
-                        saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, accessTokenExpiresIn.toString())
-                        //saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, refreshToken)
+                        saveSharedPreferenceGoogleLogin.setExpireDate(this@LoginActivity, accessTokenExpiresIn)
+                        saveSharedPreferenceGoogleLogin.setRefreshToken(this@LoginActivity, refreshToken, secretKey)
 
                         //5초
                         val builder =  OkHttpClient.Builder()
@@ -308,24 +319,20 @@ class LoginActivity : AppCompatActivity() {
             if (result.resultCode == Activity.RESULT_OK) {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
                 val userEmailMap = task.result.email?.split("@")?.map { it }
-                handleSignInResult(task)
-                /*if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true || userEmailMap?.contains("end90le51") == true || userEmailMap?.contains("sonms5676") == true) {
+                //handleSignInResult(task)
+                if (userEmailMap?.contains("daejin.ac.kr") == true || userEmailMap?.contains("anes53027") == true || userEmailMap?.contains("end90le51") == true || userEmailMap?.contains("sonms5676") == true || userEmailMap?.contains("kanister0122") == true) {
                     handleSignInResult(task)
                 } else {
                     LoadingProgressDialogManager.hide()
                     Toast.makeText(this, "대진대학교 계정으로 로그인해주세요.", Toast.LENGTH_SHORT).show()
-                    mGoogleSignInClient.signOut().addOnCompleteListener {
-                        signIn() // Prompt for sign-in again
-                    }
-                }*/
+                    mGoogleSignInClient.signOut()
+                }
             } else {
                 LoadingProgressDialogManager.hide()
                /* Log.e("Login", result.resultCode.toString())
                 Log.e("Login", result.data.toString())*/
                 Toast.makeText(this@LoginActivity, "로그인에 실패했습니다. 네트워크 및 계정 확인 후 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
-                mGoogleSignInClient.signOut().addOnCompleteListener {
-                    signIn()
-                }
+                mGoogleSignInClient.signOut()
             }
         }
     }
@@ -356,12 +363,68 @@ class LoginActivity : AppCompatActivity() {
         resultLauncher.launch(signIntent)
     }
 
-   /*override fun onResume() {
-        super.onResume()
-        if (DebuggingCheck.isUsbDebuggingEnabled(this)) {
-            Toast.makeText(this, "USB 디버깅이 감지되어 앱이 종료됩니다.", Toast.LENGTH_SHORT).show()
-            finish()
+    private fun autoLoginWithRefresh(refreshToken: RefreshTokenRequest?) {
+        if (refreshToken == null) {
+            return
         }
+
+        lifecycleScope.launch {
+            LoadingProgressDialogManager.show(this@LoginActivity)
+
+            try {
+                val response = RetrofitServerConnect.create(this@LoginActivity)
+                    .refreshLogin(refreshToken)
+
+                when {
+                    response.isSuccessful -> {
+                        response.body()?.let { loginResponse ->
+                            saveSharedPreferenceGoogleLogin.setToken(
+                                this@LoginActivity,
+                                loginResponse.accessToken,
+                                secretKey
+                            )
+                            saveSharedPreferenceGoogleLogin.setExpireDate(
+                                this@LoginActivity,
+                                loginResponse.accessTokenExpiresIn
+                            )
+                            saveSharedPreferenceGoogleLogin.setRefreshToken(
+                                this@LoginActivity,
+                                loginResponse.refreshToken,
+                                secretKey
+                            )
+                            
+                            startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                            finish()
+                        } ?: showToast("서버 응답이 비어 있습니다. 다시 시도해주세요.")
+                    }
+                    response.code() == 403 -> {
+                        showToast("계정을 탈퇴한 후 재가입 및 로그인이 제한됩니다.")
+                    }
+                    else -> {
+                        //자동로그인 실패 - refreshToken이 없을 때
+                        //showToast("로그인 실패: ${response.code()} ${response.message()}")
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                LoadingProgressDialogManager.hide()
+                showToast("네트워크 오류 발생: ${e.localizedMessage ?: "다시 시도해주세요."}")
+                mGoogleSignInClient.signOut()
+            } finally {
+                LoadingProgressDialogManager.hide()
+            }
+        }
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+
+
+    /*override fun onResume() {
+       super.onResume()
+
     }*/
 
     override fun onStop() {

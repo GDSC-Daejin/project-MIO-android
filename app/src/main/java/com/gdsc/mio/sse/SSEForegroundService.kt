@@ -1,13 +1,12 @@
 package com.gdsc.mio.sse
 
+import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -29,44 +28,47 @@ class SSEForegroundService : Service() {
     private var userId: Long? = null
     private var isGetAlarm: Boolean? = null
 
-    private lateinit var preferenceObserver : PreferenceChangeObserver
+    private var preferenceObserver: PreferenceChangeObserver? = null
 
     companion object {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "SSE_NOTIFICATION_CHANNEL"
     }
 
-    override fun onCreate() {
-        super.onCreate()
-        preferenceObserver = PreferenceChangeObserver(this) { isAlarmOn ->
-            if (!isAlarmOn) {
-                stopForegroundServiceAndClearNotification()
-            }
-        }
-        preferenceObserver.register()
-
-        val alarmSetting = SaveSharedPreferenceGoogleLogin().getSharedAlarm(this)
-        if (!alarmSetting) {
-            stopForegroundServiceAndClearNotification()
-        }
-    }
-
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Foreground Service 유지
         startForegroundServiceWithNotification()
-
         sharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         userId = sharedPreferenceGoogleLogin!!.getUserId(this).toLong()
         isGetAlarm = sharedPreferenceGoogleLogin!!.getSharedAlarm(this)
-        if (userId != null && isGetAlarm == true) {
+
+        if (isGetAlarm != true) {
+            stopForegroundServiceAndClearNotification()
+            return START_NOT_STICKY
+        }
+
+        registerPreferenceObserver()
+
+        if (userId != null) {
             startSSE()
         } else {
-            stopSelf()
+            stopForegroundServiceAndClearNotification()
         }
 
         return START_STICKY // 서비스가 강제 종료되면 자동 재시작
     }
 
+    private fun registerPreferenceObserver() {
+        preferenceObserver = PreferenceChangeObserver(this) { isAlarmOn ->
+            if (!isAlarmOn) stopForegroundServiceAndClearNotification()
+        }.also { it.register() }
+    }
+
+    private fun unregisterPreferenceObserver() {
+        preferenceObserver?.unregister()
+        preferenceObserver = null
+    }
+
+    /*@SuppressLint("ObsoleteSdkInt")
     private fun stopForegroundServiceAndClearNotification() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -81,6 +83,25 @@ class SSEForegroundService : Service() {
             @Suppress("DEPRECATION")
             stopForeground(true)
         }
+        stopSelf()
+    }
+*/
+    @SuppressLint("ObsoleteSdkInt")
+    private fun stopForegroundServiceAndClearNotification() {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                stopForeground(STOP_FOREGROUND_REMOVE)
+            } else {
+                @Suppress("DEPRECATION")
+                stopForeground(true)
+            }
+        } catch (e: Exception) {
+            Log.w("SSEService", "stopForeground 호출 중 오류 발생 (이미 호출되지 않았을 수 있음)", e)
+        }
+
+        notificationManager.cancel(NOTIFICATION_ID)
         stopSelf()
     }
 
@@ -103,10 +124,11 @@ class SSEForegroundService : Service() {
         super.onDestroy()
         eventSource?.close()
         serviceIntent = null
-        preferenceObserver.unregister()
+        unregisterPreferenceObserver()
         restartServiceWithAlarm() // 서비스 종료 시 자동 재시작
     }
 
+    @SuppressLint("ObsoleteSdkInt")
     private fun startForegroundServiceWithNotification() {
         val notificationManager = getSystemService(NotificationManager::class.java)
 
@@ -146,6 +168,7 @@ class SSEForegroundService : Service() {
         }
     }
 
+    @SuppressLint("ObsoleteSdkInt")
     private fun restartServiceWithAlarm() {
         val intent = Intent(this, SSEAlarmReceiver::class.java)
         val flags = PendingIntent.FLAG_UPDATE_CURRENT or

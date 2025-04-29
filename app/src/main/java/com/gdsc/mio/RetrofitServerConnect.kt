@@ -1,10 +1,6 @@
 package com.gdsc.mio
 
 import android.content.Context
-import android.content.Intent
-import android.os.Handler
-import android.os.Looper
-import android.widget.Toast
 import com.gdsc.mio.util.AESKeyStoreUtil
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -19,21 +15,19 @@ object RetrofitServerConnect {
         }
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(context,secretKey).toString()
-        val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context).toString()
+        //val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context)
 
         val interceptor = Interceptor { chain ->
-            var newRequest = chain.request()
+            val newRequestBuilder = chain.request().newBuilder()
 
-            if (checkTokenExpiry(getExpireDate.toLong(), context)) {
-                return@Interceptor chain.proceed(newRequest)
-            }
-
+            /*if (checkTokenExpiry(getExpireDate, context)) {
+                throw IOException("Token expired") // 요청 자체를 실패하게 만듬
+            }*/
             if (token.isNotEmpty()) {
-                newRequest = chain.request().newBuilder()
-                    .addHeader("Authorization", "Bearer $token")
-                    .build()
+                newRequestBuilder.addHeader("Authorization", "Bearer $token")
             }
-            chain.proceed(newRequest)
+
+            chain.proceed(newRequestBuilder.build())
         }
 
         val serverUrl =  BuildConfig.server_URL
@@ -49,7 +43,7 @@ object RetrofitServerConnect {
     }
 
 
-    private fun checkTokenExpiry(expireDate: Long, context: Context): Boolean {
+    /*private fun checkTokenExpiry(expireDate: Long, context: Context): Boolean {
         return if (expireDate <= System.currentTimeMillis()) {
             // 메인 스레드에서 UI 작업을 처리하기 위해 Handler 사용
             Handler(Looper.getMainLooper()).post {
@@ -63,7 +57,7 @@ object RetrofitServerConnect {
         } else {
             false
         }
-    }
+    }*/
 }
 
 /*

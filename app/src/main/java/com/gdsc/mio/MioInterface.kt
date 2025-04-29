@@ -2,6 +2,7 @@ package com.gdsc.mio
 
 import com.gdsc.mio.model.*
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.*
 
 interface MioInterface {
@@ -89,8 +90,8 @@ interface MioInterface {
 
 
     //refreshToken
-    @POST("/token")
-    fun refreshTokenProcess(@Body refreshToken: RefreshTokenRequest) : Call<LoginResponsesData>
+    @POST("/reissue")
+    suspend fun refreshLogin(@Body refreshToken: RefreshTokenRequest) : Response<LoginResponsesData>
 
     //회원가입
     @POST("/auth/google")

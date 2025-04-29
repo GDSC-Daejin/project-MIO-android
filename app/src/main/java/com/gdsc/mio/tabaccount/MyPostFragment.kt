@@ -57,8 +57,6 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
     private var totalPages = 0
 
     private val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
-    //private var token : String = ""
-    private var getExpireDate = ""
     private var email = ""
     private var userId = ""
 
@@ -77,7 +75,6 @@ class MyPostFragment : Fragment() { //첫번째 어카운트
     ): View {
         pBinding = FragmentMyPostBinding.inflate(inflater, container, false)
         //token = saveSharedPreferenceGoogleLogin.getToken(requireActivity()).toString()
-        getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(requireActivity()).toString()
         email = saveSharedPreferenceGoogleLogin.getUserEMAIL(requireActivity())!!.split("@").map { it }.first()
         userId = saveSharedPreferenceGoogleLogin.getUserId(requireActivity()).toString()
         initMyRecyclerView()

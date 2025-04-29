@@ -4,30 +4,30 @@ import com.google.gson.annotations.SerializedName
 
 data class AddPostData(
     @SerializedName("title")
-    var title: String,
+    val title: String,
     @SerializedName("content")
-    var content: String,
+    val content: String,
     @SerializedName("targetDate")
-    var targetDate: String,
+    val targetDate: String,
     @SerializedName("targetTime")
-    var targetTime: String,
+    val targetTime: String,
     @SerializedName("verifyGoReturn")
-    var verifyGoReturn: Boolean,
+    val verifyGoReturn: Boolean,
     @SerializedName("numberOfPassengers")
-    var numberOfPassengers: Int,
+    val numberOfPassengers: Int,
     @SerializedName("viewCount")
-    var viewCount: Int,
+    val viewCount: Int,
     @SerializedName("verifyFinish")
-    var verifyFinish: Boolean,
+    val verifyFinish: Boolean,
     @SerializedName("latitude")
-    var latitude: Double?,
+    val latitude: Double?,
     @SerializedName("longitude")
-    var longitude: Double?,
+    val longitude: Double?,
     @SerializedName("location")
-    var location: String,
+    val location: String,
     @SerializedName("cost")
-    var cost: Int,
+    val cost: Int,
     @SerializedName("region3Depth")
-    var region3Depth: String,
+    val region3Depth: String,
 ) : java.io.Serializable
 

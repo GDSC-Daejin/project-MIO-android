@@ -4,9 +4,9 @@ import com.google.gson.annotations.SerializedName
 
 data class AddAlarmData(
     @SerializedName("content")
-    var content : String,
+    val content : String,
     @SerializedName("postId")
-    var postId : Int,
+    val postId : Int,
     @SerializedName("userId")
-    var userId : Int // 알람을 받아야 될 사람
+    val userId : Int // 알람을 받아야 될 사람
 )

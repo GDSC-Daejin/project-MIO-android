@@ -8,6 +8,10 @@ import javax.crypto.SecretKey
 
 
 class SaveSharedPreferenceGoogleLogin {
+    companion object {
+        var cachedExpireDate: Long = 0L
+    }
+
     private val prefUserEmail = "email"
     private val acctoken = "token"
     private val expireDate = "expireDate"
@@ -30,7 +34,20 @@ class SaveSharedPreferenceGoogleLogin {
 
     //alarm key
     private val alarmSetting = "alarm_setting"
+    //app manager
+    private val appManager = "app_manager"
 
+
+    //true 면 home으로 넘어가고 false면 login
+    fun setAppManager(ctx: Context?, appManger : Boolean) {
+        val editor = getSharedPreferences(ctx).edit()
+        editor.putBoolean(appManager, appManger)
+        editor.apply()
+    }
+
+    fun getAppManager(ctx: Context?) : Boolean {
+        return getSharedPreferences(ctx).getBoolean(appManager, false)
+    }
 
     fun clearUserData(ctx: Context?) {
         val editor = getSharedPreferences(ctx).edit()
@@ -198,12 +215,16 @@ class SaveSharedPreferenceGoogleLogin {
     }
 
     fun setExpireDate(ctx: Context?, expire: Long) {
+        cachedExpireDate = expire
         val editor = getSharedPreferences(ctx).edit()
         editor.putLong(expireDate, expire)
         editor.apply()
     }
     fun getExpireDate(ctx: Context?): Long {
-        return getSharedPreferences(ctx).getLong(expireDate, 0L)
+        if (cachedExpireDate == 0L) {
+            cachedExpireDate = getSharedPreferences(ctx).getLong(expireDate, 0L)
+        }
+        return cachedExpireDate
     }
 
     fun setUserId(ctx: Context?, userId: Int?) {

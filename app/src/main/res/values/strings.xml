@@ -43,12 +43,12 @@
     </string>
 
     <string name="AccountSettingText">계좌 정보를 불러올 수 없습니다. 다시 설정해주세요.</string>
-    <string name="AccountSettingText2">%1$s님의 계좌 정보를 불러올 수 없습니다. 운전자로 부터 계좌정보를 확인하세요.</string>
+    <string name="AccountSettingText2">\n운전자로부터 계좌정보를 확인하세요.</string>
     <string name="AccountCancellationTitle">정말 탈퇴하시겠습니까?</string>
     <string name="AccountCancellationContent">계정 정보는 복구가 불가능합니다.\n또한 이 이메일로 재가입 역시 불가능합니다.</string>
 
     <!--complete-->
-    <string name="setCompleteActivityAcNum">%1$s \n운전자에게 계좌정보를 확인하세요</string>
+    <string name="setCompleteActivityAcNum">%1$s \n운전자로부터 계좌정보를 확인하세요</string>
 
     <!--search count-->
     <string name="setSearchPostCount">+%1$s</string>

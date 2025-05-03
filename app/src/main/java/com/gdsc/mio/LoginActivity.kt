@@ -6,6 +6,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.*
 import android.widget.TextView
 import android.widget.Toast
@@ -67,10 +69,23 @@ class LoginActivity : AppCompatActivity() {
 
         setResultSignUp()
         saveSettingData()
+        LoadingProgressDialogManager.show(this@LoginActivity)
+        mBinding.statusMessage.visibility = View.VISIBLE
 
-        val refreshToken = saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity, secretKey)
-        val requestToken = RefreshTokenRequest(refreshToken)
-        autoLoginWithRefresh(requestToken)
+        Handler(Looper.getMainLooper()).postDelayed({
+            val secretKey = AESKeyStoreUtil.getOrCreateAESKey()
+            val refreshToken = saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity, secretKey)
+            val appManager = saveSharedPreferenceGoogleLogin.getAppManager(this@LoginActivity)
+
+            if (!appManager && !refreshToken.isNullOrEmpty()) {
+                val requestToken = RefreshTokenRequest(refreshToken)
+                autoLoginWithRefresh(requestToken)
+            } else {
+                Toast.makeText(this@LoginActivity, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
+                LoadingProgressDialogManager.hide()
+                mBinding.statusMessage.visibility = View.GONE
+            }
+        }, 2000)
 
         try {
             (mBinding.googleSign.getChildAt(0) as TextView).setText(R.string.sign_in)
@@ -79,9 +94,7 @@ class LoginActivity : AppCompatActivity() {
         } catch (e: NullPointerException) {
             e.printStackTrace()
         }
-        /*mBinding.logoIv.setOnClickListener {
-            AESKeyStoreUtil.deleteAESKeyFromKeystore()
-        }*/
+
 
         mBinding.privacyPolicy.setOnClickListener {
             val url = "https://github.com/MIO-Privacy-Policy-for-Android"
@@ -220,7 +233,7 @@ class LoginActivity : AppCompatActivity() {
 
             override fun onFailure(call: Call<User>, t: Throwable) {
                 LoadingProgressDialogManager.hide()
-                Toast.makeText(this@LoginActivity, "예상치 못한 오류가 발생했습니다. ${t.message}}", Toast.LENGTH_SHORT).show()
+                //Toast.makeText(this@LoginActivity, "예상치 못한 오류가 발생했습니다. ${t.message}}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -369,8 +382,6 @@ class LoginActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            LoadingProgressDialogManager.show(this@LoginActivity)
-
             try {
                 val response = RetrofitServerConnect.create(this@LoginActivity)
                     .refreshLogin(refreshToken)
@@ -392,7 +403,8 @@ class LoginActivity : AppCompatActivity() {
                                 loginResponse.refreshToken,
                                 secretKey
                             )
-                            
+
+                            saveSharedPreferenceGoogleLogin.setAppManager(this@LoginActivity, true)
                             startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                             finish()
                         } ?: showToast("서버 응답이 비어 있습니다. 다시 시도해주세요.")
@@ -403,6 +415,8 @@ class LoginActivity : AppCompatActivity() {
                     else -> {
                         //자동로그인 실패 - refreshToken이 없을 때
                         //showToast("로그인 실패: ${response.code()} ${response.message()}")
+                        saveSharedPreferenceGoogleLogin.setAppManager(this@LoginActivity, false)
+                        LoadingProgressDialogManager.hide()
                     }
                 }
             } catch (e: Exception) {
@@ -419,13 +433,6 @@ class LoginActivity : AppCompatActivity() {
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
-
-
-
-    /*override fun onResume() {
-       super.onResume()
-
-    }*/
 
     override fun onStop() {
         super.onStop()

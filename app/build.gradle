@@ -23,8 +23,8 @@ android {
         applicationId "com.gdsc.mio"
         minSdk 26 // Android 8 (Oreo) 이상을 지원
         targetSdk 34
-        versionCode 24
-        versionName "1.2.3" //업데이트마다 0.1씩 증가 시키고 5이상되어 1.5가되면 2로 올리고 versioncode도 2로 올리기
+        versionCode 25
+        versionName "1.2.4" //업데이트마다 0.1씩 증가 시키고 5이상되어 1.5가되면 2로 올리고 versioncode도 2로 올리기
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         //key set

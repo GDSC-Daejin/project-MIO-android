@@ -1,11 +1,15 @@
 package com.gdsc.mio
 
 import android.content.Context
+import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import com.gdsc.mio.util.AESKeyStoreUtil
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.IOException
 import javax.crypto.SecretKey
 
 object RetrofitServerConnect {
@@ -15,14 +19,21 @@ object RetrofitServerConnect {
         }
         val saveSharedPreferenceGoogleLogin = SaveSharedPreferenceGoogleLogin()
         val token = saveSharedPreferenceGoogleLogin.getToken(context,secretKey).toString()
-        //val getExpireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context)
+        val expireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context)
 
         val interceptor = Interceptor { chain ->
             val newRequestBuilder = chain.request().newBuilder()
 
-            /*if (checkTokenExpiry(getExpireDate, context)) {
-                throw IOException("Token expired") // 요청 자체를 실패하게 만듬
-            }*/
+            if ((expireDate <= System.currentTimeMillis() && expireDate != 0L)) {
+                saveSharedPreferenceGoogleLogin.setAppManager(context, false)
+
+                if (!saveSharedPreferenceGoogleLogin.getAppManager(context)) {
+                    saveSharedPreferenceGoogleLogin.setAppManager(context, true)
+                    redirectToLogin(context)
+                }
+                throw IOException("Token expired")
+            }
+
             if (token.isNotEmpty()) {
                 newRequestBuilder.addHeader("Authorization", "Bearer $token")
             }
@@ -43,21 +54,14 @@ object RetrofitServerConnect {
     }
 
 
-    /*private fun checkTokenExpiry(expireDate: Long, context: Context): Boolean {
-        return if (expireDate <= System.currentTimeMillis()) {
-            // 메인 스레드에서 UI 작업을 처리하기 위해 Handler 사용
-            Handler(Looper.getMainLooper()).post {
-                val intent = Intent(context, LoginActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                }
-                Toast.makeText(context, "로그인이 만료되었습니다. 다시 로그인해주세요", Toast.LENGTH_SHORT).show()
-                context.startActivity(intent)
+    private fun redirectToLogin(context: Context) {
+        Handler(Looper.getMainLooper()).post {
+            val intent = Intent(context, LoginActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }
-            true
-        } else {
-            false
+            context.startActivity(intent)
         }
-    }*/
+    }
 }
 
 /*

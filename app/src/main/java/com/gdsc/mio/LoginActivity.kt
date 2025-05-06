@@ -54,6 +54,8 @@ class LoginActivity : AppCompatActivity() {
     //체크용
     private var isPolicyAllow : Boolean? = null
     private var isFirst : Boolean? = null
+    private var refreshToken : String? = null
+
 
     private val secretKey: SecretKey by lazy {
         AESKeyStoreUtil.getOrCreateAESKey()
@@ -66,24 +68,18 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(mBinding.root)
         //MobileAds.initialize(this@LoginActivity) {}
+        initRefreshLogin()
 
         setResultSignUp()
         saveSettingData()
-        LoadingProgressDialogManager.show(this@LoginActivity)
-        mBinding.statusMessage.visibility = View.VISIBLE
+
 
         Handler(Looper.getMainLooper()).postDelayed({
-            val secretKey = AESKeyStoreUtil.getOrCreateAESKey()
-            val refreshToken = saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity, secretKey)
-            val appManager = saveSharedPreferenceGoogleLogin.getAppManager(this@LoginActivity)
-
-            if (!appManager && !refreshToken.isNullOrEmpty()) {
+            if (!refreshToken.isNullOrEmpty()) {
                 val requestToken = RefreshTokenRequest(refreshToken)
                 autoLoginWithRefresh(requestToken)
             } else {
-                Toast.makeText(this@LoginActivity, "로그인이 필요합니다.", Toast.LENGTH_SHORT).show()
                 LoadingProgressDialogManager.hide()
-                mBinding.statusMessage.visibility = View.GONE
             }
         }, 2000)
 
@@ -131,6 +127,11 @@ class LoginActivity : AppCompatActivity() {
         checkForAppUpdate()
 
         debuggingCheck()
+    }
+
+    private fun initRefreshLogin() {
+        LoadingProgressDialogManager.show(this@LoginActivity)
+        refreshToken = saveSharedPreferenceGoogleLogin.getRefreshToken(this@LoginActivity, secretKey)
     }
 
     private fun debuggingCheck() {
@@ -378,6 +379,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun autoLoginWithRefresh(refreshToken: RefreshTokenRequest?) {
         if (refreshToken == null) {
+            LoadingProgressDialogManager.hide()
             return
         }
 
@@ -403,8 +405,7 @@ class LoginActivity : AppCompatActivity() {
                                 loginResponse.refreshToken,
                                 secretKey
                             )
-
-                            saveSharedPreferenceGoogleLogin.setAppManager(this@LoginActivity, true)
+                            LoadingProgressDialogManager.hide()
                             startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                             finish()
                         } ?: showToast("서버 응답이 비어 있습니다. 다시 시도해주세요.")
@@ -414,8 +415,8 @@ class LoginActivity : AppCompatActivity() {
                     }
                     else -> {
                         //자동로그인 실패 - refreshToken이 없을 때
-                        //showToast("로그인 실패: ${response.code()} ${response.message()}")
-                        saveSharedPreferenceGoogleLogin.setAppManager(this@LoginActivity, false)
+                        showToast("로그인 실패: ${response.code()} ${response.message()}")
+                        //saveSharedPreferenceGoogleLogin.setAppManager(this@LoginActivity, false)
                         LoadingProgressDialogManager.hide()
                     }
                 }

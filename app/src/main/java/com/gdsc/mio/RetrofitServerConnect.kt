@@ -1,10 +1,11 @@
 package com.gdsc.mio
 
 import android.content.Context
-import android.content.Intent
-import android.os.Handler
-import android.os.Looper
+import android.util.Log
+import com.gdsc.mio.model.LoginResponsesData
+import com.gdsc.mio.model.RefreshTokenRequest
 import com.gdsc.mio.util.AESKeyStoreUtil
+import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -23,19 +24,33 @@ object RetrofitServerConnect {
 
         val interceptor = Interceptor { chain ->
             val newRequestBuilder = chain.request().newBuilder()
+            if (expireDate <= System.currentTimeMillis() && expireDate != 0L) {
 
-            if ((expireDate <= System.currentTimeMillis() && expireDate != 0L)) {
-                saveSharedPreferenceGoogleLogin.setAppManager(context, false)
-
-                if (!saveSharedPreferenceGoogleLogin.getAppManager(context)) {
-                    saveSharedPreferenceGoogleLogin.setAppManager(context, true)
-                    redirectToLogin(context)
+                // RefreshToken을 사용하여 새로운 accessToken 요청
+                val refreshToken = saveSharedPreferenceGoogleLogin.getRefreshToken(context, secretKey)
+                val newLoginResponsesData = runBlocking {
+                    // Refresh Token을 사용하여 새로운 Access Token 받아오는 비동기 호출
+                    refreshToken?.let {
+                        refreshLoginWithRefreshToken(it, context)
+                    }
                 }
-                throw IOException("Token expired")
-            }
 
-            if (token.isNotEmpty()) {
-                newRequestBuilder.addHeader("Authorization", "Bearer $token")
+                if (newLoginResponsesData != null) {
+                    // 새로운 값 저장
+                    saveSharedPreferenceGoogleLogin.setToken(context, newLoginResponsesData.accessToken, secretKey)
+                    saveSharedPreferenceGoogleLogin.setExpireDate(context, newLoginResponsesData.accessTokenExpiresIn)
+                    saveSharedPreferenceGoogleLogin.setRefreshToken(context, newLoginResponsesData.refreshToken, secretKey)
+                    // 새로운 Access Token으로 Authorization 헤더 갱신
+                    newRequestBuilder.addHeader("Authorization", "Bearer ${newLoginResponsesData.accessToken}")
+                } else {
+                    // RefreshToken 실패 시
+                    throw IOException("Failed to refresh the token")
+                }
+            } else {
+                // 토큰이 유효하면 Authorization 헤더에 포함
+                if (token.isNotEmpty()) {
+                    newRequestBuilder.addHeader("Authorization", "Bearer $token")
+                }
             }
 
             chain.proceed(newRequestBuilder.build())
@@ -52,15 +67,26 @@ object RetrofitServerConnect {
 
         return retrofit2.create(MioInterface::class.java)
     }
+}
 
+private suspend fun refreshLoginWithRefreshToken(refreshToken: String, context: Context): LoginResponsesData? {
+    return try {
+        val response = RetrofitServerConnect.create(context)
+            .refreshLogin(RefreshTokenRequest(refreshToken))
 
-    private fun redirectToLogin(context: Context) {
-        Handler(Looper.getMainLooper()).post {
-            val intent = Intent(context, LoginActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            }
-            context.startActivity(intent)
+        if (response.isSuccessful) {
+            LoginResponsesData(
+                grantType = "",
+                accessToken = response.body()?.accessToken ?: "",
+                refreshToken = response.body()?.refreshToken ?: "",
+                accessTokenExpiresIn = response.body()?.accessTokenExpiresIn ?: 0L
+            )
+        } else {
+            null
         }
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
 }
 

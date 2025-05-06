@@ -39,7 +39,7 @@ class SaveSharedPreferenceGoogleLogin {
 
 
     //true 면 home으로 넘어가고 false면 login
-    fun setAppManager(ctx: Context?, appManger : Boolean) {
+    /*fun setAppManager(ctx: Context?, appManger : Boolean) {
         val editor = getSharedPreferences(ctx).edit()
         editor.putBoolean(appManager, appManger)
         editor.apply()
@@ -47,7 +47,7 @@ class SaveSharedPreferenceGoogleLogin {
 
     fun getAppManager(ctx: Context?) : Boolean {
         return getSharedPreferences(ctx).getBoolean(appManager, false)
-    }
+    }*/
 
     fun clearUserData(ctx: Context?) {
         val editor = getSharedPreferences(ctx).edit()

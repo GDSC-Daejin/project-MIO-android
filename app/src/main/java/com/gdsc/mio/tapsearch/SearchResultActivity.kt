@@ -15,11 +15,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.gdsc.mio.KakaoAPI
+import com.gdsc.mio.RetrofitServerConnect
 import com.gdsc.mio.adapter.RecentSearchAdapter
 import com.gdsc.mio.adapter.SearchResultAdapter
 import com.gdsc.mio.helper.SharedPrefManager
 import com.gdsc.mio.model.*
-import com.gdsc.mio.RetrofitServerConnect
 import com.gdsc.mio.databinding.ActivitySearchResultBinding
 import com.gdsc.mio.noticeboard.NoticeBoardEditActivity
 import com.gdsc.mio.viewmodel.FragSharedViewModel

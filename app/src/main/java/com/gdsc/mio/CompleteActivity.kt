@@ -94,7 +94,7 @@ class CompleteActivity : AppCompatActivity() {
                     } catch (e: Exception) {
                         e.printStackTrace()
                         // 복호화 실패 처리, 오류 메시지 출력 또는 기본 메시지 설정
-                        cBinding.completeDriverAccountNumber.text = this@CompleteActivity.getString(R.string.AccountSettingText2, sb)
+                        cBinding.completeDriverAccountNumber.text = this@CompleteActivity.getString(R.string.AccountSettingText2)
                     }
                 }
             } else {
@@ -113,7 +113,7 @@ class CompleteActivity : AppCompatActivity() {
                 } catch (e: Exception) {
                     e.printStackTrace()
                     // 복호화 실패 처리, 오류 메시지 출력 또는 기본 메시지 설정
-                    cBinding.completeDriverAccountNumber.text = this@CompleteActivity.getString(R.string.AccountSettingText2, sb)
+                    cBinding.completeDriverAccountNumber.text = this@CompleteActivity.getString(R.string.AccountSettingText2)
                 }
             }
 

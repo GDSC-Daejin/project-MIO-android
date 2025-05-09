@@ -385,7 +385,7 @@ class LoginActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val response = RetrofitServerConnect.create(this@LoginActivity)
+                val response = RetrofitServerConnect.create(this@LoginActivity, withInterceptor = false)
                     .refreshLogin(refreshToken)
 
                 when {
@@ -415,7 +415,7 @@ class LoginActivity : AppCompatActivity() {
                     }
                     else -> {
                         //자동로그인 실패 - refreshToken이 없을 때
-                        showToast("로그인 실패: ${response.code()} ${response.message()}")
+                        showToast("사용자 인증에 실패하였습니다. 다시 로그인 해주세요.")
                         //saveSharedPreferenceGoogleLogin.setAppManager(this@LoginActivity, false)
                         LoadingProgressDialogManager.hide()
                     }

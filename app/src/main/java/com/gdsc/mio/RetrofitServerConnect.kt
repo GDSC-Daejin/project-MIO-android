@@ -14,7 +14,7 @@ import java.io.IOException
 import javax.crypto.SecretKey
 
 object RetrofitServerConnect {
-    fun create(context: Context): MioInterface {
+    fun create(context: Context, withInterceptor: Boolean = true): MioInterface {
         val secretKey: SecretKey by lazy {
             AESKeyStoreUtil.getOrCreateAESKey()
         }
@@ -22,10 +22,64 @@ object RetrofitServerConnect {
         val token = saveSharedPreferenceGoogleLogin.getToken(context,secretKey).toString()
         val expireDate = saveSharedPreferenceGoogleLogin.getExpireDate(context)
 
-        val interceptor = Interceptor { chain ->
+        val builder = OkHttpClient.Builder()
+
+        if (withInterceptor) {
+            val interceptor = Interceptor { chain ->
+                val request = chain.request()
+
+                if (request.url.encodedPath.contains("/reissue")) {
+                    return@Interceptor chain.proceed(request)
+                }
+
+                val newRequestBuilder = request.newBuilder()
+
+                if (expireDate <= System.currentTimeMillis() && expireDate != 0L) {
+                    val refreshToken =
+                        saveSharedPreferenceGoogleLogin.getRefreshToken(context, secretKey)
+                    val newLoginResponsesData = runBlocking {
+                        refreshToken?.let {
+                            refreshLoginWithRefreshToken(it, context)
+                        }
+                    }
+
+                    if (newLoginResponsesData != null) {
+                        saveSharedPreferenceGoogleLogin.setToken(
+                            context,
+                            newLoginResponsesData.accessToken,
+                            secretKey
+                        )
+                        saveSharedPreferenceGoogleLogin.setExpireDate(
+                            context,
+                            newLoginResponsesData.accessTokenExpiresIn
+                        )
+                        saveSharedPreferenceGoogleLogin.setRefreshToken(
+                            context,
+                            newLoginResponsesData.refreshToken,
+                            secretKey
+                        )
+
+                        newRequestBuilder.addHeader(
+                            "Authorization",
+                            "Bearer ${newLoginResponsesData.accessToken}"
+                        )
+                    } else {
+                        throw IOException("리프레시 실패")
+                    }
+                } else {
+                    if (token.isNotEmpty()) {
+                        newRequestBuilder.addHeader("Authorization", "Bearer $token")
+                    }
+                }
+
+                chain.proceed(newRequestBuilder.build())
+            }
+
+            builder.addInterceptor(interceptor)
+        }
+        /*val interceptor = Interceptor { chain ->
             val newRequestBuilder = chain.request().newBuilder()
             if (expireDate <= System.currentTimeMillis() && expireDate != 0L) {
-
                 // RefreshToken을 사용하여 새로운 accessToken 요청
                 val refreshToken = saveSharedPreferenceGoogleLogin.getRefreshToken(context, secretKey)
                 val newLoginResponsesData = runBlocking {
@@ -44,7 +98,7 @@ object RetrofitServerConnect {
                     newRequestBuilder.addHeader("Authorization", "Bearer ${newLoginResponsesData.accessToken}")
                 } else {
                     // RefreshToken 실패 시
-                    throw IOException("Failed to refresh the token")
+                    throw IOException("Failed to refresh the token. Please log in again.")
                 }
             } else {
                 // 토큰이 유효하면 Authorization 헤더에 포함
@@ -54,24 +108,23 @@ object RetrofitServerConnect {
             }
 
             chain.proceed(newRequestBuilder.build())
-        }
+        }*/
 
-        val serverUrl =  BuildConfig.server_URL
-        val retrofit = Retrofit.Builder().baseUrl(serverUrl)
+        val client = builder.build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl(BuildConfig.server_URL)
+            .client(client)
             .addConverterFactory(GsonConverterFactory.create())
-        val builder = OkHttpClient.Builder()
-        builder.interceptors().add(interceptor)
-        val client: OkHttpClient = builder.build()
-        retrofit.client(client)
-        val retrofit2: Retrofit = retrofit.build()
+            .build()
 
-        return retrofit2.create(MioInterface::class.java)
+        return retrofit.create(MioInterface::class.java)
     }
 }
 
 private suspend fun refreshLoginWithRefreshToken(refreshToken: String, context: Context): LoginResponsesData? {
     return try {
-        val response = RetrofitServerConnect.create(context)
+        val response = RetrofitServerConnect.create(context, withInterceptor = false)
             .refreshLogin(RefreshTokenRequest(refreshToken))
 
         if (response.isSuccessful) {
